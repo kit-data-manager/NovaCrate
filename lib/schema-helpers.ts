@@ -14,3 +14,23 @@ export function getPropertyDomain(propertyId: string) {
         return [refs]
     }
 }
+
+export function getPropertyRange(propertyId: string) {
+    let refs = schemaGraph.getNode(propertyId)?.range
+    if (!refs) return []
+
+    const range = new Set<string>()
+    refs = Array.isArray(refs) ? refs : [refs]
+
+    for (const ref of refs) {
+        range.add(ref["@id"])
+        const subClasses = schemaGraph.getSubClasses(ref["@id"])
+        for (const subClass of subClasses) {
+            range.add(subClass)
+        }
+    }
+
+    console.log(Array.from(range))
+
+    return Array.from(range)
+}

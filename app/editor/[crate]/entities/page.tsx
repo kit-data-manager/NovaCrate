@@ -1,5 +1,5 @@
 import { Nav } from "@/components/nav"
-import { EntityEditor } from "@/components/entity-editor"
+import { EntityEditor } from "@/components/editor/entity-editor"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 
 const DemoEntityData: IFlatEntity = {
@@ -9,6 +9,9 @@ const DemoEntityData: IFlatEntity = {
     additionalName: "Mustermann",
     follows: {
         "@id": "MonikaMusterfrau"
+    },
+    affiliation: {
+        "@id": ""
     }
 }
 

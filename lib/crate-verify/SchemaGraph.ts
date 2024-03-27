@@ -50,6 +50,10 @@ export class SchemaNode {
         return this.node["schema:domainIncludes"]
     }
 
+    get range() {
+        return this.node["schema:rangeIncludes"]
+    }
+
     isProperty() {
         return this.node["@type"] === "rdf:Property"
     }

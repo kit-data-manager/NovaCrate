@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { PropertyEditor } from "@/components/property-editor"
+import { PropertyEditor } from "@/components/editor/property-editor"
 
 export interface EntityEditorProperty {
     propertyName: string
