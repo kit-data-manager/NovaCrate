@@ -2,8 +2,6 @@ import { Nav } from "@/components/nav"
 import { EntityEditor } from "@/components/editor/entity-editor"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { EntityBrowser } from "@/components/entity-browser"
-import { ErrorBoundary } from "next/dist/client/components/error-boundary"
-import { Error } from "@/components/error"
 
 const DemoEntityData: IFlatEntity = {
     "@id": "MaxMustermann",
@@ -14,6 +12,12 @@ const DemoEntityData: IFlatEntity = {
         "@id": "MonikaMusterfrau"
     },
     affiliation: {
+        "@id": ""
+    },
+    birthPlace: {
+        "@id": ""
+    },
+    children: {
         "@id": ""
     }
 }

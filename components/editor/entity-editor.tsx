@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { PropertyEditor } from "@/components/editor/property-editor"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 
 type PropertyHasChangesEnum = "no" | "hasChanges" | "isNew"
 
@@ -104,12 +106,21 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
 
     return (
         <div className="max-w-[1200px]">
-            <h2 className="text-3xl font-bold flex items-center">
-                <span className="mb-1">{entityData["@type"]} </span>
-                <span className="font-mono bg-secondary text-xl p-1 ml-4 rounded">
-                    {entityData["@id"]}
-                </span>
-            </h2>
+            <div className="flex justify-between items-center">
+                <h2 className="text-3xl font-bold flex items-center">
+                    <span className="mb-1">{entityData["@type"]} </span>
+                    <span className="font-mono bg-secondary text-xl p-1 ml-4 rounded">
+                        {entityData["@id"]}
+                    </span>
+                </h2>
+
+                <div className="flex items-center mr-4">
+                    <Switch id="easy-mode" />{" "}
+                    <Label className="p-2" htmlFor="easy-mode">
+                        Easy Mode
+                    </Label>
+                </div>
+            </div>
 
             <div className="mt-6 flex flex-col gap-10">
                 {properties.map((property, i) => {
