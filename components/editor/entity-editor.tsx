@@ -1,7 +1,9 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { PropertyEditor } from "@/components/editor/property-editor"
+
+type PropertyHasChangesEnum = "no" | "hasChanges" | "isNew"
 
 export interface EntityEditorProperty {
     propertyName: string
@@ -17,7 +19,7 @@ function mapEntityToProperties(data: IFlatEntity): EntityEditorProperty[] {
             if (!Array.isArray(value)) {
                 arrValue = [value]
             } else {
-                arrValue = value
+                arrValue = value.slice()
             }
 
             return {
@@ -41,13 +43,32 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
         setProperties(mapEntityToProperties(entityData))
     }, [entityData])
 
+    const propertyHasChanges: PropertyHasChangesEnum[] = useMemo(() => {
+        return properties.map((prop) => {
+            const initialProp = initialProperties.find((p) => p.propertyName === prop.propertyName)
+            if (initialProp) {
+                if (prop.values.length !== initialProp.values.length) {
+                    return "hasChanges"
+                }
+                if (
+                    prop.values.filter((val, i) => hasChanged(val, initialProp.values[i])).length >
+                    0
+                ) {
+                    return "hasChanges"
+                }
+                return "no"
+            } else {
+                return "isNew"
+            }
+        })
+    }, [initialProperties, properties])
+
     const modifyProperty = useCallback(
         (propertyName: string, value: FlatEntitySinglePropertyTypes, valueIdx: number) => {
             const propertyIndex = properties.findIndex((p) => p.propertyName === propertyName)
             if (propertyIndex < 0 || propertyIndex >= properties.length) return
             const property = properties[propertyIndex]
-            if (property.propertyName === propertyName && property.values[valueIdx] === value)
-                return // TODO proper compare of references
+            if (!hasChanged(value, property.values[valueIdx])) return
 
             property.propertyName = propertyName
             property.values[valueIdx] = value
@@ -91,14 +112,27 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
             </h2>
 
             <div className="mt-6 flex flex-col gap-10">
-                {properties.map((property) => {
+                {properties.map((property, i) => {
                     return (
                         <div key={property.propertyName}>
-                            <PropertyEditor property={property} onModifyProperty={modifyProperty} />
+                            <PropertyEditor
+                                property={property}
+                                onModifyProperty={modifyProperty}
+                                hasChanges={propertyHasChanges[i] === "hasChanges"}
+                                isNew={propertyHasChanges[i] === "isNew"}
+                            />
                         </div>
                     )
                 })}
             </div>
         </div>
     )
+}
+
+function hasChanged(value: string | Reference, oldValue: string | Reference) {
+    if (typeof value === "string" && typeof oldValue === "string") {
+        return value !== oldValue
+    } else if (typeof value === "object" && typeof oldValue === "object") {
+        return value["@id"] !== oldValue["@id"]
+    } else return true
 }

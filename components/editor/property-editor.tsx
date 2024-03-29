@@ -12,6 +12,8 @@ export interface PropertyEditorProps {
         value: FlatEntitySinglePropertyTypes,
         valueIdx: number
     ) => void
+    isNew?: boolean
+    hasChanges?: boolean
 }
 
 export interface SinglePropertyEditorProps extends PropertyEditorProps {
@@ -47,7 +49,11 @@ function SinglePropertyEditor({
 
 export function PropertyEditor(props: PropertyEditorProps) {
     return (
-        <div className="grid grid-cols-[1fr_1fr] w-full">
+        <div className="grid grid-cols-[12px_1fr_1fr] w-full">
+            <div
+                className={`${props.isNew ? "bg-success" : props.hasChanges ? "bg-info" : ""} max-w-1 rounded-full transition`}
+            ></div>
+
             <div className="pr-4">
                 <div>{props.property.propertyName}</div>
                 <div className="text-muted-foreground text-sm">
