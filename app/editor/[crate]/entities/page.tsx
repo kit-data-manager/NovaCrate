@@ -4,12 +4,12 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { EntityBrowser } from "@/components/entity-browser"
 
 const DemoEntityData: IFlatEntity = {
-    "@id": "MaxMustermann",
+    "@id": "http://localhost/max-mustermann",
     "@type": "Person",
-    givenName: ["Max", "Maxi", "Maximal"],
-    additionalName: "Mustermann",
+    givenName: ["Max", '"Maxi"'],
+    familyName: "Mustermann",
     follows: {
-        "@id": "MonikaMusterfrau"
+        "@id": "http://localhost/monika-musterfrau"
     },
     affiliation: {
         "@id": ""
@@ -33,7 +33,7 @@ export default function Entities() {
                 </ResizablePanel>
                 <ResizableHandle />
                 <ResizablePanel defaultSize={80} minSize={40}>
-                    <div className="p-4">
+                    <div className="p-4 h-full w-full overflow-auto">
                         <EntityEditor entityData={DemoEntityData} />
                     </div>
                 </ResizablePanel>

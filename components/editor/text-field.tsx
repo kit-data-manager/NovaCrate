@@ -8,15 +8,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import {
-    ArrowLeftRight,
-    EllipsisVertical,
-    Eraser,
-    Text,
-    TextIcon,
-    Trash,
-    TypeIcon
-} from "lucide-react"
+import { ArrowLeftRight, EllipsisVertical, Eraser, Trash, TypeIcon } from "lucide-react"
 
 export function TextField({
     value,
@@ -31,7 +23,7 @@ export function TextField({
             <Input value={value} onChange={onChange} className="self-center rounded-r-none pl-9" />
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="border-l-0 rounded-l-none">
+                    <Button variant="outline" className="border-l-0 rounded-l-none px-2">
                         <EllipsisVertical />
                     </Button>
                 </DropdownMenuTrigger>
