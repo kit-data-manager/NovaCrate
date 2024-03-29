@@ -1,6 +1,6 @@
 import { Context } from "@/lib/crate-verify/context"
 import { useCallback, useMemo, useState } from "react"
-import { getPropertyDomain, getPropertyRange } from "@/lib/schema-helpers"
+import { getPropertyRange } from "@/lib/schema-helpers"
 import { Button } from "@/components/ui/button"
 import { SelectReferenceModal } from "@/components/editor/select-reference-modal"
 import {
@@ -13,14 +13,14 @@ import {
 import {
     ArrowLeftRight,
     EllipsisVertical,
-    Eraser,
+    Globe,
     LinkIcon,
     Plus,
     Trash,
     Unlink
 } from "lucide-react"
-import Link from "next/link"
 import { CreateEntityModal } from "@/components/editor/create-entity-modal"
+import { CreateFromORCIDModal } from "@/components/editor/from-orcid-modal"
 
 const TEST_CONTEXT = new Context("https://w3id.org/ro/crate/1.1/context")
 
@@ -66,15 +66,16 @@ export function ReferenceField({
 
             {isEmpty ? (
                 <>
+                    <CreateFromExternalButton propertyRange={referenceTypeRange} />
                     <Button
-                        className="grow rounded-r-none border-r-0"
+                        className="grow rounded-r-none border-r-0 first:rounded-l-md rounded-l-none"
                         variant="outline"
                         onClick={() => {
                             setCreateModalOpen(true)
                         }}
                     >
                         <Plus className="w-4 h-4 mr-2" />
-                        Create New
+                        Create
                     </Button>
                     <Button
                         className="grow rounded-none"
@@ -84,7 +85,7 @@ export function ReferenceField({
                         }}
                     >
                         <LinkIcon className="w-4 h-4 mr-2" />
-                        Link Existing
+                        Select
                     </Button>
                 </>
             ) : (
@@ -124,4 +125,43 @@ export function ReferenceField({
             </DropdownMenu>
         </div>
     )
+}
+
+function CreateFromExternalButton({ propertyRange }: { propertyRange: string[] }) {
+    const [modalOpen, setModalOpen] = useState(false)
+
+    const openModal = useCallback(() => {
+        setModalOpen(true)
+    }, [])
+
+    const fromORCID = useMemo(() => {
+        return propertyRange.includes("schema:Person")
+    }, [propertyRange])
+    const fromROR = useMemo(() => {
+        return propertyRange.includes("schema:Organization")
+    }, [propertyRange])
+
+    if (fromORCID) {
+        return (
+            <>
+                <CreateFromORCIDModal
+                    open={modalOpen}
+                    onEntityCreated={() => {}}
+                    onOpenChange={setModalOpen}
+                />
+                <Button className="grow-[2] rounded-r-none" onClick={openModal}>
+                    <Globe className="w-4 h-4 mr-2" /> From ORCID
+                </Button>
+            </>
+        )
+    } else if (fromROR) {
+        return (
+            <>
+                <Button className="grow-[2] rounded-r-none" onClick={openModal}>
+                    <Globe className="w-4 h-4 mr-2" /> From ROR
+                </Button>
+            </>
+        )
+    }
+    return null
 }
