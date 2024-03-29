@@ -98,7 +98,7 @@ export function ReferenceField({
                 >
                     <LinkIcon className="w-4 h-4 mr-2 text-muted-foreground" />
                     <div className="flex items-end">
-                        <span>Unresolved</span>
+                        <span>Monika Musterfrau</span>
                         <span className="text-muted-foreground ml-1 text-xs">{value["@id"]}</span>
                     </div>
                 </Button>
@@ -106,7 +106,7 @@ export function ReferenceField({
 
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="border-l-0 rounded-l-none">
+                    <Button variant="outline" className="border-l-0 rounded-l-none px-2">
                         <EllipsisVertical />
                     </Button>
                 </DropdownMenuTrigger>

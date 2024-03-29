@@ -30,7 +30,5 @@ export function getPropertyRange(propertyId: string) {
         }
     }
 
-    console.log(Array.from(range))
-
     return Array.from(range)
 }
