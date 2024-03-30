@@ -5,7 +5,7 @@ import { PropertyEditor } from "@/components/editor/property-editor"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Plus, Save } from "lucide-react"
+import { Check, Plus, Save } from "lucide-react"
 
 type PropertyHasChangesEnum = "no" | "hasChanges" | "isNew"
 
@@ -153,7 +153,16 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
     return (
         <div className="max-w-[1200px]">
             <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold flex items-end">{headline(entityData)}</h2>
+                <h2 className="text-3xl font-bold flex items-center">
+                    {headline(entityData)}
+
+                    <div className="border-pink-600 border text-pink-600 px-1.5 rounded ml-6 text-sm">
+                        Contextual
+                    </div>
+                    <div className="border-success border text-success px-1.5 rounded ml-2 text-sm flex gap-1 items-center">
+                        <Check className="w-4 h-4" /> ORCID
+                    </div>
+                </h2>
 
                 <div className="flex items-center mr-4">
                     <Switch id="easy-mode" />
@@ -163,7 +172,7 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
                 </div>
             </div>
 
-            <div className="mt-6 flex flex-col gap-10">
+            <div className="mt-12 flex flex-col gap-10 mr-2">
                 {properties.map((property, i) => {
                     return (
                         <div key={property.propertyName}>

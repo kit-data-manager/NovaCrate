@@ -2,7 +2,7 @@
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Button } from "@/components/ui/button"
-import { BookOpenText, Bug, Folder, GitFork, Package, PackageSearch } from "lucide-react"
+import { BookOpenText, Bug, Folder, GitFork, Library, PackageSearch } from "lucide-react"
 import { PropsWithChildren, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -42,9 +42,9 @@ export function NavSidebar({ children }: PropsWithChildren<{}>) {
         <ResizablePanelGroup direction="horizontal" autoSaveId="globalSidebarLayout">
             <ResizablePanel minSize={10} defaultSize={10}>
                 <div className="flex flex-col gap-2 p-2 h-full min-w-40 pb-4">
-                    <NavSidebarLink page="root">
-                        <Package className="h-4 w-4 mr-2" />
-                        Root
+                    <NavSidebarLink page="entities">
+                        <PackageSearch className="h-4 w-4 mr-2" />
+                        Entities
                     </NavSidebarLink>
                     <NavSidebarLink page="fileExplorer">
                         <Folder className="h-4 w-4 mr-2" />
@@ -54,9 +54,9 @@ export function NavSidebar({ children }: PropsWithChildren<{}>) {
                         <GitFork className="h-4 w-4 mr-2" />
                         Graph
                     </NavSidebarLink>
-                    <NavSidebarLink page="entities">
-                        <PackageSearch className="h-4 w-4 mr-2" />
-                        Entities
+                    <NavSidebarLink page="graph">
+                        <Library className="h-4 w-4 mr-2" />
+                        Context
                     </NavSidebarLink>
 
                     <div className="grow"></div>
