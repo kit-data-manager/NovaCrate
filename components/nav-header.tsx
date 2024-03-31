@@ -32,7 +32,7 @@ export function NavHeader() {
         <div className="p-4 w-full grid grid-cols-[1fr_auto_1fr] border-b">
             <div className="flex items-center">
                 <Braces className="w-6 h-6 mr-2" />
-                <div className="mr-6">RO-Crate Editor</div>
+                <div className="mr-6">Editor</div>
 
                 <Menubar>
                     <MenubarMenu>
@@ -79,26 +79,6 @@ export function NavHeader() {
                             <MenubarItem>Add Custom</MenubarItem>
                             <MenubarSeparator />
                             <MenubarItem>View All</MenubarItem>
-                        </MenubarContent>
-                    </MenubarMenu>
-                    <MenubarMenu>
-                        <MenubarTrigger>
-                            Context <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
-                        </MenubarTrigger>
-                        <MenubarContent>
-                            <MenubarSub>
-                                <MenubarSubTrigger>Profile</MenubarSubTrigger>
-                                <MenubarSubContent>
-                                    <MenubarItem>
-                                        <Check className="w-4 h-4 mr-2" /> None
-                                    </MenubarItem>
-                                </MenubarSubContent>
-                            </MenubarSub>
-                            <MenubarSeparator />
-                            <MenubarItem>Add External Context</MenubarItem>
-                            <MenubarItem>Add Custom Definition</MenubarItem>
-                            <MenubarSeparator />
-                            <MenubarItem>View in Settings</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                 </Menubar>

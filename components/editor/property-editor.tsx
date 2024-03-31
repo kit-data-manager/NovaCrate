@@ -24,6 +24,12 @@ export interface SinglePropertyEditorProps extends PropertyEditorProps {
     valueIndex: number
 }
 
+function entryName(property: EntityEditorProperty) {
+    if (property.propertyName === "@type") {
+        return "type"
+    } else return "entry"
+}
+
 function SinglePropertyEditor({
     property,
     onModifyProperty,
@@ -91,7 +97,7 @@ export function PropertyEditor(props: PropertyEditorProps) {
                         className="flex text items-center text-muted-foreground p-1"
                     >
                         <Plus className="w-3 h-3 mr-1" />
-                        <span className="text-xs">Add another entry</span>
+                        <span className="text-xs">Add another {entryName(props.property)}</span>
                     </Button>
                 ) : null}
             </div>

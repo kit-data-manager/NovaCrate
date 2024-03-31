@@ -33,7 +33,7 @@ export default function Entities() {
                 </ResizablePanel>
                 <ResizableHandle />
                 <ResizablePanel defaultSize={80} minSize={40}>
-                    <div className="p-4 h-full w-full overflow-auto">
+                    <div className="h-full w-full overflow-auto">
                         <EntityEditor entityData={DemoEntityData} />
                     </div>
                 </ResizablePanel>

@@ -5,7 +5,23 @@ import { PropertyEditor } from "@/components/editor/property-editor"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Check, Plus, Save } from "lucide-react"
+import {
+    Check,
+    EllipsisVertical,
+    PanelLeftClose,
+    Plus,
+    Save,
+    Search,
+    Trash,
+    Undo2
+} from "lucide-react"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
 
 type PropertyHasChangesEnum = "no" | "hasChanges" | "isNew"
 
@@ -33,7 +49,7 @@ function mapEntityToProperties(data: IFlatEntity): EntityEditorProperty[] {
         .flat()
 }
 
-export function headline(entityData: IFlatEntity) {
+function headline(entityData: IFlatEntity) {
     const defaultHeadline = entityData["@type"] + " " + entityData["@id"]
 
     if (entityData["@type"] === "Person") {
@@ -151,51 +167,82 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
     )
 
     return (
-        <div className="max-w-[1200px]">
-            <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold flex items-center">
-                    {headline(entityData)}
-
-                    <div className="border-pink-600 border text-pink-600 px-1.5 rounded ml-6 text-sm">
-                        Contextual
-                    </div>
-                    <div className="border-success border text-success px-1.5 rounded ml-2 text-sm flex gap-1 items-center">
-                        <Check className="w-4 h-4" /> ORCID
-                    </div>
-                </h2>
-
-                <div className="flex items-center mr-4">
-                    <Switch id="easy-mode" />
-                    <Label className="p-2" htmlFor="easy-mode">
-                        Easy Mode
-                    </Label>
+        <div className="max-w-[1200px] relative">
+            <div className="flex mb-2 gap-2 sticky top-0 z-10 p-2 bg-primary-foreground">
+                <Button size="sm" variant="secondary" className="text-xs">
+                    <PanelLeftClose className="w-4 h-4" />
+                </Button>
+                <Button size="sm" variant="secondary" className="text-xs">
+                    <Plus className={"w-4 h-4 mr-1"} /> Add Property
+                </Button>
+                <Button size="sm" variant="secondary" className="text-xs">
+                    <Search className="w-4 h-4 mr-1" /> Find References
+                </Button>
+                <Button size="sm" variant="destructive" className="text-xs">
+                    <Trash className="w-4 h-4 mr-1" /> Delete Entity
+                </Button>
+                <div className="grow"></div>
+                <div className="flex gap-2 text-muted-foreground items-center text-sm">
+                    {hasUnsavedChanges ? "There are unsaved changes" : null}
+                    <Button
+                        size="sm"
+                        variant={hasUnsavedChanges ? undefined : "secondary"}
+                        className="text-xs"
+                    >
+                        <Save className={"w-4 h-4 mr-2"} /> Save
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger>
+                            <Button variant="secondary" size="sm">
+                                <EllipsisVertical className="w-4 h-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem>
+                                <Save className="w-4 h-4 mr-2" /> Save as...
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                <Undo2 className="w-4 h-4 mr-2" /> Revert Changes
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 
-            <div className="mt-12 flex flex-col gap-10 mr-2">
-                {properties.map((property, i) => {
-                    return (
-                        <div key={property.propertyName}>
-                            <PropertyEditor
-                                property={property}
-                                onModifyProperty={modifyProperty}
-                                hasChanges={propertyHasChanges[i] === "hasChanges"}
-                                isNew={propertyHasChanges[i] === "isNew"}
-                            />
-                        </div>
-                    )
-                })}
-            </div>
+            <div className="p-4">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-3xl font-bold flex items-center">
+                        {headline(entityData)}
 
-            <div className="flex justify-between mt-6">
-                <Button variant="secondary">
-                    <Plus className={"w-4 h-4 mr-2"} /> Add Property
-                </Button>
-                <div className="flex gap-4 text-muted-foreground items-center">
-                    {hasUnsavedChanges ? "There are unsaved changes" : null}
-                    <Button>
-                        <Save className={"w-4 h-4 mr-2"} /> Save
-                    </Button>
+                        <div className="border-pink-600 border text-pink-600 px-1.5 rounded ml-6 text-sm">
+                            Contextual
+                        </div>
+                        <div className="border-success border text-success px-1.5 rounded ml-2 text-sm flex gap-1 items-center">
+                            <Check className="w-4 h-4" /> ORCID
+                        </div>
+                    </h2>
+
+                    <div className="flex items-center mr-2">
+                        <Switch id="easy-mode" />
+                        <Label className="p-2" htmlFor="easy-mode">
+                            Easy Mode
+                        </Label>
+                    </div>
+                </div>
+
+                <div className="my-12 flex flex-col gap-10 mr-2">
+                    {properties.map((property, i) => {
+                        return (
+                            <div key={property.propertyName}>
+                                <PropertyEditor
+                                    property={property}
+                                    onModifyProperty={modifyProperty}
+                                    hasChanges={propertyHasChanges[i] === "hasChanges"}
+                                    isNew={propertyHasChanges[i] === "isNew"}
+                                />
+                            </div>
+                        )
+                    })}
                 </div>
             </div>
         </div>
