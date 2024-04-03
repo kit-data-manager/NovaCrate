@@ -23,8 +23,10 @@ export function getPropertyRange(propertyId: string) {
     refs = Array.isArray(refs) ? refs : [refs]
 
     for (const ref of refs) {
-        range.add(ref["@id"])
-        const subClasses = schemaGraph.getSubClasses(ref["@id"])
+        range.add(schemaGraph.expandIRI(ref["@id"]))
+        const subClasses = schemaGraph
+            .getSubClasses(ref["@id"])
+            .map((s) => schemaGraph.expandIRI(s))
         for (const subClass of subClasses) {
             range.add(subClass)
         }

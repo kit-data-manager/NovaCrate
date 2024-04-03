@@ -2,10 +2,6 @@
 
 import SchemaOrg from "./assets/schemaorg-current-https.json"
 
-interface Reference {
-    "@id": string
-}
-
 // TODO currently only works on rdf:Property and rdfs:Class but not on class/property instances
 
 /**
@@ -16,10 +12,10 @@ interface ISchemaNode {
     "@type": string | string[]
     "rdfs:comment"?: string | { "@language": string; "@value": string }
     "rdfs:label"?: string | { "@language": string; "@value": string }
-    "rdfs:subClassOf"?: Reference | Reference[]
-    "rdfs:subPropertyOf"?: Reference | Reference[]
-    "schema:domainIncludes"?: Reference | Reference[]
-    "schema:rangeIncludes"?: Reference | Reference[]
+    "rdfs:subClassOf"?: IReference | IReference[]
+    "rdfs:subPropertyOf"?: IReference | IReference[]
+    "schema:domainIncludes"?: IReference | IReference[]
+    "schema:rangeIncludes"?: IReference | IReference[]
     $validation?: unknown // For validation with AJV outside of schema graph
 }
 
@@ -94,6 +90,7 @@ export class SchemaNode {
 }
 
 export class SchemaGraph {
+    private context: Map<string, string> = new Map<string, string>()
     private graph: Map<string, SchemaNode> = new Map<string, SchemaNode>()
 
     getNode(id: string) {
@@ -248,6 +245,11 @@ export class SchemaGraph {
                 this.addNode(new SchemaNode(node))
             }
         }
+        if ("@context" in schema) {
+            for (const [key, value] of Object.entries(schema["@context"])) {
+                this.context.set(key, value)
+            }
+        }
     }
 
     addSchemaOrgSchema() {
@@ -256,6 +258,14 @@ export class SchemaGraph {
 
     addNode(entry: SchemaNode) {
         this.graph.set(entry["@id"], entry)
+    }
+
+    expandIRI(IRI: string) {
+        const parts = IRI.split(":")
+        const match = this.context.get(parts[0])
+        if (match) {
+            return match + parts[1]
+        } else return parts[1]
     }
 }
 
