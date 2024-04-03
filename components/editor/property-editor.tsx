@@ -37,7 +37,7 @@ function SinglePropertyEditor({
 }: SinglePropertyEditorProps) {
     const value = property.values[valueIndex]
 
-    const onReferenceChange = useCallback((value: Reference) => {}, []) // TODO
+    const onReferenceChange = useCallback((value: IReference) => {}, []) // TODO
 
     const onTextChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>) => {

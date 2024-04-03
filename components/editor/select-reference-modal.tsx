@@ -16,7 +16,7 @@ export function SelectReferenceModal({
     onOpenChange
 }: {
     open: boolean
-    onSelect: (ref: Reference) => void
+    onSelect: (ref: IReference) => void
     onOpenChange: (open: boolean) => void
 }) {
     const possibleEntities = useMemo(() => {
