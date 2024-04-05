@@ -21,7 +21,7 @@ export function CreateFromORCIDModal({
     onOpenChange
 }: {
     open: boolean
-    onEntityCreated: (ref: Reference) => void
+    onEntityCreated: (ref: IReference) => void
     onOpenChange: (open: boolean) => void
 }) {
     const [url, setUrl] = useState("")
