@@ -3,12 +3,12 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { EntityBrowser } from "@/components/entity-browser"
 
 const DemoEntityData: IFlatEntity = {
-    "@id": "http://localhost/max-mustermann",
+    "@id": "#max-mustermann",
     "@type": "Person",
     givenName: ["Max", '"Maxi"'],
     familyName: "Mustermann",
     follows: {
-        "@id": "http://localhost/monika-musterfrau"
+        "@id": "#monika-musterfrau"
     },
     affiliation: {
         "@id": ""

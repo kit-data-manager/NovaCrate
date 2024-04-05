@@ -17,7 +17,7 @@ export function CreateEntityModal({
     restrictToClasses
 }: {
     open: boolean
-    onEntityCreated: (ref: Reference) => void
+    onEntityCreated: (ref: IReference) => void
     onOpenChange: (open: boolean) => void
     restrictToClasses: string[]
 }) {

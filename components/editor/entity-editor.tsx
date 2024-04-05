@@ -249,7 +249,7 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
     )
 }
 
-function hasChanged(value: string | Reference, oldValue: string | Reference) {
+function hasChanged(value: string | IReference, oldValue: string | IReference) {
     if (typeof value === "string" && typeof oldValue === "string") {
         return value !== oldValue
     } else if (typeof value === "object" && typeof oldValue === "object") {

@@ -29,14 +29,14 @@ export function ReferenceField({
     propertyName,
     onChange
 }: {
-    value: Reference
-    onChange: (value: Reference) => void
+    value: IReference
+    onChange: (value: IReference) => void
     propertyName: string
 }) {
     const [selectModalOpen, setSelectModalOpen] = useState(false)
     const [createModalOpen, setCreateModalOpen] = useState(false)
 
-    const onSelect = useCallback((selection: Reference) => {
+    const onSelect = useCallback((selection: IReference) => {
         console.log("selected", selection)
     }, [])
 
@@ -44,6 +44,8 @@ export function ReferenceField({
         const resolved = TEST_CONTEXT.resolve(propertyName)
         if (!resolved) return []
         return getPropertyRange(resolved)
+            .map((s) => TEST_CONTEXT.reverse(s))
+            .filter((s) => typeof s === "string") as string[]
     }, [propertyName])
 
     const isEmpty = useMemo(() => {
@@ -135,10 +137,10 @@ function CreateFromExternalButton({ propertyRange }: { propertyRange: string[] }
     }, [])
 
     const fromORCID = useMemo(() => {
-        return propertyRange.includes("schema:Person")
+        return propertyRange.includes("Person")
     }, [propertyRange])
     const fromROR = useMemo(() => {
-        return propertyRange.includes("schema:Organization")
+        return propertyRange.includes("Organization")
     }, [propertyRange])
 
     if (fromORCID) {

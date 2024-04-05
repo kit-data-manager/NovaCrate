@@ -38,4 +38,14 @@ export class Context {
             return this.context[id]
         } else return null
     }
+
+    reverse(URI: string) {
+        for (const [key, value] of Object.entries(this.context)) {
+            if (URI === value) {
+                return key
+            }
+        }
+
+        return null
+    }
 }
