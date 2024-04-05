@@ -1,9 +1,3 @@
-import { Nav } from "@/components/nav"
-
 export default function Home() {
-    return (
-        <Nav>
-            <div className="p-4">This is the content... Getting Started</div>
-        </Nav>
-    )
+    return <div className="p-4">This is the content... Getting Started</div>
 }

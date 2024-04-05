@@ -5,6 +5,8 @@
  * For file previews, either getCrateFileWithData or getCrateFileURL must be implemented
  *
  * Optional functions can be omitted, but will reduce the feature set of the UI
+ *
+ * @draft
  */
 declare interface CrateServiceProvider {
     /**
