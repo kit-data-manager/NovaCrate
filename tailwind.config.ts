@@ -57,6 +57,15 @@ const config = {
                 },
                 info: {
                     DEFAULT: "rgb(58, 83, 196)"
+                },
+                root: {
+                    DEFAULT: "rgb(236,121,57)"
+                },
+                file: {
+                    DEFAULT: "rgb(76,101,213)"
+                },
+                contextual: {
+                    DEFAULT: "rgb(29,165,77)"
                 }
             },
             borderRadius: {

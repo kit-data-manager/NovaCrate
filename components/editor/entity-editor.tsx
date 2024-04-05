@@ -167,7 +167,7 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
     )
 
     return (
-        <div className="max-w-[1200px] relative">
+        <div className="relative">
             <div className="flex mb-2 gap-2 sticky top-0 z-10 p-2 bg-primary-foreground">
                 <Button size="sm" variant="secondary" className="text-xs">
                     <PanelLeftClose className="w-4 h-4" />
@@ -192,7 +192,7 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
                         <Save className={"w-4 h-4 mr-2"} /> Save
                     </Button>
                     <DropdownMenu>
-                        <DropdownMenuTrigger>
+                        <DropdownMenuTrigger asChild>
                             <Button variant="secondary" size="sm">
                                 <EllipsisVertical className="w-4 h-4" />
                             </Button>
