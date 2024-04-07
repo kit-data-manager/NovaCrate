@@ -5,6 +5,7 @@ import { CrateDataProvider } from "@/components/crate-data-provider"
 import { Nav } from "@/components/nav"
 import { RestProvider } from "@/lib/rest-provider"
 import { usePathname } from "next/navigation"
+import { EntityEditorTabsProvider } from "@/components/entity-tabs-provider"
 
 const CRATE_ID_REGEX = /^\/editor\/([^\/]*)\/.*$/
 
@@ -22,7 +23,9 @@ export default function EditorLayout(props: PropsWithChildren) {
 
     return (
         <CrateDataProvider serviceProvider={serviceProvider} crateId={getCrateId(pathname)}>
-            <Nav>{props.children}</Nav>
+            <EntityEditorTabsProvider>
+                <Nav>{props.children}</Nav>
+            </EntityEditorTabsProvider>
         </CrateDataProvider>
     )
 }

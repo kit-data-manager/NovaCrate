@@ -1,6 +1,7 @@
 import { EntityEditor } from "@/components/editor/entity-editor"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { EntityBrowser } from "@/components/entity-browser"
+import { EntityEditorTabs } from "@/components/editor/entity-editor-tabs"
 
 const DemoEntityData: IFlatEntity = {
     "@id": "#max-mustermann",
@@ -32,7 +33,7 @@ export default function Entities() {
             <ResizableHandle />
             <ResizablePanel defaultSize={80} minSize={40}>
                 <div className="h-full w-full overflow-auto">
-                    <EntityEditor entityData={DemoEntityData} />
+                    <EntityEditorTabs />
                 </div>
             </ResizablePanel>
         </ResizablePanelGroup>
