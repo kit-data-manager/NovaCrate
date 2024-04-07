@@ -16,3 +16,11 @@ export function toArray<T>(input: T | T[]): T[] {
         return [input]
     }
 }
+
+export function getEntityDisplayName(entity: IFlatEntity) {
+    if (entity.name) {
+        return toArray(entity.name).join(", ")
+    } else {
+        return entity["@id"]
+    }
+}

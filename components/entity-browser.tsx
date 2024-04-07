@@ -4,8 +4,16 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useCallback, useContext, useState } from "react"
 import { CrateDataContext, ICrateDataProvider } from "@/components/crate-data-provider"
 import { Button } from "@/components/ui/button"
-import { toArray } from "@/lib/utils"
-import { ChevronDown, ChevronsDownUp, ChevronsUpDown, Plus, RefreshCw } from "lucide-react"
+import { getEntityDisplayName, toArray } from "@/lib/utils"
+import {
+    ChevronDown,
+    ChevronsDownUp,
+    ChevronsUpDown,
+    PackageSearch,
+    Plus,
+    RefreshCw
+} from "lucide-react"
+import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 
 const entityBrowserItemIconBaseCN =
     "min-w-5 min-h-5 flex justify-center items-center border mr-2  rounded font-bold text-xs"
@@ -17,20 +25,33 @@ export function EntityBrowserItemIcon(props: { entity: IFlatEntity }) {
     } else {
         return (
             <div className={entityBrowserItemIconBaseCN + " border-contextual text-contextual"}>
-                {toArray(props.entity["@type"])[0][0]}
+                C
             </div>
         )
     }
 }
 
 export function EntityBrowserItem(props: { entity: IFlatEntity }) {
+    const { openTab } = useContext(EntityEditorTabsContext)
+
+    const openSelf = useCallback(() => {
+        openTab(createEntityEditorTab(props.entity), true)
+    }, [openTab, props.entity])
+
     return (
-        <Button size="sm" variant="list-entry" className="group/entityBrowserItem">
+        <Button
+            size="sm"
+            variant="list-entry"
+            className="group/entityBrowserItem"
+            onClick={openSelf}
+        >
             <EntityBrowserItemIcon entity={props.entity} />
             <span className="group-hover/entityBrowserItem:underline underline-offset-2 truncate">
-                {props.entity.name.toString() || props.entity["@id"]}
+                {getEntityDisplayName(props.entity)}
             </span>
-            <span className="ml-2 text-xs text-muted-foreground">{props.entity["@type"]}</span>
+            <span className="ml-2 text-xs text-muted-foreground">
+                {toArray(props.entity["@type"]).join(", ")}
+            </span>
         </Button>
     )
 }
@@ -76,9 +97,9 @@ export function EntityBrowserSection(props: { crate: ICrate; section: "File" | "
 export function EntityBrowserContent(props: { crate: ICrateDataProvider }) {
     const { crate } = props
 
-    if (crate.crateDataIsLoading)
+    if (crate.crateDataIsLoading && !crate.crateData)
         return (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 p-2">
                 <Skeleton className="h-6 w-60" />
                 <Skeleton className="h-6 w-60 ml-6" />
                 <Skeleton className="h-6 w-60 ml-6" />
@@ -112,19 +133,29 @@ export function EntityBrowser() {
 
     return (
         <div>
-            <div className="flex gap-2 sticky top-0 z-10 p-2 bg-primary-foreground">
-                <Button size="sm" variant="secondary" className="text-xs">
+            <div className="pl-4 bg-accent text-sm h-10 flex items-center">
+                <PackageSearch className="w-4 h-4 shrink-0 mr-2" /> Entity Explorer
+            </div>
+            <div className="flex gap-2 sticky top-0 z-10 p-2 bg-accent">
+                <Button size="sm" variant="outline" className="text-xs">
                     <Plus className={"w-4 h-4"} />
                 </Button>
-                <Button size="sm" variant="secondary" className="text-xs">
+                <Button size="sm" variant="outline" className="text-xs">
                     <ChevronsDownUp className={"w-4 h-4"} />
                 </Button>
-                <Button size="sm" variant="secondary" className="text-xs">
+                <Button size="sm" variant="outline" className="text-xs">
                     <ChevronsUpDown className={"w-4 h-4"} />
                 </Button>
                 <div className="grow"></div>
-                <Button size="sm" variant="secondary" className="text-xs">
-                    <RefreshCw className="w-4 h-4" />
+                <Button
+                    size="sm"
+                    variant="outline"
+                    className={`text-xs`}
+                    disabled={crate.crateDataIsLoading}
+                >
+                    <RefreshCw
+                        className={`w-4 h-4 ${crate.crateDataIsLoading ? "animate-spin" : ""}`}
+                    />
                 </Button>
             </div>
             <EntityBrowserContent crate={crate} />

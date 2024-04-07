@@ -2,10 +2,12 @@
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Button } from "@/components/ui/button"
-import { BookOpenText, Bug, Folder, GitFork, Library, PackageSearch } from "lucide-react"
-import { PropsWithChildren, useMemo } from "react"
+import { BookOpenText, Bug, Folder, GitFork, Library, Package, PackageSearch } from "lucide-react"
+import { PropsWithChildren, useContext, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { CrateDataContext } from "@/components/crate-data-provider"
+import { Skeleton } from "@/components/ui/skeleton"
 
 function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>) {
     const pathname = usePathname()
@@ -38,38 +40,52 @@ function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>)
 }
 
 export function NavSidebar({ children }: PropsWithChildren<{}>) {
+    const crate = useContext(CrateDataContext)
+
     return (
         <ResizablePanelGroup direction="horizontal" autoSaveId="globalSidebarLayout">
             <ResizablePanel minSize={10} defaultSize={10}>
-                <div className="flex flex-col gap-2 p-2 h-full min-w-40 pb-4">
-                    <NavSidebarLink page="entities">
-                        <PackageSearch className="h-4 w-4 mr-2" />
-                        Entities
-                    </NavSidebarLink>
-                    <NavSidebarLink page="fileExplorer">
-                        <Folder className="h-4 w-4 mr-2" />
-                        File Explorer
-                    </NavSidebarLink>
-                    <NavSidebarLink page="graph">
-                        <GitFork className="h-4 w-4 mr-2" />
-                        Graph
-                    </NavSidebarLink>
-                    <NavSidebarLink page="graph">
-                        <Library className="h-4 w-4 mr-2" />
-                        Context
-                    </NavSidebarLink>
+                <div className="h-full flex flex-col">
+                    <div className="px-4 h-10 flex items-center bg-accent shrink-0">
+                        {crate.crateDataIsLoading ? (
+                            <Skeleton className="h-6 w-full mr-4 bg-muted-foreground/20" />
+                        ) : (
+                            <div className="text-sm w-full flex items-center">
+                                <Package className="w-4 h-4 shrink-0 mr-2" />{" "}
+                                <div className="truncate shrink">{crate.crateId}</div>
+                            </div>
+                        )}
+                    </div>
+                    <div className="flex flex-col gap-2 p-2 min-w-40 pb-4 grow">
+                        <NavSidebarLink page="entities">
+                            <PackageSearch className="h-4 w-4 mr-2" />
+                            Entities
+                        </NavSidebarLink>
+                        <NavSidebarLink page="fileExplorer">
+                            <Folder className="h-4 w-4 mr-2" />
+                            File Explorer
+                        </NavSidebarLink>
+                        <NavSidebarLink page="graph">
+                            <GitFork className="h-4 w-4 mr-2" />
+                            Graph
+                        </NavSidebarLink>
+                        <NavSidebarLink page="graph">
+                            <Library className="h-4 w-4 mr-2" />
+                            Context
+                        </NavSidebarLink>
 
-                    <div className="grow"></div>
+                        <div className="grow"></div>
 
-                    <Button variant="link" className={`justify-start w-full`}>
-                        <Bug className="h-4 w-4 mr-2" />
-                        Validation
-                    </Button>
+                        <Button variant="link" className={`justify-start w-full`}>
+                            <Bug className="h-4 w-4 mr-2" />
+                            Validation
+                        </Button>
 
-                    <Button variant="link" className={`justify-start w-full`}>
-                        <BookOpenText className="h-4 w-4 mr-2" />
-                        Help
-                    </Button>
+                        <Button variant="link" className={`justify-start w-full`}>
+                            <BookOpenText className="h-4 w-4 mr-2" />
+                            Help
+                        </Button>
+                    </div>
                 </div>
             </ResizablePanel>
             <ResizableHandle />

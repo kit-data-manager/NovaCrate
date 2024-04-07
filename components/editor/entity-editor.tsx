@@ -22,6 +22,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
+import { getEntityDisplayName, toArray } from "@/lib/utils"
 
 type PropertyHasChangesEnum = "no" | "hasChanges" | "isNew"
 
@@ -47,30 +48,6 @@ function mapEntityToProperties(data: IFlatEntity): EntityEditorProperty[] {
             }
         })
         .flat()
-}
-
-function headline(entityData: IFlatEntity) {
-    const defaultHeadline = entityData["@type"] + " " + entityData["@id"]
-
-    if (entityData["@type"] === "Person") {
-        const parts: string[] = []
-
-        const autoPush = (value: unknown) => {
-            if (value) {
-                if (Array.isArray(value)) {
-                    parts.push(...value)
-                } else {
-                    parts.push(value + "")
-                }
-            }
-        }
-
-        autoPush(entityData.givenName)
-        autoPush(entityData.additionalName)
-        autoPush(entityData.familyName)
-
-        return parts.length > 0 ? parts.join(" ") : defaultHeadline
-    }
 }
 
 export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
@@ -168,32 +145,34 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
 
     return (
         <div className="relative">
-            <div className="flex mb-2 gap-2 sticky top-0 z-10 p-2 bg-primary-foreground">
-                <Button size="sm" variant="secondary" className="text-xs">
+            <div className="flex mb-2 gap-2 sticky top-0 z-10 p-2 bg-accent">
+                <Button size="sm" variant="outline" className="text-xs">
                     <PanelLeftClose className="w-4 h-4" />
                 </Button>
-                <Button size="sm" variant="secondary" className="text-xs">
+                <Button size="sm" variant="outline" className="text-xs">
                     <Plus className={"w-4 h-4 mr-1"} /> Add Property
                 </Button>
-                <Button size="sm" variant="secondary" className="text-xs">
+                <Button size="sm" variant="outline" className="text-xs">
                     <Search className="w-4 h-4 mr-1" /> Find References
                 </Button>
                 <Button size="sm" variant="destructive" className="text-xs">
                     <Trash className="w-4 h-4 mr-1" /> Delete Entity
                 </Button>
                 <div className="grow"></div>
-                <div className="flex gap-2 text-muted-foreground items-center text-sm">
-                    {hasUnsavedChanges ? "There are unsaved changes" : null}
+                <div className="flex gap-2 items-center text-sm">
+                    {hasUnsavedChanges ? (
+                        <div className="text-muted-foreground">There are unsaved changes</div>
+                    ) : null}
                     <Button
                         size="sm"
-                        variant={hasUnsavedChanges ? undefined : "secondary"}
+                        variant={hasUnsavedChanges ? undefined : "outline"}
                         className="text-xs"
                     >
                         <Save className={"w-4 h-4 mr-2"} /> Save
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="secondary" size="sm">
+                            <Button variant="outline" size="sm">
                                 <EllipsisVertical className="w-4 h-4" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -212,7 +191,7 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
             <div className="p-4">
                 <div className="flex justify-between items-center">
                     <h2 className="text-3xl font-bold flex items-center">
-                        {headline(entityData)}
+                        {getEntityDisplayName(entityData)}
 
                         <div className="border-pink-600 border text-pink-600 px-1.5 rounded ml-6 text-sm">
                             Contextual

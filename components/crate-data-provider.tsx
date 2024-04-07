@@ -5,12 +5,14 @@ import { Error } from "@/components/error"
 import useSWR from "swr"
 
 export interface ICrateDataProvider {
+    crateId: string
     crateData?: ICrate
     crateDataIsLoading: boolean
     setCrateData: (data: ICrate) => void
 }
 
 export const CrateDataContext = createContext<ICrateDataProvider>({
+    crateId: "",
     setCrateData: () => {},
     crateDataIsLoading: false
 })
@@ -22,7 +24,12 @@ export function CrateDataProvider(
 
     return (
         <CrateDataContext.Provider
-            value={{ crateData: data, setCrateData: () => {}, crateDataIsLoading: isLoading }}
+            value={{
+                crateId: props.crateId || "",
+                crateData: data,
+                setCrateData: () => {},
+                crateDataIsLoading: isLoading
+            }}
         >
             <Error text={error} size={"xl"} />
             {props.children}
