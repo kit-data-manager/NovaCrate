@@ -1,6 +1,4 @@
-import { Context } from "@/lib/crate-verify/context"
-import { useCallback, useMemo, useState } from "react"
-import { getPropertyRange } from "@/lib/schema-helpers"
+import { useCallback, useContext, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { SelectReferenceModal } from "@/components/editor/select-reference-modal"
 import {
@@ -21,8 +19,10 @@ import {
 } from "lucide-react"
 import { CreateEntityModal } from "@/components/editor/create-entity-modal"
 import { CreateFromORCIDModal } from "@/components/editor/from-orcid-modal"
-
-const TEST_CONTEXT = new Context("https://w3id.org/ro/crate/1.1/context")
+import { useAsync } from "@/components/use-async"
+import { Error } from "@/components/error"
+import { CrateVerifyContext } from "@/components/crate-verify-provider"
+import { TEST_CONTEXT } from "@/components/crate-data-provider"
 
 export function ReferenceField({
     value,
@@ -33,6 +33,8 @@ export function ReferenceField({
     onChange: (value: IReference) => void
     propertyName: string
 }) {
+    const { isReady: crateVerifyReady, getPropertyRange } = useContext(CrateVerifyContext)
+
     const [selectModalOpen, setSelectModalOpen] = useState(false)
     const [createModalOpen, setCreateModalOpen] = useState(false)
 
@@ -40,13 +42,24 @@ export function ReferenceField({
         console.log("selected", selection)
     }, [])
 
-    const referenceTypeRange = useMemo(() => {
-        const resolved = TEST_CONTEXT.resolve(propertyName)
-        if (!resolved) return []
-        return getPropertyRange(resolved)
-            .map((s) => TEST_CONTEXT.reverse(s))
-            .filter((s) => typeof s === "string") as string[]
-    }, [propertyName])
+    const referenceTypeRangeResolver = useCallback(
+        async (propertyName: string) => {
+            if (crateVerifyReady) {
+                const resolved = TEST_CONTEXT.resolve(propertyName)
+                if (!resolved) return []
+                const data = await getPropertyRange(resolved)
+                return data
+                    .map((s) => TEST_CONTEXT.reverse(s))
+                    .filter((s) => typeof s === "string") as string[]
+            }
+        },
+        [crateVerifyReady, getPropertyRange]
+    )
+
+    const { data: referenceTypeRange, error: referenceTypeRangeError } = useAsync(
+        crateVerifyReady ? propertyName : null,
+        referenceTypeRangeResolver
+    )
 
     const isEmpty = useMemo(() => {
         return value["@id"] === ""
@@ -54,6 +67,7 @@ export function ReferenceField({
 
     return (
         <div className="flex w-full">
+            <Error text={referenceTypeRangeError} />
             <SelectReferenceModal
                 open={selectModalOpen}
                 onSelect={onSelect}
@@ -129,7 +143,7 @@ export function ReferenceField({
     )
 }
 
-function CreateFromExternalButton({ propertyRange }: { propertyRange: string[] }) {
+function CreateFromExternalButton({ propertyRange }: { propertyRange?: string[] }) {
     const [modalOpen, setModalOpen] = useState(false)
 
     const openModal = useCallback(() => {
@@ -137,9 +151,12 @@ function CreateFromExternalButton({ propertyRange }: { propertyRange: string[] }
     }, [])
 
     const fromORCID = useMemo(() => {
+        if (!propertyRange) return false
         return propertyRange.includes("Person")
     }, [propertyRange])
+
     const fromROR = useMemo(() => {
+        if (!propertyRange) return false
         return propertyRange.includes("Organization")
     }, [propertyRange])
 
@@ -151,7 +168,7 @@ function CreateFromExternalButton({ propertyRange }: { propertyRange: string[] }
                     onEntityCreated={() => {}}
                     onOpenChange={setModalOpen}
                 />
-                <Button className="grow-[2] rounded-r-none" onClick={openModal}>
+                <Button className="grow-[2] rounded-r-none animate-w-grow" onClick={openModal}>
                     <Globe className="w-4 h-4 mr-2" /> From ORCID
                 </Button>
             </>

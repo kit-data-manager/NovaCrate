@@ -9,6 +9,7 @@ import {
     CommandList
 } from "@/components/ui/command"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function CreateEntityModal({
     open,
@@ -19,16 +20,8 @@ export function CreateEntityModal({
     open: boolean
     onEntityCreated: (ref: IReference) => void
     onOpenChange: (open: boolean) => void
-    restrictToClasses: string[]
+    restrictToClasses?: string[]
 }) {
-    const possibleEntities = useMemo(() => {
-        if (restrictToClasses) {
-            return restrictToClasses
-        } else {
-            return ["No", "Classes", "Known"]
-        }
-    }, [restrictToClasses])
-
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
@@ -39,13 +32,19 @@ export function CreateEntityModal({
                         <CommandList>
                             <CommandEmpty>No results found.</CommandEmpty>
                             <CommandGroup>
-                                {possibleEntities.map((e, i) => {
-                                    return (
-                                        <CommandItem className="text-md" key={e}>
-                                            {e}
-                                        </CommandItem>
-                                    )
-                                })}
+                                {restrictToClasses ? (
+                                    restrictToClasses.map((e, i) => {
+                                        return (
+                                            <CommandItem className="text-md" key={e}>
+                                                {e}
+                                            </CommandItem>
+                                        )
+                                    })
+                                ) : (
+                                    <>
+                                        <Skeleton className={"w-10 h-4"} />
+                                    </>
+                                )}
                             </CommandGroup>
                         </CommandList>
                     </Command>

@@ -1,13 +1,16 @@
 import { EntityEditorProperty } from "@/components/editor/entity-editor"
 import { isReference } from "@/lib/utils"
-import { getPropertyComment } from "@/lib/schema-helpers"
-import { ChangeEvent, useCallback } from "react"
+import { ChangeEvent, useCallback, useContext } from "react"
 import { ReferenceField } from "@/components/editor/reference-field"
 import { TextField } from "@/components/editor/text-field"
 import { TypeField } from "@/components/editor/type-field"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { IDField } from "@/components/editor/id-field"
+import { useAsync } from "@/components/use-async"
+import { CrateVerifyContext } from "@/components/crate-verify-provider"
+import { Skeleton } from "@/components/ui/skeleton"
+import { TEST_CONTEXT } from "@/components/crate-data-provider"
 
 export interface PropertyEditorProps {
     property: EntityEditorProperty
@@ -65,6 +68,33 @@ function SinglePropertyEditor({
 }
 
 export function PropertyEditor(props: PropertyEditorProps) {
+    const { isReady: crateVerifyReady, getPropertyComment } = useContext(CrateVerifyContext)
+
+    const propertyCommentResolver = useCallback(
+        async (propertyId: string) => {
+            const resolved = TEST_CONTEXT.resolve(propertyId)
+            console.log(resolved)
+            return await getPropertyComment(resolved || "unresolved")
+        },
+        [getPropertyComment]
+    )
+
+    const {
+        data: comment,
+        error: commentError,
+        isPending: commentIsPending
+    } = useAsync(crateVerifyReady ? props.property.propertyName : null, propertyCommentResolver)
+
+    const Comment = useCallback(() => {
+        if (commentIsPending) {
+            return <Skeleton className="h-3 w-4/12 mt-1" />
+        } else if (commentError) {
+            return <span className="text-destructive">{commentError}</span>
+        } else if (comment !== undefined) {
+            return <span>{comment + ""}</span>
+        } else return null
+    }, [comment, commentError, commentIsPending])
+
     return (
         <div className="grid grid-cols-[12px_1fr_1fr] w-full">
             <div
@@ -73,8 +103,10 @@ export function PropertyEditor(props: PropertyEditorProps) {
 
             <div className="pr-8">
                 <div>{props.property.propertyName}</div>
-                <div className="text-muted-foreground text-sm">
-                    {getPropertyComment("schema:" + props.property.propertyName) + ""}
+                <div
+                    className={`${commentIsPending ? "text-background" : "text-muted-foreground"} text-sm transition`}
+                >
+                    <Comment />
                 </div>
             </div>
 
