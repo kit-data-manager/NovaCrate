@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "incremental": true,
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "target": "ES2015",
+    "outDir": "public/crate-verify"
+  },
+  "include": ["lib/crate-verify/**/*.ts", "lib/data-types.d.ts"],
+  "exclude": ["node_modules"]
+}

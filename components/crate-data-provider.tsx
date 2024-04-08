@@ -1,8 +1,9 @@
 "use client"
 
-import { createContext, PropsWithChildren, useCallback, useEffect, useState } from "react"
+import { createContext, PropsWithChildren } from "react"
 import { Error } from "@/components/error"
 import useSWR from "swr"
+import { Context } from "@/lib/crate-verify/context"
 
 export interface ICrateDataProvider {
     crateId: string
@@ -10,6 +11,9 @@ export interface ICrateDataProvider {
     crateDataIsLoading: boolean
     setCrateData: (data: ICrate) => void
 }
+
+// TODO remove
+export const TEST_CONTEXT = new Context("https://w3id.org/ro/crate/1.1/context")
 
 export const CrateDataContext = createContext<ICrateDataProvider>({
     crateId: "",

@@ -270,4 +270,4 @@ export class SchemaGraph {
 }
 
 export const schemaGraph = new SchemaGraph()
-schemaGraph.addSchemaOrgSchema()
+schemaGraph.addSchemaOrgSchema() // TODO properly implement

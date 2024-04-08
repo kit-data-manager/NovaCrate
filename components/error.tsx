@@ -1,4 +1,5 @@
 import { CircleAlert } from "lucide-react"
+import { ReactNode } from "react"
 
 function cn(size?: "md" | "xl") {
     if (!size || size == "md") {
@@ -21,7 +22,7 @@ export function Error({
     size,
     className
 }: {
-    text: string
+    text: string | ReactNode
     size?: "md" | "xl"
     className?: string
 }) {
@@ -30,7 +31,7 @@ export function Error({
     return (
         <div className={cn(size) + " " + className}>
             <CircleAlert className={cnIcon(size)} />
-            {text + ""}
+            {text}
         </div>
     )
 }

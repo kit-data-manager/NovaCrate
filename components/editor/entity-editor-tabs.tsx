@@ -65,7 +65,7 @@ export function EntityEditorTabs() {
         return (
             <div
                 ref={container}
-                className="flex overflow-x-auto"
+                className="flex overflow-x-auto shrink-0"
                 onWheel={(s) => {
                     if (s.deltaY !== 0 && container.current) {
                         // noinspection JSSuspiciousNameCombination
@@ -105,9 +105,11 @@ export function EntityEditorTabs() {
         )
     } else {
         return (
-            <div>
+            <div className="h-full flex flex-col">
                 <Tabs />
-                {currentTab ? <EntityEditor entityData={currentTab.entity} /> : null}
+                <div className="overflow-auto">
+                    {currentTab ? <EntityEditor entityData={currentTab.entity} /> : null}
+                </div>
             </div>
         )
     }

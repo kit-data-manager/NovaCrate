@@ -1,4 +1,4 @@
-import { schemaGraph } from "@/lib/crate-verify/SchemaGraph"
+import { schemaGraph } from "./SchemaGraph"
 
 export function getPropertyComment(propertyId: string) {
     return schemaGraph.getNode(propertyId)?.comment

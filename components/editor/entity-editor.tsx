@@ -18,11 +18,11 @@ import {
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { getEntityDisplayName, toArray } from "@/lib/utils"
+import { getEntityDisplayName } from "@/lib/utils"
+import { WebWorkerWarning } from "@/components/web-worker-warning"
 
 type PropertyHasChangesEnum = "no" | "hasChanges" | "isNew"
 
@@ -208,6 +208,8 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
                         </Label>
                     </div>
                 </div>
+
+                <WebWorkerWarning />
 
                 <div className="my-12 flex flex-col gap-10 mr-2">
                     {properties.map((property, i) => {
