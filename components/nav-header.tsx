@@ -45,9 +45,9 @@ export function NavHeader() {
                             <MenubarItem>Open Recent</MenubarItem>
                             <MenubarItem>Close</MenubarItem>
                             <MenubarSeparator />
-                            <MenubarItem>Export</MenubarItem>
+                            <MenubarItem>Save All</MenubarItem>
                             <MenubarSeparator />
-                            <MenubarItem>Share</MenubarItem>
+                            <MenubarItem>Export</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
@@ -55,11 +55,10 @@ export function NavHeader() {
                             Files <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
                         </MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem>Upload File</MenubarItem>
-                            <MenubarItem>Upload Folder</MenubarItem>
+                            <MenubarItem>Add File</MenubarItem>
+                            <MenubarItem>Add Folder</MenubarItem>
                             <MenubarItem>Upload & Unpack</MenubarItem>
                             <MenubarSeparator />
-                            <MenubarItem>View Orphans</MenubarItem>
                             <MenubarItem>View All</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>

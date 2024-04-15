@@ -19,7 +19,7 @@ const entityBrowserItemIconBaseCN =
     "min-w-5 min-h-5 flex justify-center items-center border mr-2  rounded font-bold text-xs"
 export function EntityBrowserItemIcon(props: { entity: IFlatEntity }) {
     if (props.entity["@id"] === "./") {
-        return <div className={entityBrowserItemIconBaseCN + " border-root text-root"}>D</div>
+        return <div className={entityBrowserItemIconBaseCN + " border-root text-root"}>R</div>
     } else if (props.entity["@type"] === "File") {
         return <div className={entityBrowserItemIconBaseCN + " border-file text-file"}>F</div>
     } else {

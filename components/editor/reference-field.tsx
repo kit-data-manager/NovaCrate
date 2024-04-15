@@ -22,7 +22,9 @@ import { CreateFromORCIDModal } from "@/components/editor/from-orcid-modal"
 import { useAsync } from "@/components/use-async"
 import { Error } from "@/components/error"
 import { CrateVerifyContext } from "@/components/crate-verify-provider"
-import { TEST_CONTEXT } from "@/components/crate-data-provider"
+import { CrateDataContext, TEST_CONTEXT } from "@/components/crate-data-provider"
+import { getEntityDisplayName } from "@/lib/utils"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function ReferenceField({
     value,
@@ -33,6 +35,7 @@ export function ReferenceField({
     onChange: (value: IReference) => void
     propertyName: string
 }) {
+    const { crateData } = useContext(CrateDataContext)
     const { isReady: crateVerifyReady, getPropertyRange } = useContext(CrateVerifyContext)
 
     const [selectModalOpen, setSelectModalOpen] = useState(false)
@@ -64,6 +67,17 @@ export function ReferenceField({
     const isEmpty = useMemo(() => {
         return value["@id"] === ""
     }, [value])
+
+    const ReferenceText = useCallback(() => {
+        if (crateData) {
+            const referenced = crateData["@graph"].find((e) => e["@id"] === value["@id"])
+            if (referenced) {
+                return <span>{getEntityDisplayName(referenced)}</span>
+            } else {
+                return <span className="text-root">Unresolved</span>
+            }
+        } else return <Skeleton className="h-4 w-20" />
+    }, [crateData, value])
 
     return (
         <div className="flex w-full">
@@ -114,7 +128,7 @@ export function ReferenceField({
                 >
                     <LinkIcon className="w-4 h-4 mr-2 text-muted-foreground" />
                     <div className="flex items-end">
-                        <span>Monika Musterfrau</span>
+                        <ReferenceText />
                         <span className="text-muted-foreground ml-1 text-xs">{value["@id"]}</span>
                     </div>
                 </Button>

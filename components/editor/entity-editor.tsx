@@ -21,7 +21,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { getEntityDisplayName } from "@/lib/utils"
+import { getEntityDisplayName, toArray } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
 
 type PropertyHasChangesEnum = "no" | "hasChanges" | "isNew"
@@ -143,6 +143,14 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
         [properties]
     )
 
+    const isRootEntity = useMemo(() => {
+        return entityData["@id"] === "./"
+    }, [entityData])
+
+    const isDataEntity = useMemo(() => {
+        return toArray(entityData["@type"]).includes("File")
+    }, [entityData])
+
     return (
         <div className="relative">
             <div className="flex mb-2 gap-2 sticky top-0 z-10 p-2 bg-accent">
@@ -193,12 +201,14 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
                     <h2 className="text-3xl font-bold flex items-center">
                         {getEntityDisplayName(entityData)}
 
-                        <div className="border-pink-600 border text-pink-600 px-1.5 rounded ml-6 text-sm">
-                            Contextual
+                        <div
+                            className={`${isRootEntity ? "border-root text-root" : isDataEntity ? "border-file text-file" : "border-contextual text-contextual"}  border px-1.5 rounded ml-6 text-sm`}
+                        >
+                            {isRootEntity ? "Root" : isDataEntity ? "File" : "Contextual"}
                         </div>
-                        <div className="border-success border text-success px-1.5 rounded ml-2 text-sm flex gap-1 items-center">
-                            <Check className="w-4 h-4" /> ORCID
-                        </div>
+                        {/*<div className="border-success border text-success px-1.5 rounded ml-2 text-sm flex gap-1 items-center">*/}
+                        {/*    <Check className="w-4 h-4" /> ORCID*/}
+                        {/*</div>*/}
                     </h2>
 
                     <div className="flex items-center mr-2">
