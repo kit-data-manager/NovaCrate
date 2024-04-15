@@ -14,22 +14,7 @@ import {
     RefreshCw
 } from "lucide-react"
 import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
-
-const entityBrowserItemIconBaseCN =
-    "min-w-5 min-h-5 flex justify-center items-center border mr-2  rounded font-bold text-xs"
-export function EntityBrowserItemIcon(props: { entity: IFlatEntity }) {
-    if (props.entity["@id"] === "./") {
-        return <div className={entityBrowserItemIconBaseCN + " border-root text-root"}>R</div>
-    } else if (props.entity["@type"] === "File") {
-        return <div className={entityBrowserItemIconBaseCN + " border-file text-file"}>F</div>
-    } else {
-        return (
-            <div className={entityBrowserItemIconBaseCN + " border-contextual text-contextual"}>
-                C
-            </div>
-        )
-    }
-}
+import { EntityIcon } from "./entity-icon"
 
 export function EntityBrowserItem(props: { entity: IFlatEntity }) {
     const { openTab } = useContext(EntityEditorTabsContext)
@@ -45,7 +30,7 @@ export function EntityBrowserItem(props: { entity: IFlatEntity }) {
             className="group/entityBrowserItem"
             onClick={openSelf}
         >
-            <EntityBrowserItemIcon entity={props.entity} />
+            <EntityIcon entity={props.entity} />
             <span className="group-hover/entityBrowserItem:underline underline-offset-2 truncate">
                 {getEntityDisplayName(props.entity)}
             </span>

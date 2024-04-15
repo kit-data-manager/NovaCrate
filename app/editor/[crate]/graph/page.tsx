@@ -1,4 +1,4 @@
-import LayoutFlow from "@/components/entity-graph"
+import LayoutFlow from "@/components/graph/entity-graph"
 
 export default function Graph() {
     return (
