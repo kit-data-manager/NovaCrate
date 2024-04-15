@@ -6,7 +6,7 @@ import { EntityEditor } from "@/components/editor/entity-editor"
 import { getEntityDisplayName } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Braces, Plus, XIcon } from "lucide-react"
-import { EntityBrowserItemIcon } from "@/components/entity-browser"
+import { EntityIcon } from "@/components/entity-icon"
 
 function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
     const { focusTab, closeTab } = useContext(EntityEditorTabsContext)
@@ -35,7 +35,7 @@ function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
             className={`cursor-default ${active ? "pr-1" : ""}`}
             ref={button}
         >
-            <EntityBrowserItemIcon entity={tab.entity} />
+            <EntityIcon entity={tab.entity} />
             <div className="ml-1">{getEntityDisplayName(tab.entity)}</div>
             {active ? (
                 <div
