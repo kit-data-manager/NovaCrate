@@ -1,33 +1,36 @@
 "use client"
 
-import React, { useCallback } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import ReactFlow, {
     addEdge,
     Background,
     Connection,
     ConnectionLineType,
-    Controls,
     Edge,
     Handle,
     Node,
     Panel,
     Position,
+    ReactFlowProvider,
     useEdgesState,
-    useNodesState
+    useNodesInitialized,
+    useNodesState,
+    useReactFlow
 } from "reactflow"
 import dagre from "dagre"
 import "reactflow/dist/style.css"
 import { Button } from "@/components/ui/button"
-import { Ellipsis, EllipsisVertical } from "lucide-react"
+import { EllipsisVertical, GitCompare, Rows2, Rows4 } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 const position = { x: 0, y: 0 }
-const edgeType = "smoothstep"
+const edgeType = "default"
 
 const nodeTypes = {
     customNode: CustomNode
 }
 
-function CustomNode({ data, isConnectable }: { data: unknown; isConnectable: boolean }) {
+function CustomNode({ data, isConnectable }: { data: { name: string }; isConnectable: boolean }) {
     return (
         <>
             <Handle
@@ -44,7 +47,7 @@ function CustomNode({ data, isConnectable }: { data: unknown; isConnectable: boo
                     </div>
 
                     <div className="flex flex-col">
-                        <span>Some Entity</span>
+                        <span>{data.name}</span>
                         <span className="text-muted-foreground text-sm">/some-local-data</span>
                     </div>
 
@@ -68,31 +71,36 @@ const initialNodes = [
     {
         id: "1",
         type: "customNode",
-        data: {},
+        data: { name: "The Entity with the very long name" },
         position
     },
     {
         id: "2",
         type: "customNode",
-        data: {},
+        data: { name: "Some Entity" },
+        position
+    },
+    {
+        id: "3",
+        type: "customNode",
+        data: { name: "Some new Entity" },
         position
     }
 ]
 
-const initialEdges = [{ id: "e12", source: "1", target: "2", type: edgeType, animated: false }]
+const initialEdges = [
+    { id: "e12", source: "1", target: "2", type: edgeType, animated: false },
+    { id: "e13", source: "1", target: "3", type: edgeType, animated: false }
+]
 
 const dagreGraph = new dagre.graphlib.Graph()
 dagreGraph.setDefaultEdgeLabel(() => ({}))
 
-const nodeWidth = 172
-const nodeHeight = 36
-
-const getLayoutedElements = (nodes: Node[], edges: Edge[], direction: "TB" | "LR" = "TB") => {
-    const isHorizontal = direction === "LR"
-    dagreGraph.setGraph({ rankdir: direction })
+const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
+    dagreGraph.setGraph({ rankdir: "LR" })
 
     nodes.forEach((node) => {
-        dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight })
+        dagreGraph.setNode(node.id, { width: node.width || 100, height: node.height || 40 })
     })
 
     edges.forEach((edge) => {
@@ -103,15 +111,16 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction: "TB" | "LR
 
     nodes.forEach((node) => {
         const nodeWithPosition = dagreGraph.node(node.id)
-        node.targetPosition = isHorizontal ? Position.Left : Position.Top
-        node.sourcePosition = isHorizontal ? Position.Right : Position.Bottom
+        node.targetPosition = Position.Left
+        node.sourcePosition = Position.Right
 
-        // We are shifting the dagre node position (anchor=center center) to the top left
+        // We are shifting the dagre node position (anchor=center) to the top left,
         // so it matches the React Flow node anchor point (top left).
-        node.position = {
-            x: nodeWithPosition.x - nodeWidth / 2,
-            y: nodeWithPosition.y - nodeHeight / 2
-        }
+        if (node.width && node.height)
+            node.position = {
+                x: nodeWithPosition.x - node.width / 2,
+                y: nodeWithPosition.y - node.height / 2
+            }
 
         return node
     })
@@ -119,35 +128,51 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction: "TB" | "LR
     return { nodes, edges }
 }
 
-const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+const { nodes: initialLayoutedNodes, edges: initialLayoutedEdges } = getLayoutedElements(
     initialNodes,
     initialEdges
 )
 
+function useLayout() {
+    const { getNodes, getEdges } = useReactFlow()
+    const nodesInitialized = useNodesInitialized()
+    const [layoutedNodes, setLayoutedNodes] = useState(getNodes())
+    const [layoutedEdges, setLayoutedEdges] = useState(getEdges())
+
+    const doLayout = useCallback(() => {
+        const { nodes, edges } = getLayoutedElements(getNodes(), getEdges())
+        setLayoutedNodes(nodes)
+        setLayoutedEdges(edges)
+    }, [getEdges, getNodes])
+
+    useEffect(() => {
+        if (nodesInitialized) {
+            doLayout()
+        }
+    }, [doLayout, getEdges, getNodes, nodesInitialized])
+
+    return { layoutDone: nodesInitialized, layoutedNodes, layoutedEdges, forceLayout: doLayout }
+}
+
 const LayoutFlow = () => {
-    const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes)
-    const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges)
+    const [nodes, setNodes, onNodesChange] = useNodesState(initialLayoutedNodes)
+    const [edges, setEdges, onEdgesChange] = useEdgesState(initialLayoutedEdges)
+    const { fitView } = useReactFlow()
+
+    const { layoutDone, layoutedNodes, layoutedEdges, forceLayout } = useLayout()
 
     const onConnect = useCallback(
-        (params: Edge | Connection) =>
-            setEdges((eds) =>
-                addEdge({ ...params, type: ConnectionLineType.SmoothStep, animated: true }, eds)
-            ),
+        (params: Edge | Connection) => setEdges((eds) => addEdge({ ...params }, eds)),
         [setEdges]
     )
-    const onLayout = useCallback(
-        (direction: "TB" | "LR") => {
-            const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-                nodes,
-                edges,
-                direction
-            )
 
+    useEffect(() => {
+        if (layoutDone) {
             setNodes([...layoutedNodes])
             setEdges([...layoutedEdges])
-        },
-        [nodes, edges, setNodes, setEdges]
-    )
+            fitView({ nodes: layoutedNodes })
+        }
+    }, [fitView, layoutDone, layoutedEdges, layoutedNodes, setEdges, setNodes])
 
     return (
         <ReactFlow
@@ -158,21 +183,41 @@ const LayoutFlow = () => {
             onConnect={onConnect}
             connectionLineType={ConnectionLineType.SmoothStep}
             nodeTypes={nodeTypes}
-            fitView
             proOptions={{ hideAttribution: true }}
         >
-            {/*<Panel position="top-right">*/}
-            {/*    <Button variant="outline" onClick={() => onLayout("TB")}>*/}
-            {/*        vertical layout*/}
-            {/*    </Button>*/}
-            {/*    <Button variant="outline" onClick={() => onLayout("LR")}>*/}
-            {/*        horizontal layout*/}
-            {/*    </Button>*/}
-            {/*</Panel>*/}
+            <Panel position="top-left" className="gap-2 flex items-center">
+                <div className="p-0.5 bg-accent rounded-lg">
+                    <Button variant="secondary" size="sm">
+                        <Rows2 className="w-4 h-4 mr-2" /> Comfortable View
+                    </Button>
+                    <Button variant="secondary" size="sm">
+                        <Rows4 className="w-4 h-4 mr-2" /> Compact View
+                    </Button>
+                </div>
+
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="outline" size="icon" onClick={() => forceLayout()}>
+                            <GitCompare className="w-4 h-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Apply Layout</p>
+                    </TooltipContent>
+                </Tooltip>
+            </Panel>
             <Background />
             {/*<Controls />*/}
         </ReactFlow>
     )
 }
 
-export default LayoutFlow
+const FlowWithProvider = () => {
+    return (
+        <ReactFlowProvider>
+            <LayoutFlow />
+        </ReactFlowProvider>
+    )
+}
+
+export default FlowWithProvider
