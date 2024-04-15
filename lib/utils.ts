@@ -21,6 +21,7 @@ export function getEntityDisplayName(entity: IFlatEntity) {
     if (entity.name) {
         return toArray(entity.name).join(", ")
     } else {
+        if (entity["@id"] === "./") return "Crate Root"
         return entity["@id"]
     }
 }

@@ -35,7 +35,7 @@ export function CrateDataProvider(
                 crateDataIsLoading: isLoading
             }}
         >
-            <Error text={error} size={"xl"} />
+            <Error text={error ? error + "" : ""} size={"xl"} />
             {props.children}
         </CrateDataContext.Provider>
     )

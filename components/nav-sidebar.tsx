@@ -69,7 +69,7 @@ export function NavSidebar({ children }: PropsWithChildren<{}>) {
                             <GitFork className="h-4 w-4 mr-2" />
                             Graph
                         </NavSidebarLink>
-                        <NavSidebarLink page="graph">
+                        <NavSidebarLink page="context">
                             <Library className="h-4 w-4 mr-2" />
                             Context
                         </NavSidebarLink>
