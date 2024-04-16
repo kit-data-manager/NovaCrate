@@ -1,5 +1,3 @@
-import { ICrateDataProvider } from "@/components/crate-data-provider"
-
 export class RestProvider implements CrateServiceProvider {
     createCrateFromFilesZip(id: string, zip: Buffer): Promise<void> {
         return Promise.resolve(undefined)
@@ -48,7 +46,9 @@ export class RestProvider implements CrateServiceProvider {
     downloadCrateZip(id: string): void {}
 
     async getCrate(id: string): Promise<ICrate> {
-        const request = await fetch(`http://localhost:8080/crates/${id}/ro-crate-metadata.json`)
+        const request = await fetch(
+            `http://localhost:8080/crates/${encodeURIComponent(id)}/ro-crate-metadata.json`
+        )
         if (request.ok) {
             return await request.json()
         } else {
@@ -64,7 +64,20 @@ export class RestProvider implements CrateServiceProvider {
         return Promise.resolve(undefined)
     }
 
-    updateEntity(crateId: string, entityData: Partial<IFlatEntity>): Promise<boolean> {
-        return Promise.resolve(false)
+    async updateEntity(crateId: string, entityData: IFlatEntity): Promise<boolean> {
+        console.log(entityData)
+        const request = await fetch(
+            `http://localhost:8080/crates/${encodeURIComponent(crateId)}/entities/contextual/${encodeURIComponent(entityData["@id"])}`,
+            {
+                body: JSON.stringify(entityData),
+                method: "PUT",
+                headers: { "Content-Type": "application/json" }
+            }
+        )
+        if (request.ok) {
+            return true
+        } else {
+            throw "Failed to get crate: " + request.status
+        }
     }
 }

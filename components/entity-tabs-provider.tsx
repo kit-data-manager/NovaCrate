@@ -1,19 +1,22 @@
 "use client"
 
-import { createContext, PropsWithChildren, useCallback, useEffect, useState } from "react"
+import { createContext, PropsWithChildren, useCallback, useState } from "react"
 
 export interface IEntityEditorTab {
-    entity: IFlatEntity
+    entityId: string
+    modifiedEntity: IFlatEntity
+    dirty: boolean
 }
 
 export function createEntityEditorTab(entity: IFlatEntity): IEntityEditorTab {
-    return { entity }
+    return { entityId: entity["@id"], modifiedEntity: structuredClone(entity), dirty: false }
 }
 
 export interface IEntityEditorTabsContext {
     tabs: IEntityEditorTab[]
     activeTabEntityID: string
     openTab(tab: IEntityEditorTab, focus?: boolean): void
+    updateTab(tab: Partial<IEntityEditorTab> & { entityId: string }): void
     focusTab(id: string): void
     closeTab(id: string): void
 }
@@ -22,6 +25,9 @@ export const EntityEditorTabsContext = createContext<IEntityEditorTabsContext>({
     tabs: [],
     activeTabEntityID: "",
     openTab() {
+        console.log("EntityEditorTabsContextProvider not mounted yet")
+    },
+    updateTab() {
         console.log("EntityEditorTabsContextProvider not mounted yet")
     },
     focusTab() {
@@ -42,7 +48,7 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
 
     const openTab = useCallback(
         (newTab: IEntityEditorTab, focus?: boolean) => {
-            const existingTab = tabs.find((tab) => tab.entity["@id"] === newTab.entity["@id"])
+            const existingTab = tabs.find((tab) => tab.entityId === newTab.entityId)
 
             if (!existingTab) {
                 const newTabs = tabs.slice()
@@ -51,20 +57,33 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
             }
 
             if (focus) {
-                focusTab(newTab.entity["@id"])
+                focusTab(newTab.entityId)
             }
         },
         [focusTab, tabs]
     )
 
+    const updateTab = useCallback(
+        (updatedTab: Partial<IEntityEditorTab> & { entityId: string }) => {
+            const index = tabs.findIndex((tab) => tab.entityId === updatedTab.entityId)
+
+            if (index >= 0) {
+                const newTabs = tabs.slice()
+                newTabs[index] = { ...newTabs[index], ...updatedTab }
+                setTabs(newTabs)
+            }
+        },
+        [tabs]
+    )
+
     const closeTab = useCallback(
         (id: string) => {
-            const index = tabs.findIndex((tab) => tab.entity["@id"] === id)
+            const index = tabs.findIndex((tab) => tab.entityId === id)
             if (index >= 0) {
                 const newTabs = tabs.slice()
                 newTabs.splice(index, 1)
                 if (newTabs.length > 0) {
-                    setFocused(newTabs[index > 0 ? index - 1 : index].entity["@id"])
+                    setFocused(newTabs[index > 0 ? index - 1 : index].entityId)
                 } else {
                     setFocused("")
                 }
@@ -79,6 +98,7 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
             value={{
                 tabs,
                 activeTabEntityID: focused,
+                updateTab,
                 openTab,
                 focusTab,
                 closeTab

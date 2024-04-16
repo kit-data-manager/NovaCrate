@@ -18,28 +18,24 @@ import { Button } from "@/components/ui/button"
 
 const MOCK_TYPE = "__EditorMock__"
 
-function entityDisplayNameFileExplorer(entity: IFlatEntity) {
-    const parts = entity["@id"].split("/").filter(isEmptyPart)
-    return parts[parts.length - 1] || entity["@id"]
+function isNonEmptyPart(part: string) {
+    return part !== "" && part !== "."
 }
 
-function isRootEntry(entity: IFlatEntity) {
-    return !entity["@id"].includes("/")
+function entityDisplayNameFileExplorer(entity: IFlatEntity) {
+    const parts = entity["@id"].split("/").filter(isNonEmptyPart)
+    return parts[parts.length - 1] || entity["@id"]
 }
 
 function isMockEntity(entity: IFlatEntity) {
     return toArray(entity["@type"]).includes(MOCK_TYPE)
 }
 
-function isEmptyPart(part: string) {
-    return part !== "" && part !== "."
-}
-
 function inCurrentFolder(path: string, folderPath: string) {
     return (
         inSubFolder(path, folderPath) &&
-        path.split("/").filter(isEmptyPart).length ===
-            folderPath.split("/").filter(isEmptyPart).length + 1
+        path.split("/").filter(isNonEmptyPart).length ===
+            folderPath.split("/").filter(isNonEmptyPart).length + 1
     )
 }
 
