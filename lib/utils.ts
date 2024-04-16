@@ -17,11 +17,33 @@ export function toArray<T>(input: T | T[]): T[] {
     }
 }
 
-export function getEntityDisplayName(entity: IFlatEntity) {
+export function getEntityDisplayName(entity: IFlatEntity, fallback: boolean = true) {
     if (entity.name) {
         return toArray(entity.name).join(", ")
-    } else {
+    } else if (fallback) {
         if (entity["@id"] === "./") return "Crate Root"
         return entity["@id"]
     }
+
+    return ""
+}
+
+export function isRootEntity(entity: IFlatEntity) {
+    return entity["@id"] === "./"
+}
+
+export function isDataEntity(entity: IFlatEntity) {
+    return isFileDataEntity(entity) || isFolderDataEntity(entity)
+}
+
+export function isFileDataEntity(entity: IFlatEntity) {
+    return toArray(entity["@type"]).includes("File")
+}
+
+export function isFolderDataEntity(entity: IFlatEntity) {
+    return toArray(entity["@type"]).includes("Dataset")
+}
+
+export function isContextualEntity(entity: IFlatEntity) {
+    return !isRootEntity(entity) && !isDataEntity(entity)
 }
