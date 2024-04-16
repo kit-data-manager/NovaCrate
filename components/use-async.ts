@@ -21,7 +21,6 @@ export function useAsync<I, O>(
                 .then((output) => {
                     setInternalState(output)
                     setError("")
-                    console.log("resolved!")
                 })
                 .catch((e) => {
                     console.error("Error in useAsync", e)

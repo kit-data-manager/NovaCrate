@@ -64,7 +64,7 @@ declare interface CrateServiceProvider {
      * @param entityData Changed data of the entity. Unchanged keys can be omitted. @id must be present. Keys that must be removed will be set to null
      * @returns Promise - resolves on success
      */
-    updateEntity(crateId: string, entityData: Partial<IFlatEntity>): Promise<boolean>
+    updateEntity(crateId: string, entityData: IFlatEntity): Promise<boolean>
 
     /**
      * Add a new entity to the crate. Should fail when an entity with the given ID already

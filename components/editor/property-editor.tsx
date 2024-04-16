@@ -73,7 +73,6 @@ export function PropertyEditor(props: PropertyEditorProps) {
     const propertyCommentResolver = useCallback(
         async (propertyId: string) => {
             const resolved = TEST_CONTEXT.resolve(propertyId)
-            console.log(resolved)
             return await getPropertyComment(resolved || "unresolved")
         },
         [getPropertyComment]

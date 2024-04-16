@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { PropertyEditor } from "@/components/editor/property-editor"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
@@ -15,10 +15,12 @@ import {
 import {
     getEntityDisplayName,
     isRootEntity as isRootEntityUtil,
-    isDataEntity as isDataEntityUtil,
-    toArray
+    isDataEntity as isDataEntityUtil
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
+import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
+import { CrateDataContext } from "@/components/crate-data-provider"
+import { Error } from "@/components/error"
 
 type PropertyHasChangesEnum = "no" | "hasChanges" | "isNew"
 
@@ -46,18 +48,47 @@ function mapEntityToProperties(data: IFlatEntity): EntityEditorProperty[] {
         .flat()
 }
 
-export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
-    const [initialProperties, setInitialProperties] = useState<EntityEditorProperty[]>(
-        mapEntityToProperties(entityData)
-    )
-    const [properties, setProperties] = useState<EntityEditorProperty[]>(
-        mapEntityToProperties(entityData)
-    )
+function mapPropertiesToEntity(data: EntityEditorProperty[]): IFlatEntity {
+    const result: Record<string, FlatEntityPropertyTypes> = {}
 
-    useEffect(() => {
-        setInitialProperties(mapEntityToProperties(entityData))
-        setProperties(mapEntityToProperties(entityData))
+    function autoUnpack(value: FlatEntitySinglePropertyTypes[]) {
+        if (value.length === 1) return value[0]
+        else return value
+    }
+
+    for (const property of data) {
+        if (property.values.length === 0) continue
+        result[property.propertyName] = autoUnpack(property.values)
+    }
+
+    if (!("@id" in result)) throw "Mapping properties to entity failed, no @id property"
+    if (!("@type" in result)) throw "Mapping properties to entity failed, no @id property"
+
+    return result as IFlatEntity
+}
+
+export function EntityEditor({
+    entityData,
+    modifiedEntityData,
+    dirty
+}: {
+    entityData: IFlatEntity
+    modifiedEntityData: IFlatEntity
+    dirty: boolean
+}) {
+    const { updateTab } = useContext(EntityEditorTabsContext)
+    const { updateEntity } = useContext(CrateDataContext)
+
+    const [saveError, setSaveError] = useState("")
+
+    const initialProperties = useMemo(() => {
+        console.log("initial changed")
+        return mapEntityToProperties(entityData)
     }, [entityData])
+
+    const properties = useMemo(() => {
+        return mapEntityToProperties(modifiedEntityData)
+    }, [modifiedEntityData])
 
     const propertyHasChanges: PropertyHasChangesEnum[] = useMemo(() => {
         return properties.map((prop) => {
@@ -100,6 +131,24 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
         }
     }, [hasUnsavedChanges])
 
+    useEffect(() => {
+        if (dirty !== hasUnsavedChanges)
+            updateTab({
+                entityId: entityData["@id"],
+                dirty: hasUnsavedChanges
+            })
+    }, [dirty, entityData, hasUnsavedChanges, updateTab])
+
+    const modifyProperties = useCallback(
+        (modifiedProperties: EntityEditorProperty[]) => {
+            updateTab({
+                entityId: entityData["@id"],
+                modifiedEntity: mapPropertiesToEntity(modifiedProperties)
+            })
+        },
+        [entityData, updateTab]
+    )
+
     const modifyProperty = useCallback(
         (propertyName: string, value: FlatEntitySinglePropertyTypes, valueIdx: number) => {
             const propertyIndex = properties.findIndex((p) => p.propertyName === propertyName)
@@ -109,9 +158,9 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
 
             property.propertyName = propertyName
             property.values[valueIdx] = value
-            setProperties(properties.slice())
+            modifyProperties(properties)
         },
-        [properties]
+        [modifyProperties, properties]
     )
 
     const removeProperty = useCallback(
@@ -124,9 +173,9 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
             } else {
                 properties.splice(propertyIndex)
             }
-            setProperties(properties.slice())
+            modifyProperties(properties)
         },
-        [properties]
+        [modifyProperties, properties]
     )
 
     const addProperty = useCallback(
@@ -135,9 +184,21 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
                 propertyName,
                 values
             })
+            modifyProperties(properties)
         },
-        [properties]
+        [modifyProperties, properties]
     )
+
+    const saveChanges = useCallback(() => {
+        updateEntity(modifiedEntityData)
+            .then((b) => {
+                console.log("done with update", b)
+                setSaveError("")
+            })
+            .catch((e) => {
+                setSaveError(e + "")
+            })
+    }, [modifiedEntityData, updateEntity])
 
     const isRootEntity = useMemo(() => {
         return isRootEntityUtil(entityData)
@@ -171,6 +232,7 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
                         size="sm"
                         variant={hasUnsavedChanges ? undefined : "outline"}
                         className="text-xs"
+                        onClick={() => saveChanges()}
                     >
                         <Save className={"w-4 h-4 mr-2"} /> Save
                     </Button>
@@ -216,6 +278,10 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
                 </div>
 
                 <WebWorkerWarning />
+                <Error
+                    className="mt-4"
+                    text={saveError ? "Error while saving: " + saveError : ""}
+                />
 
                 <div className="my-12 flex flex-col gap-10 mr-2">
                     {properties.map((property, i) => {
