@@ -5,23 +5,19 @@ import { PropertyEditor } from "@/components/editor/property-editor"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import {
-    Check,
-    EllipsisVertical,
-    PanelLeftClose,
-    Plus,
-    Save,
-    Search,
-    Trash,
-    Undo2
-} from "lucide-react"
+import { EllipsisVertical, PanelLeftClose, Plus, Save, Search, Trash, Undo2 } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { getEntityDisplayName, toArray } from "@/lib/utils"
+import {
+    getEntityDisplayName,
+    isRootEntity as isRootEntityUtil,
+    isDataEntity as isDataEntityUtil,
+    toArray
+} from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
 
 type PropertyHasChangesEnum = "no" | "hasChanges" | "isNew"
@@ -144,11 +140,11 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
     )
 
     const isRootEntity = useMemo(() => {
-        return entityData["@id"] === "./"
+        return isRootEntityUtil(entityData)
     }, [entityData])
 
     const isDataEntity = useMemo(() => {
-        return toArray(entityData["@type"]).includes("File")
+        return isDataEntityUtil(entityData)
     }, [entityData])
 
     return (
@@ -202,9 +198,9 @@ export function EntityEditor({ entityData }: { entityData: IFlatEntity }) {
                         {getEntityDisplayName(entityData)}
 
                         <div
-                            className={`${isRootEntity ? "border-root text-root" : isDataEntity ? "border-file text-file" : "border-contextual text-contextual"}  border px-1.5 rounded ml-6 text-sm`}
+                            className={`${isRootEntity ? "border-root text-root" : isDataEntity ? "border-data text-data" : "border-contextual text-contextual"}  border px-1.5 rounded ml-6 text-sm`}
                         >
-                            {isRootEntity ? "Root" : isDataEntity ? "File" : "Contextual"}
+                            {isRootEntity ? "Root" : isDataEntity ? "Data" : "Contextual"}
                         </div>
                         {/*<div className="border-success border text-success px-1.5 rounded ml-2 text-sm flex gap-1 items-center">*/}
                         {/*    <Check className="w-4 h-4" /> ORCID*/}

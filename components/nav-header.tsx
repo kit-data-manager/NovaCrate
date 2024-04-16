@@ -1,6 +1,6 @@
 "use client"
 
-import { Braces, Check, ChevronDown, Cog, Moon, Search, Sun, User } from "lucide-react"
+import { Braces, Check, ChevronDown, Cog, Moon, Search, Sun } from "lucide-react"
 import {
     Menubar,
     MenubarContent,
@@ -85,10 +85,7 @@ export function NavHeader() {
 
             <div className="relative flex items-center">
                 <Search className="w-4 h-4 absolute left-2 text-muted-foreground" />
-                <Input
-                    className="focus:w-[500px] w-96 pl-8 transition-[width]"
-                    placeholder="Search for anything..."
-                />
+                <Input className="w-96 pl-8" placeholder="Search for anything..." />
             </div>
 
             <div className="flex justify-end items-center gap-2">
@@ -103,9 +100,9 @@ export function NavHeader() {
                         <Moon className="h-4 w-4" />
                     )}
                 </Button>
-                <Button variant="secondary">
-                    <User className="h-4 w-4" />
-                </Button>
+                {/*<Button variant="secondary">*/}
+                {/*    <User className="h-4 w-4" />*/}
+                {/*</Button>*/}
                 <Button variant="secondary">
                     <Cog className="h-4 w-4" />
                 </Button>

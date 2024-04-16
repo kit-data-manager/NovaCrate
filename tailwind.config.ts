@@ -58,10 +58,13 @@ const config = {
                 info: {
                     DEFAULT: "rgb(58, 83, 196)"
                 },
+                warn: {
+                    DEFAULT: "rgb(245,167,66)"
+                },
                 root: {
                     DEFAULT: "rgb(236,121,57)"
                 },
-                file: {
+                data: {
                     DEFAULT: "rgb(76,101,213)"
                 },
                 contextual: {

@@ -31,12 +31,14 @@ export function EntityBrowserItem(props: { entity: IFlatEntity }) {
             onClick={openSelf}
         >
             <EntityIcon entity={props.entity} />
-            <span className="group-hover/entityBrowserItem:underline underline-offset-2 truncate">
-                {getEntityDisplayName(props.entity)}
-            </span>
-            <span className="ml-2 text-xs text-muted-foreground">
-                {toArray(props.entity["@type"]).join(", ")}
-            </span>
+            <div className="truncate">
+                <span className="group-hover/entityBrowserItem:underline underline-offset-2">
+                    {getEntityDisplayName(props.entity)}
+                </span>
+                <span className="ml-2 text-xs text-muted-foreground">
+                    {toArray(props.entity["@type"]).join(", ")}
+                </span>
+            </div>
         </Button>
     )
 }
@@ -57,7 +59,7 @@ export function EntityBrowserSection(props: { crate: ICrate; section: "File" | "
                 onClick={toggle}
             >
                 <ChevronDown
-                    className="w-5 h-5 mr-2 aria-disabled:-rotate-90"
+                    className="w-5 h-5 mr-2 aria-disabled:-rotate-90 shrink-0"
                     aria-disabled={!open}
                 />
                 <div className="truncate">{props.section} Entities</div>
