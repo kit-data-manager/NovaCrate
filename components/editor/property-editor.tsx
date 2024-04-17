@@ -1,6 +1,6 @@
 import { EntityEditorProperty } from "@/components/editor/entity-editor"
 import { isReference } from "@/lib/utils"
-import { ChangeEvent, useCallback, useContext, useMemo } from "react"
+import { ChangeEvent, memo, useCallback, useContext, useMemo } from "react"
 import { ReferenceField } from "@/components/editor/reference-field"
 import { TextField } from "@/components/editor/text-field"
 import { TypeField } from "@/components/editor/type-field"
@@ -10,7 +10,7 @@ import { CrateVerifyContext } from "@/components/crate-verify-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TEST_CONTEXT } from "@/components/crate-data-provider"
 import { Error } from "@/components/error"
-import AddEntryDropdown from "@/components/editor/add-entry-dropdown"
+import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
 
 export enum PropertyEditorTypes {
     Time,
@@ -41,48 +41,54 @@ export interface PropertyEditorProps {
     hasChanges?: boolean
 }
 
-export interface SinglePropertyEditorProps extends Omit<PropertyEditorProps, "onAddPropertyEntry"> {
+export interface SinglePropertyEditorProps {
+    propertyName: string
+    value: FlatEntitySinglePropertyTypes
     valueIndex: number
     propertyRange?: string[]
+    onModifyProperty: PropertyEditorProps["onModifyProperty"]
 }
 
-function SinglePropertyEditor({
-    property,
+const SinglePropertyEditor = memo(function SinglePropertyEditor({
+    propertyName,
     onModifyProperty,
     valueIndex,
-    propertyRange
+    propertyRange,
+    value
 }: SinglePropertyEditorProps) {
-    const value = property.values[valueIndex]
-
     const onReferenceChange = useCallback((value: IReference) => {}, []) // TODO
 
     const onTextChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>) => {
-            onModifyProperty(property.propertyName, e.target.value, valueIndex)
+            onModifyProperty(propertyName, e.target.value, valueIndex)
         },
-        [onModifyProperty, property.propertyName, valueIndex]
+        [onModifyProperty, propertyName, valueIndex]
     )
 
-    if (property.propertyName === "@type")
-        return <TypeField value={value as string} onChange={() => {}} />
+    if (propertyName === "@type") return <TypeField value={value as string} onChange={() => {}} />
 
-    if (property.propertyName === "@id")
-        return <IDField value={value as string} onChange={() => {}} />
+    if (propertyName === "@id") return <IDField value={value as string} onChange={() => {}} />
 
     if (isReference(value))
         return (
             <ReferenceField
                 value={value}
                 onChange={onReferenceChange}
-                propertyName={property.propertyName}
+                propertyName={propertyName}
                 propertyRange={propertyRange}
             />
         )
 
     return <TextField value={value} onChange={onTextChange} propertyRange={propertyRange} />
-}
+})
 
-export function PropertyEditor(props: PropertyEditorProps) {
+export const PropertyEditor = memo(function PropertyEditor({
+    property,
+    onModifyProperty,
+    onAddPropertyEntry,
+    isNew,
+    hasChanges
+}: PropertyEditorProps) {
     const {
         isReady: crateVerifyReady,
         getPropertyComment,
@@ -90,14 +96,14 @@ export function PropertyEditor(props: PropertyEditorProps) {
     } = useContext(CrateVerifyContext)
 
     const readablePropertyName = useMemo(() => {
-        return propertyNameReadable(props.property.propertyName)
-    }, [props.property.propertyName])
+        return propertyNameReadable(property.propertyName)
+    }, [property.propertyName])
 
     const onAddEntry = useCallback(
         (type: PropertyEditorTypes) => {
-            props.onAddPropertyEntry(props.property.propertyName, type)
+            onAddPropertyEntry(property.propertyName, type)
         },
-        [props]
+        [onAddPropertyEntry, property.propertyName]
     )
 
     const referenceTypeRangeResolver = useCallback(
@@ -115,7 +121,7 @@ export function PropertyEditor(props: PropertyEditorProps) {
     )
 
     const { data: propertyRange, error: propertyRangeError } = useAsync(
-        crateVerifyReady ? props.property.propertyName : null,
+        crateVerifyReady ? property.propertyName : null,
         referenceTypeRangeResolver
     )
 
@@ -134,7 +140,7 @@ export function PropertyEditor(props: PropertyEditorProps) {
         data: comment,
         error: commentError,
         isPending: commentIsPending
-    } = useAsync(crateVerifyReady ? props.property.propertyName : null, propertyCommentResolver)
+    } = useAsync(crateVerifyReady ? property.propertyName : null, propertyCommentResolver)
 
     const Comment = useCallback(() => {
         if (commentIsPending) {
@@ -149,7 +155,7 @@ export function PropertyEditor(props: PropertyEditorProps) {
     return (
         <div className="grid grid-cols-[12px_1fr_1fr] w-full">
             <div
-                className={`${props.isNew ? "bg-success" : props.hasChanges ? "bg-info" : ""} max-w-1 rounded-full transition`}
+                className={`${isNew ? "bg-success" : hasChanges ? "bg-info" : ""} max-w-1 rounded-full transition`}
             ></div>
 
             <div className="pr-8">
@@ -168,24 +174,25 @@ export function PropertyEditor(props: PropertyEditorProps) {
                     prefix="Error while determining type range: "
                 />
                 <div className="flex flex-col gap-4">
-                    {props.property.values.map((v, i) => {
+                    {property.values.map((v, i) => {
                         return (
                             <SinglePropertyEditor
                                 key={i}
                                 valueIndex={i}
-                                property={props.property}
-                                onModifyProperty={props.onModifyProperty}
+                                propertyName={property.propertyName}
+                                value={property.values[i]}
+                                onModifyProperty={onModifyProperty}
                                 propertyRange={propertyRange}
                             />
                         )
                     })}
                 </div>
                 <AddEntryDropdown
-                    property={props.property}
+                    propertyName={property.propertyName}
                     propertyRange={propertyRange}
                     onAddEntry={onAddEntry}
                 />
             </div>
         </div>
     )
-}
+})

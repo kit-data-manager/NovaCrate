@@ -1,23 +1,22 @@
-import { EntityEditorProperty } from "@/components/editor/entity-editor"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
-import { useMemo } from "react"
+import { memo, useMemo } from "react"
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import TypeSelectDropdown from "@/components/editor/type-select-dropdown"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
 
-export default function AddEntryDropdown(props: {
-    property: EntityEditorProperty
+export const AddEntryDropdown = memo(function AddEntryDropdown(props: {
+    propertyName: string
     propertyRange?: string[]
     onAddEntry(type: PropertyEditorTypes): void
 }) {
     const entryName = useMemo(() => {
-        if (props.property.propertyName === "@type") {
+        if (props.propertyName === "@type") {
             return "type"
         } else return "entry"
-    }, [props.property.propertyName])
+    }, [props.propertyName])
 
-    if (props.property.propertyName === "@id") return null
+    if (props.propertyName === "@id") return null
 
     return (
         <DropdownMenu>
@@ -36,4 +35,4 @@ export default function AddEntryDropdown(props: {
             />
         </DropdownMenu>
     )
-}
+})
