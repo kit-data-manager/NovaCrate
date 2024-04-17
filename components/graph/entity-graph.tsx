@@ -21,7 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import EntityNode, { EntityNodeHandle } from "@/components/graph/entity-node"
 import { useLayout } from "@/components/graph/layout"
 import { CrateDataContext } from "@/components/crate-data-provider"
-import { isReference, toArray } from "@/lib/utils"
+import { isReference, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
 import ExternalNode from "@/components/graph/external-node"
 
 const DEFAULT_POS = { x: 0, y: 0 }
@@ -47,6 +47,8 @@ function crateToGraph(crate: ICrate): [Node[], Edge[]] {
     }
 
     for (const entity of crate["@graph"]) {
+        if (isRoCrateMetadataEntity(entity)) continue
+
         nodes.push({
             id: entity["@id"],
             position: DEFAULT_POS,

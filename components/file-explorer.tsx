@@ -95,7 +95,7 @@ function FolderEntry(props: { entity: IFlatEntity; crate: ICrate }) {
                     <>
                         <div className="w-4 h-4 shrink-0" />
                         {isMock ? (
-                            <FileX className="w-4 h-4 text-warn shrink-0" />
+                            <FileX className="w-4 h-4 text-muted-foreground shrink-0" />
                         ) : (
                             <File className="w-4 h-4 shrink-0" />
                         )}
@@ -107,14 +107,16 @@ function FolderEntry(props: { entity: IFlatEntity; crate: ICrate }) {
                             aria-disabled={!isOpen}
                         />
                         {isMock ? (
-                            <FolderX className="w-4 h-4 text-warn shrink-0" />
+                            <FolderX className="w-4 h-4 text-muted-foreground shrink-0" />
                         ) : (
                             <Folder className="w-4 h-4 shrink-0" />
                         )}
                     </>
                 )}
                 <div className="truncate">
-                    <span className="group-hover/fileBrowserEntry:underline">
+                    <span
+                        className={`group-hover/fileBrowserEntry:underline ${isMock ? "text-muted-foreground" : ""}`}
+                    >
                         {entityDisplayNameFileExplorer(props.entity)}
                     </span>
                     <span className="text-sm text-muted-foreground ml-2">

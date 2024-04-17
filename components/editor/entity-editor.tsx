@@ -2,10 +2,17 @@
 
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { PropertyEditor } from "@/components/editor/property-editor"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { EllipsisVertical, PanelLeftClose, Plus, Save, Search, Trash, Undo2 } from "lucide-react"
+import {
+    EllipsisVertical,
+    PanelLeftClose,
+    Plus,
+    RefreshCw,
+    Save,
+    Search,
+    Trash,
+    Undo2
+} from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -67,6 +74,15 @@ function mapPropertiesToEntity(data: EntityEditorProperty[]): IFlatEntity {
     return result as IFlatEntity
 }
 
+// Sorting function
+function byPropertyName(a: EntityEditorProperty, b: EntityEditorProperty) {
+    if (a.propertyName === "name" && b.propertyName === "name") return 0
+    if (a.propertyName === "name" && !b.propertyName.startsWith("@")) return -1
+    if (b.propertyName === "name" && !b.propertyName.startsWith("@")) return 1
+    if (a.propertyName === b.propertyName) return 0
+    return a.propertyName > b.propertyName ? 1 : -1
+}
+
 export function EntityEditor({
     entityData,
     modifiedEntityData,
@@ -80,9 +96,9 @@ export function EntityEditor({
     const { updateEntity } = useContext(CrateDataContext)
 
     const [saveError, setSaveError] = useState("")
+    const [isSaving, setIsSaving] = useState(false)
 
     const initialProperties = useMemo(() => {
-        console.log("initial changed")
         return mapEntityToProperties(entityData)
     }, [entityData])
 
@@ -113,23 +129,6 @@ export function EntityEditor({
     const hasUnsavedChanges = useMemo(() => {
         return propertyHasChanges.filter((p) => p !== "no").length > 0
     }, [propertyHasChanges])
-
-    useEffect(() => {
-        const handler = (e: BeforeUnloadEvent) => {
-            e.preventDefault()
-            return "There are unsaved changes."
-        }
-
-        if (hasUnsavedChanges) {
-            window.addEventListener("beforeunload", handler)
-        }
-
-        return () => {
-            if (hasUnsavedChanges) {
-                window.removeEventListener("beforeunload", handler)
-            }
-        }
-    }, [hasUnsavedChanges])
 
     useEffect(() => {
         if (dirty !== hasUnsavedChanges)
@@ -190,6 +189,9 @@ export function EntityEditor({
     )
 
     const saveChanges = useCallback(() => {
+        if (!hasUnsavedChanges) return
+
+        setIsSaving(true)
         updateEntity(modifiedEntityData)
             .then((b) => {
                 console.log("done with update", b)
@@ -198,7 +200,10 @@ export function EntityEditor({
             .catch((e) => {
                 setSaveError(e + "")
             })
-    }, [modifiedEntityData, updateEntity])
+            .finally(() => {
+                setIsSaving(false)
+            })
+    }, [hasUnsavedChanges, modifiedEntityData, updateEntity])
 
     const isRootEntity = useMemo(() => {
         return isRootEntityUtil(entityData)
@@ -233,8 +238,14 @@ export function EntityEditor({
                         variant={hasUnsavedChanges ? undefined : "outline"}
                         className="text-xs"
                         onClick={() => saveChanges()}
+                        disabled={isSaving}
                     >
-                        <Save className={"w-4 h-4 mr-2"} /> Save
+                        {isSaving ? (
+                            <RefreshCw className={"w-4 h-4 mr-2 animate-spin"} />
+                        ) : (
+                            <Save className={"w-4 h-4 mr-2"} />
+                        )}{" "}
+                        Save
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -269,12 +280,12 @@ export function EntityEditor({
                         {/*</div>*/}
                     </h2>
 
-                    <div className="flex items-center mr-2">
-                        <Switch id="easy-mode" />
-                        <Label className="p-2" htmlFor="easy-mode">
-                            Easy Mode
-                        </Label>
-                    </div>
+                    {/*<div className="flex items-center mr-2">*/}
+                    {/*    <Switch id="easy-mode" />*/}
+                    {/*    <Label className="p-2" htmlFor="easy-mode">*/}
+                    {/*        Easy Mode*/}
+                    {/*    </Label>*/}
+                    {/*</div>*/}
                 </div>
 
                 <WebWorkerWarning />
@@ -284,7 +295,7 @@ export function EntityEditor({
                 />
 
                 <div className="my-12 flex flex-col gap-10 mr-2">
-                    {properties.map((property, i) => {
+                    {properties.sort(byPropertyName).map((property, i) => {
                         return (
                             <div key={property.propertyName}>
                                 <PropertyEditor

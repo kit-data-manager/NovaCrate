@@ -46,9 +46,9 @@ function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
             ref={button}
         >
             <EntityIcon entity={entity} />
-            <div className="ml-1">
+            <div className={`ml-1 transition-colors`}>
                 {getEntityDisplayName(entity)}
-                {tab.dirty ? "*" : ""}
+                {tab.dirty ? <b>*</b> : null}
             </div>
             {active ? (
                 <div
@@ -109,6 +109,27 @@ export function EntityEditorTabs() {
             return crateData["@graph"].find((e) => e["@id"] == currentTab?.entityId)
         }
     }, [crateData, currentTab?.entityId])
+
+    const hasUnsavedChanges = useMemo(() => {
+        return tabs.find((tab) => tab.dirty) !== undefined
+    }, [tabs])
+
+    useEffect(() => {
+        const handler = (e: BeforeUnloadEvent) => {
+            e.preventDefault()
+            return "There are unsaved changes."
+        }
+
+        if (hasUnsavedChanges) {
+            window.addEventListener("beforeunload", handler)
+        }
+
+        return () => {
+            if (hasUnsavedChanges) {
+                window.removeEventListener("beforeunload", handler)
+            }
+        }
+    }, [hasUnsavedChanges])
 
     if (tabs.length == 0) {
         return (

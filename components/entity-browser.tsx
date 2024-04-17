@@ -4,7 +4,14 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useCallback, useContext, useState } from "react"
 import { CrateDataContext, ICrateDataProvider } from "@/components/crate-data-provider"
 import { Button } from "@/components/ui/button"
-import { getEntityDisplayName, toArray } from "@/lib/utils"
+import {
+    getEntityDisplayName,
+    isContextualEntity,
+    isDataEntity,
+    isRoCrateMetadataEntity,
+    isRootEntity,
+    toArray
+} from "@/lib/utils"
 import {
     ChevronDown,
     ChevronsDownUp,
@@ -43,7 +50,7 @@ export function EntityBrowserItem(props: { entity: IFlatEntity }) {
     )
 }
 
-export function EntityBrowserSection(props: { crate: ICrate; section: "File" | "Contextual" }) {
+export function EntityBrowserSection(props: { crate: ICrate; section: "Data" | "Contextual" }) {
     const [open, setOpen] = useState(true)
 
     const toggle = useCallback(() => {
@@ -62,15 +69,14 @@ export function EntityBrowserSection(props: { crate: ICrate; section: "File" | "
                     className="w-5 h-5 mr-2 aria-disabled:-rotate-90 shrink-0"
                     aria-disabled={!open}
                 />
-                <div className="truncate">{props.section} Entities</div>
+                <div className="truncate mr-2">{props.section} Entities</div>
             </Button>
             {open ? (
                 <div className="flex flex-col pl-4">
                     {props.crate["@graph"]
+                        .filter((item) => !isRootEntity(item) && !isRoCrateMetadataEntity(item))
                         .filter((item) =>
-                            props.section === "File"
-                                ? toArray(item["@type"]).includes("File")
-                                : !toArray(item["@type"]).includes("File") && item["@id"] !== "./"
+                            props.section === "Data" ? isDataEntity(item) : isContextualEntity(item)
                         )
                         .map((item) => {
                             return <EntityBrowserItem entity={item} key={item["@id"]} />
@@ -109,7 +115,7 @@ export function EntityBrowserContent(props: { crate: ICrateDataProvider }) {
                     return <EntityBrowserItem entity={item} key={item["@id"]} />
                 })}
 
-            <EntityBrowserSection crate={crate.crateData} section={"File"} />
+            <EntityBrowserSection crate={crate.crateData} section={"Data"} />
             <EntityBrowserSection crate={crate.crateData} section={"Contextual"} />
         </div>
     )
