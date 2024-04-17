@@ -1,24 +1,7 @@
 "use client"
 
-import { useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { PropertyEditor, PropertyEditorTypes } from "@/components/editor/property-editor"
-import { Button } from "@/components/ui/button"
-import {
-    EllipsisVertical,
-    PanelLeftClose,
-    Plus,
-    RefreshCw,
-    Save,
-    Search,
-    Trash,
-    Undo2
-} from "lucide-react"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
 import {
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
@@ -28,6 +11,7 @@ import { WebWorkerWarning } from "@/components/web-worker-warning"
 import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { Error } from "@/components/error"
+import { EntityEditorHeader } from "@/components/editor/entity-editor-header"
 
 type PropertyHasChangesEnum = "no" | "hasChanges" | "isNew"
 
@@ -36,7 +20,7 @@ export interface EntityEditorProperty {
     values: FlatEntitySinglePropertyTypes[]
 }
 
-function mapEntityToProperties(data: IFlatEntity): EntityEditorProperty[] {
+export function mapEntityToProperties(data: IFlatEntity): EntityEditorProperty[] {
     return Object.keys(data)
         .map((key) => {
             let value = data[key]
@@ -56,7 +40,7 @@ function mapEntityToProperties(data: IFlatEntity): EntityEditorProperty[] {
         .sort(byPropertyName)
 }
 
-function mapPropertiesToEntity(data: EntityEditorProperty[]): IFlatEntity {
+export function mapPropertiesToEntity(data: EntityEditorProperty[]): IFlatEntity {
     const result: Record<string, FlatEntityPropertyTypes> = {}
 
     function autoUnpack(value: FlatEntitySinglePropertyTypes[]) {
@@ -86,11 +70,11 @@ function byPropertyName(a: EntityEditorProperty, b: EntityEditorProperty) {
 
 export function EntityEditor({
     entityData,
-    modifiedEntityData,
+    editorState,
     dirty
 }: {
     entityData: IFlatEntity
-    modifiedEntityData: IFlatEntity
+    editorState: EntityEditorProperty[]
     dirty: boolean
 }) {
     const { updateTab } = useContext(EntityEditorTabsContext)
@@ -99,16 +83,17 @@ export function EntityEditor({
     const [saveError, setSaveError] = useState("")
     const [isSaving, setIsSaving] = useState(false)
 
+    const editorStateRef = useRef(editorState)
+    useEffect(() => {
+        editorStateRef.current = editorState
+    }, [editorState])
+
     const initialProperties = useMemo(() => {
         return mapEntityToProperties(entityData)
     }, [entityData])
 
-    const properties = useMemo(() => {
-        return mapEntityToProperties(modifiedEntityData)
-    }, [modifiedEntityData])
-
     const propertyHasChanges: PropertyHasChangesEnum[] = useMemo(() => {
-        return properties.map((prop) => {
+        return editorState.map((prop) => {
             const initialProp = initialProperties.find((p) => p.propertyName === prop.propertyName)
             if (initialProp) {
                 if (prop.values.length !== initialProp.values.length) {
@@ -125,7 +110,7 @@ export function EntityEditor({
                 return "isNew"
             }
         })
-    }, [initialProperties, properties])
+    }, [initialProperties, editorState])
 
     const hasUnsavedChanges = useMemo(() => {
         return propertyHasChanges.filter((p) => p !== "no").length > 0
@@ -143,7 +128,7 @@ export function EntityEditor({
         (modifiedProperties: EntityEditorProperty[]) => {
             updateTab({
                 entityId: entityData["@id"],
-                modifiedEntity: mapPropertiesToEntity(modifiedProperties)
+                editorState: modifiedProperties
             })
         },
         [entityData, updateTab]
@@ -151,62 +136,72 @@ export function EntityEditor({
 
     const modifyProperty = useCallback(
         (propertyName: string, value: FlatEntitySinglePropertyTypes, valueIdx: number) => {
-            const propertyIndex = properties.findIndex((p) => p.propertyName === propertyName)
-            if (propertyIndex < 0 || propertyIndex >= properties.length) return
-            const property = properties[propertyIndex]
+            const propertyIndex = editorStateRef.current.findIndex(
+                (p) => p.propertyName === propertyName
+            )
+            if (propertyIndex < 0 || propertyIndex >= editorStateRef.current.length) return
+            const property = editorStateRef.current[propertyIndex]
             if (!hasChanged(value, property.values[valueIdx])) return
 
-            property.values[valueIdx] = value
-            modifyProperties(properties)
+            const newProperty = structuredClone(property)
+            newProperty.values[valueIdx] = value
+            const newEditorState = editorStateRef.current.slice()
+            newEditorState.splice(propertyIndex, 1, newProperty)
+
+            modifyProperties(newEditorState)
         },
-        [modifyProperties, properties]
+        [modifyProperties]
     )
 
     const addPropertyEntry = useCallback(
         (propertyName: string, type: PropertyEditorTypes) => {
-            const propertyIndex = properties.findIndex((p) => p.propertyName === propertyName)
-            if (propertyIndex < 0 || propertyIndex >= properties.length) return
-            const property = properties[propertyIndex]
+            const propertyIndex = editorStateRef.current.findIndex(
+                (p) => p.propertyName === propertyName
+            )
+            if (propertyIndex < 0 || propertyIndex >= editorStateRef.current.length) return
+            const property = editorStateRef.current[propertyIndex]
 
-            const copy = property.values.slice()
-            copy.push(type === PropertyEditorTypes.Reference ? { "@id": "" } : "")
-            property.values = copy
-            modifyProperties(properties)
+            const newProperty = structuredClone(property)
+            newProperty.values.push(type === PropertyEditorTypes.Reference ? { "@id": "" } : "")
+            const newEditorState = editorStateRef.current.slice()
+            newEditorState.splice(propertyIndex, 1, newProperty)
+
+            modifyProperties(newEditorState)
         },
-        [modifyProperties, properties]
+        [modifyProperties]
     )
 
     const removeProperty = useCallback(
         (propertyName: string, valueIdx: number) => {
-            const propertyIndex = properties.findIndex((p) => p.propertyName === propertyName)
-            if (propertyIndex < 0 || propertyIndex >= properties.length) return
-            const property = properties[propertyIndex]
+            const propertyIndex = editorState.findIndex((p) => p.propertyName === propertyName)
+            if (propertyIndex < 0 || propertyIndex >= editorState.length) return
+            const property = editorState[propertyIndex]
             if (property.values.length > 1) {
                 property.values.splice(valueIdx)
             } else {
-                properties.splice(propertyIndex)
+                editorState.splice(propertyIndex)
             }
-            modifyProperties(properties)
+            modifyProperties(editorState)
         },
-        [modifyProperties, properties]
+        [modifyProperties, editorState]
     )
 
     const addProperty = useCallback(
         (propertyName: string, values: FlatEntitySinglePropertyTypes[]) => {
-            properties.push({
+            editorState.push({
                 propertyName,
                 values
             })
-            modifyProperties(properties)
+            modifyProperties(editorState)
         },
-        [modifyProperties, properties]
+        [modifyProperties, editorState]
     )
 
     const saveChanges = useCallback(() => {
         if (!hasUnsavedChanges) return
 
         setIsSaving(true)
-        updateEntity(modifiedEntityData)
+        updateEntity(mapPropertiesToEntity(editorStateRef.current))
             .then((b) => {
                 console.log("done with update", b)
                 setSaveError("")
@@ -217,7 +212,7 @@ export function EntityEditor({
             .finally(() => {
                 setIsSaving(false)
             })
-    }, [hasUnsavedChanges, modifiedEntityData, updateEntity])
+    }, [hasUnsavedChanges, updateEntity])
 
     const isRootEntity = useMemo(() => {
         return isRootEntityUtil(entityData)
@@ -229,57 +224,13 @@ export function EntityEditor({
 
     return (
         <div className="relative">
-            <div className="flex mb-2 gap-2 sticky top-0 z-10 p-2 bg-accent">
-                <Button size="sm" variant="outline" className="text-xs">
-                    <PanelLeftClose className="w-4 h-4" />
-                </Button>
-                <Button size="sm" variant="outline" className="text-xs">
-                    <Plus className={"w-4 h-4 mr-1"} /> Add Property
-                </Button>
-                <Button size="sm" variant="outline" className="text-xs">
-                    <Search className="w-4 h-4 mr-1" /> Find References
-                </Button>
-                <Button size="sm" variant="destructive" className="text-xs">
-                    <Trash className="w-4 h-4 mr-1" /> Delete Entity
-                </Button>
-                <div className="grow"></div>
-                <div className="flex gap-2 items-center text-sm">
-                    {hasUnsavedChanges ? (
-                        <div className="text-muted-foreground">There are unsaved changes</div>
-                    ) : null}
-                    <Button
-                        size="sm"
-                        variant={hasUnsavedChanges ? undefined : "outline"}
-                        className="text-xs"
-                        onClick={() => saveChanges()}
-                        disabled={isSaving}
-                    >
-                        {isSaving ? (
-                            <RefreshCw className={"w-4 h-4 mr-2 animate-spin"} />
-                        ) : (
-                            <Save className={"w-4 h-4 mr-2"} />
-                        )}{" "}
-                        Save
-                    </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                                <EllipsisVertical className="w-4 h-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem>
-                                <Save className="w-4 h-4 mr-2" /> Save as...
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <Undo2 className="w-4 h-4 mr-2" /> Revert Changes
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
+            <EntityEditorHeader
+                hasUnsavedChanges={hasUnsavedChanges}
+                isSaving={isSaving}
+                saveChanges={saveChanges}
+            />
 
-            <div className="p-4">
+            <div className="p-4 mr-10">
                 <div className="flex justify-between items-center">
                     <h2 className="text-3xl font-bold flex items-center">
                         {getEntityDisplayName(entityData)}
@@ -309,7 +260,7 @@ export function EntityEditor({
                 />
 
                 <div className="my-12 flex flex-col gap-10 mr-2">
-                    {properties.map((property, i) => {
+                    {editorState.map((property, i) => {
                         return (
                             <div key={property.propertyName}>
                                 <PropertyEditor

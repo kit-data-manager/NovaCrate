@@ -46,7 +46,7 @@ function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
             ref={button}
         >
             <EntityIcon entity={entity} />
-            <div className={`ml-1 transition-colors`}>
+            <div className={`ml-1 transition-colors max-w-[300px] truncate`}>
                 {getEntityDisplayName(entity)}
                 {tab.dirty ? <b>*</b> : null}
             </div>
@@ -152,7 +152,7 @@ export function EntityEditorTabs() {
                     {currentTab && currentEntity ? (
                         <EntityEditor
                             entityData={currentEntity}
-                            modifiedEntityData={currentTab.modifiedEntity}
+                            editorState={currentTab.editorState}
                             dirty={currentTab.dirty}
                         />
                     ) : null}

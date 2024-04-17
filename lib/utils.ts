@@ -19,7 +19,9 @@ export function toArray<T>(input: T | T[]): T[] {
 
 export function getEntityDisplayName(entity: IFlatEntity, fallback: boolean = true) {
     if (entity.name) {
-        return toArray(entity.name).join(", ")
+        return toArray(entity.name)
+            .filter((p) => p)
+            .join(", ")
     } else if (fallback) {
         if (entity["@id"] === "./") return "Crate Root"
         return entity["@id"]

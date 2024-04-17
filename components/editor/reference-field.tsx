@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useState } from "react"
+import { memo, useCallback, useContext, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { SelectReferenceModal } from "@/components/editor/select-reference-modal"
 import {
@@ -23,10 +23,8 @@ import { CrateDataContext } from "@/components/crate-data-provider"
 import { getEntityDisplayName } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 
-export function ReferenceField({
+export const ReferenceField = memo(function ReferenceField({
     value,
-    propertyName,
-    onChange,
     propertyRange
 }: {
     value: IReference
@@ -139,7 +137,7 @@ export function ReferenceField({
             </DropdownMenu>
         </div>
     )
-}
+})
 
 function CreateFromExternalButton({ propertyRange }: { propertyRange?: string[] }) {
     const [modalOpen, setModalOpen] = useState(false)

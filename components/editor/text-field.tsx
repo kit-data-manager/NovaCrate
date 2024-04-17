@@ -1,4 +1,4 @@
-import { ChangeEvent } from "react"
+import { ChangeEvent, memo } from "react"
 import { Input } from "@/components/ui/input"
 import {
     DropdownMenu,
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeftRight, EllipsisVertical, Eraser, Trash, TypeIcon } from "lucide-react"
 import TypeSelectDropdown from "@/components/editor/type-select-dropdown"
 
-export function TextField({
+export const TextField = memo(function TextField({
     value,
     onChange,
     propertyRange
@@ -51,10 +51,12 @@ export function TextField({
                     <DropdownMenuSeparator />
 
                     <DropdownMenuItem>
-                        <Trash className="w-4 h-4 mr-2" /> Delete
+                        <span className="text-destructive-foreground">
+                            <Trash className="w-4 h-4 mr-2" /> Delete
+                        </span>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
     )
-}
+})

@@ -1,15 +1,16 @@
 "use client"
 
 import { createContext, PropsWithChildren, useCallback, useState } from "react"
+import { EntityEditorProperty, mapEntityToProperties } from "@/components/editor/entity-editor"
 
 export interface IEntityEditorTab {
     entityId: string
-    modifiedEntity: IFlatEntity
+    editorState: EntityEditorProperty[]
     dirty: boolean
 }
 
 export function createEntityEditorTab(entity: IFlatEntity): IEntityEditorTab {
-    return { entityId: entity["@id"], modifiedEntity: structuredClone(entity), dirty: false }
+    return { entityId: entity["@id"], editorState: mapEntityToProperties(entity), dirty: false }
 }
 
 export interface IEntityEditorTabsContext {
@@ -48,50 +49,59 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
 
     const openTab = useCallback(
         (newTab: IEntityEditorTab, focus?: boolean) => {
-            const existingTab = tabs.find((tab) => tab.entityId === newTab.entityId)
+            setTabs((oldTabs) => {
+                const existingTab = oldTabs.find((tab) => tab.entityId === newTab.entityId)
 
-            if (!existingTab) {
-                const newTabs = tabs.slice()
-                newTabs.push(structuredClone(newTab))
-                setTabs(newTabs)
-            }
+                if (!existingTab) {
+                    const newTabs = oldTabs.slice()
+                    newTabs.push(structuredClone(newTab))
+                    setTabs(newTabs)
+                    return newTabs
+                }
+
+                return oldTabs
+            })
 
             if (focus) {
                 focusTab(newTab.entityId)
             }
         },
-        [focusTab, tabs]
+        [focusTab]
     )
 
     const updateTab = useCallback(
         (updatedTab: Partial<IEntityEditorTab> & { entityId: string }) => {
-            const index = tabs.findIndex((tab) => tab.entityId === updatedTab.entityId)
+            setTabs((oldTabs) => {
+                const index = oldTabs.findIndex((tab) => tab.entityId === updatedTab.entityId)
 
-            if (index >= 0) {
-                const newTabs = tabs.slice()
-                newTabs[index] = { ...newTabs[index], ...updatedTab }
-                setTabs(newTabs)
-            }
+                if (index >= 0) {
+                    const newTabs = oldTabs.slice()
+                    newTabs[index] = { ...newTabs[index], ...updatedTab }
+                    return newTabs
+                } else return oldTabs
+            })
         },
-        [tabs]
+        []
     )
 
-    const closeTab = useCallback(
-        (id: string) => {
-            const index = tabs.findIndex((tab) => tab.entityId === id)
+    const closeTab = useCallback((id: string) => {
+        setTabs((oldTabs) => {
+            const index = oldTabs.findIndex((tab) => tab.entityId === id)
             if (index >= 0) {
-                const newTabs = tabs.slice()
+                const newTabs = oldTabs.slice()
                 newTabs.splice(index, 1)
                 if (newTabs.length > 0) {
                     setFocused(newTabs[index > 0 ? index - 1 : index].entityId)
                 } else {
                     setFocused("")
                 }
-                setTabs(newTabs)
+
+                return newTabs
             }
-        },
-        [tabs]
-    )
+
+            return oldTabs
+        })
+    }, [])
 
     return (
         <EntityEditorTabsContext.Provider
