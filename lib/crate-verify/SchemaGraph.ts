@@ -1,6 +1,7 @@
 "use client"
 
 import SchemaOrg from "./assets/schemaorg-current-https.json"
+import { toArray } from "../utils"
 
 // TODO currently only works on rdf:Property and rdfs:Class but not on class/property instances
 
@@ -55,7 +56,7 @@ export class SchemaNode {
     }
 
     isClass() {
-        return this.node["@type"] === "rdfs:Class"
+        return toArray(this.node["@type"]).includes("rdfs:Class")
     }
 
     isDirectPropertyOfClass(classId: string) {
@@ -189,7 +190,7 @@ export class SchemaGraph {
         let childrenIds: Set<string> = new Set<string>()
         const self = this.getNode(classId)
         if (!self) throw new ReferenceError("classId not specified or invalid")
-        if (!self.isClass()) throw new Error("Node is not a class")
+        if (!self.isClass()) throw new Error(`Node ${self["@id"]} is not a class`)
 
         for (const [_, node] of this.graph.entries()) {
             if (node.isClass() && node.isDirectSubClassOf(self["@id"])) {

@@ -5,17 +5,22 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
+    DropdownMenuSub,
+    DropdownMenuSubTrigger,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { ArrowLeftRight, EllipsisVertical, Eraser, Trash, TypeIcon } from "lucide-react"
+import TypeSelectDropdown from "@/components/editor/type-select-dropdown"
 
 export function TextField({
     value,
-    onChange
+    onChange,
+    propertyRange
 }: {
     value: string
     onChange: (value: ChangeEvent<HTMLInputElement>) => void
+    propertyRange?: string[]
 }) {
     return (
         <div className="flex w-full relative">
@@ -31,10 +36,20 @@ export function TextField({
                     <DropdownMenuItem>
                         <Eraser className="w-4 h-4 mr-2" /> Clear
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                        <ArrowLeftRight className="w-4 h-4 mr-2" /> Change Type
-                    </DropdownMenuItem>
+
+                    <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                            <ArrowLeftRight className="w-4 h-4 mr-2" /> Change Type
+                        </DropdownMenuSubTrigger>
+                        <TypeSelectDropdown
+                            sub
+                            propertyRange={propertyRange}
+                            onPropertyTypeSelect={() => {}}
+                        />
+                    </DropdownMenuSub>
+
                     <DropdownMenuSeparator />
+
                     <DropdownMenuItem>
                         <Trash className="w-4 h-4 mr-2" /> Delete
                     </DropdownMenuItem>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
-import { PropertyEditor } from "@/components/editor/property-editor"
+import { PropertyEditor, PropertyEditorTypes } from "@/components/editor/property-editor"
 import { Button } from "@/components/ui/button"
 import {
     EllipsisVertical,
@@ -21,8 +21,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {
     getEntityDisplayName,
-    isRootEntity as isRootEntityUtil,
-    isDataEntity as isDataEntityUtil
+    isDataEntity as isDataEntityUtil,
+    isRootEntity as isRootEntityUtil
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
 import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
@@ -53,6 +53,7 @@ function mapEntityToProperties(data: IFlatEntity): EntityEditorProperty[] {
             }
         })
         .flat()
+        .sort(byPropertyName)
 }
 
 function mapPropertiesToEntity(data: EntityEditorProperty[]): IFlatEntity {
@@ -78,7 +79,7 @@ function mapPropertiesToEntity(data: EntityEditorProperty[]): IFlatEntity {
 function byPropertyName(a: EntityEditorProperty, b: EntityEditorProperty) {
     if (a.propertyName === "name" && b.propertyName === "name") return 0
     if (a.propertyName === "name" && !b.propertyName.startsWith("@")) return -1
-    if (b.propertyName === "name" && !b.propertyName.startsWith("@")) return 1
+    if (b.propertyName === "name" && !a.propertyName.startsWith("@")) return 1
     if (a.propertyName === b.propertyName) return 0
     return a.propertyName > b.propertyName ? 1 : -1
 }
@@ -155,8 +156,21 @@ export function EntityEditor({
             const property = properties[propertyIndex]
             if (!hasChanged(value, property.values[valueIdx])) return
 
-            property.propertyName = propertyName
             property.values[valueIdx] = value
+            modifyProperties(properties)
+        },
+        [modifyProperties, properties]
+    )
+
+    const addPropertyEntry = useCallback(
+        (propertyName: string, type: PropertyEditorTypes) => {
+            const propertyIndex = properties.findIndex((p) => p.propertyName === propertyName)
+            if (propertyIndex < 0 || propertyIndex >= properties.length) return
+            const property = properties[propertyIndex]
+
+            const copy = property.values.slice()
+            copy.push(type === PropertyEditorTypes.Reference ? { "@id": "" } : "")
+            property.values = copy
             modifyProperties(properties)
         },
         [modifyProperties, properties]
@@ -295,12 +309,13 @@ export function EntityEditor({
                 />
 
                 <div className="my-12 flex flex-col gap-10 mr-2">
-                    {properties.sort(byPropertyName).map((property, i) => {
+                    {properties.map((property, i) => {
                         return (
                             <div key={property.propertyName}>
                                 <PropertyEditor
                                     property={property}
                                     onModifyProperty={modifyProperty}
+                                    onAddPropertyEntry={addPropertyEntry}
                                     hasChanges={propertyHasChanges[i] === "hasChanges"}
                                     isNew={propertyHasChanges[i] === "isNew"}
                                 />

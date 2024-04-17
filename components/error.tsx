@@ -20,18 +20,20 @@ function cnIcon(size?: "md" | "xl") {
 export function Error({
     text,
     size,
-    className
+    className,
+    prefix
 }: {
     text: string | ReactNode
     size?: "md" | "xl"
     className?: string
+    prefix?: string
 }) {
     if (!text) return null
 
     return (
         <div className={cn(size) + " " + className}>
             <CircleAlert className={cnIcon(size)} />
-            {text}
+            {prefix ? prefix + text : text}
         </div>
     )
 }

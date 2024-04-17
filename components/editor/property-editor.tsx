@@ -4,33 +4,22 @@ import { ChangeEvent, useCallback, useContext, useMemo } from "react"
 import { ReferenceField } from "@/components/editor/reference-field"
 import { TextField } from "@/components/editor/text-field"
 import { TypeField } from "@/components/editor/type-field"
-import { Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { IDField } from "@/components/editor/id-field"
 import { useAsync } from "@/components/use-async"
 import { CrateVerifyContext } from "@/components/crate-verify-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TEST_CONTEXT } from "@/components/crate-data-provider"
+import { Error } from "@/components/error"
+import AddEntryDropdown from "@/components/editor/add-entry-dropdown"
 
-export interface PropertyEditorProps {
-    property: EntityEditorProperty
-    onModifyProperty: (
-        propertyName: string,
-        value: FlatEntitySinglePropertyTypes,
-        valueIdx: number
-    ) => void
-    isNew?: boolean
-    hasChanges?: boolean
-}
-
-export interface SinglePropertyEditorProps extends PropertyEditorProps {
-    valueIndex: number
-}
-
-function entryName(property: EntityEditorProperty) {
-    if (property.propertyName === "@type") {
-        return "type"
-    } else return "entry"
+export enum PropertyEditorTypes {
+    Time,
+    Boolean,
+    DateTime,
+    Number,
+    Text,
+    Date,
+    Reference
 }
 
 function propertyNameReadable(propertyName: string) {
@@ -40,10 +29,28 @@ function propertyNameReadable(propertyName: string) {
     return split.charAt(0).toUpperCase() + split.slice(1)
 }
 
+export interface PropertyEditorProps {
+    property: EntityEditorProperty
+    onModifyProperty: (
+        propertyName: string,
+        value: FlatEntitySinglePropertyTypes,
+        valueIdx: number
+    ) => void
+    onAddPropertyEntry: (propertyName: string, type: PropertyEditorTypes) => void
+    isNew?: boolean
+    hasChanges?: boolean
+}
+
+export interface SinglePropertyEditorProps extends Omit<PropertyEditorProps, "onAddPropertyEntry"> {
+    valueIndex: number
+    propertyRange?: string[]
+}
+
 function SinglePropertyEditor({
     property,
     onModifyProperty,
-    valueIndex
+    valueIndex,
+    propertyRange
 }: SinglePropertyEditorProps) {
     const value = property.values[valueIndex]
 
@@ -68,18 +75,49 @@ function SinglePropertyEditor({
                 value={value}
                 onChange={onReferenceChange}
                 propertyName={property.propertyName}
+                propertyRange={propertyRange}
             />
         )
 
-    return <TextField value={value} onChange={onTextChange} />
+    return <TextField value={value} onChange={onTextChange} propertyRange={propertyRange} />
 }
 
 export function PropertyEditor(props: PropertyEditorProps) {
-    const { isReady: crateVerifyReady, getPropertyComment } = useContext(CrateVerifyContext)
+    const {
+        isReady: crateVerifyReady,
+        getPropertyComment,
+        getPropertyRange
+    } = useContext(CrateVerifyContext)
 
     const readablePropertyName = useMemo(() => {
         return propertyNameReadable(props.property.propertyName)
     }, [props.property.propertyName])
+
+    const onAddEntry = useCallback(
+        (type: PropertyEditorTypes) => {
+            props.onAddPropertyEntry(props.property.propertyName, type)
+        },
+        [props]
+    )
+
+    const referenceTypeRangeResolver = useCallback(
+        async (propertyName: string) => {
+            if (crateVerifyReady) {
+                const resolved = TEST_CONTEXT.resolve(propertyName)
+                if (!resolved) return []
+                const data = await getPropertyRange(resolved)
+                return data
+                    .map((s) => TEST_CONTEXT.reverse(s))
+                    .filter((s) => typeof s === "string") as string[]
+            }
+        },
+        [crateVerifyReady, getPropertyRange]
+    )
+
+    const { data: propertyRange, error: propertyRangeError } = useAsync(
+        crateVerifyReady ? props.property.propertyName : null,
+        referenceTypeRangeResolver
+    )
 
     const propertyCommentResolver = useCallback(
         async (propertyId: string) => {
@@ -124,6 +162,11 @@ export function PropertyEditor(props: PropertyEditorProps) {
             </div>
 
             <div>
+                <Error
+                    className="mb-2"
+                    text={propertyRangeError}
+                    prefix="Error while determining type range: "
+                />
                 <div className="flex flex-col gap-4">
                     {props.property.values.map((v, i) => {
                         return (
@@ -132,19 +175,16 @@ export function PropertyEditor(props: PropertyEditorProps) {
                                 valueIndex={i}
                                 property={props.property}
                                 onModifyProperty={props.onModifyProperty}
+                                propertyRange={propertyRange}
                             />
                         )
                     })}
                 </div>
-                {props.property.propertyName !== "@id" ? (
-                    <Button
-                        variant="link"
-                        className="flex text items-center text-muted-foreground p-1"
-                    >
-                        <Plus className="w-3 h-3 mr-1" />
-                        <span className="text-xs">Add another {entryName(props.property)}</span>
-                    </Button>
-                ) : null}
+                <AddEntryDropdown
+                    property={props.property}
+                    propertyRange={propertyRange}
+                    onAddEntry={onAddEntry}
+                />
             </div>
         </div>
     )
