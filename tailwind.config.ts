@@ -65,7 +65,7 @@ const config = {
                     DEFAULT: "rgb(236,121,57)"
                 },
                 data: {
-                    DEFAULT: "rgb(76,101,213)"
+                    DEFAULT: "rgb(186,34,236)"
                 },
                 contextual: {
                     DEFAULT: "rgb(29,165,77)"

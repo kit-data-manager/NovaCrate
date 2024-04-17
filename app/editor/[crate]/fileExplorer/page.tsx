@@ -13,11 +13,13 @@ export default function FileExplorerPage() {
                         <Folder className="w-4 h-4 shrink-0" /> File Explorer
                         <HelpTooltip>
                             <div>
-                                The File Explorer lists all files and folders in the RO-Crate. Files
-                                that are not described by a Data Entity are marked by{" "}
-                                <FolderX className="inline-block w-4 h-4 text-warn" />
-                                {" or "}
-                                <FileX className="inline-block w-4 h-4 text-warn" />.
+                                <div className="text-wrap">
+                                    The File Explorer lists all files and folders in the RO-Crate.
+                                    Files that are not described by a Data Entity are marked by{" "}
+                                    <FolderX className="inline-flex w-4 h-4 text-muted-foreground" />
+                                    {" or "}
+                                    <FileX className="inline-flex w-4 h-4 text-muted-foreground" />.
+                                </div>
                                 <div className="mt-6">
                                     <b>Double-Left-Click:</b> Edit/Create Data Entity
                                 </div>

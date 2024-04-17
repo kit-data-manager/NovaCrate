@@ -1,6 +1,6 @@
 import { EntityEditorProperty } from "@/components/editor/entity-editor"
 import { isReference } from "@/lib/utils"
-import { ChangeEvent, useCallback, useContext } from "react"
+import { ChangeEvent, useCallback, useContext, useMemo } from "react"
 import { ReferenceField } from "@/components/editor/reference-field"
 import { TextField } from "@/components/editor/text-field"
 import { TypeField } from "@/components/editor/type-field"
@@ -31,6 +31,13 @@ function entryName(property: EntityEditorProperty) {
     if (property.propertyName === "@type") {
         return "type"
     } else return "entry"
+}
+
+function propertyNameReadable(propertyName: string) {
+    if (propertyName === "@id") return "Identifier"
+    if (propertyName === "@type") return "Type"
+    const split = propertyName.replace(/([a-z0-9])([A-Z])/, "$1 $2")
+    return split.charAt(0).toUpperCase() + split.slice(1)
 }
 
 function SinglePropertyEditor({
@@ -70,8 +77,15 @@ function SinglePropertyEditor({
 export function PropertyEditor(props: PropertyEditorProps) {
     const { isReady: crateVerifyReady, getPropertyComment } = useContext(CrateVerifyContext)
 
+    const readablePropertyName = useMemo(() => {
+        return propertyNameReadable(props.property.propertyName)
+    }, [props.property.propertyName])
+
     const propertyCommentResolver = useCallback(
         async (propertyId: string) => {
+            if (propertyId === "@id") return "The unique identifier of the entity"
+            if (propertyId === "@type")
+                return "The type defines which properties can occur on the entity"
             const resolved = TEST_CONTEXT.resolve(propertyId)
             return await getPropertyComment(resolved || "unresolved")
         },
@@ -101,7 +115,7 @@ export function PropertyEditor(props: PropertyEditorProps) {
             ></div>
 
             <div className="pr-8">
-                <div>{props.property.propertyName}</div>
+                <div>{readablePropertyName}</div>
                 <div
                     className={`${commentIsPending ? "text-background" : "text-muted-foreground"} text-sm transition`}
                 >

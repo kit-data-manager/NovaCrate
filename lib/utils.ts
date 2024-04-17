@@ -32,6 +32,10 @@ export function isRootEntity(entity: IFlatEntity) {
     return entity["@id"] === "./"
 }
 
+export function isRoCrateMetadataEntity(entity: IFlatEntity) {
+    return entity["@id"] === "ro-crate-metadata.json"
+}
+
 export function isDataEntity(entity: IFlatEntity) {
     return isFileDataEntity(entity) || isFolderDataEntity(entity)
 }

@@ -1,3 +1,5 @@
+import { isContextualEntity, isRootEntity } from "@/lib/utils"
+
 export class RestProvider implements CrateServiceProvider {
     createCrateFromFilesZip(id: string, zip: Buffer): Promise<void> {
         return Promise.resolve(undefined)
@@ -65,9 +67,13 @@ export class RestProvider implements CrateServiceProvider {
     }
 
     async updateEntity(crateId: string, entityData: IFlatEntity): Promise<boolean> {
-        console.log(entityData)
+        const part = isRootEntity(entityData)
+            ? "root"
+            : isContextualEntity(entityData)
+              ? "contextual"
+              : "data"
         const request = await fetch(
-            `http://localhost:8080/crates/${encodeURIComponent(crateId)}/entities/contextual/${encodeURIComponent(entityData["@id"])}`,
+            `http://localhost:8080/crates/${encodeURIComponent(crateId)}/entities/${part}/${encodeURIComponent(entityData["@id"])}`,
             {
                 body: JSON.stringify(entityData),
                 method: "PUT",
