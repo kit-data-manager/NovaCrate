@@ -19,24 +19,22 @@ import {
 } from "lucide-react"
 import { CreateEntityModal } from "@/components/editor/create-entity-modal"
 import { CreateFromORCIDModal } from "@/components/editor/from-orcid-modal"
-import { useAsync } from "@/components/use-async"
-import { Error } from "@/components/error"
-import { CrateVerifyContext } from "@/components/crate-verify-provider"
-import { CrateDataContext, TEST_CONTEXT } from "@/components/crate-data-provider"
+import { CrateDataContext } from "@/components/crate-data-provider"
 import { getEntityDisplayName } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export function ReferenceField({
     value,
     propertyName,
-    onChange
+    onChange,
+    propertyRange
 }: {
     value: IReference
     onChange: (value: IReference) => void
     propertyName: string
+    propertyRange?: string[]
 }) {
-    const { crateData } = useContext(CrateDataContext)
-    const { isReady: crateVerifyReady, getPropertyRange } = useContext(CrateVerifyContext)
+    const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
 
     const [selectModalOpen, setSelectModalOpen] = useState(false)
     const [createModalOpen, setCreateModalOpen] = useState(false)
@@ -45,43 +43,29 @@ export function ReferenceField({
         console.log("selected", selection)
     }, [])
 
-    const referenceTypeRangeResolver = useCallback(
-        async (propertyName: string) => {
-            if (crateVerifyReady) {
-                const resolved = TEST_CONTEXT.resolve(propertyName)
-                if (!resolved) return []
-                const data = await getPropertyRange(resolved)
-                return data
-                    .map((s) => TEST_CONTEXT.reverse(s))
-                    .filter((s) => typeof s === "string") as string[]
-            }
-        },
-        [crateVerifyReady, getPropertyRange]
-    )
-
-    const { data: referenceTypeRange, error: referenceTypeRangeError } = useAsync(
-        crateVerifyReady ? propertyName : null,
-        referenceTypeRangeResolver
-    )
-
     const isEmpty = useMemo(() => {
         return value["@id"] === ""
     }, [value])
 
-    const ReferenceText = useCallback(() => {
+    const referencedEntityName = useMemo(() => {
         if (crateData) {
-            const referenced = crateData["@graph"].find((e) => e["@id"] === value["@id"])
-            if (referenced) {
-                return <span>{getEntityDisplayName(referenced)}</span>
+            const entity = crateData["@graph"].find((e) => e["@id"] === value["@id"])
+            if (entity) return getEntityDisplayName(entity)
+        }
+    }, [crateData, value])
+
+    const ReferenceText = useCallback(() => {
+        if (!crateDataIsLoading) {
+            if (referencedEntityName) {
+                return <span>{referencedEntityName}</span>
             } else {
                 return <span className="text-root">Unresolved</span>
             }
         } else return <Skeleton className="h-4 w-20" />
-    }, [crateData, value])
+    }, [crateDataIsLoading, referencedEntityName])
 
     return (
         <div className="flex w-full">
-            <Error text={referenceTypeRangeError} />
             <SelectReferenceModal
                 open={selectModalOpen}
                 onSelect={onSelect}
@@ -91,12 +75,12 @@ export function ReferenceField({
                 open={createModalOpen}
                 onEntityCreated={onSelect}
                 onOpenChange={setCreateModalOpen}
-                restrictToClasses={referenceTypeRange}
+                restrictToClasses={propertyRange}
             />
 
             {isEmpty ? (
                 <>
-                    <CreateFromExternalButton propertyRange={referenceTypeRange} />
+                    <CreateFromExternalButton propertyRange={propertyRange} />
                     <Button
                         className="grow rounded-r-none border-r-0 first:rounded-l-md rounded-l-none"
                         variant="outline"
