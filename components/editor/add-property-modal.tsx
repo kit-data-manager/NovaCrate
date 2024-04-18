@@ -11,11 +11,50 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SchemaNode } from "@/lib/crate-verify/SchemaGraph"
 import { useCallback } from "react"
+import { PropertyEditorTypes } from "@/components/editor/property-editor"
+import { usePropertyCanBe } from "@/components/editor/property-hooks"
 
 export interface PossibleProperty {
     propertyName: string
     range: string[]
+    rangeReadable: string[]
     comment: SchemaNode["comment"]
+}
+
+function AddPropertyModalEntry({
+    property,
+    onSelect
+}: {
+    property: PossibleProperty
+    onSelect: (propertyName: string, propertyType: PropertyEditorTypes) => void
+}) {
+    const { canBeReference } = usePropertyCanBe(property.range)
+
+    return (
+        <CommandItem
+            className="text-md"
+            key={property.propertyName}
+            value={property.propertyName}
+            onSelect={(v) =>
+                onSelect(
+                    v,
+                    canBeReference ? PropertyEditorTypes.Reference : PropertyEditorTypes.Text
+                )
+            }
+        >
+            <div className="flex flex-col max-w-full w-full py-1">
+                <div className="flex justify-between">
+                    <div>{property.propertyName}</div>
+                    <div className="text-sm text-muted-foreground">
+                        {property.rangeReadable.join(", ")}
+                    </div>
+                </div>
+                <div className="truncate text-xs">
+                    <span>{property.comment + ""}</span>
+                </div>
+            </div>
+        </CommandItem>
+    )
 }
 
 export function AddPropertyModal({
@@ -32,9 +71,12 @@ export function AddPropertyModal({
     possiblePropertiesPending: boolean
 }) {
     const onSelect = useCallback(
-        (value: string, range: string[]) => {
+        (propertyName: string, propertyType: PropertyEditorTypes) => {
             onOpenChange(false)
-            onPropertyAdd(value, range.includes("Text") ? [""] : [{ "@id": "" }])
+            onPropertyAdd(
+                propertyName,
+                propertyType === PropertyEditorTypes.Reference ? [{ "@id": "" }] : [""]
+            )
         },
         [onOpenChange, onPropertyAdd]
     )
@@ -52,26 +94,13 @@ export function AddPropertyModal({
                         <CommandEmpty>No results found.</CommandEmpty>
                         <CommandGroup>
                             {open && possibleProperties && !possiblePropertiesPending ? (
-                                possibleProperties.map((e) => {
+                                possibleProperties.map((property) => {
                                     return (
-                                        <CommandItem
-                                            className="text-md"
-                                            key={e.propertyName}
-                                            value={e.propertyName}
-                                            onSelect={(v) => onSelect(v, e.range)}
-                                        >
-                                            <div className="flex flex-col max-w-full w-full">
-                                                <div className="flex justify-between">
-                                                    <div>{e.propertyName}</div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        {e.range.join(", ")}
-                                                    </div>
-                                                </div>
-                                                <div className="truncate text-xs">
-                                                    <span>{e.comment + ""}</span>
-                                                </div>
-                                            </div>
-                                        </CommandItem>
+                                        <AddPropertyModalEntry
+                                            key={property.propertyName}
+                                            property={property}
+                                            onSelect={onSelect}
+                                        />
                                     )
                                 })
                             ) : (

@@ -8,6 +8,7 @@ import { CrateDataContext } from "@/components/crate-data-provider"
 import { getEntityDisplayName } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
+import { SCHEMA_ORG_ORGANIZATION, SCHEMA_ORG_PERSON } from "@/lib/constants"
 
 export const ReferenceField = memo(function ReferenceField({
     value,
@@ -26,9 +27,12 @@ export const ReferenceField = memo(function ReferenceField({
     const [selectModalOpen, setSelectModalOpen] = useState(false)
     const [createModalOpen, setCreateModalOpen] = useState(false)
 
-    const onSelect = useCallback((selection: IReference) => {
-        console.log("selected", selection)
-    }, [])
+    const onSelect = useCallback(
+        (selection: IReference) => {
+            onChange(selection)
+        },
+        [onChange]
+    )
 
     const isEmpty = useMemo(() => {
         return value["@id"] === ""
@@ -44,7 +48,7 @@ export const ReferenceField = memo(function ReferenceField({
     const ReferenceText = useCallback(() => {
         if (!crateDataIsLoading) {
             if (referencedEntityName) {
-                return <span>{referencedEntityName}</span>
+                return <span className="truncate">{referencedEntityName}</span>
             } else {
                 return <span className="text-root">Unresolved</span>
             }
@@ -94,16 +98,18 @@ export const ReferenceField = memo(function ReferenceField({
                 </>
             ) : (
                 <Button
-                    className="grow rounded-r-none justify-start pl-3"
+                    className="grow rounded-r-none justify-start pl-3 truncate"
                     variant="outline"
                     onClick={() => {
                         setSelectModalOpen(true)
                     }}
                 >
-                    <LinkIcon className="w-4 h-4 mr-2 text-muted-foreground" />
-                    <div className="flex items-end">
+                    <LinkIcon className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
+                    <div className="flex items-end truncate">
                         <ReferenceText />
-                        <span className="text-muted-foreground ml-1 text-xs">{value["@id"]}</span>
+                        <span className="text-muted-foreground ml-1 text-xs truncate">
+                            {value["@id"]}
+                        </span>
                     </div>
                 </Button>
             )}
@@ -127,35 +133,41 @@ function CreateFromExternalButton({ propertyRange }: { propertyRange?: string[] 
 
     const fromORCID = useMemo(() => {
         if (!propertyRange) return false
-        return propertyRange.includes("Person")
+        return propertyRange.includes(SCHEMA_ORG_PERSON)
     }, [propertyRange])
 
     const fromROR = useMemo(() => {
         if (!propertyRange) return false
-        return propertyRange.includes("Organization")
+        return propertyRange.includes(SCHEMA_ORG_ORGANIZATION)
     }, [propertyRange])
 
-    if (fromORCID) {
-        return (
-            <>
-                <CreateFromORCIDModal
-                    open={modalOpen}
-                    onEntityCreated={() => {}}
-                    onOpenChange={setModalOpen}
-                />
-                <Button className="grow-[2] rounded-r-none animate-w-grow" onClick={openModal}>
-                    <Globe className="w-4 h-4 mr-2" /> From ORCID
-                </Button>
-            </>
-        )
-    } else if (fromROR) {
-        return (
-            <>
-                <Button className="grow-[2] rounded-r-none" onClick={openModal}>
-                    <Globe className="w-4 h-4 mr-2" /> From ROR
-                </Button>
-            </>
-        )
-    }
-    return null
+    return (
+        <>
+            {fromORCID ? (
+                <>
+                    <CreateFromORCIDModal
+                        open={modalOpen}
+                        onEntityCreated={() => {}}
+                        onOpenChange={setModalOpen}
+                    />
+                    <Button
+                        className="grow-[2] rounded-none first:rounded-l-lg"
+                        onClick={openModal}
+                    >
+                        <Globe className="w-4 h-4 mr-2" /> From ORCID
+                    </Button>
+                </>
+            ) : null}
+            {fromROR ? (
+                <>
+                    <Button
+                        className="grow-[2] rounded-none first:rounded-l-lg"
+                        onClick={openModal}
+                    >
+                        <Globe className="w-4 h-4 mr-2" /> From ROR
+                    </Button>
+                </>
+            ) : null}
+        </>
+    )
 }

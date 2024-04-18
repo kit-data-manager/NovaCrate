@@ -69,10 +69,7 @@ export const PropertyEditor = memo(function PropertyEditor({
             if (crateVerifyReady) {
                 const resolved = TEST_CONTEXT.resolve(propertyName)
                 if (!resolved) return []
-                const data = await getPropertyRange(resolved)
-                return data
-                    .map((s) => TEST_CONTEXT.reverse(s))
-                    .filter((s) => typeof s === "string") as string[]
+                return await getPropertyRange(resolved)
             }
         },
         [crateVerifyReady, getPropertyRange]
@@ -125,7 +122,7 @@ export const PropertyEditor = memo(function PropertyEditor({
                 </div>
             </div>
 
-            <div>
+            <div className="truncate p-1">
                 <Error
                     className="mb-2"
                     text={propertyRangeError}

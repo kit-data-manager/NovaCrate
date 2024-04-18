@@ -4,7 +4,7 @@ import {
     DropdownMenuSubContent
 } from "@/components/ui/dropdown-menu"
 import { useMemo } from "react"
-import { Binary, Calendar, CalendarClock, Clock9, LinkIcon, Type } from "lucide-react"
+import { Binary, Calendar, CalendarClock, Clock9, Diff, LinkIcon, Type } from "lucide-react"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
 
@@ -30,7 +30,7 @@ export default function TypeSelectDropdown(props: {
                 <DropdownMenuItem
                     onClick={() => props.onPropertyTypeSelect(PropertyEditorTypes.Number)}
                 >
-                    Number
+                    <Diff className="w-4 h-4 mr-2" /> Number
                 </DropdownMenuItem>
             ) : null}
             {props.propertyCanBe.canBeBoolean ? (

@@ -240,8 +240,7 @@ export function EntityEditor({
         clearRemovedProperties()
         updateEntity(mapPropertiesToEntity(editorStateRef.current))
             .then((b) => {
-                console.log("done with update", b)
-                setSaveError("")
+                setSaveError(b ? "" : "Unknown error")
             })
             .catch((e) => {
                 setSaveError(e + "")
@@ -266,7 +265,8 @@ export function EntityEditor({
                     .map((s) => {
                         return {
                             ...s,
-                            range: s.range
+                            range: s.range.map((r) => r["@id"]),
+                            rangeReadable: s.range
                                 .map((r) => r["@id"])
                                 .map((r) => TEST_CONTEXT.reverse(r))
                                 .filter((r) => typeof r === "string"),
