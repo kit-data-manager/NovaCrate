@@ -1,4 +1,14 @@
 import { useMemo } from "react"
+import {
+    SCHEMA_ORG_BOOLEAN,
+    SCHEMA_ORG_DATE,
+    SCHEMA_ORG_DATE_TIME,
+    SCHEMA_ORG_NUMBER,
+    SCHEMA_ORG_NUMBERLIKE,
+    SCHEMA_ORG_TEXT,
+    SCHEMA_ORG_TEXTLIKE,
+    SCHEMA_ORG_TIME
+} from "@/lib/constants"
 
 function isNoneOf(value: string, of: string[]) {
     return of.find((s) => s === value) === undefined
@@ -6,40 +16,51 @@ function isNoneOf(value: string, of: string[]) {
 
 export function usePropertyCanBe(propertyRange?: string[]) {
     const canBeTime = useMemo(() => {
-        return propertyRange?.includes("Time")
+        return propertyRange?.includes(SCHEMA_ORG_TIME)
     }, [propertyRange])
 
     const canBeBoolean = useMemo(() => {
-        return propertyRange?.includes("Boolean")
+        return propertyRange?.includes(SCHEMA_ORG_BOOLEAN)
     }, [propertyRange])
 
     const canBeDateTime = useMemo(() => {
-        return propertyRange?.includes("DateTime")
+        return propertyRange?.includes(SCHEMA_ORG_DATE_TIME)
     }, [propertyRange])
 
     const canBeNumber = useMemo(() => {
-        return propertyRange?.includes("Number")
+        return propertyRange
+            ? propertyRange.includes(SCHEMA_ORG_NUMBER) ||
+                  SCHEMA_ORG_NUMBERLIKE.find((s) => propertyRange.includes(s))
+            : undefined
     }, [propertyRange])
 
     const canBeDate = useMemo(() => {
-        return propertyRange?.includes("Date")
+        return propertyRange?.includes(SCHEMA_ORG_DATE)
     }, [propertyRange])
 
     const canBeText = useMemo(() => {
-        return (
-            propertyRange?.includes("Text") ||
-            canBeTime ||
-            canBeBoolean ||
-            canBeDateTime ||
-            canBeNumber ||
-            canBeDate
-        )
-    }, [canBeBoolean, canBeDate, canBeDateTime, canBeNumber, canBeTime, propertyRange])
+        return propertyRange
+            ? propertyRange.includes(SCHEMA_ORG_TEXT) ||
+                  SCHEMA_ORG_TEXTLIKE.find((s) => propertyRange.includes(s))
+            : undefined
+    }, [propertyRange])
 
     const canBeReference = useMemo(() => {
         return propertyRange
             ? propertyRange.filter((s) =>
-                  isNoneOf(s, ["Time", "Boolean", "DateTime", "Number", "Date", "Text"])
+                  isNoneOf(
+                      s,
+                      [
+                          SCHEMA_ORG_TIME,
+                          SCHEMA_ORG_BOOLEAN,
+                          SCHEMA_ORG_DATE_TIME,
+                          SCHEMA_ORG_NUMBER,
+                          SCHEMA_ORG_DATE,
+                          SCHEMA_ORG_TEXT,
+                          SCHEMA_ORG_NUMBERLIKE,
+                          SCHEMA_ORG_TEXTLIKE
+                      ].flat()
+                  )
               ).length > 0
             : undefined
     }, [propertyRange])
