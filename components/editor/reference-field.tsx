@@ -57,7 +57,10 @@ export const ReferenceField = memo(function ReferenceField({
                 open={selectModalOpen}
                 onSelect={onSelect}
                 onOpenChange={setSelectModalOpen}
+                propertyRange={propertyRange}
             />
+
+            {/* TODO Creating should be done in global modal */}
             <CreateEntityModal
                 open={createModalOpen}
                 onEntityCreated={onSelect}

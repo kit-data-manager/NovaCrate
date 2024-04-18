@@ -5,15 +5,19 @@ import { PropertyEditor, PropertyEditorTypes } from "@/components/editor/propert
 import {
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
-    isRootEntity as isRootEntityUtil
+    isRootEntity as isRootEntityUtil,
+    toArray
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
 import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
-import { CrateDataContext } from "@/components/crate-data-provider"
+import { CrateDataContext, TEST_CONTEXT } from "@/components/crate-data-provider"
 import { Error } from "@/components/error"
 import { EntityEditorHeader } from "@/components/editor/entity-editor-header"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useAsync } from "@/components/use-async"
+import { CrateVerifyContext } from "@/components/crate-verify-provider"
+import { AddPropertyModal, PossibleProperty } from "@/components/editor/add-property-modal"
 
 type PropertyHasChangesEnum = "no" | "hasChanges" | "isNew"
 
@@ -81,9 +85,20 @@ export function EntityEditor({
 }) {
     const { updateTab } = useContext(EntityEditorTabsContext)
     const { updateEntity } = useContext(CrateDataContext)
+    const { isReady: crateVerifyReady, getClassProperties } = useContext(CrateVerifyContext)
 
     const [saveError, setSaveError] = useState("")
     const [isSaving, setIsSaving] = useState(false)
+
+    const [addPropertyModelOpen, setAddPropertyModelOpen] = useState(false)
+
+    const addPropertyModelOpenChange = useCallback((isOpen: boolean) => {
+        setAddPropertyModelOpen(isOpen)
+    }, [])
+
+    const openAddPropertyModal = useCallback(() => {
+        setAddPropertyModelOpen(true)
+    }, [])
 
     const editorStateRef = useRef(editorState)
     useEffect(() => {
@@ -194,11 +209,16 @@ export function EntityEditor({
     )
 
     const addProperty = useCallback(
-        (propertyName: string, values: FlatEntitySinglePropertyTypes[]) => {
+        (propertyName: string, values?: FlatEntitySinglePropertyTypes[]) => {
+            const propertyIndex = editorStateRef.current.findIndex(
+                (p) => p.propertyName === propertyName
+            )
+            if (propertyIndex >= 0 && propertyIndex < editorStateRef.current.length) return
+
             const newEditorState = editorStateRef.current.slice()
             newEditorState.push({
                 propertyName,
-                values
+                values: values || []
             })
             modifyProperties(newEditorState)
         },
@@ -235,6 +255,40 @@ export function EntityEditor({
         modifyProperties(mapEntityToProperties(entityData))
     }, [entityData, modifyProperties])
 
+    const possiblePropertiesResolver = useCallback(
+        async (types: string[]) => {
+            if (crateVerifyReady) {
+                const resolved = types
+                    .map((type) => TEST_CONTEXT.resolve(type))
+                    .filter((s) => typeof s === "string") as string[]
+                const data = await getClassProperties(resolved)
+                return data
+                    .map((s) => {
+                        return {
+                            ...s,
+                            range: s.range
+                                .map((r) => r["@id"])
+                                .map((r) => TEST_CONTEXT.reverse(r))
+                                .filter((r) => typeof r === "string"),
+                            propertyName: TEST_CONTEXT.reverse(s["@id"])
+                        }
+                    })
+                    .filter((s) => typeof s.propertyName === "string") as PossibleProperty[]
+            }
+        },
+        [crateVerifyReady, getClassProperties]
+    )
+
+    const typeArray = useMemo(() => {
+        return toArray(entityData["@type"])
+    }, [entityData])
+
+    const {
+        data: possibleProperties,
+        error: possiblePropertiesError,
+        isPending: possiblePropertiesPending
+    } = useAsync(crateVerifyReady ? typeArray : null, possiblePropertiesResolver)
+
     const isRootEntity = useMemo(() => {
         return isRootEntityUtil(entityData)
     }, [entityData])
@@ -245,6 +299,14 @@ export function EntityEditor({
 
     return (
         <div className="relative">
+            <AddPropertyModal
+                open={addPropertyModelOpen}
+                onPropertyAdd={addProperty}
+                onOpenChange={addPropertyModelOpenChange}
+                possibleProperties={possibleProperties}
+                possiblePropertiesPending={possiblePropertiesPending}
+            />
+
             <EntityEditorHeader
                 hasUnsavedChanges={hasUnsavedChanges}
                 isSaving={isSaving}
@@ -280,6 +342,14 @@ export function EntityEditor({
                     className="mt-4"
                     text={saveError ? "Error while saving: " + saveError : ""}
                 />
+                <Error
+                    className="mt-4"
+                    text={
+                        possiblePropertiesError
+                            ? "Error while determining properties: " + possiblePropertiesError
+                            : ""
+                    }
+                />
 
                 <div className="my-12 flex flex-col gap-10 mr-2">
                     {editorState.map((property, i) => {
@@ -296,7 +366,12 @@ export function EntityEditor({
                             </div>
                         )
                     })}
-                    <Button size="sm" variant="outline" className="text-xs">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs"
+                        onClick={openAddPropertyModal}
+                    >
                         <Plus className={"w-4 h-4 mr-1"} /> Add Property
                     </Button>
                 </div>

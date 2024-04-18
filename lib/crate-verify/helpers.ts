@@ -1,4 +1,5 @@
-import { schemaGraph } from "./SchemaGraph"
+import { schemaGraph, SchemaNode } from "./SchemaGraph"
+import { toArray } from "../utils"
 
 export function getPropertyComment(propertyId: string) {
     return schemaGraph.getNode(propertyId)?.comment
@@ -33,4 +34,37 @@ export function getPropertyRange(propertyId: string) {
     }
 
     return Array.from(range)
+}
+
+export interface SlimProperty {
+    "@id": string
+    range: IReference[]
+    comment: SchemaNode["comment"]
+}
+
+export function getPossibleEntityProperties(types: string[]) {
+    const result: SlimProperty[] = []
+
+    for (const type of types) {
+        const properties = schemaGraph.getClassProperties(type).map((node) => {
+            return {
+                "@id": schemaGraph.expandIRI(node["@id"]),
+                range: node.range
+                    ? toArray(node.range).map((r) => {
+                          return {
+                              "@id": schemaGraph.expandIRI(r["@id"])
+                          }
+                      })
+                    : [],
+                comment: node.comment
+            }
+        })
+        for (const property of properties) {
+            if (!result.find((p) => p["@id"] === property["@id"])) {
+                result.push(property)
+            }
+        }
+    }
+
+    return Array.from(result)
 }

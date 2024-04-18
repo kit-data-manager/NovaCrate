@@ -7,6 +7,7 @@ import { TEST_CONTEXT } from "@/components/crate-data-provider"
 import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
 import { SinglePropertyEditor } from "@/components/editor/single-property-editor"
+import { Trash } from "lucide-react"
 
 export enum PropertyEditorTypes {
     Time,
@@ -112,7 +113,7 @@ export const PropertyEditor = memo(function PropertyEditor({
     return (
         <div className="grid grid-cols-[12px_1fr_1fr] w-full">
             <div
-                className={`${isNew ? "bg-success" : hasChanges ? "bg-info" : ""} max-w-1 rounded-full transition`}
+                className={`${property.values.length === 0 ? "bg-destructive" : isNew ? "bg-success" : hasChanges ? "bg-info" : ""} max-w-1 rounded-full transition`}
             ></div>
 
             <div className="pr-8">
@@ -144,11 +145,18 @@ export const PropertyEditor = memo(function PropertyEditor({
                             />
                         )
                     })}
+                    {property.values.length === 0 ? (
+                        <div className="flex items-center text-sm text-muted-foreground">
+                            <Trash className="w-4 h-4 mr-2" /> This Property has no entries and will
+                            be deleted on save
+                        </div>
+                    ) : null}
                 </div>
                 <AddEntryDropdown
                     propertyName={property.propertyName}
                     propertyRange={propertyRange}
                     onAddEntry={onAddEntry}
+                    another={property.values.length > 0}
                 />
             </div>
         </div>
