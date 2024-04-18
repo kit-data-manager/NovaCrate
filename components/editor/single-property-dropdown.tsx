@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { ArrowLeftRight, EllipsisVertical, Eraser, Trash, Unlink } from "lucide-react"
 import TypeSelectDropdown from "@/components/editor/type-select-dropdown"
+import { usePropertyCanBe } from "@/components/editor/property-hooks"
 
 export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
     propertyRange,
@@ -36,6 +37,8 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
             onModifyReferenceProperty({ "@id": "" })
         }
     }, [onModifyReferenceProperty, onModifyTextLikeProperty])
+
+    const propertyCanBe = usePropertyCanBe(propertyRange)
 
     return (
         <DropdownMenu>
@@ -65,7 +68,7 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
                     </DropdownMenuSubTrigger>
                     <TypeSelectDropdown
                         sub
-                        propertyRange={propertyRange}
+                        propertyCanBe={propertyCanBe}
                         onPropertyTypeSelect={() => {}}
                     />
                 </DropdownMenuSub>

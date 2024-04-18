@@ -1,6 +1,7 @@
 import {
     getPropertyComment as localGetPropertyComment,
-    getPropertyRange as localGetPropertyRange
+    getPropertyRange as localGetPropertyRange,
+    getPossibleEntityProperties as localGetEntityPossibleProperties
 } from "@/lib/crate-verify/helpers"
 import { createContext, PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
 
@@ -9,6 +10,9 @@ export interface ICrateVerifyContext {
     isUsingWebWorker: boolean
     getPropertyComment: (propertyId: string) => Promise<ReturnType<typeof localGetPropertyComment>>
     getPropertyRange: (propertyId: string) => Promise<ReturnType<typeof localGetPropertyRange>>
+    getClassProperties: (
+        types: string[]
+    ) => Promise<ReturnType<typeof localGetEntityPossibleProperties>>
 }
 
 export const CrateVerifyContext = createContext<ICrateVerifyContext>({
@@ -18,6 +22,9 @@ export const CrateVerifyContext = createContext<ICrateVerifyContext>({
         return undefined
     },
     async getPropertyRange() {
+        return []
+    },
+    async getClassProperties() {
         return []
     }
 })
@@ -80,6 +87,17 @@ export function CrateVerifyProvider(props: PropsWithChildren) {
         }
     }, [])
 
+    const getClassProperties = useCallback((types: string[]) => {
+        if (worker.current) {
+            return post(worker.current, {
+                operation: "getEntityPossibleProperties",
+                types: types
+            }) as Promise<ReturnType<typeof localGetEntityPossibleProperties>>
+        } else {
+            return Promise.resolve(localGetEntityPossibleProperties(types))
+        }
+    }, [])
+
     useEffect(() => {
         if (window.Worker) {
             worker.current = new Worker("/crate-verify-worker.js")
@@ -95,7 +113,8 @@ export function CrateVerifyProvider(props: PropsWithChildren) {
                 isReady,
                 isUsingWebWorker,
                 getPropertyComment,
-                getPropertyRange
+                getPropertyRange,
+                getClassProperties
             }}
         >
             {props.children}
