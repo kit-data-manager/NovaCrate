@@ -1,36 +1,25 @@
 import { memo, useCallback, useContext, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { SelectReferenceModal } from "@/components/editor/select-reference-modal"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
-import {
-    ArrowLeftRight,
-    EllipsisVertical,
-    Globe,
-    LinkIcon,
-    Plus,
-    Trash,
-    Unlink
-} from "lucide-react"
+import { Globe, LinkIcon, Plus } from "lucide-react"
 import { CreateEntityModal } from "@/components/editor/create-entity-modal"
 import { CreateFromORCIDModal } from "@/components/editor/from-orcid-modal"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { getEntityDisplayName } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
+import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 
 export const ReferenceField = memo(function ReferenceField({
     value,
-    propertyRange
+    onChange,
+    propertyRange,
+    onRemoveEntry
 }: {
     value: IReference
     onChange: (value: IReference) => void
     propertyName: string
     propertyRange?: string[]
+    onRemoveEntry: () => void
 }) {
     const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
 
@@ -116,25 +105,12 @@ export const ReferenceField = memo(function ReferenceField({
                 </Button>
             )}
 
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="border-l-0 rounded-l-none px-2">
-                        <EllipsisVertical />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    <DropdownMenuItem disabled={isEmpty}>
-                        <Unlink className="w-4 h-4 mr-2" /> Clear
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                        <ArrowLeftRight className="w-4 h-4 mr-2" /> Change Type
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                        <Trash className="w-4 h-4 mr-2" /> Delete
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <SinglePropertyDropdown
+                propertyRange={propertyRange}
+                isReference
+                onModifyReferenceProperty={onChange}
+                onRemoveEntry={onRemoveEntry}
+            />
         </div>
     )
 })

@@ -1,16 +1,12 @@
 import { EntityEditorProperty } from "@/components/editor/entity-editor"
-import { isReference } from "@/lib/utils"
-import { ChangeEvent, memo, useCallback, useContext, useMemo } from "react"
-import { ReferenceField } from "@/components/editor/reference-field"
-import { TextField } from "@/components/editor/text-field"
-import { TypeField } from "@/components/editor/type-field"
-import { IDField } from "@/components/editor/id-field"
+import { memo, useCallback, useContext, useMemo } from "react"
 import { useAsync } from "@/components/use-async"
 import { CrateVerifyContext } from "@/components/crate-verify-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TEST_CONTEXT } from "@/components/crate-data-provider"
 import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
+import { SinglePropertyEditor } from "@/components/editor/single-property-editor"
 
 export enum PropertyEditorTypes {
     Time,
@@ -37,57 +33,18 @@ export interface PropertyEditorProps {
         valueIdx: number
     ) => void
     onAddPropertyEntry: (propertyName: string, type: PropertyEditorTypes) => void
+    onRemovePropertyEntry: (propertyName: string, index: number) => void
     isNew?: boolean
     hasChanges?: boolean
 }
-
-export interface SinglePropertyEditorProps {
-    propertyName: string
-    value: FlatEntitySinglePropertyTypes
-    valueIndex: number
-    propertyRange?: string[]
-    onModifyProperty: PropertyEditorProps["onModifyProperty"]
-}
-
-const SinglePropertyEditor = memo(function SinglePropertyEditor({
-    propertyName,
-    onModifyProperty,
-    valueIndex,
-    propertyRange,
-    value
-}: SinglePropertyEditorProps) {
-    const onReferenceChange = useCallback((value: IReference) => {}, []) // TODO
-
-    const onTextChange = useCallback(
-        (e: ChangeEvent<HTMLInputElement>) => {
-            onModifyProperty(propertyName, e.target.value, valueIndex)
-        },
-        [onModifyProperty, propertyName, valueIndex]
-    )
-
-    if (propertyName === "@type") return <TypeField value={value as string} onChange={() => {}} />
-
-    if (propertyName === "@id") return <IDField value={value as string} onChange={() => {}} />
-
-    if (isReference(value))
-        return (
-            <ReferenceField
-                value={value}
-                onChange={onReferenceChange}
-                propertyName={propertyName}
-                propertyRange={propertyRange}
-            />
-        )
-
-    return <TextField value={value} onChange={onTextChange} propertyRange={propertyRange} />
-})
 
 export const PropertyEditor = memo(function PropertyEditor({
     property,
     onModifyProperty,
     onAddPropertyEntry,
     isNew,
-    hasChanges
+    hasChanges,
+    onRemovePropertyEntry
 }: PropertyEditorProps) {
     const {
         isReady: crateVerifyReady,
@@ -180,9 +137,10 @@ export const PropertyEditor = memo(function PropertyEditor({
                                 key={i}
                                 valueIndex={i}
                                 propertyName={property.propertyName}
-                                value={property.values[i]}
+                                value={v}
                                 onModifyProperty={onModifyProperty}
                                 propertyRange={propertyRange}
+                                onRemovePropertyEntry={onRemovePropertyEntry}
                             />
                         )
                     })}

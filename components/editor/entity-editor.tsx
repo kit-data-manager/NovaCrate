@@ -12,6 +12,8 @@ import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { Error } from "@/components/error"
 import { EntityEditorHeader } from "@/components/editor/entity-editor-header"
+import { Plus } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 type PropertyHasChangesEnum = "no" | "hasChanges" | "isNew"
 
@@ -116,6 +118,7 @@ export function EntityEditor({
         return propertyHasChanges.filter((p) => p !== "no").length > 0
     }, [propertyHasChanges])
 
+    // TODO move into tabs for "save all"
     useEffect(() => {
         if (dirty !== hasUnsavedChanges)
             updateTab({
@@ -171,36 +174,50 @@ export function EntityEditor({
         [modifyProperties]
     )
 
+    // TODO move into tabs for "save all"
     const removeProperty = useCallback(
         (propertyName: string, valueIdx: number) => {
-            const propertyIndex = editorState.findIndex((p) => p.propertyName === propertyName)
-            if (propertyIndex < 0 || propertyIndex >= editorState.length) return
-            const property = editorState[propertyIndex]
-            if (property.values.length > 1) {
-                property.values.splice(valueIdx)
-            } else {
-                editorState.splice(propertyIndex)
-            }
-            modifyProperties(editorState)
+            const propertyIndex = editorStateRef.current.findIndex(
+                (p) => p.propertyName === propertyName
+            )
+            if (propertyIndex < 0 || propertyIndex >= editorStateRef.current.length) return
+            const property = editorStateRef.current[propertyIndex]
+
+            const newEditorState = editorStateRef.current.slice()
+            const newProperty = structuredClone(property)
+            newProperty.values.splice(valueIdx, 1)
+            newEditorState.splice(propertyIndex, 1, newProperty)
+
+            modifyProperties(newEditorState)
         },
-        [modifyProperties, editorState]
+        [modifyProperties]
     )
 
     const addProperty = useCallback(
         (propertyName: string, values: FlatEntitySinglePropertyTypes[]) => {
-            editorState.push({
+            const newEditorState = editorStateRef.current.slice()
+            newEditorState.push({
                 propertyName,
                 values
             })
-            modifyProperties(editorState)
+            modifyProperties(newEditorState)
         },
-        [modifyProperties, editorState]
+        [modifyProperties]
     )
 
+    const clearRemovedProperties = useCallback(() => {
+        if (editorStateRef.current.find((p) => p.values.length === 0)) {
+            const newEditorState = editorStateRef.current.slice().filter((p) => p.values.length > 0)
+            modifyProperties(newEditorState)
+        }
+    }, [modifyProperties])
+
+    // TODO move into tabs for "save all"
     const saveChanges = useCallback(() => {
         if (!hasUnsavedChanges) return
 
         setIsSaving(true)
+        clearRemovedProperties()
         updateEntity(mapPropertiesToEntity(editorStateRef.current))
             .then((b) => {
                 console.log("done with update", b)
@@ -212,7 +229,11 @@ export function EntityEditor({
             .finally(() => {
                 setIsSaving(false)
             })
-    }, [hasUnsavedChanges, updateEntity])
+    }, [clearRemovedProperties, hasUnsavedChanges, updateEntity])
+
+    const revertChanges = useCallback(() => {
+        modifyProperties(mapEntityToProperties(entityData))
+    }, [entityData, modifyProperties])
 
     const isRootEntity = useMemo(() => {
         return isRootEntityUtil(entityData)
@@ -228,6 +249,7 @@ export function EntityEditor({
                 hasUnsavedChanges={hasUnsavedChanges}
                 isSaving={isSaving}
                 saveChanges={saveChanges}
+                revertChanges={revertChanges}
             />
 
             <div className="p-4 mr-10">
@@ -269,10 +291,14 @@ export function EntityEditor({
                                     onAddPropertyEntry={addPropertyEntry}
                                     hasChanges={propertyHasChanges[i] === "hasChanges"}
                                     isNew={propertyHasChanges[i] === "isNew"}
+                                    onRemovePropertyEntry={removeProperty}
                                 />
                             </div>
                         )
                     })}
+                    <Button size="sm" variant="outline" className="text-xs">
+                        <Plus className={"w-4 h-4 mr-1"} /> Add Property
+                    </Button>
                 </div>
             </div>
         </div>
