@@ -1,62 +1,39 @@
-import { ChangeEvent, memo } from "react"
+import { ChangeEvent, memo, useCallback } from "react"
 import { Input } from "@/components/ui/input"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuSub,
-    DropdownMenuSubTrigger,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { ArrowLeftRight, EllipsisVertical, Eraser, Trash, TypeIcon } from "lucide-react"
-import TypeSelectDropdown from "@/components/editor/type-select-dropdown"
+import { TypeIcon } from "lucide-react"
+import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 
 export const TextField = memo(function TextField({
     value,
     onChange,
-    propertyRange
+    propertyRange,
+    onRemoveEntry
 }: {
     value: string
-    onChange: (value: ChangeEvent<HTMLInputElement>) => void
+    onChange: (value: string) => void
     propertyRange?: string[]
+    onRemoveEntry: () => void
 }) {
+    const onInputChange = useCallback(
+        (e: ChangeEvent<HTMLInputElement>) => {
+            onChange(e.target.value)
+        },
+        [onChange]
+    )
+
     return (
         <div className="flex w-full relative">
             <TypeIcon className="w-4 h-4 absolute left-2.5 top-3 pointer-events-none text-muted-foreground" />
-            <Input value={value} onChange={onChange} className="self-center rounded-r-none pl-9" />
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="border-l-0 rounded-l-none px-2">
-                        <EllipsisVertical />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    <DropdownMenuItem>
-                        <Eraser className="w-4 h-4 mr-2" /> Clear
-                    </DropdownMenuItem>
-
-                    <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                            <ArrowLeftRight className="w-4 h-4 mr-2" /> Change Type
-                        </DropdownMenuSubTrigger>
-                        <TypeSelectDropdown
-                            sub
-                            propertyRange={propertyRange}
-                            onPropertyTypeSelect={() => {}}
-                        />
-                    </DropdownMenuSub>
-
-                    <DropdownMenuSeparator />
-
-                    <DropdownMenuItem>
-                        <span className="text-destructive-foreground">
-                            <Trash className="w-4 h-4 mr-2" /> Delete
-                        </span>
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <Input
+                value={value}
+                onChange={onInputChange}
+                className="self-center rounded-r-none pl-9"
+            />
+            <SinglePropertyDropdown
+                propertyRange={propertyRange}
+                onModifyTextLikeProperty={onChange}
+                onRemoveEntry={onRemoveEntry}
+            />
         </div>
     )
 })

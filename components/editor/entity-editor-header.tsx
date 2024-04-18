@@ -20,11 +20,13 @@ import { memo } from "react"
 export const EntityEditorHeader = memo(function EntityEditorHeader({
     isSaving,
     saveChanges,
-    hasUnsavedChanges
+    hasUnsavedChanges,
+    revertChanges
 }: {
     hasUnsavedChanges: boolean
     isSaving: boolean
     saveChanges(): void
+    revertChanges(): void
 }) {
     return (
         <div className="flex mb-2 gap-2 sticky top-0 z-10 p-2 bg-accent">
@@ -69,7 +71,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                         <DropdownMenuItem>
                             <Save className="w-4 h-4 mr-2" /> Save as...
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => revertChanges()}>
                             <Undo2 className="w-4 h-4 mr-2" /> Revert Changes
                         </DropdownMenuItem>
                     </DropdownMenuContent>
