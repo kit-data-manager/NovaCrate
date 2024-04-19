@@ -40,28 +40,30 @@ export function usePropertyCanBe(propertyRange?: string[]) {
 
     const canBeText = useMemo(() => {
         return propertyRange
-            ? propertyRange.includes(SCHEMA_ORG_TEXT) ||
+            ? propertyRange.length === 0 ||
+                  propertyRange.includes(SCHEMA_ORG_TEXT) ||
                   SCHEMA_ORG_TEXTLIKE.find((s) => propertyRange.includes(s))
             : undefined
     }, [propertyRange])
 
     const canBeReference = useMemo(() => {
         return propertyRange
-            ? propertyRange.filter((s) =>
-                  isNoneOf(
-                      s,
-                      [
-                          SCHEMA_ORG_TIME,
-                          SCHEMA_ORG_BOOLEAN,
-                          SCHEMA_ORG_DATE_TIME,
-                          SCHEMA_ORG_NUMBER,
-                          SCHEMA_ORG_DATE,
-                          SCHEMA_ORG_TEXT,
-                          SCHEMA_ORG_NUMBERLIKE,
-                          SCHEMA_ORG_TEXTLIKE
-                      ].flat()
-                  )
-              ).length > 0
+            ? propertyRange.length === 0 ||
+                  propertyRange.filter((s) =>
+                      isNoneOf(
+                          s,
+                          [
+                              SCHEMA_ORG_TIME,
+                              SCHEMA_ORG_BOOLEAN,
+                              SCHEMA_ORG_DATE_TIME,
+                              SCHEMA_ORG_NUMBER,
+                              SCHEMA_ORG_DATE,
+                              SCHEMA_ORG_TEXT,
+                              SCHEMA_ORG_NUMBERLIKE,
+                              SCHEMA_ORG_TEXTLIKE
+                          ].flat()
+                      )
+                  ).length > 0
             : undefined
     }, [propertyRange])
 
