@@ -1,4 +1,4 @@
-import { isContextualEntity, isRootEntity } from "@/lib/utils"
+import { isContextualEntity, isFolderDataEntity, isRootEntity } from "@/lib/utils"
 
 export class RestProvider implements CrateServiceProvider {
     createCrateFromFilesZip(id: string, zip: Buffer): Promise<void> {
@@ -71,7 +71,9 @@ export class RestProvider implements CrateServiceProvider {
             ? "root"
             : isContextualEntity(entityData)
               ? "contextual"
-              : "data"
+              : isFolderDataEntity(entityData)
+                ? "data/datasets"
+                : "data/files"
         const request = await fetch(
             `http://localhost:8080/crates/${encodeURIComponent(crateId)}/entities/${part}/${encodeURIComponent(entityData["@id"])}`,
             {
