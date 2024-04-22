@@ -1,16 +1,23 @@
 "use client"
 
 import { createContext, PropsWithChildren, useCallback, useState } from "react"
-import { EntityEditorProperty, mapEntityToProperties } from "@/components/editor/entity-editor"
+import {
+    EntityEditorProperty,
+    mapEntityToProperties
+} from "@/components/editor/use-virtual-entity-editor"
 
 export interface IEntityEditorTab {
     entityId: string
-    editorState: EntityEditorProperty[]
+    propertyEditorStates: EntityEditorProperty[]
     dirty: boolean
 }
 
 export function createEntityEditorTab(entity: IFlatEntity): IEntityEditorTab {
-    return { entityId: entity["@id"], editorState: mapEntityToProperties(entity), dirty: false }
+    return {
+        entityId: entity["@id"],
+        propertyEditorStates: mapEntityToProperties(entity),
+        dirty: false
+    }
 }
 
 export interface IEntityEditorTabsContext {

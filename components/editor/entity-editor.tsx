@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
-import { PropertyEditor, PropertyEditorTypes } from "@/components/editor/property-editor"
+import { useCallback, useContext, useMemo, useState } from "react"
+import { PropertyEditor } from "@/components/editor/property-editor"
 import {
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
@@ -9,8 +9,7 @@ import {
     toArray
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
-import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
-import { CrateDataContext, TEST_CONTEXT } from "@/components/crate-data-provider"
+import { TEST_CONTEXT } from "@/components/crate-data-provider"
 import { Error } from "@/components/error"
 import { EntityEditorHeader } from "@/components/editor/entity-editor-header"
 import { Plus } from "lucide-react"
@@ -18,77 +17,39 @@ import { Button } from "@/components/ui/button"
 import { useAsync } from "@/components/use-async"
 import { CrateVerifyContext } from "@/components/crate-verify-provider"
 import { AddPropertyModal, PossibleProperty } from "@/components/editor/add-property-modal"
+import { EntityEditorProps } from "@/components/editor/use-virtual-entity-editor"
 
-type PropertyHasChangesEnum = "no" | "hasChanges" | "isNew"
-
-export interface EntityEditorProperty {
-    propertyName: string
-    values: FlatEntitySinglePropertyTypes[]
-}
-
-export function mapEntityToProperties(data: IFlatEntity): EntityEditorProperty[] {
-    return Object.keys(data)
-        .map((key) => {
-            let value = data[key]
-            let arrValue: FlatEntitySinglePropertyTypes[]
-            if (!Array.isArray(value)) {
-                arrValue = [value]
-            } else {
-                arrValue = value.slice()
-            }
-
-            return {
-                propertyName: key,
-                values: arrValue
-            }
-        })
-        .flat()
-        .sort(byPropertyName)
-}
-
-export function mapPropertiesToEntity(data: EntityEditorProperty[]): IFlatEntity {
-    const result: Record<string, FlatEntityPropertyTypes> = {}
-
-    function autoUnpack(value: FlatEntitySinglePropertyTypes[]) {
-        if (value.length === 1) return value[0]
-        else return value
-    }
-
-    for (const property of data) {
-        if (property.values.length === 0) continue
-        result[property.propertyName] = autoUnpack(property.values)
-    }
-
-    if (!("@id" in result)) throw "Mapping properties to entity failed, no @id property"
-    if (!("@type" in result)) throw "Mapping properties to entity failed, no @id property"
-
-    return result as IFlatEntity
-}
-
-// Sorting function
-function byPropertyName(a: EntityEditorProperty, b: EntityEditorProperty) {
-    if (a.propertyName === "name" && b.propertyName === "name") return 0
-    if (a.propertyName === "name" && !b.propertyName.startsWith("@")) return -1
-    if (b.propertyName === "name" && !a.propertyName.startsWith("@")) return 1
-    if (a.propertyName === b.propertyName) return 0
-    return a.propertyName > b.propertyName ? 1 : -1
-}
-
+/**
+ *  The state of this component has been virtualized in a custom React Hook, used by
+ *  VirtualizedEntityEditor. This ensures that the entity editor stays functional even if
+ *  it is not being rendered. This enables features like save-all, where each editor takes
+ *  care of saving their own entity separately. By virtualizing the state and moving it into
+ *  VirtualEntityEditor, functions like saveChanges or removeProperty will work even if the editor
+ *  is not rendered.
+ *
+ *  TLDR: This component is purely a renderer, and does not take care of its own state. For the
+ *  entity editor state, look at VirtualEntityEditor and useVirtualEntityEditorState
+ *
+ *  This design was chosen because this Component (EntityEditor) can get very expensive in terms of
+ *  render time. By only rendering one entity editor at a time while also being able to manipulate
+ *  the state of all other entity editors (=tabs), we improve performance significantly without any
+ *  drawbacks. (The only drawback is this large comment to explain everything)
+ */
 export function EntityEditor({
     entityData,
     editorState,
-    dirty
-}: {
-    entityData: IFlatEntity
-    editorState: EntityEditorProperty[]
-    dirty: boolean
-}) {
-    const { updateTab } = useContext(EntityEditorTabsContext)
-    const { updateEntity } = useContext(CrateDataContext)
+    addProperty,
+    addPropertyEntry,
+    modifyProperty,
+    revertChanges,
+    removeProperty,
+    isSaving,
+    saveError,
+    saveChanges,
+    hasUnsavedChanges,
+    propertyHasChanges
+}: EntityEditorProps) {
     const { isReady: crateVerifyReady, getClassProperties } = useContext(CrateVerifyContext)
-
-    const [saveError, setSaveError] = useState("")
-    const [isSaving, setIsSaving] = useState(false)
 
     const [addPropertyModelOpen, setAddPropertyModelOpen] = useState(false)
 
@@ -99,160 +60,6 @@ export function EntityEditor({
     const openAddPropertyModal = useCallback(() => {
         setAddPropertyModelOpen(true)
     }, [])
-
-    const editorStateRef = useRef(editorState)
-    useEffect(() => {
-        editorStateRef.current = editorState
-    }, [editorState])
-
-    const initialProperties = useMemo(() => {
-        return mapEntityToProperties(entityData)
-    }, [entityData])
-
-    const propertyHasChanges: PropertyHasChangesEnum[] = useMemo(() => {
-        return editorState.map((prop) => {
-            const initialProp = initialProperties.find((p) => p.propertyName === prop.propertyName)
-            if (initialProp) {
-                if (prop.values.length !== initialProp.values.length) {
-                    return "hasChanges"
-                }
-                if (
-                    prop.values.filter((val, i) => hasChanged(val, initialProp.values[i])).length >
-                    0
-                ) {
-                    return "hasChanges"
-                }
-                return "no"
-            } else {
-                return "isNew"
-            }
-        })
-    }, [initialProperties, editorState])
-
-    const hasUnsavedChanges = useMemo(() => {
-        return propertyHasChanges.filter((p) => p !== "no").length > 0
-    }, [propertyHasChanges])
-
-    // TODO move into tabs for "save all"
-    useEffect(() => {
-        if (dirty !== hasUnsavedChanges)
-            updateTab({
-                entityId: entityData["@id"],
-                dirty: hasUnsavedChanges
-            })
-    }, [dirty, entityData, hasUnsavedChanges, updateTab])
-
-    const modifyProperties = useCallback(
-        (modifiedProperties: EntityEditorProperty[]) => {
-            updateTab({
-                entityId: entityData["@id"],
-                editorState: modifiedProperties
-            })
-        },
-        [entityData, updateTab]
-    )
-
-    const modifyProperty = useCallback(
-        (propertyName: string, value: FlatEntitySinglePropertyTypes, valueIdx: number) => {
-            const propertyIndex = editorStateRef.current.findIndex(
-                (p) => p.propertyName === propertyName
-            )
-            if (propertyIndex < 0 || propertyIndex >= editorStateRef.current.length) return
-            const property = editorStateRef.current[propertyIndex]
-            if (!hasChanged(value, property.values[valueIdx])) return
-
-            const newProperty = structuredClone(property)
-            newProperty.values[valueIdx] = value
-            const newEditorState = editorStateRef.current.slice()
-            newEditorState.splice(propertyIndex, 1, newProperty)
-
-            modifyProperties(newEditorState)
-        },
-        [modifyProperties]
-    )
-
-    const addPropertyEntry = useCallback(
-        (propertyName: string, type: PropertyEditorTypes) => {
-            const propertyIndex = editorStateRef.current.findIndex(
-                (p) => p.propertyName === propertyName
-            )
-            if (propertyIndex < 0 || propertyIndex >= editorStateRef.current.length) return
-            const property = editorStateRef.current[propertyIndex]
-
-            const newProperty = structuredClone(property)
-            newProperty.values.push(type === PropertyEditorTypes.Reference ? { "@id": "" } : "")
-            const newEditorState = editorStateRef.current.slice()
-            newEditorState.splice(propertyIndex, 1, newProperty)
-
-            modifyProperties(newEditorState)
-        },
-        [modifyProperties]
-    )
-
-    // TODO move into tabs for "save all"
-    const removeProperty = useCallback(
-        (propertyName: string, valueIdx: number) => {
-            const propertyIndex = editorStateRef.current.findIndex(
-                (p) => p.propertyName === propertyName
-            )
-            if (propertyIndex < 0 || propertyIndex >= editorStateRef.current.length) return
-            const property = editorStateRef.current[propertyIndex]
-
-            const newEditorState = editorStateRef.current.slice()
-            const newProperty = structuredClone(property)
-            newProperty.values.splice(valueIdx, 1)
-            newEditorState.splice(propertyIndex, 1, newProperty)
-
-            modifyProperties(newEditorState)
-        },
-        [modifyProperties]
-    )
-
-    const addProperty = useCallback(
-        (propertyName: string, values?: FlatEntitySinglePropertyTypes[]) => {
-            const propertyIndex = editorStateRef.current.findIndex(
-                (p) => p.propertyName === propertyName
-            )
-            if (propertyIndex >= 0 && propertyIndex < editorStateRef.current.length) return
-
-            const newEditorState = editorStateRef.current.slice()
-            newEditorState.push({
-                propertyName,
-                values: values || []
-            })
-            modifyProperties(newEditorState)
-        },
-        [modifyProperties]
-    )
-
-    const clearRemovedProperties = useCallback(() => {
-        if (editorStateRef.current.find((p) => p.values.length === 0)) {
-            const newEditorState = editorStateRef.current.slice().filter((p) => p.values.length > 0)
-            modifyProperties(newEditorState)
-        }
-    }, [modifyProperties])
-
-    // TODO move into tabs for "save all"
-    const saveChanges = useCallback(() => {
-        if (!hasUnsavedChanges) return
-
-        setIsSaving(true)
-        clearRemovedProperties()
-        updateEntity(mapPropertiesToEntity(editorStateRef.current))
-            .then((b) => {
-                setSaveError(b ? "" : "Unknown error")
-            })
-            .catch((e) => {
-                setSaveError(e + "")
-            })
-            .finally(() => {
-                setIsSaving(false)
-            })
-    }, [clearRemovedProperties, hasUnsavedChanges, updateEntity])
-
-    const revertChanges = useCallback(() => {
-        modifyProperties(mapEntityToProperties(entityData))
-    }, [entityData, modifyProperties])
 
     const possiblePropertiesResolver = useCallback(
         async (types: string[]) => {
@@ -378,12 +185,4 @@ export function EntityEditor({
             </div>
         </div>
     )
-}
-
-function hasChanged(value: string | IReference, oldValue: string | IReference) {
-    if (typeof value === "string" && typeof oldValue === "string") {
-        return value !== oldValue
-    } else if (typeof value === "object" && typeof oldValue === "object") {
-        return value["@id"] !== oldValue["@id"]
-    } else return true
 }

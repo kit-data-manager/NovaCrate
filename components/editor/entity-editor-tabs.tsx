@@ -1,13 +1,14 @@
 "use client"
 
-import { useCallback, useContext, useEffect, useMemo, useRef } from "react"
+import { MutableRefObject, useCallback, useContext, useEffect, useMemo, useRef } from "react"
 import { EntityEditorTabsContext, IEntityEditorTab } from "@/components/entity-tabs-provider"
-import { EntityEditor } from "@/components/editor/entity-editor"
 import { getEntityDisplayName } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Braces, Plus, XIcon } from "lucide-react"
 import { EntityIcon } from "@/components/entity-icon"
 import { CrateDataContext } from "@/components/crate-data-provider"
+import { VirtualEntityEditor } from "@/components/editor/virtual-entity-editor"
+import { EntityEditorCallbacks } from "@/components/editor/use-virtual-entity-editor"
 
 function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
     const { focusTab, closeTab } = useContext(EntityEditorTabsContext)
@@ -35,7 +36,28 @@ function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
         }
     })
 
-    if (!entity) return <div>Entity not found</div>
+    if (!entity)
+        return (
+            <Button
+                variant="tab"
+                data-active={active}
+                className={`cursor-default text-destructive ${active ? "pr-1" : ""}`}
+                ref={button}
+            >
+                <div className={`ml-1 transition-colors max-w-[300px] truncate`}>
+                    Entity not found
+                </div>
+                <div
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        close()
+                    }}
+                    className="ml-2 shrink-0 hover:bg-background p-1 text-xs rounded transition cursor-pointer"
+                >
+                    <XIcon className="w-4 h-4" />
+                </div>
+            </Button>
+        )
 
     return (
         <Button
@@ -98,21 +120,32 @@ function Tabs({ tabs, currentTab }: { tabs: IEntityEditorTab[]; currentTab?: IEn
 
 export function EntityEditorTabs() {
     const { tabs, activeTabEntityID } = useContext(EntityEditorTabsContext)
-    const { crateData } = useContext(CrateDataContext)
+    const virtualEntityEditorRefs: MutableRefObject<Record<string, EntityEditorCallbacks>> = useRef(
+        {}
+    )
 
     const currentTab = useMemo(() => {
         return tabs.find((tab) => tab.entityId === activeTabEntityID)
     }, [activeTabEntityID, tabs])
 
-    const currentEntity = useMemo(() => {
-        if (crateData) {
-            return crateData["@graph"].find((e) => e["@id"] == currentTab?.entityId)
-        }
-    }, [crateData, currentTab?.entityId])
-
     const hasUnsavedChanges = useMemo(() => {
         return tabs.find((tab) => tab.dirty) !== undefined
     }, [tabs])
+
+    const registerVirtualEntityEditorRef = useCallback(
+        (ref: EntityEditorCallbacks | null, entityId: string) => {
+            if (entityId in virtualEntityEditorRefs.current) {
+                if (ref) {
+                    virtualEntityEditorRefs.current[entityId] = ref
+                } else {
+                    delete virtualEntityEditorRefs.current[entityId]
+                }
+            } else if (ref) {
+                virtualEntityEditorRefs.current[entityId] = ref
+            }
+        },
+        []
+    )
 
     useEffect(() => {
         const handler = (e: BeforeUnloadEvent) => {
@@ -149,13 +182,16 @@ export function EntityEditorTabs() {
             <div className="h-full flex flex-col">
                 <Tabs tabs={tabs} currentTab={currentTab} />
                 <div className="overflow-auto">
-                    {currentTab && currentEntity ? (
-                        <EntityEditor
-                            entityData={currentEntity}
-                            editorState={currentTab.editorState}
-                            dirty={currentTab.dirty}
-                        />
-                    ) : null}
+                    {tabs.map((tab) => {
+                        return (
+                            <VirtualEntityEditor
+                                key={tab.entityId}
+                                tab={tab}
+                                render={tab === currentTab}
+                                ref={(ref) => registerVirtualEntityEditorRef(ref, tab.entityId)}
+                            />
+                        )
+                    })}
                 </div>
             </div>
         )
