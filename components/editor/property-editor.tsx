@@ -1,4 +1,3 @@
-import { EntityEditorProperty } from "@/components/editor/entity-editor"
 import { memo, useCallback, useContext, useMemo } from "react"
 import { useAsync } from "@/components/use-async"
 import { CrateVerifyContext } from "@/components/crate-verify-provider"
@@ -8,6 +7,58 @@ import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
 import { SinglePropertyEditor } from "@/components/editor/single-property-editor"
 import { Trash } from "lucide-react"
+
+export interface EntityEditorProperty {
+    propertyName: string
+    values: FlatEntitySinglePropertyTypes[]
+}
+
+function sortByPropertyName(a: EntityEditorProperty, b: EntityEditorProperty) {
+    if (a.propertyName === "name" && b.propertyName === "name") return 0
+    if (a.propertyName === "name" && !b.propertyName.startsWith("@")) return -1
+    if (b.propertyName === "name" && !a.propertyName.startsWith("@")) return 1
+    if (a.propertyName === b.propertyName) return 0
+    return a.propertyName > b.propertyName ? 1 : -1
+}
+
+export function mapEntityToProperties(data: IFlatEntity): EntityEditorProperty[] {
+    return Object.keys(data)
+        .map((key) => {
+            let value = data[key]
+            let arrValue: FlatEntitySinglePropertyTypes[]
+            if (!Array.isArray(value)) {
+                arrValue = [value]
+            } else {
+                arrValue = value.slice()
+            }
+
+            return {
+                propertyName: key,
+                values: arrValue
+            }
+        })
+        .flat()
+        .sort(sortByPropertyName)
+}
+
+export function mapPropertiesToEntity(data: EntityEditorProperty[]): IFlatEntity {
+    const result: Record<string, FlatEntityPropertyTypes> = {}
+
+    function autoUnpack(value: FlatEntitySinglePropertyTypes[]) {
+        if (value.length === 1) return value[0]
+        else return value
+    }
+
+    for (const property of data) {
+        if (property.values.length === 0) continue
+        result[property.propertyName] = autoUnpack(property.values)
+    }
+
+    if (!("@id" in result)) throw "Mapping properties to entity failed, no @id property"
+    if (!("@type" in result)) throw "Mapping properties to entity failed, no @id property"
+
+    return result as IFlatEntity
+}
 
 export enum PropertyEditorTypes {
     Time,
@@ -28,10 +79,10 @@ function propertyNameReadable(propertyName: string) {
 
 export interface PropertyEditorProps {
     property: EntityEditorProperty
-    onModifyProperty: (
+    onModifyPropertyEntry: (
         propertyName: string,
-        value: FlatEntitySinglePropertyTypes,
-        valueIdx: number
+        valueIdx: number,
+        value: FlatEntitySinglePropertyTypes
     ) => void
     onAddPropertyEntry: (propertyName: string, type: PropertyEditorTypes) => void
     onRemovePropertyEntry: (propertyName: string, index: number) => void
@@ -41,7 +92,7 @@ export interface PropertyEditorProps {
 
 export const PropertyEditor = memo(function PropertyEditor({
     property,
-    onModifyProperty,
+    onModifyPropertyEntry,
     onAddPropertyEntry,
     isNew,
     hasChanges,
@@ -110,7 +161,7 @@ export const PropertyEditor = memo(function PropertyEditor({
     return (
         <div className="grid grid-cols-[12px_1fr_1fr] w-full">
             <div
-                className={`${property.values.length === 0 ? "bg-destructive" : isNew ? "bg-success" : hasChanges ? "bg-info" : ""} max-w-1 rounded-full transition`}
+                className={`${isNew ? "bg-success" : hasChanges ? "bg-info" : ""} max-w-1 rounded-full transition`}
             ></div>
 
             <div className="pr-8">
@@ -136,18 +187,12 @@ export const PropertyEditor = memo(function PropertyEditor({
                                 valueIndex={i}
                                 propertyName={property.propertyName}
                                 value={v}
-                                onModifyProperty={onModifyProperty}
+                                onModifyProperty={onModifyPropertyEntry}
                                 propertyRange={propertyRange}
                                 onRemovePropertyEntry={onRemovePropertyEntry}
                             />
                         )
                     })}
-                    {property.values.length === 0 ? (
-                        <div className="flex items-center text-sm text-muted-foreground">
-                            <Trash className="w-4 h-4 mr-2" /> This Property has no entries and will
-                            be deleted on save
-                        </div>
-                    ) : null}
                 </div>
                 <AddEntryDropdown
                     propertyName={property.propertyName}

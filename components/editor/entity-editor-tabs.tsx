@@ -1,16 +1,17 @@
 "use client"
 
-import { MutableRefObject, useCallback, useContext, useEffect, useMemo, useRef } from "react"
+import { useCallback, useContext, useEffect, useMemo, useRef } from "react"
 import { EntityEditorTabsContext, IEntityEditorTab } from "@/components/entity-tabs-provider"
 import { getEntityDisplayName } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Braces, Plus, XIcon } from "lucide-react"
 import { EntityIcon } from "@/components/entity-icon"
 import { CrateDataContext } from "@/components/crate-data-provider"
-import { VirtualEntityEditor } from "@/components/editor/virtual-entity-editor"
-import { EntityEditorCallbacks } from "@/components/editor/use-virtual-entity-editor"
+import { EntityEditor } from "@/components/editor/entity-editor"
+import { CrateEditorContext } from "@/components/crate-editor-provider"
 
 function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
+    const { entitiesChangelist } = useContext(CrateEditorContext)
     const { focusTab, closeTab } = useContext(EntityEditorTabsContext)
     const { crateData } = useContext(CrateDataContext)
 
@@ -29,6 +30,11 @@ function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
             return crateData["@graph"].find((e) => e["@id"] === tab.entityId)
         }
     }, [crateData, tab.entityId])
+
+    const dirty = useMemo(() => {
+        const diff = entitiesChangelist.get(tab.entityId)
+        return !!diff
+    }, [entitiesChangelist, tab.entityId])
 
     useEffect(() => {
         if (button.current && active) {
@@ -70,7 +76,7 @@ function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
             <EntityIcon entity={entity} />
             <div className={`ml-1 transition-colors max-w-[300px] truncate`}>
                 {getEntityDisplayName(entity)}
-                {tab.dirty ? <b>*</b> : null}
+                {dirty ? <b>*</b> : null}
             </div>
             {active ? (
                 <div
@@ -120,49 +126,10 @@ function Tabs({ tabs, currentTab }: { tabs: IEntityEditorTab[]; currentTab?: IEn
 
 export function EntityEditorTabs() {
     const { tabs, activeTabEntityID } = useContext(EntityEditorTabsContext)
-    const virtualEntityEditorRefs: MutableRefObject<Record<string, EntityEditorCallbacks>> = useRef(
-        {}
-    )
 
     const currentTab = useMemo(() => {
         return tabs.find((tab) => tab.entityId === activeTabEntityID)
     }, [activeTabEntityID, tabs])
-
-    const hasUnsavedChanges = useMemo(() => {
-        return tabs.find((tab) => tab.dirty) !== undefined
-    }, [tabs])
-
-    const registerVirtualEntityEditorRef = useCallback(
-        (ref: EntityEditorCallbacks | null, entityId: string) => {
-            if (entityId in virtualEntityEditorRefs.current) {
-                if (ref) {
-                    virtualEntityEditorRefs.current[entityId] = ref
-                } else {
-                    delete virtualEntityEditorRefs.current[entityId]
-                }
-            } else if (ref) {
-                virtualEntityEditorRefs.current[entityId] = ref
-            }
-        },
-        []
-    )
-
-    useEffect(() => {
-        const handler = (e: BeforeUnloadEvent) => {
-            e.preventDefault()
-            return "There are unsaved changes."
-        }
-
-        if (hasUnsavedChanges) {
-            window.addEventListener("beforeunload", handler)
-        }
-
-        return () => {
-            if (hasUnsavedChanges) {
-                window.removeEventListener("beforeunload", handler)
-            }
-        }
-    }, [hasUnsavedChanges])
 
     if (tabs.length == 0) {
         return (
@@ -182,16 +149,9 @@ export function EntityEditorTabs() {
             <div className="h-full flex flex-col">
                 <Tabs tabs={tabs} currentTab={currentTab} />
                 <div className="overflow-auto">
-                    {tabs.map((tab) => {
-                        return (
-                            <VirtualEntityEditor
-                                key={tab.entityId}
-                                tab={tab}
-                                render={tab === currentTab}
-                                ref={(ref) => registerVirtualEntityEditorRef(ref, tab.entityId)}
-                            />
-                        )
-                    })}
+                    {currentTab ? (
+                        <EntityEditor key={currentTab.entityId} entityId={currentTab.entityId} />
+                    ) : null}
                 </div>
             </div>
         )

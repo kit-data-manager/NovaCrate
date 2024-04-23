@@ -18,7 +18,9 @@ export const TEST_CONTEXT = new Context("https://w3id.org/ro/crate/1.1/context")
 
 export const CrateDataContext = createContext<ICrateDataProvider>({
     crateId: "",
-    setCrateData: () => {},
+    setCrateData: () => {
+        return Promise.reject("Crate Data Provider not mounted yet")
+    },
     updateEntity: () => {
         return Promise.reject("Crate Data Provider not mounted yet")
     },

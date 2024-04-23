@@ -20,6 +20,7 @@ export function toArray<T>(input: T | T[]): T[] {
 export function getEntityDisplayName(entity: IFlatEntity, fallback: boolean = true) {
     if (entity.name) {
         return toArray(entity.name)
+            .map((s) => (typeof s === "string" ? s.trim() : s))
             .filter((p) => p)
             .join(", ")
     } else if (fallback) {

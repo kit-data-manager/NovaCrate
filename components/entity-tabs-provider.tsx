@@ -1,22 +1,14 @@
 "use client"
 
 import { createContext, PropsWithChildren, useCallback, useState } from "react"
-import {
-    EntityEditorProperty,
-    mapEntityToProperties
-} from "@/components/editor/use-virtual-entity-editor"
 
 export interface IEntityEditorTab {
     entityId: string
-    propertyEditorStates: EntityEditorProperty[]
-    dirty: boolean
 }
 
 export function createEntityEditorTab(entity: IFlatEntity): IEntityEditorTab {
     return {
-        entityId: entity["@id"],
-        propertyEditorStates: mapEntityToProperties(entity),
-        dirty: false
+        entityId: entity["@id"]
     }
 }
 
@@ -24,7 +16,6 @@ export interface IEntityEditorTabsContext {
     tabs: IEntityEditorTab[]
     activeTabEntityID: string
     openTab(tab: IEntityEditorTab, focus?: boolean): void
-    updateTab(tab: Partial<IEntityEditorTab> & { entityId: string }): void
     focusTab(id: string): void
     closeTab(id: string): void
 }
@@ -33,9 +24,6 @@ export const EntityEditorTabsContext = createContext<IEntityEditorTabsContext>({
     tabs: [],
     activeTabEntityID: "",
     openTab() {
-        console.log("EntityEditorTabsContextProvider not mounted yet")
-    },
-    updateTab() {
         console.log("EntityEditorTabsContextProvider not mounted yet")
     },
     focusTab() {
@@ -76,21 +64,6 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
         [focusTab]
     )
 
-    const updateTab = useCallback(
-        (updatedTab: Partial<IEntityEditorTab> & { entityId: string }) => {
-            setTabs((oldTabs) => {
-                const index = oldTabs.findIndex((tab) => tab.entityId === updatedTab.entityId)
-
-                if (index >= 0) {
-                    const newTabs = oldTabs.slice()
-                    newTabs[index] = { ...newTabs[index], ...updatedTab }
-                    return newTabs
-                } else return oldTabs
-            })
-        },
-        []
-    )
-
     const closeTab = useCallback((id: string) => {
         setTabs((oldTabs) => {
             const index = oldTabs.findIndex((tab) => tab.entityId === id)
@@ -115,7 +88,6 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
             value={{
                 tabs,
                 activeTabEntityID: focused,
-                updateTab,
                 openTab,
                 focusTab,
                 closeTab
