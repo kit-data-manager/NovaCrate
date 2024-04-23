@@ -23,6 +23,7 @@ import { useLayout } from "@/components/graph/layout"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { isReference, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
 import ExternalNode from "@/components/graph/external-node"
+import { CrateEditorContext } from "@/components/crate-editor-provider"
 
 const DEFAULT_POS = { x: 0, y: 0 }
 
@@ -31,7 +32,7 @@ const nodeTypes = {
     externalNode: ExternalNode
 }
 
-function crateToGraph(crate: ICrate): [Node[], Edge[]] {
+function entitiesToGraph(entities: IFlatEntity[]): [Node[], Edge[]] {
     const nodes: Node[] = []
     const edges: Edge[] = []
 
@@ -46,7 +47,7 @@ function crateToGraph(crate: ICrate): [Node[], Edge[]] {
         }
     }
 
-    for (const entity of crate["@graph"]) {
+    for (const entity of entities) {
         if (isRoCrateMetadataEntity(entity)) continue
 
         nodes.push({
@@ -67,7 +68,7 @@ function crateToGraph(crate: ICrate): [Node[], Edge[]] {
                     let target = singleValue["@id"]
                     const index = values.indexOf(singleValue)
 
-                    if (!crate["@graph"].find((n) => n["@id"] === singleValue["@id"])) {
+                    if (!entities.find((n) => n["@id"] === singleValue["@id"])) {
                         target = `${entity["@id"]}#${key}[${index}]-external`
                         nodes.push({
                             id: target,
@@ -102,6 +103,7 @@ function crateToGraph(crate: ICrate): [Node[], Edge[]] {
 
 const LayoutFlow = () => {
     const crateData = useContext(CrateDataContext)
+    const { entities } = useContext(CrateEditorContext)
 
     const [nodes, setNodes, onNodesChange] = useNodesState([])
     const [edges, setEdges, onEdgesChange] = useEdgesState([])
@@ -131,12 +133,10 @@ const LayoutFlow = () => {
     }, [centerView, layoutDone, layoutedEdges, layoutedNodes, setEdges, setNodes])
 
     useEffect(() => {
-        if (crateData.crateData) {
-            const [newNodes, newEdges] = crateToGraph(crateData.crateData)
-            setNodes([...newNodes])
-            setEdges([...newEdges])
-        }
-    }, [crateData.crateData, setEdges, setNodes])
+        const [newNodes, newEdges] = entitiesToGraph(entities)
+        setNodes([...newNodes])
+        setEdges([...newEdges])
+    }, [crateData.crateData, entities, setEdges, setNodes])
 
     return (
         <ReactFlow
