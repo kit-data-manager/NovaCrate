@@ -15,6 +15,7 @@ import {
     RefreshCw
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { CrateEditorContext } from "@/components/crate-editor-provider"
 
 const MOCK_TYPE = "__EditorMock__"
 
@@ -43,9 +44,9 @@ function inSubFolder(path: string, folderPath: string) {
     return path !== folderPath && path.startsWith(folderPath)
 }
 
-function addMissingFolders(content: IFlatEntity[], path: string, crate: ICrate) {
+function addMissingFolders(content: IFlatEntity[], path: string) {
     const result = content.slice()
-    const candidates = crate["@graph"]
+    const candidates = content
         .filter((entity) => isDataEntity(entity))
         .filter((entity) => inSubFolder(entity["@id"], path))
     const deleteCount = path.split("/").length - 1
@@ -69,7 +70,7 @@ function addMissingFolders(content: IFlatEntity[], path: string, crate: ICrate) 
     return result
 }
 
-function FolderEntry(props: { entity: IFlatEntity; crate: ICrate }) {
+function FolderEntry(props: { entity: IFlatEntity }) {
     const [isOpen, setIsOpen] = useState(true)
 
     const isFile = useMemo(() => {
@@ -126,28 +127,29 @@ function FolderEntry(props: { entity: IFlatEntity; crate: ICrate }) {
             </Button>
             {!isFile && isOpen ? (
                 <div className="ml-6">
-                    <FolderContent crate={props.crate} path={props.entity["@id"]} />
+                    <FolderContent path={props.entity["@id"]} />
                 </div>
             ) : null}
         </>
     )
 }
 
-function FolderContent(props: { crate: ICrate; path: string }) {
+function FolderContent(props: { path: string }) {
+    const { entities } = useContext(CrateEditorContext)
+
     const contents = useMemo(() => {
         return addMissingFolders(
-            props.crate["@graph"]
+            entities
                 .filter((entity) => isDataEntity(entity))
                 .filter((entity) => inCurrentFolder(entity["@id"], props.path)),
-            props.path,
-            props.crate
+            props.path
         )
-    }, [props.crate, props.path])
+    }, [entities, props.path])
 
     return (
         <div>
             {contents.map((entity) => {
-                return <FolderEntry entity={entity} key={entity["@id"]} crate={props.crate} />
+                return <FolderEntry entity={entity} key={entity["@id"]} />
             })}
         </div>
     )
@@ -180,11 +182,7 @@ export function FileExplorer() {
                     />
                 </Button>
             </div>
-            <div className="p-2">
-                {!crateData.crateData ? null : (
-                    <FolderContent crate={crateData.crateData} path={""} />
-                )}
-            </div>
+            <div className="p-2">{!crateData.crateData ? null : <FolderContent path={""} />}</div>
         </div>
     )
 }
