@@ -11,7 +11,7 @@ export interface SinglePropertyEditorProps {
     value: FlatEntitySinglePropertyTypes
     valueIndex: number
     propertyRange?: string[]
-    onModifyProperty: PropertyEditorProps["onModifyProperty"]
+    onModifyProperty: PropertyEditorProps["onModifyPropertyEntry"]
     onRemovePropertyEntry: PropertyEditorProps["onRemovePropertyEntry"]
 }
 
@@ -25,14 +25,14 @@ export const SinglePropertyEditor = memo(function SinglePropertyEditor({
 }: SinglePropertyEditorProps) {
     const onReferenceChange = useCallback(
         (newValue: IReference) => {
-            onModifyProperty(propertyName, newValue, valueIndex)
+            onModifyProperty(propertyName, valueIndex, newValue)
         },
         [onModifyProperty, propertyName, valueIndex]
     )
 
     const onTextChange = useCallback(
         (newValue: string) => {
-            onModifyProperty(propertyName, newValue, valueIndex)
+            onModifyProperty(propertyName, valueIndex, newValue)
         },
         [onModifyProperty, propertyName, valueIndex]
     )

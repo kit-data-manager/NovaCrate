@@ -9,5 +9,5 @@ declare interface ICrateFile {
 }
 
 declare interface ICrateFileWithData extends ICrateFile {
-    data: Buffer
+    data: ArrayBuffer
 }

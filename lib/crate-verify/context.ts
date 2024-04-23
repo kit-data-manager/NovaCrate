@@ -22,7 +22,7 @@ export class Context {
                 this.context[key] = value
             })
         } else {
-            console.error("Unable to parse crate context", crateContext)
+            console.warn("Unable to parse crate context", crateContext)
             this.context = {}
         }
     }

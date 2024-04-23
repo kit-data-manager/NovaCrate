@@ -1,7 +1,11 @@
 "use client"
 
 import { useCallback, useContext, useMemo, useState } from "react"
-import { PropertyEditor } from "@/components/editor/property-editor"
+import {
+    mapEntityToProperties,
+    PropertyEditor,
+    PropertyEditorTypes
+} from "@/components/editor/property-editor"
 import {
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
@@ -9,7 +13,7 @@ import {
     toArray
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
-import { TEST_CONTEXT } from "@/components/crate-data-provider"
+import { CrateDataContext, TEST_CONTEXT } from "@/components/crate-data-provider"
 import { Error } from "@/components/error"
 import { EntityEditorHeader } from "@/components/editor/entity-editor-header"
 import { Plus } from "lucide-react"
@@ -17,39 +21,32 @@ import { Button } from "@/components/ui/button"
 import { useAsync } from "@/components/use-async"
 import { CrateVerifyContext } from "@/components/crate-verify-provider"
 import { AddPropertyModal, PossibleProperty } from "@/components/editor/add-property-modal"
-import { EntityEditorProps } from "@/components/editor/use-virtual-entity-editor"
+import { CrateEditorContext, Diff } from "@/components/crate-editor-provider"
+import { getDisplayName } from "next/dist/shared/lib/utils"
 
-/**
- *  The state of this component has been virtualized in a custom React Hook, used by
- *  VirtualizedEntityEditor. This ensures that the entity editor stays functional even if
- *  it is not being rendered. This enables features like save-all, where each editor takes
- *  care of saving their own entity separately. By virtualizing the state and moving it into
- *  VirtualEntityEditor, functions like saveChanges or removeProperty will work even if the editor
- *  is not rendered.
- *
- *  TLDR: This component is purely a renderer, and does not take care of its own state. For the
- *  entity editor state, look at VirtualEntityEditor and useVirtualEntityEditorState
- *
- *  This design was chosen because this Component (EntityEditor) can get very expensive in terms of
- *  render time. By only rendering one entity editor at a time while also being able to manipulate
- *  the state of all other entity editors (=tabs), we improve performance significantly without any
- *  drawbacks. (The only drawback is this large comment to explain everything)
- */
-export function EntityEditor({
-    entityData,
-    editorState,
-    addProperty,
-    addPropertyEntry,
-    modifyProperty,
-    revertChanges,
-    removeProperty,
-    isSaving,
-    saveError,
-    saveChanges,
-    hasUnsavedChanges,
-    propertyHasChanges
-}: EntityEditorProps) {
+export function EntityEditor({ entityId }: { entityId: string }) {
+    const { crateData } = useContext(CrateDataContext)
+    const {
+        entities,
+        entitiesChangelist,
+        isSaving,
+        saveError,
+        saveEntity,
+        addProperty,
+        addPropertyEntry,
+        modifyPropertyEntry,
+        removePropertyEntry,
+        revertEntity
+    } = useContext(CrateEditorContext)
     const { isReady: crateVerifyReady, getClassProperties } = useContext(CrateVerifyContext)
+
+    const entity = useMemo(() => {
+        return entities.find((e) => e["@id"] === entityId)
+    }, [entities, entityId])
+
+    const originalEntity = useMemo(() => {
+        return crateData?.["@graph"].find((e) => e["@id"] === entityId)
+    }, [crateData, entityId])
 
     const [addPropertyModelOpen, setAddPropertyModelOpen] = useState(false)
 
@@ -87,8 +84,9 @@ export function EntityEditor({
     )
 
     const typeArray = useMemo(() => {
-        return toArray(entityData["@type"])
-    }, [entityData])
+        if (!entity) return []
+        return toArray(entity["@type"])
+    }, [entity])
 
     const {
         data: possibleProperties,
@@ -97,18 +95,83 @@ export function EntityEditor({
     } = useAsync(crateVerifyReady ? typeArray : null, possiblePropertiesResolver)
 
     const isRootEntity = useMemo(() => {
-        return isRootEntityUtil(entityData)
-    }, [entityData])
+        if (!entity) return false
+        return isRootEntityUtil(entity)
+    }, [entity])
 
     const isDataEntity = useMemo(() => {
-        return isDataEntityUtil(entityData)
-    }, [entityData])
+        if (!entity) return false
+        return isDataEntityUtil(entity)
+    }, [entity])
+
+    const hasUnsavedChanges = useMemo(() => {
+        const diff = entitiesChangelist.get(entityId)
+        return !!diff
+    }, [entitiesChangelist, entityId])
+
+    const onPropertyAdd = useCallback(
+        (propertyName: string, value?: FlatEntityPropertyTypes) => {
+            addProperty(entityId, propertyName, value)
+        },
+        [addProperty, entityId]
+    )
+
+    const onPropertyAddEntry = useCallback(
+        (propertyName: string, type: PropertyEditorTypes) => {
+            addPropertyEntry(entityId, propertyName, type)
+        },
+        [addPropertyEntry, entityId]
+    )
+
+    const onModifyPropertyEntry = useCallback(
+        (propertyName: string, valueIdx: number, value: FlatEntitySinglePropertyTypes) => {
+            modifyPropertyEntry(entityId, propertyName, valueIdx, value)
+        },
+        [entityId, modifyPropertyEntry]
+    )
+
+    const onRemovePropertyEntry = useCallback(
+        (propertyName: string, valueIdx: number) => {
+            removePropertyEntry(entityId, propertyName, valueIdx)
+        },
+        [entityId, removePropertyEntry]
+    )
+
+    const onSave = useCallback(() => {
+        saveEntity(entityId)
+    }, [entityId, saveEntity])
+
+    const onRevert = useCallback(() => {
+        revertEntity(entityId)
+    }, [entityId, revertEntity])
+
+    const properties = useMemo(() => {
+        if (!entity) return []
+        return mapEntityToProperties(entity)
+    }, [entity])
+
+    const propertiesChangelist = useMemo(() => {
+        return properties.map((property) => {
+            if (!originalEntity) return Diff.New
+            if (property.propertyName in originalEntity) {
+                const prop = originalEntity[property.propertyName]
+                return propertyHasChanged(property.values, prop) ? Diff.Changed : Diff.None
+            } else {
+                return Diff.New
+            }
+        })
+    }, [originalEntity, properties])
+
+    const displayName = useMemo(() => {
+        if (originalEntity) return getEntityDisplayName(originalEntity)
+        return entity ? getEntityDisplayName(entity) : ""
+    }, [entity, originalEntity])
 
     return (
         <div className="relative">
             <AddPropertyModal
                 open={addPropertyModelOpen}
-                onPropertyAdd={addProperty}
+                onPropertyAdd={onPropertyAdd}
                 onOpenChange={addPropertyModelOpenChange}
                 possibleProperties={possibleProperties}
                 possiblePropertiesPending={possiblePropertiesPending}
@@ -117,14 +180,14 @@ export function EntityEditor({
             <EntityEditorHeader
                 hasUnsavedChanges={hasUnsavedChanges}
                 isSaving={isSaving}
-                saveChanges={saveChanges}
-                revertChanges={revertChanges}
+                onSave={onSave}
+                onRevert={onRevert}
             />
 
             <div className="p-4 mr-10">
                 <div className="flex justify-between items-center">
                     <h2 className="text-3xl font-bold flex items-center">
-                        {getEntityDisplayName(entityData)}
+                        {displayName}
 
                         <div
                             className={`${isRootEntity ? "border-root text-root" : isDataEntity ? "border-data text-data" : "border-contextual text-contextual"}  border px-1.5 rounded ml-6 text-sm`}
@@ -159,16 +222,16 @@ export function EntityEditor({
                 />
 
                 <div className="my-12 flex flex-col gap-10 mr-2">
-                    {editorState.map((property, i) => {
+                    {properties.map((property, i) => {
                         return (
                             <div key={property.propertyName}>
                                 <PropertyEditor
                                     property={property}
-                                    onModifyProperty={modifyProperty}
-                                    onAddPropertyEntry={addPropertyEntry}
-                                    hasChanges={propertyHasChanges[i] === "hasChanges"}
-                                    isNew={propertyHasChanges[i] === "isNew"}
-                                    onRemovePropertyEntry={removeProperty}
+                                    onModifyPropertyEntry={onModifyPropertyEntry}
+                                    onAddPropertyEntry={onPropertyAddEntry}
+                                    hasChanges={propertiesChangelist[i] === Diff.Changed}
+                                    isNew={propertiesChangelist[i] === Diff.New}
+                                    onRemovePropertyEntry={onRemovePropertyEntry}
                                 />
                             </div>
                         )
@@ -185,4 +248,25 @@ export function EntityEditor({
             </div>
         </div>
     )
+}
+
+function propertyHasChanged(_value: FlatEntityPropertyTypes, _oldValue: FlatEntityPropertyTypes) {
+    const value = toArray(_value)
+    const oldValue = toArray(_oldValue)
+
+    function singleValueChanged(
+        a: FlatEntitySinglePropertyTypes,
+        b: FlatEntitySinglePropertyTypes
+    ) {
+        if (typeof a !== typeof b) {
+            return true
+        } else if (typeof a === "string" && typeof b === "string") {
+            return a !== b
+        } else if (typeof a === "object" && typeof b === "object") {
+            return a["@id"] !== b["@id"]
+        }
+        return false
+    }
+
+    return value.filter((v, i) => !singleValueChanged(v, oldValue[i])).length === 0
 }

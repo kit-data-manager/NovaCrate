@@ -15,18 +15,18 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { memo } from "react"
+import { memo, useEffect } from "react"
 
 export const EntityEditorHeader = memo(function EntityEditorHeader({
     isSaving,
-    saveChanges,
+    onSave,
     hasUnsavedChanges,
-    revertChanges
+    onRevert
 }: {
     hasUnsavedChanges: boolean
     isSaving: boolean
-    saveChanges(): void
-    revertChanges(): void
+    onSave(): void
+    onRevert(): void
 }) {
     return (
         <div className="flex mb-2 gap-2 sticky top-0 z-10 p-2 bg-accent">
@@ -51,7 +51,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                     size="sm"
                     variant={hasUnsavedChanges ? undefined : "outline"}
                     className="text-xs"
-                    onClick={() => saveChanges()}
+                    onClick={() => onSave()}
                     disabled={isSaving}
                 >
                     {isSaving ? (
@@ -71,7 +71,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                         <DropdownMenuItem>
                             <Save className="w-4 h-4 mr-2" /> Save as...
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => revertChanges()}>
+                        <DropdownMenuItem onClick={() => onRevert()}>
                             <Undo2 className="w-4 h-4 mr-2" /> Revert Changes
                         </DropdownMenuItem>
                     </DropdownMenuContent>

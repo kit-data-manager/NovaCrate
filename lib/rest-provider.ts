@@ -10,7 +10,12 @@ export class RestProvider implements CrateServiceProvider {
     }
 
     getCrateFileWithData(crateId: string, filePath: string): Promise<ICrateFileWithData> {
-        return Promise.resolve(undefined)
+        return Promise.resolve({
+            filePath: "Not Implemented! ~rest-provider",
+            size: 0,
+            sha256: "",
+            data: new ArrayBuffer(0)
+        })
     }
 
     renameEntity(crateId: string, oldEntityId: string, newEntityId: string): Promise<boolean> {
@@ -63,7 +68,7 @@ export class RestProvider implements CrateServiceProvider {
     }
 
     getEntity(crateId: string, entityId: string): Promise<IFlatEntity> {
-        return Promise.resolve(undefined)
+        return Promise.resolve({ "@id": "Not Implemented! ~rest-provider", "@type": [] })
     }
 
     async updateEntity(crateId: string, entityData: IFlatEntity): Promise<boolean> {
