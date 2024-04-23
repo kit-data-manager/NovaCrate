@@ -13,6 +13,7 @@ import {
 } from "react"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { Context } from "@/lib/crate-verify/context"
+import isEqual from "react-fast-compare"
 
 export enum Diff {
     None,
@@ -128,12 +129,14 @@ function modifyEntityHelper(
 }
 
 export function CrateEditorProvider(props: PropsWithChildren) {
-    const { crateData } = useContext(CrateDataContext)
-
+    const { crateData, updateEntity } = useContext(CrateDataContext)
     const crateDataRef = useRef(crateData)
     useEffect(() => {
         crateDataRef.current = crateData
     }, [crateData])
+
+    const [isSaving, setIsSaving] = useState(false)
+    const [saveError, setSaveError] = useState("")
 
     const [internalCrateContext, setInternalCrateContext] = useState<CrateContext | null>(null)
 
@@ -173,8 +176,8 @@ export function CrateEditorProvider(props: PropsWithChildren) {
                 changelist.set(entity["@id"], Diff.New)
                 continue
             }
-            // Cheap and fast
-            if (JSON.stringify(original) === JSON.stringify(entity)) {
+
+            if (isEqual(original, entity)) {
                 changelist.set(entity["@id"], Diff.None)
             } else changelist.set(entity["@id"], Diff.Changed)
         }
@@ -282,7 +285,22 @@ export function CrateEditorProvider(props: PropsWithChildren) {
         })
     }, [])
 
-    const saveEntity = useCallback(() => {}, [])
+    const saveEntity = useCallback(
+        (entityId: string) => {
+            const entity = entities.find((e) => e["@id"] === entityId)
+            if (entity) {
+                setIsSaving(true)
+                updateEntity(entity)
+                    .catch((e) => {
+                        setSaveError(e + "")
+                    })
+                    .finally(() => {
+                        setIsSaving(false)
+                    })
+            }
+        },
+        [entities, updateEntity]
+    )
 
     return (
         <CrateEditorContext.Provider
@@ -305,7 +323,8 @@ export function CrateEditorProvider(props: PropsWithChildren) {
                 undo() {},
                 redo() {},
 
-                isSaving: false,
+                isSaving,
+                saveError,
                 saveContext() {},
                 saveEntity,
                 saveAllEntities() {},

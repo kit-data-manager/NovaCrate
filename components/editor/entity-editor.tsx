@@ -22,7 +22,6 @@ import { useAsync } from "@/components/use-async"
 import { CrateVerifyContext } from "@/components/crate-verify-provider"
 import { AddPropertyModal, PossibleProperty } from "@/components/editor/add-property-modal"
 import { CrateEditorContext, Diff } from "@/components/crate-editor-provider"
-import { getDisplayName } from "next/dist/shared/lib/utils"
 
 export function EntityEditor({ entityId }: { entityId: string }) {
     const { crateData } = useContext(CrateDataContext)
@@ -163,9 +162,8 @@ export function EntityEditor({ entityId }: { entityId: string }) {
     }, [originalEntity, properties])
 
     const displayName = useMemo(() => {
-        if (originalEntity) return getEntityDisplayName(originalEntity)
         return entity ? getEntityDisplayName(entity) : ""
-    }, [entity, originalEntity])
+    }, [entity])
 
     return (
         <div className="relative">
