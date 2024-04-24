@@ -12,7 +12,7 @@ import {
     useState
 } from "react"
 import { CrateDataContext } from "@/components/crate-data-provider"
-import { Context } from "@/lib/crate-verify/context"
+import { Context } from "@/lib/context"
 import isEqual from "react-fast-compare"
 
 export enum Diff {
@@ -29,6 +29,7 @@ export interface ICrateEditorContext {
 
     entities: IFlatEntity[]
     entitiesChangelist: Map<string, Diff>
+    addEntity(entityId: string, types: string[]): void
     addProperty(entityId: string, propertyName: string, value?: FlatEntityPropertyTypes): void
     addPropertyEntry(entityId: string, propertyName: string, type: PropertyEditorTypes): void
     modifyPropertyEntry(
@@ -65,6 +66,9 @@ export const CrateEditorContext = createContext<ICrateEditorContext>({
 
     entities: [],
     entitiesChangelist: new Map(),
+    addEntity() {
+        throw "CrateEditorContext not mounted"
+    },
     addProperty() {
         throw "CrateEditorContext not mounted"
     },
@@ -150,6 +154,14 @@ export function CrateEditorProvider(props: PropsWithChildren) {
         return new Context(internalCrateContext || [])
     }, [internalCrateContext])
 
+    useEffect(() => {
+        setInternalCrateContext((oldInternalCrateContext) => {
+            if (oldInternalCrateContext === null && crateData) {
+                return crateData["@context"]
+            } else return oldInternalCrateContext
+        })
+    }, [crateData])
+
     const [internalEntities, setInternalEntities] = useState<IFlatEntity[] | null>(null)
 
     const entities = useMemo(() => {
@@ -183,6 +195,19 @@ export function CrateEditorProvider(props: PropsWithChildren) {
         }
         return changelist
     }, [crateData, entities])
+
+    const addEntity = useCallback((entityId: string, types: string | string[]) => {
+        setInternalEntities((oldEntities) => {
+            if (!oldEntities) return null
+
+            const copy = [...oldEntities]
+            copy.push({
+                "@id": entityId,
+                "@type": types
+            })
+            return copy
+        })
+    }, [])
 
     const modifyPropertyEntry = useCallback(
         (
@@ -312,6 +337,7 @@ export function CrateEditorProvider(props: PropsWithChildren) {
 
                 entities,
                 entitiesChangelist,
+                addEntity,
                 addProperty,
                 addPropertyEntry,
                 modifyPropertyEntry,

@@ -16,20 +16,29 @@ export function getPropertyDomain(propertyId: string) {
     }
 }
 
+export interface SlimClass {
+    "@id": string
+    comment: SchemaNode["comment"]
+}
+
 export function getPropertyRange(propertyId: string) {
     let refs = schemaGraph.getNode(propertyId)?.range
     if (!refs) return []
 
-    const range = new Set<string>()
+    const range = new Set<SlimClass>()
     refs = Array.isArray(refs) ? refs : [refs]
 
     for (const ref of refs) {
-        range.add(schemaGraph.expandIRI(ref["@id"]))
+        range.add({
+            "@id": schemaGraph.expandIRI(ref["@id"]),
+            comment: getPropertyComment(ref["@id"])
+        })
+
         const subClasses = schemaGraph
             .getSubClasses(ref["@id"])
             .map((s) => schemaGraph.expandIRI(s))
         for (const subClass of subClasses) {
-            range.add(subClass)
+            range.add({ "@id": subClass, comment: getPropertyComment(subClass) })
         }
     }
 

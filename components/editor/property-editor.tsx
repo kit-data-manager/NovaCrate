@@ -6,7 +6,6 @@ import { TEST_CONTEXT } from "@/components/crate-data-provider"
 import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
 import { SinglePropertyEditor } from "@/components/editor/single-property-editor"
-import { Trash } from "lucide-react"
 
 export interface EntityEditorProperty {
     propertyName: string

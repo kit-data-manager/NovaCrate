@@ -9,12 +9,17 @@ import {
     SCHEMA_ORG_TEXTLIKE,
     SCHEMA_ORG_TIME
 } from "@/lib/constants"
+import { SlimClass } from "@/lib/crate-verify/helpers"
 
 function isNoneOf(value: string, of: string[]) {
     return of.find((s) => s === value) === undefined
 }
 
-export function usePropertyCanBe(propertyRange?: string[]) {
+export function usePropertyCanBe(_propertyRange?: SlimClass[] | string[]) {
+    const propertyRange = useMemo(() => {
+        return _propertyRange?.map((p) => (typeof p === "object" ? p["@id"] : p))
+    }, [_propertyRange])
+
     const canBeTime = useMemo(() => {
         return propertyRange?.includes(SCHEMA_ORG_TIME)
     }, [propertyRange])

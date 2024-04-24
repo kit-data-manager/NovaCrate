@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeftRight, EllipsisVertical, Eraser, Trash, Unlink } from "lucide-react"
 import TypeSelectDropdown from "@/components/editor/type-select-dropdown"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
+import { SlimClass } from "@/lib/crate-verify/helpers"
 
 export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
     propertyRange,
@@ -20,7 +21,7 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
     onModifyReferenceProperty,
     onRemoveEntry
 }: {
-    propertyRange?: string[]
+    propertyRange?: SlimClass[]
     isReference?: boolean
     onModifyTextLikeProperty?: (value: string) => void
     onModifyReferenceProperty?: (value: IReference) => void

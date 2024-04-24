@@ -2,6 +2,7 @@ import { ChangeEvent, memo, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { TypeIcon } from "lucide-react"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
+import { SlimClass } from "@/lib/crate-verify/helpers"
 
 export const TextField = memo(function TextField({
     value,
@@ -11,7 +12,7 @@ export const TextField = memo(function TextField({
 }: {
     value: string
     onChange: (value: string) => void
-    propertyRange?: string[]
+    propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
     const onInputChange = useCallback(

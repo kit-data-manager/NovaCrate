@@ -252,6 +252,8 @@ function propertyHasChanged(_value: FlatEntityPropertyTypes, _oldValue: FlatEnti
     const value = toArray(_value)
     const oldValue = toArray(_oldValue)
 
+    if (value.length !== oldValue.length) return true
+
     function singleValueChanged(
         a: FlatEntitySinglePropertyTypes,
         b: FlatEntitySinglePropertyTypes

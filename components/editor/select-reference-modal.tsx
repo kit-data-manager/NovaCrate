@@ -13,6 +13,7 @@ import { CrateDataContext, TEST_CONTEXT } from "@/components/crate-data-provider
 import { getEntityDisplayName, isRoCrateMetadataEntity, isRootEntity, toArray } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EntityIcon } from "@/components/entity-icon"
+import { SlimClass } from "@/lib/crate-verify/helpers"
 
 function SelectReferenceModalEntry({
     entity,
@@ -59,12 +60,16 @@ export function SelectReferenceModal({
     open: boolean
     onSelect: (ref: IReference) => void
     onOpenChange: (open: boolean) => void
-    propertyRange?: string[]
+    propertyRange?: SlimClass[]
 }) {
     const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
 
+    const propertyRangeIds = useMemo(() => {
+        return propertyRange?.map((p) => p["@id"])
+    }, [propertyRange])
+
     const possibleEntities = useMemo(() => {
-        if (!open || crateDataIsLoading || !crateData || !propertyRange) return []
+        if (!open || crateDataIsLoading || !crateData || !propertyRangeIds) return []
 
         return crateData["@graph"]
             .filter((e) => !isRootEntity(e))
@@ -73,12 +78,12 @@ export function SelectReferenceModal({
                 for (const type of toArray(entity["@type"])) {
                     const resolved = TEST_CONTEXT.resolve(type)
                     if (!resolved) continue
-                    if (propertyRange.includes(resolved)) return true
+                    if (propertyRangeIds.includes(resolved)) return true
                 }
 
                 return false
             })
-    }, [crateData, crateDataIsLoading, open, propertyRange])
+    }, [crateData, crateDataIsLoading, open, propertyRangeIds])
 
     const onSelectAndClose = useCallback(
         (ref: IReference) => {
