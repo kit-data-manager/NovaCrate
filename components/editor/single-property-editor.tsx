@@ -5,12 +5,13 @@ import { isReference } from "@/lib/utils"
 import { ReferenceField } from "@/components/editor/reference-field"
 import { TextField } from "@/components/editor/text-field"
 import { PropertyEditorProps } from "@/components/editor/property-editor"
+import { SlimClass } from "@/lib/crate-verify/helpers"
 
 export interface SinglePropertyEditorProps {
     propertyName: string
     value: FlatEntitySinglePropertyTypes
     valueIndex: number
-    propertyRange?: string[]
+    propertyRange?: SlimClass[]
     onModifyProperty: PropertyEditorProps["onModifyPropertyEntry"]
     onRemovePropertyEntry: PropertyEditorProps["onRemovePropertyEntry"]
 }

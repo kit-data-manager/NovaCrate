@@ -5,10 +5,11 @@ import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu
 import TypeSelectDropdown from "@/components/editor/type-select-dropdown"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
+import { SlimClass } from "@/lib/crate-verify/helpers"
 
 export const AddEntryDropdown = memo(function AddEntryDropdown(props: {
     propertyName: string
-    propertyRange?: string[]
+    propertyRange?: SlimClass[]
     onAddEntry(type: PropertyEditorTypes): void
     another: boolean
 }) {

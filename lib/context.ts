@@ -1,4 +1,4 @@
-import Context_1_1 from "./assets/context-1.1.json"
+import Context_1_1 from "./crate-verify/assets/context-1.1.json"
 
 /**
  * Provides an easy interface into the crate context for id resolution
@@ -10,7 +10,9 @@ export class Context {
     private readonly context: Record<string, string>
 
     constructor(crateContext: CrateContext) {
-        if (crateContext === Context_1_1["@id"]) {
+        if (Array.isArray(crateContext) && crateContext.length === 0) {
+            this.context = {}
+        } else if (crateContext === Context_1_1["@id"]) {
             this.context = Context_1_1["@context"]
         } else if (
             typeof crateContext === "object" &&

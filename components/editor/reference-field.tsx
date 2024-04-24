@@ -2,13 +2,14 @@ import { memo, useCallback, useContext, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { SelectReferenceModal } from "@/components/editor/select-reference-modal"
 import { Globe, LinkIcon, Plus } from "lucide-react"
-import { CreateEntityModal } from "@/components/editor/create-entity-modal"
 import { CreateFromORCIDModal } from "@/components/editor/from-orcid-modal"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { getEntityDisplayName } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { SCHEMA_ORG_ORGANIZATION, SCHEMA_ORG_PERSON } from "@/lib/constants"
+import { GlobalModalContext } from "@/components/global-modals-provider"
+import { SlimClass } from "@/lib/crate-verify/helpers"
 
 export const ReferenceField = memo(function ReferenceField({
     value,
@@ -19,13 +20,19 @@ export const ReferenceField = memo(function ReferenceField({
     value: IReference
     onChange: (value: IReference) => void
     propertyName: string
-    propertyRange?: string[]
+    propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
     const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
+    const { showCreateEntityModal } = useContext(GlobalModalContext)
 
     const [selectModalOpen, setSelectModalOpen] = useState(false)
-    const [createModalOpen, setCreateModalOpen] = useState(false)
+
+    const onCreateClick = useCallback(() => {
+        showCreateEntityModal(propertyRange, (ref) => {
+            onChange(ref)
+        })
+    }, [onChange, propertyRange, showCreateEntityModal])
 
     const onSelect = useCallback(
         (selection: IReference) => {
@@ -64,23 +71,13 @@ export const ReferenceField = memo(function ReferenceField({
                 propertyRange={propertyRange}
             />
 
-            {/* TODO Creating should be done in global modal */}
-            <CreateEntityModal
-                open={createModalOpen}
-                onEntityCreated={onSelect}
-                onOpenChange={setCreateModalOpen}
-                restrictToClasses={propertyRange}
-            />
-
             {isEmpty ? (
                 <>
                     <CreateFromExternalButton propertyRange={propertyRange} />
                     <Button
                         className="grow rounded-r-none border-r-0 first:rounded-l-md rounded-l-none"
                         variant="outline"
-                        onClick={() => {
-                            setCreateModalOpen(true)
-                        }}
+                        onClick={() => onCreateClick()}
                     >
                         <Plus className="w-4 h-4 mr-2" />
                         Create
@@ -124,22 +121,26 @@ export const ReferenceField = memo(function ReferenceField({
     )
 })
 
-function CreateFromExternalButton({ propertyRange }: { propertyRange?: string[] }) {
+function CreateFromExternalButton({ propertyRange }: { propertyRange?: SlimClass[] }) {
     const [modalOpen, setModalOpen] = useState(false)
 
     const openModal = useCallback(() => {
         setModalOpen(true)
     }, [])
 
-    const fromORCID = useMemo(() => {
-        if (!propertyRange) return false
-        return propertyRange.includes(SCHEMA_ORG_PERSON)
+    const propertyRangeIds = useMemo(() => {
+        return propertyRange?.map((p) => p["@id"])
     }, [propertyRange])
 
+    const fromORCID = useMemo(() => {
+        if (!propertyRangeIds) return false
+        return propertyRangeIds.includes(SCHEMA_ORG_PERSON)
+    }, [propertyRangeIds])
+
     const fromROR = useMemo(() => {
-        if (!propertyRange) return false
-        return propertyRange.includes(SCHEMA_ORG_ORGANIZATION)
-    }, [propertyRange])
+        if (!propertyRangeIds) return false
+        return propertyRangeIds.includes(SCHEMA_ORG_ORGANIZATION)
+    }, [propertyRangeIds])
 
     return (
         <>

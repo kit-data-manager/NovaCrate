@@ -1,6 +1,6 @@
 "use client"
 
-import { PropsWithChildren, useEffect, useMemo } from "react"
+import { PropsWithChildren } from "react"
 import { CrateDataProvider } from "@/components/crate-data-provider"
 import { Nav } from "@/components/nav"
 import { RestProvider } from "@/lib/rest-provider"
@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation"
 import { EntityEditorTabsProvider } from "@/components/entity-tabs-provider"
 import { CrateVerifyProvider } from "@/components/crate-verify-provider"
 import { CrateEditorProvider } from "@/components/crate-editor-provider"
+import { GlobalModalProvider } from "@/components/global-modals-provider"
 
 const CRATE_ID_REGEX = /^\/editor\/([^\/]*)\/.*$/
 
@@ -27,9 +28,11 @@ export default function EditorLayout(props: PropsWithChildren) {
         <CrateDataProvider serviceProvider={serviceProvider} crateId={getCrateId(pathname)}>
             <CrateEditorProvider>
                 <CrateVerifyProvider>
-                    <EntityEditorTabsProvider>
-                        <Nav>{props.children}</Nav>
-                    </EntityEditorTabsProvider>
+                    <GlobalModalProvider>
+                        <EntityEditorTabsProvider>
+                            <Nav>{props.children}</Nav>
+                        </EntityEditorTabsProvider>
+                    </GlobalModalProvider>
                 </CrateVerifyProvider>
             </CrateEditorProvider>
         </CrateDataProvider>

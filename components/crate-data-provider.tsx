@@ -3,7 +3,7 @@
 import { createContext, PropsWithChildren, useCallback } from "react"
 import { Error } from "@/components/error"
 import useSWR from "swr"
-import { Context } from "@/lib/crate-verify/context"
+import { Context } from "@/lib/context"
 
 export interface ICrateDataProvider {
     crateId: string
