@@ -6,6 +6,7 @@ import { TEST_CONTEXT } from "@/components/crate-data-provider"
 import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
 import { SinglePropertyEditor } from "@/components/editor/single-property-editor"
+import { propertyNameReadable } from "@/lib/utils"
 
 export interface EntityEditorProperty {
     propertyName: string
@@ -67,13 +68,6 @@ export enum PropertyEditorTypes {
     Text,
     Date,
     Reference
-}
-
-function propertyNameReadable(propertyName: string) {
-    if (propertyName === "@id") return "Identifier"
-    if (propertyName === "@type") return "Type"
-    const split = propertyName.replace(/([a-z0-9])([A-Z])/, "$1 $2")
-    return split.charAt(0).toUpperCase() + split.slice(1)
 }
 
 export interface PropertyEditorProps {
