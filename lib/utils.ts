@@ -62,24 +62,25 @@ export function propertyHasChanged(
     _value: FlatEntityPropertyTypes,
     _oldValue: FlatEntityPropertyTypes
 ) {
-    const value = toArray(_value)
-    const oldValue = toArray(_oldValue)
+    const value = toArray(_value).slice()
+    const oldValue = toArray(_oldValue).slice()
 
     if (value.length !== oldValue.length) return true
 
-    function singleValueChanged(
-        a: FlatEntitySinglePropertyTypes,
-        b: FlatEntitySinglePropertyTypes
-    ) {
-        if (typeof a !== typeof b) {
-            return true
-        } else if (typeof a === "string" && typeof b === "string") {
-            return a !== b
-        } else if (typeof a === "object" && typeof b === "object") {
-            return a["@id"] !== b["@id"]
-        }
-        return false
-    }
-
-    return value.filter((v, i) => !singleValueChanged(v, oldValue[i])).length === 0
+    return (
+        value.filter((v) => {
+            const index = oldValue.findIndex((o) => {
+                if (typeof o === "object") {
+                    if (typeof v === "object") {
+                        return o["@id"] === v["@id"]
+                    } else return false
+                } else {
+                    return o === v
+                }
+            })
+            if (index < 0) return true
+            oldValue.splice(index, 1)
+            return false
+        }).length > 0
+    )
 }

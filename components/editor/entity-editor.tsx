@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useContext, useMemo, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import {
     mapEntityToProperties,
     PropertyEditor,
@@ -166,6 +166,21 @@ export function EntityEditor({ entityId }: { entityId: string }) {
         return entity ? getEntityDisplayName(entity) : ""
     }, [entity])
 
+    useEffect(() => {
+        function handler(e: KeyboardEvent) {
+            if (e.getModifierState("Control") && e.key === "s") {
+                e.stopPropagation()
+                e.stopImmediatePropagation()
+                e.preventDefault()
+                onSave()
+            }
+        }
+
+        window.addEventListener("keydown", handler)
+
+        return () => window.removeEventListener("keydown", handler)
+    }, [hasUnsavedChanges, onSave])
+
     return (
         <div className="relative">
             <AddPropertyModal
@@ -181,6 +196,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
                 isSaving={isSaving}
                 onSave={onSave}
                 onRevert={onRevert}
+                openAddPropertyModal={openAddPropertyModal}
             />
 
             <div className="p-4 mr-10">

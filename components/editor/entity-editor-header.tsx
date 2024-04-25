@@ -15,25 +15,27 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { memo, useEffect } from "react"
+import { memo } from "react"
 
 export const EntityEditorHeader = memo(function EntityEditorHeader({
     isSaving,
     onSave,
     hasUnsavedChanges,
-    onRevert
+    onRevert,
+    openAddPropertyModal
 }: {
     hasUnsavedChanges: boolean
     isSaving: boolean
     onSave(): void
     onRevert(): void
+    openAddPropertyModal(): void
 }) {
     return (
         <div className="flex mb-2 gap-2 sticky top-0 z-10 p-2 bg-accent">
             <Button size="sm" variant="outline" className="text-xs">
                 <PanelLeftClose className="w-4 h-4" />
             </Button>
-            <Button size="sm" variant="outline" className="text-xs">
+            <Button size="sm" variant="outline" className="text-xs" onClick={openAddPropertyModal}>
                 <Plus className={"w-4 h-4 mr-1"} /> Add Property
             </Button>
             <Button size="sm" variant="outline" className="text-xs">

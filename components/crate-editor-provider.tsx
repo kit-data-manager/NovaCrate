@@ -360,9 +360,13 @@ export function CrateEditorProvider(props: PropsWithChildren) {
             if (crateDataRef.current) {
                 const entity = crateDataRef.current["@graph"].find((e) => e["@id"] === entityId)
                 const internalIdx = oldEntities.findIndex((e) => e["@id"] === entityId)
-                if (!entity || internalIdx < 0) return oldEntities
+                if (internalIdx < 0) return oldEntities
                 const copy = [...oldEntities]
-                copy[internalIdx] = entity
+                if (!entity) {
+                    copy.splice(internalIdx, 1)
+                } else {
+                    copy[internalIdx] = entity
+                }
                 return copy
             } else return oldEntities
         })
