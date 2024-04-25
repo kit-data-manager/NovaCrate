@@ -23,6 +23,7 @@ import { useAsync } from "@/components/use-async"
 import { CrateVerifyContext } from "@/components/crate-verify-provider"
 import { AddPropertyModal, PossibleProperty } from "@/components/editor/add-property-modal"
 import { CrateEditorContext, Diff } from "@/components/crate-editor-provider"
+import { UnknownTypeWarning } from "@/components/editor/unknown-type-warning"
 
 export function EntityEditor({ entityId }: { entityId: string }) {
     const { crateData } = useContext(CrateDataContext)
@@ -223,6 +224,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
                 </div>
 
                 <WebWorkerWarning />
+                <UnknownTypeWarning entityType={entity?.["@type"] || []} />
                 <Error
                     className="mt-4"
                     text={saveError ? "Error while saving: " + saveError : ""}

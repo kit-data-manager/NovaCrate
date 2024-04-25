@@ -1,4 +1,4 @@
-import { CircleAlert } from "lucide-react"
+import { CircleAlert, TriangleAlert } from "lucide-react"
 import { ReactNode } from "react"
 
 function cn(size?: "md" | "xl") {
@@ -33,6 +33,29 @@ export function Error({
     return (
         <div className={cn(size) + " " + className}>
             <CircleAlert className={cnIcon(size)} />
+            {prefix ? prefix + text : text}
+        </div>
+    )
+}
+
+export function Warn({
+    text,
+    size,
+    className,
+    prefix
+}: {
+    text: string | ReactNode
+    size?: "md" | "xl"
+    className?: string
+    prefix?: string
+}) {
+    if (!text) return null
+
+    return (
+        <div
+            className={cn(size) + " " + className + " !bg-transparent border-warn border text-warn"}
+        >
+            <TriangleAlert className={cnIcon(size)} />
             {prefix ? prefix + text : text}
         </div>
     )
