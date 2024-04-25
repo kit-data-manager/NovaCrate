@@ -4,11 +4,14 @@ import { createContext, PropsWithChildren, useCallback, useState } from "react"
 import { CreateEntityModal } from "@/components/create-entity-modal"
 import { SlimClass } from "@/lib/crate-verify/helpers"
 
+export interface AutoReference {
+    entityId: string
+    propertyName: string
+    valueIdx: number
+}
+
 export interface IGlobalModalContext {
-    showCreateEntityModal(
-        restrictToClasses?: SlimClass[],
-        callback?: (ref: IReference) => void
-    ): void
+    showCreateEntityModal(restrictToClasses?: SlimClass[], autoReference?: AutoReference): void
 }
 
 export const GlobalModalContext = createContext<IGlobalModalContext>({
@@ -18,18 +21,18 @@ export const GlobalModalContext = createContext<IGlobalModalContext>({
 export function GlobalModalProvider(props: PropsWithChildren) {
     const [createEntityModalState, setCreateEntityModalState] = useState<{
         open: boolean
-        callback?: (ref: IReference) => void
+        autoReference?: AutoReference
         restrictToClasses?: SlimClass[]
     }>({
         open: false
     })
 
     const showCreateEntityModal = useCallback(
-        (restrictToClasses?: SlimClass[], callback?: (ref: IReference) => void) => {
+        (restrictToClasses?: SlimClass[], autoReference?: AutoReference) => {
             setCreateEntityModalState({
                 open: true,
                 restrictToClasses,
-                callback
+                autoReference
             })
         },
         []
@@ -44,15 +47,9 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         })
     }, [])
 
-    const onEntityCreated = useCallback((ref: IReference) => {
-        setCreateEntityModalState((oldState) => {
-            if (oldState.callback) {
-                oldState.callback(ref)
-            }
-
-            return {
-                open: false
-            }
+    const onEntityCreated = useCallback(() => {
+        setCreateEntityModalState({
+            open: false
         })
     }, [])
 
@@ -67,6 +64,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 onEntityCreated={onEntityCreated}
                 onOpenChange={onCreateEntityModalOpenChange}
                 restrictToClasses={createEntityModalState.restrictToClasses}
+                autoReference={createEntityModalState.autoReference}
             />
 
             {props.children}

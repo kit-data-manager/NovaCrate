@@ -10,6 +10,7 @@ import {
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
     isRootEntity as isRootEntityUtil,
+    propertyHasChanged,
     toArray
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
@@ -224,6 +225,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
                         return (
                             <div key={property.propertyName}>
                                 <PropertyEditor
+                                    entityId={entityId}
                                     property={property}
                                     onModifyPropertyEntry={onModifyPropertyEntry}
                                     onAddPropertyEntry={onPropertyAddEntry}
@@ -246,27 +248,4 @@ export function EntityEditor({ entityId }: { entityId: string }) {
             </div>
         </div>
     )
-}
-
-function propertyHasChanged(_value: FlatEntityPropertyTypes, _oldValue: FlatEntityPropertyTypes) {
-    const value = toArray(_value)
-    const oldValue = toArray(_oldValue)
-
-    if (value.length !== oldValue.length) return true
-
-    function singleValueChanged(
-        a: FlatEntitySinglePropertyTypes,
-        b: FlatEntitySinglePropertyTypes
-    ) {
-        if (typeof a !== typeof b) {
-            return true
-        } else if (typeof a === "string" && typeof b === "string") {
-            return a !== b
-        } else if (typeof a === "object" && typeof b === "object") {
-            return a["@id"] !== b["@id"]
-        }
-        return false
-    }
-
-    return value.filter((v, i) => !singleValueChanged(v, oldValue[i])).length === 0
 }

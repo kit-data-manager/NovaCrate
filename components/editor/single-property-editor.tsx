@@ -8,6 +8,7 @@ import { PropertyEditorProps } from "@/components/editor/property-editor"
 import { SlimClass } from "@/lib/crate-verify/helpers"
 
 export interface SinglePropertyEditorProps {
+    entityId: string
     propertyName: string
     value: FlatEntitySinglePropertyTypes
     valueIndex: number
@@ -17,6 +18,7 @@ export interface SinglePropertyEditorProps {
 }
 
 export const SinglePropertyEditor = memo(function SinglePropertyEditor({
+    entityId,
     propertyName,
     onModifyProperty,
     valueIndex,
@@ -49,9 +51,11 @@ export const SinglePropertyEditor = memo(function SinglePropertyEditor({
     if (isReference(value))
         return (
             <ReferenceField
+                entityId={entityId}
                 value={value}
                 onChange={onReferenceChange}
                 propertyName={propertyName}
+                valueIdx={valueIndex}
                 propertyRange={propertyRange}
                 onRemoveEntry={onRemoveEntry}
             />

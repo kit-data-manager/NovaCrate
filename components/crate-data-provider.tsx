@@ -45,17 +45,18 @@ export function CrateDataProvider(
                     )
 
                     if (data) {
-                        const existingIndex = data["@graph"].findIndex(
+                        const newData = { ...data }
+                        const existingIndex = newData["@graph"].findIndex(
                             (e) => e["@id"] === entityData["@id"]
                         )
 
                         if (existingIndex < 0) {
-                            data["@graph"].push(entityData)
+                            newData["@graph"].push(entityData)
                         } else {
-                            data["@graph"][existingIndex] = entityData
+                            newData["@graph"][existingIndex] = entityData
                         }
 
-                        await mutate(data)
+                        await mutate(newData)
                     }
 
                     return updateResult

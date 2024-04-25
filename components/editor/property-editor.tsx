@@ -77,6 +77,7 @@ function propertyNameReadable(propertyName: string) {
 }
 
 export interface PropertyEditorProps {
+    entityId: string
     property: EntityEditorProperty
     onModifyPropertyEntry: (
         propertyName: string,
@@ -90,6 +91,7 @@ export interface PropertyEditorProps {
 }
 
 export const PropertyEditor = memo(function PropertyEditor({
+    entityId,
     property,
     onModifyPropertyEntry,
     onAddPropertyEntry,
@@ -183,6 +185,7 @@ export const PropertyEditor = memo(function PropertyEditor({
                         return (
                             <SinglePropertyEditor
                                 key={i}
+                                entityId={entityId}
                                 valueIndex={i}
                                 propertyName={property.propertyName}
                                 value={v}

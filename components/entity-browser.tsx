@@ -2,7 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCallback, useContext, useState } from "react"
-import { CrateDataContext, ICrateDataProvider } from "@/components/crate-data-provider"
+import { CrateDataContext } from "@/components/crate-data-provider"
 import { Button } from "@/components/ui/button"
 import {
     getEntityDisplayName,
@@ -22,6 +22,8 @@ import {
 } from "lucide-react"
 import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { EntityIcon } from "./entity-icon"
+import { CrateEditorContext } from "@/components/crate-editor-provider"
+import { GlobalModalContext } from "@/components/global-modals-provider"
 
 export function EntityBrowserItem(props: { entity: IFlatEntity }) {
     const { openTab } = useContext(EntityEditorTabsContext)
@@ -50,7 +52,9 @@ export function EntityBrowserItem(props: { entity: IFlatEntity }) {
     )
 }
 
-export function EntityBrowserSection(props: { crate: ICrate; section: "Data" | "Contextual" }) {
+export function EntityBrowserSection(props: { section: "Data" | "Contextual" }) {
+    const { entities } = useContext(CrateEditorContext)
+
     const [open, setOpen] = useState(true)
 
     const toggle = useCallback(() => {
@@ -73,7 +77,7 @@ export function EntityBrowserSection(props: { crate: ICrate; section: "Data" | "
             </Button>
             {open ? (
                 <div className="flex flex-col pl-4">
-                    {props.crate["@graph"]
+                    {entities
                         .filter((item) => !isRootEntity(item) && !isRoCrateMetadataEntity(item))
                         .filter((item) =>
                             props.section === "Data" ? isDataEntity(item) : isContextualEntity(item)
@@ -87,8 +91,9 @@ export function EntityBrowserSection(props: { crate: ICrate; section: "Data" | "
     )
 }
 
-export function EntityBrowserContent(props: { crate: ICrateDataProvider }) {
-    const { crate } = props
+export function EntityBrowserContent() {
+    const crate = useContext(CrateDataContext)
+    const { entities } = useContext(CrateEditorContext)
 
     if (crate.crateDataIsLoading && !crate.crateData)
         return (
@@ -105,24 +110,23 @@ export function EntityBrowserContent(props: { crate: ICrateDataProvider }) {
             </div>
         )
 
-    if (!crate.crateData) return <div>No Data</div>
-
     return (
         <div className="flex flex-col p-2">
-            {crate.crateData["@graph"]
+            {entities
                 .filter((item) => item["@id"] === "./")
                 .map((item) => {
                     return <EntityBrowserItem entity={item} key={item["@id"]} />
                 })}
 
-            <EntityBrowserSection crate={crate.crateData} section={"Data"} />
-            <EntityBrowserSection crate={crate.crateData} section={"Contextual"} />
+            <EntityBrowserSection section={"Data"} />
+            <EntityBrowserSection section={"Contextual"} />
         </div>
     )
 }
 
 export function EntityBrowser() {
     const crate = useContext(CrateDataContext)
+    const { showCreateEntityModal } = useContext(GlobalModalContext)
 
     return (
         <div>
@@ -130,7 +134,12 @@ export function EntityBrowser() {
                 <PackageSearch className="w-4 h-4 shrink-0 mr-2" /> Entity Explorer
             </div>
             <div className="flex gap-2 sticky top-0 z-10 p-2 bg-accent">
-                <Button size="sm" variant="outline" className="text-xs">
+                <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs"
+                    onClick={() => showCreateEntityModal()}
+                >
                     <Plus className={"w-4 h-4"} />
                 </Button>
                 <Button size="sm" variant="outline" className="text-xs">
@@ -151,7 +160,7 @@ export function EntityBrowser() {
                     />
                 </Button>
             </div>
-            <EntityBrowserContent crate={crate} />
+            <EntityBrowserContent />
         </div>
     )
 }
