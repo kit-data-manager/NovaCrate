@@ -1,7 +1,7 @@
 import { memo, useCallback, useContext, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { SelectReferenceModal } from "@/components/editor/select-reference-modal"
-import { Globe, LinkIcon, Plus } from "lucide-react"
+import { ExternalLink, Globe, LinkIcon, Plus } from "lucide-react"
 import { CreateFromORCIDModal } from "@/components/editor/from-orcid-modal"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { getEntityDisplayName } from "@/lib/utils"
@@ -11,6 +11,7 @@ import { SCHEMA_ORG_ORGANIZATION, SCHEMA_ORG_PERSON } from "@/lib/constants"
 import { GlobalModalContext } from "@/components/global-modals-provider"
 import { SlimClass } from "@/lib/crate-verify/helpers"
 import { CrateEditorContext } from "@/components/crate-editor-provider"
+import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 
 export const ReferenceField = memo(function ReferenceField({
     entityId,
@@ -32,6 +33,7 @@ export const ReferenceField = memo(function ReferenceField({
     const { crateDataIsLoading } = useContext(CrateDataContext)
     const { getEntity } = useContext(CrateEditorContext)
     const { showCreateEntityModal } = useContext(GlobalModalContext)
+    const { openTab } = useContext(EntityEditorTabsContext)
 
     const [selectModalOpen, setSelectModalOpen] = useState(false)
 
@@ -49,6 +51,17 @@ export const ReferenceField = memo(function ReferenceField({
         },
         [onChange]
     )
+
+    const openInNewTab = useCallback(() => {
+        const entity = getEntity(value["@id"])
+        if (!entity) {
+            if (value["@id"].startsWith("http")) {
+                window.open(value["@id"], "_blank")
+            }
+            return
+        }
+        openTab(createEntityEditorTab(entity), true)
+    }, [getEntity, openTab, value])
 
     const isEmpty = useMemo(() => {
         return value["@id"] === ""
@@ -101,21 +114,33 @@ export const ReferenceField = memo(function ReferenceField({
                     </Button>
                 </>
             ) : (
-                <Button
-                    className="grow rounded-r-none justify-start pl-3 truncate"
-                    variant="outline"
-                    onClick={() => {
-                        setSelectModalOpen(true)
-                    }}
-                >
-                    <LinkIcon className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
-                    <div className="flex items-end truncate">
-                        <ReferenceText />
-                        <span className="text-muted-foreground ml-1 text-xs truncate">
-                            {value["@id"]}
-                        </span>
-                    </div>
-                </Button>
+                <>
+                    <Button
+                        className="grow rounded-r-none justify-start pl-3 truncate"
+                        variant="outline"
+                        onClick={() => {
+                            setSelectModalOpen(true)
+                        }}
+                    >
+                        <LinkIcon className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
+                        <div className="flex items-end truncate">
+                            <ReferenceText />
+                            <span className="text-muted-foreground ml-1 text-xs truncate">
+                                {value["@id"]}
+                            </span>
+                        </div>
+                    </Button>
+                    {referencedEntityName || value["@id"].startsWith("http") ? (
+                        <Button
+                            onClick={openInNewTab}
+                            size="icon"
+                            variant="outline"
+                            className="rounded-none border-l-0"
+                        >
+                            <ExternalLink className="w-4 h-4" />
+                        </Button>
+                    ) : null}
+                </>
             )}
 
             <SinglePropertyDropdown

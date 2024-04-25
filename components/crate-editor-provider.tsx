@@ -14,7 +14,8 @@ import {
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { Context } from "@/lib/context"
 import { AutoReference } from "@/components/global-modals-provider"
-import { propertyHasChanged } from "@/lib/utils"
+import { isEntityEqual } from "@/lib/utils"
+import { computeServerDifferences, executeForcedUpdates } from "@/components/ensure-sync"
 
 export enum Diff {
     None,
@@ -173,6 +174,7 @@ export function CrateEditorProvider(props: PropsWithChildren) {
     }, [crateData])
 
     const [internalEntities, setInternalEntities] = useState<IFlatEntity[] | null>(null)
+    const [_, setLastCrateData] = useState(crateData)
 
     const entities = useMemo(() => {
         if (internalEntities === null) {
@@ -185,6 +187,13 @@ export function CrateEditorProvider(props: PropsWithChildren) {
             }
         } else return internalEntities
     }, [crateData, internalEntities])
+
+    // Ref for use in callbacks, not for rendering!!!
+    // Ref changes do not cause re-render. This is useful for keeping useCallback or useEffect from doing useless re-renders for data that is not used in rendering
+    const entitiesRef = useRef<IFlatEntity[]>([])
+    useEffect(() => {
+        entitiesRef.current = entities
+    }, [entities])
 
     const entitiesChangelist = useMemo(() => {
         const changelist = new Map<string, Diff>()
@@ -199,7 +208,7 @@ export function CrateEditorProvider(props: PropsWithChildren) {
                 continue
             }
 
-            if (isEqual(original, entity)) {
+            if (isEntityEqual(original, entity)) {
                 changelist.set(entity["@id"], Diff.None)
             } else changelist.set(entity["@id"], Diff.Changed)
         }
@@ -212,6 +221,31 @@ export function CrateEditorProvider(props: PropsWithChildren) {
         },
         [entities]
     )
+
+    /**
+     * This effect makes sure that changes that happen on the server side (by hand of ro-crate-java) don't
+     * get lost. When a change in the data is detected, the local editor state for that data is overwritten. That means
+     * that any unsaved changes on an entity that the server modified will be lost.
+     */
+    useEffect(() => {
+        if (crateData) {
+            setLastCrateData((lastCrateData) => {
+                if (!lastCrateData) return crateData
+                const { forceProperties, forceEntities } = computeServerDifferences(
+                    crateData,
+                    lastCrateData,
+                    entitiesRef.current
+                )
+
+                setInternalEntities((oldInternalData) => {
+                    if (!oldInternalData) return null
+                    return executeForcedUpdates(oldInternalData, forceEntities, forceProperties)
+                })
+
+                return crateData
+            })
+        }
+    }, [crateData])
 
     const addEntity = useCallback(
         (
@@ -423,21 +457,4 @@ export function CrateEditorProvider(props: PropsWithChildren) {
             {props.children}
         </CrateEditorContext.Provider>
     )
-}
-
-function isEqual(a: IFlatEntity, b: IFlatEntity) {
-    const entriesA = Object.entries(a)
-    const entriesB = Object.entries(b)
-    if (entriesA.length !== entriesB.length) return false
-    for (const [key, value] of entriesA) {
-        if (key in b) {
-            if (propertyHasChanged(value, b[key])) {
-                return false
-            }
-        } else {
-            return false
-        }
-    }
-
-    return true
 }
