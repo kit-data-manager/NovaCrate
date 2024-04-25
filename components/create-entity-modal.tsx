@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, Plus } from "lucide-react"
 import { useAutoId } from "@/components/use-auto-id"
 import { AutoReference } from "@/components/global-modals-provider"
+import { propertyNameReadable } from "@/lib/utils"
 
 function CreateEntityModalEntry({
     slimClass,
@@ -29,7 +30,7 @@ function CreateEntityModalEntry({
     const { crateContext } = useContext(CrateEditorContext)
 
     const readableName = useMemo(() => {
-        return crateContext.reverse(slimClass["@id"]) || slimClass["@id"]
+        return propertyNameReadable(crateContext.reverse(slimClass["@id"]) || slimClass["@id"])
     }, [crateContext, slimClass])
 
     return (

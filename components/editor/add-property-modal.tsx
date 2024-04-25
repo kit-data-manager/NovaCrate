@@ -10,9 +10,10 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SchemaNode } from "@/lib/crate-verify/SchemaGraph"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
+import { propertyNameReadable } from "@/lib/utils"
 
 export interface PossibleProperty {
     propertyName: string
@@ -30,6 +31,10 @@ function AddPropertyModalEntry({
 }) {
     const { canBeReference } = usePropertyCanBe(property.range)
 
+    const readableName = useMemo(() => {
+        return propertyNameReadable(property.propertyName)
+    }, [property.propertyName])
+
     return (
         <CommandItem
             className="text-md"
@@ -44,7 +49,7 @@ function AddPropertyModalEntry({
         >
             <div className="flex flex-col max-w-full w-full py-1">
                 <div className="flex justify-between">
-                    <div>{property.propertyName}</div>
+                    <div>{readableName}</div>
                     <div className="text-sm text-muted-foreground">
                         {property.rangeReadable.join(", ")}
                     </div>
