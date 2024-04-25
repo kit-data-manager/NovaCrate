@@ -58,6 +58,23 @@ export function isContextualEntity(entity: IFlatEntity) {
     return !isRootEntity(entity) && !isDataEntity(entity)
 }
 
+export function isEntityEqual(a: IFlatEntity, b: IFlatEntity) {
+    const entriesA = Object.entries(a)
+    const entriesB = Object.entries(b)
+    if (entriesA.length !== entriesB.length) return false
+    for (const [key, value] of entriesA) {
+        if (key in b) {
+            if (propertyHasChanged(value, b[key])) {
+                return false
+            }
+        } else {
+            return false
+        }
+    }
+
+    return true
+}
+
 export function propertyHasChanged(
     _value: FlatEntityPropertyTypes,
     _oldValue: FlatEntityPropertyTypes
