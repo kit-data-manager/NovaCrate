@@ -6,14 +6,12 @@ import { getEntityDisplayName } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Braces, Plus, XIcon } from "lucide-react"
 import { EntityIcon } from "@/components/entity-icon"
-import { CrateDataContext } from "@/components/crate-data-provider"
 import { EntityEditor } from "@/components/editor/entity-editor"
 import { CrateEditorContext } from "@/components/crate-editor-provider"
 
 function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
-    const { entitiesChangelist } = useContext(CrateEditorContext)
+    const { getEntity, entitiesChangelist } = useContext(CrateEditorContext)
     const { focusTab, closeTab } = useContext(EntityEditorTabsContext)
-    const { crateData } = useContext(CrateDataContext)
 
     const button = useRef<HTMLButtonElement>(null)
 
@@ -26,10 +24,8 @@ function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
     }, [closeTab, tab.entityId])
 
     const entity = useMemo(() => {
-        if (crateData) {
-            return crateData["@graph"].find((e) => e["@id"] === tab.entityId)
-        }
-    }, [crateData, tab.entityId])
+        return getEntity(tab.entityId)
+    }, [getEntity, tab.entityId])
 
     const dirty = useMemo(() => {
         const diff = entitiesChangelist.get(tab.entityId)

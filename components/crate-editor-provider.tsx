@@ -13,7 +13,8 @@ import {
 } from "react"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { Context } from "@/lib/context"
-import isEqual from "react-fast-compare"
+import { AutoReference } from "@/components/global-modals-provider"
+import { propertyHasChanged } from "@/lib/utils"
 
 export enum Diff {
     None,
@@ -29,7 +30,13 @@ export interface ICrateEditorContext {
 
     entities: IFlatEntity[]
     entitiesChangelist: Map<string, Diff>
-    addEntity(entityId: string, types: string[]): void
+    getEntity(id: string): IFlatEntity | undefined
+    addEntity(
+        entityId: string,
+        types: string[],
+        properties?: Record<string, FlatEntityPropertyTypes>,
+        autoReference?: AutoReference
+    ): boolean
     addProperty(entityId: string, propertyName: string, value?: FlatEntityPropertyTypes): void
     addPropertyEntry(entityId: string, propertyName: string, type: PropertyEditorTypes): void
     modifyPropertyEntry(
@@ -66,6 +73,9 @@ export const CrateEditorContext = createContext<ICrateEditorContext>({
 
     entities: [],
     entitiesChangelist: new Map(),
+    getEntity() {
+        throw "CrateEditorContext not mounted"
+    },
     addEntity() {
         throw "CrateEditorContext not mounted"
     },
@@ -196,18 +206,66 @@ export function CrateEditorProvider(props: PropsWithChildren) {
         return changelist
     }, [crateData, entities])
 
-    const addEntity = useCallback((entityId: string, types: string | string[]) => {
-        setInternalEntities((oldEntities) => {
-            if (!oldEntities) return null
+    const getEntity = useCallback(
+        (id: string) => {
+            return entities.find((e) => e["@id"] === id)
+        },
+        [entities]
+    )
 
-            const copy = [...oldEntities]
-            copy.push({
-                "@id": entityId,
-                "@type": types
+    const addEntity = useCallback(
+        (
+            entityId: string,
+            types: string | string[],
+            properties?: Record<string, FlatEntityPropertyTypes>,
+            autoReference?: AutoReference
+        ) => {
+            let result = false
+            setInternalEntities((oldEntities) => {
+                if (!oldEntities) return null
+                if (getEntity(entityId)) return oldEntities
+
+                result = true
+
+                let copy = [...oldEntities]
+                copy.push({
+                    ...properties,
+                    "@id": entityId,
+                    "@type": types
+                })
+
+                if (autoReference) {
+                    copy =
+                        modifyEntityHelper(autoReference.entityId, copy, (autoReferenceEntity) => {
+                            if (autoReference.propertyName in autoReferenceEntity) {
+                                const prop = autoReferenceEntity[autoReference.propertyName]
+                                if (Array.isArray(prop)) {
+                                    const newProps = [...prop]
+                                    if (autoReference.valueIdx < newProps.length) {
+                                        newProps[autoReference.valueIdx] = { "@id": entityId }
+                                    } else {
+                                        newProps.push({ "@id": entityId })
+                                    }
+                                    return {
+                                        ...autoReferenceEntity,
+                                        [autoReference.propertyName]: newProps
+                                    }
+                                } else {
+                                    return {
+                                        ...autoReferenceEntity,
+                                        [autoReference.propertyName]: { "@id": entityId }
+                                    }
+                                }
+                            } else return autoReferenceEntity
+                        }) || copy
+                }
+
+                return copy
             })
-            return copy
-        })
-    }, [])
+            return result
+        },
+        [getEntity]
+    )
 
     const modifyPropertyEntry = useCallback(
         (
@@ -337,6 +395,7 @@ export function CrateEditorProvider(props: PropsWithChildren) {
 
                 entities,
                 entitiesChangelist,
+                getEntity,
                 addEntity,
                 addProperty,
                 addPropertyEntry,
@@ -360,4 +419,21 @@ export function CrateEditorProvider(props: PropsWithChildren) {
             {props.children}
         </CrateEditorContext.Provider>
     )
+}
+
+function isEqual(a: IFlatEntity, b: IFlatEntity) {
+    const entriesA = Object.entries(a)
+    const entriesB = Object.entries(b)
+    if (entriesA.length !== entriesB.length) return false
+    for (const [key, value] of entriesA) {
+        if (key in b) {
+            if (propertyHasChanged(value, b[key])) {
+                return false
+            }
+        } else {
+            return false
+        }
+    }
+
+    return true
 }

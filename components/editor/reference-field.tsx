@@ -10,29 +10,38 @@ import { SinglePropertyDropdown } from "@/components/editor/single-property-drop
 import { SCHEMA_ORG_ORGANIZATION, SCHEMA_ORG_PERSON } from "@/lib/constants"
 import { GlobalModalContext } from "@/components/global-modals-provider"
 import { SlimClass } from "@/lib/crate-verify/helpers"
+import { CrateEditorContext } from "@/components/crate-editor-provider"
 
 export const ReferenceField = memo(function ReferenceField({
+    entityId,
     value,
     onChange,
+    valueIdx,
     propertyRange,
-    onRemoveEntry
+    onRemoveEntry,
+    propertyName
 }: {
+    entityId: string
     value: IReference
     onChange: (value: IReference) => void
     propertyName: string
+    valueIdx: number
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
-    const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
+    const { crateDataIsLoading } = useContext(CrateDataContext)
+    const { getEntity } = useContext(CrateEditorContext)
     const { showCreateEntityModal } = useContext(GlobalModalContext)
 
     const [selectModalOpen, setSelectModalOpen] = useState(false)
 
     const onCreateClick = useCallback(() => {
-        showCreateEntityModal(propertyRange, (ref) => {
-            onChange(ref)
+        showCreateEntityModal(propertyRange, {
+            entityId,
+            propertyName,
+            valueIdx
         })
-    }, [onChange, propertyRange, showCreateEntityModal])
+    }, [entityId, propertyName, propertyRange, showCreateEntityModal, valueIdx])
 
     const onSelect = useCallback(
         (selection: IReference) => {
@@ -46,11 +55,9 @@ export const ReferenceField = memo(function ReferenceField({
     }, [value])
 
     const referencedEntityName = useMemo(() => {
-        if (crateData) {
-            const entity = crateData["@graph"].find((e) => e["@id"] === value["@id"])
-            if (entity) return getEntityDisplayName(entity)
-        }
-    }, [crateData, value])
+        const entity = getEntity(value["@id"])
+        if (entity) return getEntityDisplayName(entity)
+    }, [getEntity, value])
 
     const ReferenceText = useCallback(() => {
         if (!crateDataIsLoading) {

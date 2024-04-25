@@ -44,7 +44,10 @@ export function isDataEntity(entity: IFlatEntity) {
 }
 
 export function isFileDataEntity(entity: IFlatEntity) {
-    return toArray(entity["@type"]).includes("File")
+    return (
+        toArray(entity["@type"]).includes("File") ||
+        toArray(entity["@type"]).includes("MediaObject")
+    )
 }
 
 export function isFolderDataEntity(entity: IFlatEntity) {
@@ -53,4 +56,30 @@ export function isFolderDataEntity(entity: IFlatEntity) {
 
 export function isContextualEntity(entity: IFlatEntity) {
     return !isRootEntity(entity) && !isDataEntity(entity)
+}
+
+export function propertyHasChanged(
+    _value: FlatEntityPropertyTypes,
+    _oldValue: FlatEntityPropertyTypes
+) {
+    const value = toArray(_value)
+    const oldValue = toArray(_oldValue)
+
+    if (value.length !== oldValue.length) return true
+
+    function singleValueChanged(
+        a: FlatEntitySinglePropertyTypes,
+        b: FlatEntitySinglePropertyTypes
+    ) {
+        if (typeof a !== typeof b) {
+            return true
+        } else if (typeof a === "string" && typeof b === "string") {
+            return a !== b
+        } else if (typeof a === "object" && typeof b === "object") {
+            return a["@id"] !== b["@id"]
+        }
+        return false
+    }
+
+    return value.filter((v, i) => !singleValueChanged(v, oldValue[i])).length === 0
 }

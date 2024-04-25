@@ -117,6 +117,10 @@ export class SchemaGraph {
         return this.graph.get(id)
     }
 
+    getAllNodes() {
+        return Array.from(this.graph.values())
+    }
+
     getClassSpecificProperties(classId: string) {
         const self = this.getNode(classId)
         if (!self) throw new ReferenceError("classId not specified or invalid")

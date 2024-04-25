@@ -77,3 +77,15 @@ export function getPossibleEntityProperties(types: string[]) {
 
     return Array.from(result)
 }
+
+export function getAllClasses(): SlimClass[] {
+    return schemaGraph
+        .getAllNodes()
+        .filter((n) => n.isClass())
+        .map((c) => {
+            return {
+                "@id": schemaGraph.expandIRI(c["@id"]),
+                comment: c.comment
+            }
+        })
+}
