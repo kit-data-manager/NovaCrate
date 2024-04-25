@@ -46,20 +46,9 @@ export function NavHeader() {
                             <MenubarItem>Close</MenubarItem>
                             <MenubarSeparator />
                             <MenubarItem>Save All</MenubarItem>
+                            <MenubarItem>Revert All</MenubarItem>
                             <MenubarSeparator />
                             <MenubarItem>Export</MenubarItem>
-                        </MenubarContent>
-                    </MenubarMenu>
-                    <MenubarMenu>
-                        <MenubarTrigger>
-                            Files <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
-                        </MenubarTrigger>
-                        <MenubarContent>
-                            <MenubarItem>Add File</MenubarItem>
-                            <MenubarItem>Add Folder</MenubarItem>
-                            <MenubarItem>Upload & Unpack</MenubarItem>
-                            <MenubarSeparator />
-                            <MenubarItem>View All</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
@@ -68,16 +57,28 @@ export function NavHeader() {
                         </MenubarTrigger>
                         <MenubarContent>
                             <MenubarSub>
-                                <MenubarSubTrigger>Add</MenubarSubTrigger>
+                                <MenubarSubTrigger>Add Contextual</MenubarSubTrigger>
                                 <MenubarSubContent>
-                                    <MenubarItem>File</MenubarItem>
                                     <MenubarItem>Person</MenubarItem>
                                     <MenubarItem>Organization</MenubarItem>
+                                    <MenubarItem>Place</MenubarItem>
+                                    <MenubarItem>Scholarly Article</MenubarItem>
+                                    <MenubarItem>Creative Work</MenubarItem>
+                                    <MenubarItem>Contact Information</MenubarItem>
+                                    <MenubarSeparator />
+                                    <MenubarItem>Custom...</MenubarItem>
                                 </MenubarSubContent>
                             </MenubarSub>
-                            <MenubarItem>Add Custom</MenubarItem>
-                            <MenubarSeparator />
-                            <MenubarItem>View All</MenubarItem>
+                            <MenubarSub>
+                                <MenubarSubTrigger>Add Data</MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarItem>File</MenubarItem>
+                                    <MenubarItem>Folder</MenubarItem>
+                                    <MenubarSeparator />
+                                    <MenubarItem>Custom...</MenubarItem>
+                                </MenubarSubContent>
+                            </MenubarSub>
+                            <MenubarItem>Add Custom Entity</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                 </Menubar>

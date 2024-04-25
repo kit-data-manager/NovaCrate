@@ -8,20 +8,18 @@ import { Braces, Plus, XIcon } from "lucide-react"
 import { EntityIcon } from "@/components/entity-icon"
 import { EntityEditor } from "@/components/editor/entity-editor"
 import { CrateEditorContext } from "@/components/crate-editor-provider"
+import { GlobalModalContext } from "@/components/global-modals-provider"
 
 function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
     const { getEntity, entitiesChangelist } = useContext(CrateEditorContext)
     const { focusTab, closeTab } = useContext(EntityEditorTabsContext)
+    const { showSaveEntityChangesModal } = useContext(GlobalModalContext)
 
     const button = useRef<HTMLButtonElement>(null)
 
     const focus = useCallback(() => {
         focusTab(tab.entityId)
     }, [focusTab, tab.entityId])
-
-    const close = useCallback(() => {
-        closeTab(tab.entityId)
-    }, [closeTab, tab.entityId])
 
     const entity = useMemo(() => {
         return getEntity(tab.entityId)
@@ -32,11 +30,29 @@ function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
         return !!diff
     }, [entitiesChangelist, tab.entityId])
 
+    const close = useCallback(() => {
+        if (dirty) {
+            showSaveEntityChangesModal(tab.entityId)
+        } else {
+            closeTab(tab.entityId)
+        }
+    }, [dirty, showSaveEntityChangesModal, tab.entityId, closeTab])
+
     useEffect(() => {
         if (button.current && active) {
             button.current.scrollIntoView()
         }
     })
+
+    useEffect(() => {
+        if (!entity) {
+            console.error(
+                "Closed a tab because the entity could not be found. This indicates a bug somewhere else.",
+                tab
+            )
+            close()
+        }
+    }, [close, entity, tab])
 
     if (!entity)
         return (

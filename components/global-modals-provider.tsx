@@ -3,6 +3,7 @@
 import { createContext, PropsWithChildren, useCallback, useState } from "react"
 import { CreateEntityModal } from "@/components/create-entity-modal"
 import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SaveEntityChangesModal } from "@/components/save-entity-changes-modal"
 
 export interface AutoReference {
     entityId: string
@@ -12,10 +13,12 @@ export interface AutoReference {
 
 export interface IGlobalModalContext {
     showCreateEntityModal(restrictToClasses?: SlimClass[], autoReference?: AutoReference): void
+    showSaveEntityChangesModal(entityId: string): void
 }
 
 export const GlobalModalContext = createContext<IGlobalModalContext>({
-    showCreateEntityModal() {}
+    showCreateEntityModal() {},
+    showSaveEntityChangesModal() {}
 })
 
 export function GlobalModalProvider(props: PropsWithChildren) {
@@ -25,6 +28,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         restrictToClasses?: SlimClass[]
     }>({
         open: false
+    })
+    const [saveEntityChangesModalState, setSaveEntityChangesModalState] = useState({
+        open: false,
+        entityId: ""
     })
 
     const showCreateEntityModal = useCallback(
@@ -38,12 +45,26 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         []
     )
 
+    const showSaveEntityChangesModal = useCallback((entityId: string) => {
+        setSaveEntityChangesModalState({
+            open: true,
+            entityId
+        })
+    }, [])
+
     const onCreateEntityModalOpenChange = useCallback((isOpen: boolean) => {
         setCreateEntityModalState((oldValue) => {
             return {
                 ...oldValue,
                 open: isOpen
             }
+        })
+    }, [])
+
+    const onSaveEntityChangesModalOpenChange = useCallback((isOpen: boolean) => {
+        setSaveEntityChangesModalState({
+            entityId: "",
+            open: isOpen
         })
     }, [])
 
@@ -56,7 +77,8 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     return (
         <GlobalModalContext.Provider
             value={{
-                showCreateEntityModal
+                showCreateEntityModal,
+                showSaveEntityChangesModal
             }}
         >
             <CreateEntityModal
@@ -65,6 +87,11 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 onOpenChange={onCreateEntityModalOpenChange}
                 restrictToClasses={createEntityModalState.restrictToClasses}
                 autoReference={createEntityModalState.autoReference}
+            />
+            <SaveEntityChangesModal
+                open={saveEntityChangesModalState.open}
+                onOpenChange={onSaveEntityChangesModalOpenChange}
+                entityId={saveEntityChangesModalState.entityId}
             />
 
             {props.children}
