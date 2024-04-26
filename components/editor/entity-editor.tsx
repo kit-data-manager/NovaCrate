@@ -24,6 +24,7 @@ import { CrateVerifyContext } from "@/components/crate-verify-provider"
 import { AddPropertyModal, PossibleProperty } from "@/components/editor/add-property-modal"
 import { CrateEditorContext, Diff } from "@/components/crate-editor-provider"
 import { UnknownTypeWarning } from "@/components/editor/unknown-type-warning"
+import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 
 export function EntityEditor({ entityId }: { entityId: string }) {
     const { crateData } = useContext(CrateDataContext)
@@ -40,6 +41,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
         revertEntity
     } = useContext(CrateEditorContext)
     const { isReady: crateVerifyReady, getClassProperties } = useContext(CrateVerifyContext)
+    const { focusProperty } = useContext(EntityEditorTabsContext)
 
     const entity = useMemo(() => {
         return entities.find((e) => e["@id"] === entityId)
@@ -113,8 +115,9 @@ export function EntityEditor({ entityId }: { entityId: string }) {
     const onPropertyAdd = useCallback(
         (propertyName: string, value?: FlatEntityPropertyTypes) => {
             addProperty(entityId, propertyName, value)
+            focusProperty(entityId, propertyName)
         },
-        [addProperty, entityId]
+        [addProperty, entityId, focusProperty]
     )
 
     const onPropertyAddEntry = useCallback(
@@ -238,7 +241,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
                     }
                 />
 
-                <div className="my-12 flex flex-col gap-10 mr-2">
+                <div className="my-12 flex flex-col gap-4 mr-2">
                     {properties.map((property, i) => {
                         return (
                             <div key={property.propertyName}>

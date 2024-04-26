@@ -408,7 +408,7 @@ export function CrateEditorProvider(props: PropsWithChildren) {
 
     const saveEntity = useCallback(
         (entityId: string) => {
-            const entity = entities.find((e) => e["@id"] === entityId)
+            const entity = entitiesRef.current.find((e) => e["@id"] === entityId)
             if (entity) {
                 setIsSaving(true)
                 updateEntity(entity)
@@ -420,7 +420,7 @@ export function CrateEditorProvider(props: PropsWithChildren) {
                     })
             }
         },
-        [entities, updateEntity]
+        [updateEntity]
     )
 
     return (
