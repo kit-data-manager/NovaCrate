@@ -29,7 +29,7 @@ function AddPropertyModalEntry({
     property: PossibleProperty
     onSelect: (propertyName: string, propertyType: PropertyEditorTypes) => void
 }) {
-    const { canBeReference } = usePropertyCanBe(property.range)
+    const { canBeText } = usePropertyCanBe(property.range)
 
     const readableName = useMemo(() => {
         return propertyNameReadable(property.propertyName)
@@ -41,10 +41,7 @@ function AddPropertyModalEntry({
             key={property.propertyName}
             value={property.propertyName}
             onSelect={(v) =>
-                onSelect(
-                    v,
-                    canBeReference ? PropertyEditorTypes.Reference : PropertyEditorTypes.Text
-                )
+                onSelect(v, canBeText ? PropertyEditorTypes.Text : PropertyEditorTypes.Reference)
             }
         >
             <div className="flex flex-col max-w-full w-full py-1">
