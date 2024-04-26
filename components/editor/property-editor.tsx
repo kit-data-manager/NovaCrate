@@ -1,4 +1,4 @@
-import { memo, useCallback, useContext, useMemo } from "react"
+import { createRef, memo, useCallback, useContext, useEffect, useMemo } from "react"
 import { useAsync } from "@/components/use-async"
 import { CrateVerifyContext } from "@/components/crate-verify-provider"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -7,6 +7,7 @@ import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
 import { SinglePropertyEditor } from "@/components/editor/single-property-editor"
 import { propertyNameReadable } from "@/lib/utils"
+import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 
 export interface EntityEditorProperty {
     propertyName: string
@@ -98,6 +99,25 @@ export const PropertyEditor = memo(function PropertyEditor({
         getPropertyComment,
         getPropertyRange
     } = useContext(CrateVerifyContext)
+    const { focusedProperty, unFocusProperty } = useContext(EntityEditorTabsContext)
+
+    const container = createRef<HTMLDivElement>()
+
+    const isFocused = useMemo(() => {
+        return focusedProperty === property.propertyName
+    }, [focusedProperty, property.propertyName])
+
+    useEffect(() => {
+        if (isFocused && container.current) {
+            container.current.scrollIntoView({ behavior: "smooth", block: "center" })
+
+            const timer = setTimeout(() => {
+                unFocusProperty()
+            }, 2000)
+
+            return () => clearTimeout(timer)
+        }
+    }, [container, isFocused, unFocusProperty])
 
     const readablePropertyName = useMemo(() => {
         return propertyNameReadable(property.propertyName)
@@ -154,7 +174,10 @@ export const PropertyEditor = memo(function PropertyEditor({
     }, [comment, commentError, commentIsPending])
 
     return (
-        <div className="grid grid-cols-[12px_1fr_1fr] w-full">
+        <div
+            className={`grid grid-cols-[12px_1fr_1fr] w-full transition-colors ${isFocused ? "bg-secondary" : ""} py-3 px-1 rounded-lg`}
+            ref={container}
+        >
             <div
                 className={`${isNew ? "bg-success" : hasChanges ? "bg-info" : ""} max-w-1 rounded-full transition`}
             ></div>
