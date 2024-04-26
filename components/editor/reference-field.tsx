@@ -3,9 +3,7 @@ import { Button } from "@/components/ui/button"
 import { SelectReferenceModal } from "@/components/editor/select-reference-modal"
 import { ExternalLink, Globe, LinkIcon, Plus } from "lucide-react"
 import { CreateFromORCIDModal } from "@/components/editor/from-orcid-modal"
-import { CrateDataContext } from "@/components/crate-data-provider"
 import { getEntityDisplayName } from "@/lib/utils"
-import { Skeleton } from "@/components/ui/skeleton"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { SCHEMA_ORG_ORGANIZATION, SCHEMA_ORG_PERSON } from "@/lib/constants"
 import { GlobalModalContext } from "@/components/global-modals-provider"
@@ -30,7 +28,6 @@ export const ReferenceField = memo(function ReferenceField({
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
-    const { crateDataIsLoading } = useContext(CrateDataContext)
     const { getEntity } = useContext(CrateEditorContext)
     const { showCreateEntityModal } = useContext(GlobalModalContext)
     const { openTab } = useContext(EntityEditorTabsContext)
@@ -73,14 +70,12 @@ export const ReferenceField = memo(function ReferenceField({
     }, [getEntity, value])
 
     const ReferenceText = useCallback(() => {
-        if (!crateDataIsLoading) {
-            if (referencedEntityName) {
-                return <span className="truncate">{referencedEntityName}</span>
-            } else {
-                return <span className="text-root">Unresolved</span>
-            }
-        } else return <Skeleton className="h-4 w-20" />
-    }, [crateDataIsLoading, referencedEntityName])
+        if (referencedEntityName) {
+            return <span className="truncate">{referencedEntityName}</span>
+        } else {
+            return <span className="text-root">Unresolved</span>
+        }
+    }, [referencedEntityName])
 
     return (
         <div className="flex w-full">
