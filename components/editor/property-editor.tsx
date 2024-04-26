@@ -8,6 +8,7 @@ import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
 import { SinglePropertyEditor } from "@/components/editor/single-property-editor"
 import { propertyNameReadable } from "@/lib/utils"
 import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
+import { editorState } from "@/components/editor-state"
 
 export interface EntityEditorProperty {
     propertyName: string
@@ -100,7 +101,6 @@ export const PropertyEditor = memo(function PropertyEditor({
         getPropertyRange
     } = useContext(CrateVerifyContext)
     const { focusedProperty, unFocusProperty } = useContext(EntityEditorTabsContext)
-
     const container = createRef<HTMLDivElement>()
 
     const isFocused = useMemo(() => {

@@ -1,9 +1,8 @@
-import { Context } from "@/lib/context"
 import { AutoReference } from "@/components/global-modals-provider"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
-import { Diff } from "@/components/crate-editor-provider"
 import { create } from "zustand"
 import { immer } from "zustand/middleware/immer"
+import { Draft } from "immer"
+import { createSelectorHooks, ZustandHookSelectors } from "auto-zustand-selectors-hook"
 
 export interface ICrateEditorContext {
     // rawCrateContext: CrateContext
@@ -44,8 +43,29 @@ export interface ICrateEditorContext {
     // revertAllEntities(): void
 }
 
-export const editorStateBase = create<ICrateEditorContext>()(
-    immer<ICrateEditorContext>((setState, getState, store) => ({
+function setPropertyValue(
+    entity: Draft<IFlatEntity>,
+    propertyName: string,
+    valueIdx: number,
+    value: FlatEntitySinglePropertyTypes
+) {
+    if (propertyName in entity) {
+        const prop = entity[propertyName]
+        if (Array.isArray(prop)) {
+            prop[valueIdx] = value
+        } else if (valueIdx > 0) {
+            entity[propertyName] = [prop]
+            ;(entity[propertyName] as FlatEntitySinglePropertyTypes[])[valueIdx] = value
+        } else {
+            entity[propertyName] = value
+        }
+    } else {
+        entity[propertyName] = value
+    }
+}
+
+const editorStateBase = create<ICrateEditorContext>()(
+    immer<ICrateEditorContext>((setState, getState) => ({
         entities: new Map<string, IFlatEntity>(),
         addEntity(
             entityId: string,
@@ -62,12 +82,23 @@ export const editorStateBase = create<ICrateEditorContext>()(
                     })
 
                     if (autoReference) {
-                        const target = state.entities.has(autoReference.entityId)[
-                            autoReference.propertyName
-                        ]
+                        const target = state.entities.get(autoReference.entityId)
+                        if (target) {
+                            setPropertyValue(
+                                target,
+                                autoReference.propertyName,
+                                autoReference.valueIdx,
+                                { "@id": entityId }
+                            )
+                        }
                     }
                 })
-            }
+
+                return true
+            } else return false
         }
     }))
 )
+
+export const editorState = createSelectorHooks(editorStateBase) as typeof editorStateBase &
+    ZustandHookSelectors<ICrateEditorContext>
