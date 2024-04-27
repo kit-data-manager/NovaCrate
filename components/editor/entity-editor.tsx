@@ -7,6 +7,7 @@ import {
     PropertyEditorTypes
 } from "@/components/editor/property-editor"
 import {
+    Diff,
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
     isRootEntity as isRootEntityUtil,
@@ -22,34 +23,23 @@ import { Button } from "@/components/ui/button"
 import { useAsync } from "@/components/use-async"
 import { CrateVerifyContext } from "@/components/crate-verify-provider"
 import { AddPropertyModal, PossibleProperty } from "@/components/editor/add-property-modal"
-import { CrateEditorContext, Diff } from "@/components/crate-editor-provider"
 import { UnknownTypeWarning } from "@/components/editor/unknown-type-warning"
 import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
+import { useEditorState } from "@/components/editor-state"
 
 export function EntityEditor({ entityId }: { entityId: string }) {
-    const { crateData } = useContext(CrateDataContext)
-    const {
-        entities,
-        entitiesChangelist,
-        isSaving,
-        saveError,
-        saveEntity,
-        addProperty,
-        addPropertyEntry,
-        modifyPropertyEntry,
-        removePropertyEntry,
-        revertEntity
-    } = useContext(CrateEditorContext)
+    const { saveEntity, isSaving, saveError } = useContext(CrateDataContext)
+    const entity = useEditorState((store) => store.entities.get(entityId))
+    const originalEntity = useEditorState((store) => store.initialEntities.get(entityId))
+    const entitiesChangelist = useEditorState((store) => store.getEntitiesChangelist())
+    const addProperty = useEditorState.useAddProperty()
+    const addPropertyEntry = useEditorState.useAddPropertyEntry()
+    const modifyPropertyEntry = useEditorState.useModifyPropertyEntry()
+    const removePropertyEntry = useEditorState.useRemovePropertyEntry()
+    const revertEntity = useEditorState.useRevertEntity()
+
     const { isReady: crateVerifyReady, getClassProperties } = useContext(CrateVerifyContext)
     const { focusProperty } = useContext(EntityEditorTabsContext)
-
-    const entity = useMemo(() => {
-        return entities.find((e) => e["@id"] === entityId)
-    }, [entities, entityId])
-
-    const originalEntity = useMemo(() => {
-        return crateData?.["@graph"].find((e) => e["@id"] === entityId)
-    }, [crateData, entityId])
 
     const [addPropertyModelOpen, setAddPropertyModelOpen] = useState(false)
 
@@ -142,8 +132,8 @@ export function EntityEditor({ entityId }: { entityId: string }) {
     )
 
     const onSave = useCallback(() => {
-        saveEntity(entityId)
-    }, [entityId, saveEntity])
+        if (entity) saveEntity(entity).then()
+    }, [entity, saveEntity])
 
     const onRevert = useCallback(() => {
         revertEntity(entityId)

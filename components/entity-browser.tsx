@@ -22,15 +22,19 @@ import {
 } from "lucide-react"
 import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { EntityIcon } from "./entity-icon"
-import { CrateEditorContext } from "@/components/crate-editor-provider"
 import { GlobalModalContext } from "@/components/global-modals-provider"
+import { useEditorState } from "@/components/editor-state"
 
-export function EntityBrowserItem(props: { entity: IFlatEntity }) {
+export function EntityBrowserItem(props: { entityId: string }) {
     const { openTab } = useContext(EntityEditorTabsContext)
+    const entity = useEditorState((state) => state.entities.get(props.entityId))
 
     const openSelf = useCallback(() => {
-        openTab(createEntityEditorTab(props.entity), true)
-    }, [openTab, props.entity])
+        if (!entity) return
+        openTab(createEntityEditorTab(entity), true)
+    }, [openTab, entity])
+
+    if (!entity) return null
 
     return (
         <Button
@@ -39,13 +43,13 @@ export function EntityBrowserItem(props: { entity: IFlatEntity }) {
             className="group/entityBrowserItem"
             onClick={openSelf}
         >
-            <EntityIcon entity={props.entity} />
+            <EntityIcon entity={entity} />
             <div className="truncate">
                 <span className="group-hover/entityBrowserItem:underline underline-offset-2">
-                    {getEntityDisplayName(props.entity)}
+                    {getEntityDisplayName(entity)}
                 </span>
                 <span className="ml-2 text-xs text-muted-foreground">
-                    {toArray(props.entity["@type"]).join(", ")}
+                    {toArray(entity["@type"]).join(", ")}
                 </span>
             </div>
         </Button>
@@ -53,7 +57,7 @@ export function EntityBrowserItem(props: { entity: IFlatEntity }) {
 }
 
 export function EntityBrowserSection(props: { section: "Data" | "Contextual" }) {
-    const { entities } = useContext(CrateEditorContext)
+    const entities = useEditorState.useEntities()
 
     const [open, setOpen] = useState(true)
 
@@ -77,13 +81,15 @@ export function EntityBrowserSection(props: { section: "Data" | "Contextual" }) 
             </Button>
             {open ? (
                 <div className="flex flex-col pl-4">
-                    {entities
-                        .filter((item) => !isRootEntity(item) && !isRoCrateMetadataEntity(item))
-                        .filter((item) =>
+                    {Array.from(entities.entries())
+                        .filter(
+                            ([_, item]) => !isRootEntity(item) && !isRoCrateMetadataEntity(item)
+                        )
+                        .filter(([_, item]) =>
                             props.section === "Data" ? isDataEntity(item) : isContextualEntity(item)
                         )
-                        .map((item) => {
-                            return <EntityBrowserItem entity={item} key={item["@id"]} />
+                        .map(([key, _]) => {
+                            return <EntityBrowserItem entityId={key} key={key} />
                         })}
                 </div>
             ) : null}
@@ -93,7 +99,7 @@ export function EntityBrowserSection(props: { section: "Data" | "Contextual" }) 
 
 export function EntityBrowserContent() {
     const crate = useContext(CrateDataContext)
-    const { entities } = useContext(CrateEditorContext)
+    const entities = useEditorState.useEntities()
 
     if (crate.crateDataIsLoading && !crate.crateData)
         return (
@@ -112,10 +118,10 @@ export function EntityBrowserContent() {
 
     return (
         <div className="flex flex-col p-2">
-            {entities
-                .filter((item) => item["@id"] === "./")
-                .map((item) => {
-                    return <EntityBrowserItem entity={item} key={item["@id"]} />
+            {Array.from(entities.entries())
+                .filter(([_, item]) => item["@id"] === "./")
+                .map(([key, _]) => {
+                    return <EntityBrowserItem entityId={key} key={key} />
                 })}
 
             <EntityBrowserSection section={"Data"} />

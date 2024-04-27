@@ -1,16 +1,17 @@
 import { isEntityEqual, propertyHasChanged } from "@/lib/utils"
+import { Draft } from "immer"
 
 export function computeServerDifferences(
     crateData: ICrate,
     lastCrateData: ICrate,
-    entities: IFlatEntity[]
+    entities: Map<string, IFlatEntity>
 ) {
     const lastEntities = lastCrateData["@graph"].slice()
     const forceEntities: IFlatEntity[] = []
     const forceProperties: Record<string, [string, FlatEntityPropertyTypes]> = {}
 
     for (const entity of crateData["@graph"]) {
-        const internalEntity = entities.find((e) => e["@id"] === entity["@id"])
+        const internalEntity = entities.get(entity["@id"])
         if (!internalEntity) {
             forceEntities.push(entity)
         } else {
@@ -41,35 +42,18 @@ export function computeServerDifferences(
 }
 
 export function executeForcedUpdates(
-    oldInternalData: IFlatEntity[],
+    newEntities: Draft<Map<string, IFlatEntity>>,
     forceEntities: IFlatEntity[],
     forceProperties: Record<string, [string, FlatEntityPropertyTypes]>
 ) {
-    const copy = [...oldInternalData]
-
     for (const update of forceEntities) {
-        const index = copy.findIndex((e) => e["@id"] === update["@id"])
-        if (index < 0) copy.push(update)
-        else copy.splice(index, 1, { ...update })
+        newEntities.set(update["@id"], update)
     }
 
     for (const [updatedEntityId, data] of Object.entries(forceProperties)) {
-        const [property, value] = data
-        const index = copy.findIndex((e) => e["@id"] === updatedEntityId)
-        if (index < 0) {
-            console.error(
-                "Unable to force update property, because the entity does not exist",
-                updatedEntityId,
-                property,
-                value
-            )
-            continue
+        const [propertyName, value] = data
+        if (newEntities.has(updatedEntityId)) {
+            newEntities.get(updatedEntityId)![propertyName] = value
         }
-        const entity = copy[index]
-        const newEntity = { ...entity }
-        newEntity[property] = value
-        copy.splice(index, 1, newEntity)
     }
-
-    return copy
 }

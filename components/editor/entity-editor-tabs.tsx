@@ -2,16 +2,24 @@
 
 import { useCallback, useContext, useEffect, useMemo, useRef } from "react"
 import { EntityEditorTabsContext, IEntityEditorTab } from "@/components/entity-tabs-provider"
-import { getEntityDisplayName } from "@/lib/utils"
+import { Diff, getEntityDisplayName } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Braces, Plus, XIcon } from "lucide-react"
 import { EntityIcon } from "@/components/entity-icon"
 import { EntityEditor } from "@/components/editor/entity-editor"
-import { CrateEditorContext } from "@/components/crate-editor-provider"
 import { GlobalModalContext } from "@/components/global-modals-provider"
+import { useEditorState } from "@/components/editor-state"
 
-function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
-    const { getEntity, entitiesChangelist } = useContext(CrateEditorContext)
+function Tab({
+    tab,
+    active,
+    entitiesChangelist
+}: {
+    tab: IEntityEditorTab
+    active: boolean
+    entitiesChangelist: Map<string, Diff>
+}) {
+    const entity = useEditorState((store) => store.entities.get(tab.entityId))
     const { focusTab, closeTab } = useContext(EntityEditorTabsContext)
     const { showSaveEntityChangesModal } = useContext(GlobalModalContext)
 
@@ -20,10 +28,6 @@ function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
     const focus = useCallback(() => {
         focusTab(tab.entityId)
     }, [focusTab, tab.entityId])
-
-    const entity = useMemo(() => {
-        return getEntity(tab.entityId)
-    }, [getEntity, tab.entityId])
 
     const dirty = useMemo(() => {
         const diff = entitiesChangelist.get(tab.entityId)
@@ -106,6 +110,7 @@ function Tab({ tab, active }: { tab: IEntityEditorTab; active: boolean }) {
 }
 
 function Tabs({ tabs, currentTab }: { tabs: IEntityEditorTab[]; currentTab?: IEntityEditorTab }) {
+    const entitiesChangelist = useEditorState((store) => store.getEntitiesChangelist())
     const container = useRef<HTMLDivElement>(null)
 
     return (
@@ -129,6 +134,7 @@ function Tabs({ tabs, currentTab }: { tabs: IEntityEditorTab[]; currentTab?: IEn
                         tab={tab}
                         key={tab.entityId}
                         active={currentTab?.entityId === tab.entityId}
+                        entitiesChangelist={entitiesChangelist}
                     />
                 )
             })}

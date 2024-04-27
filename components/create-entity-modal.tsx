@@ -10,8 +10,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getAllClasses, SlimClass } from "@/lib/crate-verify/helpers"
-import React, { ChangeEvent, useCallback, useContext, useMemo, useState } from "react"
-import { CrateEditorContext } from "@/components/crate-editor-provider"
+import React, { ChangeEvent, useCallback, useMemo, useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -19,6 +18,7 @@ import { ArrowLeft, Plus } from "lucide-react"
 import { useAutoId } from "@/components/use-auto-id"
 import { AutoReference } from "@/components/global-modals-provider"
 import { propertyNameReadable } from "@/lib/utils"
+import { useEditorState } from "@/components/editor-state"
 
 function CreateEntityModalEntry({
     slimClass,
@@ -27,7 +27,7 @@ function CreateEntityModalEntry({
     slimClass: SlimClass
     onSelect: (value: string) => void
 }) {
-    const { crateContext } = useContext(CrateEditorContext)
+    const crateContext = useEditorState.useCrateContext()
 
     const readableName = useMemo(() => {
         return propertyNameReadable(crateContext.reverse(slimClass["@id"]) || slimClass["@id"])
@@ -61,7 +61,7 @@ function TypeSelect({
     restrictToClasses?: SlimClass[]
     onTypeSelect: (value: string) => void
 }) {
-    const { crateContext } = useContext(CrateEditorContext)
+    const crateContext = useEditorState.useCrateContext()
     const [bypassRestrictions, setBypassRestrictions] = useState(false)
 
     const toggleRestrictions = useCallback((state: boolean | "indeterminate") => {
@@ -195,7 +195,7 @@ export function CreateEntityModal({
     restrictToClasses?: SlimClass[]
     autoReference?: AutoReference
 }) {
-    const { addEntity } = useContext(CrateEditorContext)
+    const addEntity = useEditorState.useAddEntity()
 
     const [selectedType, setSelectedType] = useState("")
 

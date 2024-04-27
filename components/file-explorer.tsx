@@ -15,7 +15,7 @@ import {
     RefreshCw
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { CrateEditorContext } from "@/components/crate-editor-provider"
+import { useEditorState } from "@/components/editor-state"
 
 const MOCK_TYPE = "__EditorMock__"
 
@@ -135,13 +135,14 @@ function FolderEntry(props: { entity: IFlatEntity }) {
 }
 
 function FolderContent(props: { path: string }) {
-    const { entities } = useContext(CrateEditorContext)
+    const entities = useEditorState.useEntities()
 
     const contents = useMemo(() => {
         return addMissingFolders(
-            entities
-                .filter((entity) => isDataEntity(entity))
-                .filter((entity) => inCurrentFolder(entity["@id"], props.path)),
+            Array.from(entities.entries())
+                .filter(([_, entity]) => isDataEntity(entity))
+                .filter(([key, _]) => inCurrentFolder(key, props.path))
+                .map(([_, entity]) => entity),
             props.path
         )
     }, [entities, props.path])
