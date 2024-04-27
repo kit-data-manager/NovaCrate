@@ -1,6 +1,6 @@
 "use client"
 
-import { Braces, Check, ChevronDown, Cog, Moon, Search, Sun } from "lucide-react"
+import { Braces, Check, ChevronDown, Cog, Moon, Redo, Search, Sun, Undo } from "lucide-react"
 import {
     Menubar,
     MenubarContent,
@@ -16,9 +16,11 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 import { useCallback } from "react"
+import { useEditorState } from "@/components/editor-state"
 
 export function NavHeader() {
     const theme = useTheme()
+    const { undo, redo } = useEditorState.temporal.getState()
 
     const toggleTheme = useCallback(() => {
         if (theme.theme === "light") {
@@ -82,6 +84,14 @@ export function NavHeader() {
                         </MenubarContent>
                     </MenubarMenu>
                 </Menubar>
+                <Button size="sm" variant="ghost" className="mx-2 text-sm" onClick={() => undo()}>
+                    <Undo className="w-4 h-4 mr-2" />
+                    Undo
+                </Button>
+                <Button size="sm" variant="ghost" className="text-sm" onClick={() => redo()}>
+                    <Redo className="w-4 h-4 mr-2" />
+                    Redo
+                </Button>
             </div>
 
             <div className="relative flex items-center">
