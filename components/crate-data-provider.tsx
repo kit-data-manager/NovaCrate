@@ -33,7 +33,7 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
 export function CrateDataProvider(
     props: PropsWithChildren<{ serviceProvider: CrateServiceProvider; crateId?: string }>
 ) {
-    const entities = useEditorState.useEntities()
+    const getEntities = useEditorState.useGetEntities()
     const setEntities = useEditorState.useSetEntities()
     const setCrateContext = useEditorState.useSetCrateContext()
     const setInitialCrateContext = useEditorState.useSetInitialCrateContext()
@@ -43,8 +43,6 @@ export function CrateDataProvider(
         props.serviceProvider.getCrate
     )
     const lastCrateData = useRef<ICrate | undefined>(undefined)
-
-    const entitiesRef = useRef(entities)
 
     useEffect(() => {
         if (data) {
@@ -59,20 +57,29 @@ export function CrateDataProvider(
                 return
             }
 
+            const entities = getEntities()
+
             const { forceProperties, forceEntities } = computeServerDifferences(
                 data,
                 lastCrateData.current,
-                entitiesRef.current
+                entities
             )
 
-            const updatedEntities = produce(entitiesRef.current, (newEntities) => {
+            const updatedEntities = produce(entities, (newEntities) => {
                 executeForcedUpdates(newEntities, forceEntities, forceProperties)
             })
 
             setEntities(updatedEntities)
             lastCrateData.current = data
         }
-    }, [data, setCrateContext, setEntities, setInitialCrateContext, setInitialEntities])
+    }, [
+        data,
+        getEntities,
+        setCrateContext,
+        setEntities,
+        setInitialCrateContext,
+        setInitialEntities
+    ])
 
     const [isSaving, setIsSaving] = useState(false)
     const [saveError, setSaveError] = useState("")

@@ -1,5 +1,4 @@
 import { AutoReference } from "@/components/global-modals-provider"
-import { create } from "zustand"
 import { immer } from "zustand/middleware/immer"
 import { Draft, enableMapSet } from "immer"
 import { createSelectorHooks, ZustandHookSelectors } from "auto-zustand-selectors-hook"
@@ -7,6 +6,7 @@ import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { Diff, isEntityEqual } from "@/lib/utils"
 import { temporal } from "zundo"
 import { CrateContext } from "@/lib/crateContext"
+import { createWithEqualityFn } from "zustand/traditional"
 
 enableMapSet()
 
@@ -25,6 +25,7 @@ export interface ICrateEditorContext {
     setInitialEntities(data: Map<string, IFlatEntity>): void
     setEntities(data: Map<string, IFlatEntity>): void
 
+    getEntities(): Map<string, IFlatEntity>
     getEntitiesChangelist(): Map<string, Diff>
     addEntity(
         entityId: string,
@@ -60,10 +61,10 @@ function setPropertyValue(
     if (propertyName in entity) {
         const prop = entity[propertyName]
         if (Array.isArray(prop)) {
-            prop[valueIdx || prop.length] = value
-        } else if (!valueIdx || valueIdx > 0) {
+            prop[valueIdx ?? prop.length] = value
+        } else if (valueIdx === undefined || valueIdx > 0) {
             entity[propertyName] = [prop]
-            ;(entity[propertyName] as FlatEntitySinglePropertyTypes[])[valueIdx || 1] = value
+            ;(entity[propertyName] as FlatEntitySinglePropertyTypes[])[valueIdx ?? 1] = value
         } else {
             entity[propertyName] = value
         }
@@ -72,7 +73,7 @@ function setPropertyValue(
     }
 }
 
-const editorStateBase = create<ICrateEditorContext>()(
+const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
     temporal(
         immer<ICrateEditorContext>((setState, getState) => ({
             initialCrateContext: new CrateContext([]),
@@ -96,6 +97,10 @@ const editorStateBase = create<ICrateEditorContext>()(
                 setState((state) => {
                     state.crateContext = new CrateContext(state.initialCrateContext.raw)
                 })
+            },
+
+            getEntities(): Map<string, IFlatEntity> {
+                return getState().entities
             },
 
             setEntities(data: Map<string, IFlatEntity>) {
