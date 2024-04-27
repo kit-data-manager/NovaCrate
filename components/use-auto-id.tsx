@@ -1,16 +1,16 @@
-import { useContext, useMemo } from "react"
-import { CrateEditorContext } from "@/components/crate-editor-provider"
+import { useMemo } from "react"
+import { useEditorState } from "@/components/editor-state"
 
 export function useAutoId(name: string) {
-    const { getEntity } = useContext(CrateEditorContext)
+    const entities = useEditorState.useEntities()
 
     return useMemo(() => {
         let generated = "#" + encodeURIComponent(name.toLowerCase().trim().replaceAll(" ", "-"))
         let maxIterations = 10
-        while (getEntity(generated)) {
+        while (entities.has(generated)) {
             if (maxIterations-- < 0) throw "Could not generate a unique id after 10 attempts"
             generated += "-1"
         }
         return generated
-    }, [getEntity, name])
+    }, [entities, name])
 }

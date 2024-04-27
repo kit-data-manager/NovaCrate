@@ -23,7 +23,7 @@ import { useLayout } from "@/components/graph/layout"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { isReference, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
 import ExternalNode from "@/components/graph/external-node"
-import { CrateEditorContext } from "@/components/crate-editor-provider"
+import { useEditorState } from "@/components/editor-state"
 
 const DEFAULT_POS = { x: 0, y: 0 }
 
@@ -32,7 +32,8 @@ const nodeTypes = {
     externalNode: ExternalNode
 }
 
-function entitiesToGraph(entities: IFlatEntity[]): [Node[], Edge[]] {
+function entitiesToGraph(entitiesMap: Map<string, IFlatEntity>): [Node[], Edge[]] {
+    const entities = Array.from(entitiesMap.values())
     const nodes: Node[] = []
     const edges: Edge[] = []
 
@@ -103,7 +104,7 @@ function entitiesToGraph(entities: IFlatEntity[]): [Node[], Edge[]] {
 
 const LayoutFlow = () => {
     const crateData = useContext(CrateDataContext)
-    const { entities } = useContext(CrateEditorContext)
+    const entities = useEditorState.useEntities()
 
     const [nodes, setNodes, onNodesChange] = useNodesState([])
     const [edges, setEdges, onEdgesChange] = useEdgesState([])

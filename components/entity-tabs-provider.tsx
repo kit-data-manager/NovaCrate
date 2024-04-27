@@ -1,14 +1,8 @@
 "use client"
 
-import {
-    createContext,
-    PropsWithChildren,
-    useCallback,
-    useContext,
-    useEffect,
-    useState
-} from "react"
-import { CrateEditorContext, Diff } from "@/components/crate-editor-provider"
+import { createContext, PropsWithChildren, useCallback, useEffect, useState } from "react"
+import { useEditorState } from "@/components/editor-state"
+import { Diff } from "@/lib/utils"
 
 export interface IEntityEditorTab {
     entityId: string
@@ -53,7 +47,8 @@ export const EntityEditorTabsContext = createContext<IEntityEditorTabsContext>({
 })
 
 export function EntityEditorTabsProvider(props: PropsWithChildren) {
-    const { entitiesChangelist, getEntity } = useContext(CrateEditorContext)
+    const entitiesChangelist = useEditorState((store) => store.getEntitiesChangelist())
+    const entities = useEditorState.useEntities()
 
     const [tabs, setTabs] = useState<IEntityEditorTab[]>([])
     const [focusedEntity, setFocusedEntity] = useState("")
@@ -63,7 +58,7 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
         for (const [entityId, diff] of entitiesChangelist) {
             if (diff !== Diff.None) {
                 if (!tabs.find((tab) => tab.entityId === entityId)) {
-                    const entity = getEntity(entityId)
+                    const entity = entities.get(entityId)
                     if (entity) openTab(createEntityEditorTab(entity))
                 }
             }

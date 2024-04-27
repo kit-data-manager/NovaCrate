@@ -8,8 +8,8 @@ import { SinglePropertyDropdown } from "@/components/editor/single-property-drop
 import { SCHEMA_ORG_ORGANIZATION, SCHEMA_ORG_PERSON } from "@/lib/constants"
 import { GlobalModalContext } from "@/components/global-modals-provider"
 import { SlimClass } from "@/lib/crate-verify/helpers"
-import { CrateEditorContext } from "@/components/crate-editor-provider"
 import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
+import { useEditorState } from "@/components/editor-state"
 
 export const ReferenceField = memo(function ReferenceField({
     entityId,
@@ -28,7 +28,7 @@ export const ReferenceField = memo(function ReferenceField({
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
-    const { getEntity } = useContext(CrateEditorContext)
+    const entity = useEditorState((store) => store.entities.get(entityId))
     const { showCreateEntityModal } = useContext(GlobalModalContext)
     const { openTab } = useContext(EntityEditorTabsContext)
 
@@ -50,7 +50,6 @@ export const ReferenceField = memo(function ReferenceField({
     )
 
     const openInNewTab = useCallback(() => {
-        const entity = getEntity(value["@id"])
         if (!entity) {
             if (value["@id"].startsWith("http")) {
                 window.open(value["@id"], "_blank")
@@ -58,16 +57,15 @@ export const ReferenceField = memo(function ReferenceField({
             return
         }
         openTab(createEntityEditorTab(entity), true)
-    }, [getEntity, openTab, value])
+    }, [entity, openTab, value])
 
     const isEmpty = useMemo(() => {
         return value["@id"] === ""
     }, [value])
 
     const referencedEntityName = useMemo(() => {
-        const entity = getEntity(value["@id"])
         if (entity) return getEntityDisplayName(entity)
-    }, [getEntity, value])
+    }, [entity])
 
     const ReferenceText = useCallback(() => {
         if (referencedEntityName) {

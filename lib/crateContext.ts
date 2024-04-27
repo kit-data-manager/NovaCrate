@@ -4,12 +4,14 @@ import Context_1_1 from "./crate-verify/assets/context-1.1.json"
  * Provides an easy interface into the crate context for id resolution
  * **Note**: When the context changes, for example when a new key-value pair is added, the context
  * should be reconstructed. This class does not update the crate data in any way
- * @example resolve: Organization -> https://schema.org/Organization
+ * @example resolve("Organization") -> "https://schema.org/Organization"
  */
-export class Context {
-    private readonly context: Record<string, string>
+export class CrateContext {
+    readonly context: Record<string, string>
+    readonly raw: CrateContextType
 
-    constructor(crateContext: CrateContext) {
+    constructor(crateContext: CrateContextType) {
+        this.raw = crateContext
         if (Array.isArray(crateContext) && crateContext.length === 0) {
             this.context = {}
         } else if (crateContext === Context_1_1["@id"]) {

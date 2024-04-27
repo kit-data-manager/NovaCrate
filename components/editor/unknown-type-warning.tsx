@@ -1,10 +1,10 @@
-import { useContext, useMemo } from "react"
-import { CrateEditorContext } from "@/components/crate-editor-provider"
+import { useMemo } from "react"
 import { toArray } from "@/lib/utils"
 import { Warn } from "@/components/error"
+import { useEditorState } from "@/components/editor-state"
 
 export function UnknownTypeWarning({ entityType }: { entityType: string | string[] }) {
-    const { crateContext } = useContext(CrateEditorContext)
+    const crateContext = useEditorState.useCrateContext()
 
     const notResolvable = useMemo(() => {
         const arr = toArray(entityType)

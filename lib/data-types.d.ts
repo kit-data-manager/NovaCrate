@@ -2,7 +2,10 @@ declare interface IReference {
     "@id": string
 }
 
-declare type CrateContext = string | Record<string, string> | (string | Record<string, string>)[]
+declare type CrateContextType =
+    | string
+    | Record<string, string>
+    | (string | Record<string, string>)[]
 
 declare type FlatEntityPropertyTypes = string | IReference | (string | IReference)[]
 declare type FlatEntitySinglePropertyTypes = string | IReference
@@ -13,6 +16,6 @@ declare interface IFlatEntity extends Record<string, FlatEntityPropertyTypes> {
 }
 
 declare interface ICrate {
-    "@context": CrateContext
+    "@context": CrateContextType
     "@graph": IFlatEntity[]
 }
