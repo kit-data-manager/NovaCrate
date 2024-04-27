@@ -28,7 +28,7 @@ export const ReferenceField = memo(function ReferenceField({
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
-    const entity = useEditorState((store) => store.entities.get(entityId))
+    const referencedEntity = useEditorState((store) => store.entities.get(value["@id"]))
     const { showCreateEntityModal } = useContext(GlobalModalContext)
     const { openTab } = useContext(EntityEditorTabsContext)
 
@@ -50,22 +50,22 @@ export const ReferenceField = memo(function ReferenceField({
     )
 
     const openInNewTab = useCallback(() => {
-        if (!entity) {
+        if (!referencedEntity) {
             if (value["@id"].startsWith("http")) {
                 window.open(value["@id"], "_blank")
             }
             return
         }
-        openTab(createEntityEditorTab(entity), true)
-    }, [entity, openTab, value])
+        openTab(createEntityEditorTab(referencedEntity), true)
+    }, [openTab, referencedEntity, value])
 
     const isEmpty = useMemo(() => {
         return value["@id"] === ""
     }, [value])
 
     const referencedEntityName = useMemo(() => {
-        if (entity) return getEntityDisplayName(entity)
-    }, [entity])
+        if (referencedEntity) return getEntityDisplayName(referencedEntity)
+    }, [referencedEntity])
 
     const ReferenceText = useCallback(() => {
         if (referencedEntityName) {

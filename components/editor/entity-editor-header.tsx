@@ -15,7 +15,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { memo, useEffect } from "react"
+import { memo } from "react"
 
 export const EntityEditorHeader = memo(function EntityEditorHeader({
     isSaving,
