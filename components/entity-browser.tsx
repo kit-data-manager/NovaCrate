@@ -57,7 +57,29 @@ export function EntityBrowserItem(props: { entityId: string }) {
 }
 
 export function EntityBrowserSection(props: { section: "Data" | "Contextual" }) {
-    const entities = useEditorState.useEntities()
+    const entities = useEditorState(
+        (store) => {
+            return Array.from(store.entities.entries())
+                .map(
+                    ([key, item]) =>
+                        [key, { "@id": item["@id"], "@type": item["@type"] }] as [
+                            string,
+                            IFlatEntity
+                        ]
+                )
+                .filter(([_, item]) => !isRootEntity(item) && !isRoCrateMetadataEntity(item))
+                .filter(([_, item]) =>
+                    props.section === "Data" ? isDataEntity(item) : isContextualEntity(item)
+                )
+        },
+        (a, b) => {
+            if (a.length !== b.length) return false
+            a.forEach((self, i) => {
+                if (self[0] !== b[i][0] || self[1] !== b[i][1]) return false
+            })
+            return true
+        }
+    )
 
     const [open, setOpen] = useState(true)
 
@@ -81,16 +103,9 @@ export function EntityBrowserSection(props: { section: "Data" | "Contextual" }) 
             </Button>
             {open ? (
                 <div className="flex flex-col pl-4">
-                    {Array.from(entities.entries())
-                        .filter(
-                            ([_, item]) => !isRootEntity(item) && !isRoCrateMetadataEntity(item)
-                        )
-                        .filter(([_, item]) =>
-                            props.section === "Data" ? isDataEntity(item) : isContextualEntity(item)
-                        )
-                        .map(([key, _]) => {
-                            return <EntityBrowserItem entityId={key} key={key} />
-                        })}
+                    {entities.map(([key, _]) => {
+                        return <EntityBrowserItem entityId={key} key={key} />
+                    })}
                 </div>
             ) : null}
         </div>
@@ -99,7 +114,6 @@ export function EntityBrowserSection(props: { section: "Data" | "Contextual" }) 
 
 export function EntityBrowserContent() {
     const crate = useContext(CrateDataContext)
-    const entities = useEditorState.useEntities()
 
     if (crate.crateDataIsLoading && !crate.crateData)
         return (
@@ -118,12 +132,7 @@ export function EntityBrowserContent() {
 
     return (
         <div className="flex flex-col p-2">
-            {Array.from(entities.entries())
-                .filter(([_, item]) => item["@id"] === "./")
-                .map(([key, _]) => {
-                    return <EntityBrowserItem entityId={key} key={key} />
-                })}
-
+            <EntityBrowserItem entityId={"./"} />
             <EntityBrowserSection section={"Data"} />
             <EntityBrowserSection section={"Contextual"} />
         </div>
