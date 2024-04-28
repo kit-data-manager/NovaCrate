@@ -89,3 +89,17 @@ export function getAllClasses(): SlimClass[] {
             }
         })
 }
+
+export function getAllComments(types: string[]): SlimClass[] {
+    const result: SlimClass[] = []
+    for (const id of types) {
+        const node = schemaGraph.getNode(id)
+        if (node) {
+            result.push({
+                "@id": schemaGraph.expandIRI(node["@id"]),
+                comment: node.comment
+            })
+        }
+    }
+    return result
+}

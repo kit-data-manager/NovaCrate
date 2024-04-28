@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, PropsWithChildren, useCallback, useState } from "react"
-import { CreateEntityModal } from "@/components/create-entity-modal"
+import { CreateEntityModal } from "@/components/create-entity/create-entity-modal"
 import { SlimClass } from "@/lib/crate-verify/helpers"
 import { SaveEntityChangesModal } from "@/components/save-entity-changes-modal"
 

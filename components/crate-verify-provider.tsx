@@ -1,7 +1,8 @@
 import {
     getPropertyComment as localGetPropertyComment,
     getPropertyRange as localGetPropertyRange,
-    getPossibleEntityProperties as localGetEntityPossibleProperties
+    getPossibleEntityProperties as localGetEntityPossibleProperties,
+    getAllComments as localGetAllComments
 } from "@/lib/crate-verify/helpers"
 import { createContext, PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
 
@@ -13,6 +14,7 @@ export interface ICrateVerifyContext {
     getClassProperties: (
         types: string[]
     ) => Promise<ReturnType<typeof localGetEntityPossibleProperties>>
+    getAllComments: (types: string[]) => Promise<ReturnType<typeof localGetAllComments>>
 }
 
 export const CrateVerifyContext = createContext<ICrateVerifyContext>({
@@ -25,6 +27,9 @@ export const CrateVerifyContext = createContext<ICrateVerifyContext>({
         return []
     },
     async getClassProperties() {
+        return []
+    },
+    async getAllComments() {
         return []
     }
 })
@@ -98,6 +103,17 @@ export function CrateVerifyProvider(props: PropsWithChildren) {
         }
     }, [])
 
+    const getAllComments = useCallback((types: string[]) => {
+        if (worker.current) {
+            return post(worker.current, {
+                operation: "getAllComments",
+                types: types
+            }) as Promise<ReturnType<typeof localGetAllComments>>
+        } else {
+            return Promise.resolve(localGetAllComments(types))
+        }
+    }, [])
+
     useEffect(() => {
         if (window.Worker) {
             worker.current = new Worker("/crate-verify-worker.js")
@@ -114,7 +130,8 @@ export function CrateVerifyProvider(props: PropsWithChildren) {
                 isUsingWebWorker,
                 getPropertyComment,
                 getPropertyRange,
-                getClassProperties
+                getClassProperties,
+                getAllComments
             }}
         >
             {props.children}

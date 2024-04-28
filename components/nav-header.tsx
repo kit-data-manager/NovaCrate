@@ -84,14 +84,15 @@ export function NavHeader() {
                         </MenubarContent>
                     </MenubarMenu>
                 </Menubar>
-                <Button size="sm" variant="ghost" className="mx-2 text-sm" onClick={() => undo()}>
-                    <Undo className="w-4 h-4 mr-2" />
-                    Undo
-                </Button>
-                <Button size="sm" variant="ghost" className="text-sm" onClick={() => redo()}>
-                    <Redo className="w-4 h-4 mr-2" />
-                    Redo
-                </Button>
+                {/* Disabled until a proper implementation is done */}
+                {/*<Button size="sm" variant="ghost" className="mx-2 text-sm" onClick={() => undo()}>*/}
+                {/*    <Undo className="w-4 h-4 mr-2" />*/}
+                {/*    Undo*/}
+                {/*</Button>*/}
+                {/*<Button size="sm" variant="ghost" className="text-sm" onClick={() => redo()}>*/}
+                {/*    <Redo className="w-4 h-4 mr-2" />*/}
+                {/*    Redo*/}
+                {/*</Button>*/}
             </div>
 
             <div className="relative flex items-center">

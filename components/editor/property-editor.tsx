@@ -6,7 +6,7 @@ import { TEST_CONTEXT } from "@/components/crate-data-provider"
 import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
 import { SinglePropertyEditor } from "@/components/editor/single-property-editor"
-import { propertyNameReadable } from "@/lib/utils"
+import { camelCaseReadable } from "@/lib/utils"
 import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 
 export interface EntityEditorProperty {
@@ -119,7 +119,7 @@ export const PropertyEditor = memo(function PropertyEditor({
     }, [container, isFocused, unFocusProperty])
 
     const readablePropertyName = useMemo(() => {
-        return propertyNameReadable(property.propertyName)
+        return camelCaseReadable(property.propertyName)
     }, [property.propertyName])
 
     const onAddEntry = useCallback(

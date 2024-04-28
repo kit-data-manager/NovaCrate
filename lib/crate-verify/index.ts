@@ -1,6 +1,11 @@
 // This file defines a web worker for offloading create-verify into a different thread
 
-import { getPossibleEntityProperties, getPropertyComment, getPropertyRange } from "./helpers"
+import {
+    getAllComments,
+    getPossibleEntityProperties,
+    getPropertyComment,
+    getPropertyRange
+} from "./helpers"
 
 addEventListener("message", (event) => {
     const msg = event.data as CrateVerifyWorkerCommand
@@ -49,6 +54,23 @@ addEventListener("message", (event) => {
             } else {
                 try {
                     const data = getPossibleEntityProperties(msg.types)
+                    return postMessage({ data, nonce: msg.nonce })
+                } catch (e) {
+                    return postMessage({
+                        error: e + "",
+                        nonce: msg.nonce
+                    })
+                }
+            }
+        case "getAllComments":
+            if (!msg.types) {
+                return postMessage({
+                    error: "Types not specified but required for getAllComments",
+                    nonce: msg.nonce
+                })
+            } else {
+                try {
+                    const data = getAllComments(msg.types)
                     return postMessage({ data, nonce: msg.nonce })
                 } catch (e) {
                     return postMessage({

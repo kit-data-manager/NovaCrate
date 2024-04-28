@@ -2,6 +2,7 @@ declare type CrateVerifyWorkerOperations =
     | "getPropertyRange"
     | "getPropertyComment"
     | "getEntityPossibleProperties"
+    | "getAllComments"
 
 declare interface CrateVerifyWorkerCommand {
     operation: CrateVerifyWorkerOperations

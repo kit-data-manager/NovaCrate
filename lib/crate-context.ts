@@ -52,4 +52,20 @@ export class CrateContext {
 
         return null
     }
+
+    /**
+     * Returns an array of all classes in the context, determined by their name. Names for classes must
+     * be capitalized or start with a number.
+     * @returns An array of class URLs
+     */
+    getAllClasses() {
+        const result = new Set<string>()
+        Object.entries(this.context)
+            .filter(([key, _]) => key.match(/^[A-Z0-9]/))
+            .forEach(([_, url]) => {
+                result.add(url)
+            })
+
+        return Array.from(result.values())
+    }
 }

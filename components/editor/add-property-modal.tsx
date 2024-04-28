@@ -13,7 +13,7 @@ import { SchemaNode } from "@/lib/crate-verify/SchemaGraph"
 import { useCallback, useMemo } from "react"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
-import { propertyNameReadable } from "@/lib/utils"
+import { camelCaseReadable } from "@/lib/utils"
 
 export interface PossibleProperty {
     propertyName: string
@@ -32,7 +32,7 @@ function AddPropertyModalEntry({
     const { canBeText } = usePropertyCanBe(property.range)
 
     const readableName = useMemo(() => {
-        return propertyNameReadable(property.propertyName)
+        return camelCaseReadable(property.propertyName)
     }, [property.propertyName])
 
     return (
