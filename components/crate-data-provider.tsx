@@ -3,7 +3,7 @@
 import { createContext, PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
 import { Error } from "@/components/error"
 import useSWR from "swr"
-import { CrateContext } from "@/lib/crateContext"
+import { CrateContext } from "@/lib/crate-context"
 import { useEditorState } from "@/components/editor-state"
 import { Draft, produce } from "immer"
 import { computeServerDifferences, executeForcedUpdates } from "@/components/ensure-sync"
@@ -47,12 +47,15 @@ export function CrateDataProvider(
     useEffect(() => {
         if (data) {
             console.log("Updating initialCrateContext and initialEntities", data)
+            // Initial crate context is currently useless as the context is always updated to the server state
+            // Might be used in the future if the context becomes more complex
             setInitialCrateContext(data["@context"])
+            setCrateContext(data["@context"])
             setInitialEntities(new Map(data["@graph"].map((entity) => [entity["@id"], entity])))
 
             if (!lastCrateData.current) {
                 setEntities(new Map(data["@graph"].map((entity) => [entity["@id"], entity])))
-                setCrateContext(data["@context"])
+
                 lastCrateData.current = data
                 return
             }

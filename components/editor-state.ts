@@ -5,7 +5,7 @@ import { createSelectorHooks, ZustandHookSelectors } from "auto-zustand-selector
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { Diff, isEntityEqual } from "@/lib/utils"
 import { temporal } from "zundo"
-import { CrateContext } from "@/lib/crateContext"
+import { CrateContext } from "@/lib/crate-context"
 import { createWithEqualityFn } from "zustand/traditional"
 
 enableMapSet()

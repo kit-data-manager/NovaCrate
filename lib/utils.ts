@@ -102,10 +102,10 @@ export function propertyHasChanged(
     )
 }
 
-export function propertyNameReadable(propertyName: string) {
+export function camelCaseReadable(propertyName: string) {
     if (propertyName === "@id") return "Identifier"
     if (propertyName === "@type") return "Type"
-    const split = propertyName.replace(/([a-z0-9])([A-Z])/, "$1 $2")
+    const split = propertyName.replace(/([A-Z][a-z])/g, " $1")
     return split.charAt(0).toUpperCase() + split.slice(1)
 }
 

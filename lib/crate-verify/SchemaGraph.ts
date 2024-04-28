@@ -102,16 +102,20 @@ export class SchemaGraph {
             id = id.replace("https://schema.org/", "schema:")
         }
         if (id.startsWith("https://bioschemas.org/")) {
-            throw "Missing schema for bioschemas.org"
+            console.warn("SchemsGraph: Missing schema for bioschemas.org")
+            return undefined
         }
         if (id.startsWith("http://purl.org/")) {
-            throw "Missing schema for purl.org"
+            console.warn("SchemaGraph: Missing schema for purl.org")
+            return undefined
         }
         if (id.startsWith("http://www.w3.org/")) {
-            throw "Missing schema for www.w3.org"
+            console.warn("SchemaGraph: Missing schema for www.w3.org")
+            return undefined
         }
         if (/https?:\/\//.test(id)) {
-            throw "Unrecognized schema " + id
+            console.warn("SchemaGraph: Unrecognized schema " + id)
+            return undefined
         }
 
         return this.graph.get(id)
