@@ -1,6 +1,6 @@
 "use client"
 
-import { Braces, Check, ChevronDown, Cog, Moon, Redo, Search, Sun, Undo } from "lucide-react"
+import { Check, ChevronDown, Cog, Moon, Package, Search, Sun } from "lucide-react"
 import {
     Menubar,
     MenubarContent,
@@ -16,11 +16,10 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 import { useCallback } from "react"
-import { useEditorState } from "@/components/editor-state"
 
 export function NavHeader() {
     const theme = useTheme()
-    const { undo, redo } = useEditorState.temporal.getState()
+    // const { undo, redo } = useEditorState.temporal.getState()
 
     const toggleTheme = useCallback(() => {
         if (theme.theme === "light") {
@@ -33,8 +32,8 @@ export function NavHeader() {
     return (
         <div className="p-4 w-full grid grid-cols-[1fr_auto_1fr] border-b">
             <div className="flex items-center">
-                <Braces className="w-6 h-6 mr-2" />
-                <div className="mr-6">Editor</div>
+                <Package className="w-7 h-7 mr-2" />
+                <div className="mr-6 font-bold">Editor Name</div>
 
                 <Menubar>
                     <MenubarMenu>

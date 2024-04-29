@@ -27,6 +27,7 @@ export interface ICrateEditorContext {
 
     getEntities(): Map<string, IFlatEntity>
     getEntitiesChangelist(): Map<string, Diff>
+    getHasUnsavedChanges(): boolean
     addEntity(
         entityId: string,
         types: string[],
@@ -130,6 +131,14 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                     } else changelist.set(entityId, Diff.Changed)
                 }
                 return changelist
+            },
+
+            getHasUnsavedChanges(): boolean {
+                return (
+                    Array.from(getState().getEntitiesChangelist().values()).find(
+                        (diff) => diff === Diff.Changed || diff === Diff.New
+                    ) !== undefined
+                )
             },
 
             addEntity(

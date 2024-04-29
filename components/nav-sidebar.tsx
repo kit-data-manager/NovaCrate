@@ -2,7 +2,16 @@
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Button } from "@/components/ui/button"
-import { BookOpenText, Bug, Folder, GitFork, Library, Package, PackageSearch } from "lucide-react"
+import {
+    BookOpenText,
+    Braces,
+    Bug,
+    Folder,
+    GitFork,
+    Library,
+    PackageSearch,
+    ScanBarcode
+} from "lucide-react"
 import { PropsWithChildren, useContext, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -51,7 +60,7 @@ export function NavSidebar({ children }: PropsWithChildren<{}>) {
                             <Skeleton className="h-6 w-full mr-4 bg-muted-foreground/20" />
                         ) : (
                             <div className="text-sm w-full flex items-center">
-                                <Package className="w-4 h-4 shrink-0 mr-2" />{" "}
+                                <ScanBarcode className="w-4 h-4 shrink-0 mr-2" />{" "}
                                 <div className="truncate shrink">{crate.crateId}</div>
                             </div>
                         )}
@@ -61,13 +70,17 @@ export function NavSidebar({ children }: PropsWithChildren<{}>) {
                             <PackageSearch className="h-4 w-4 mr-2" />
                             Entities
                         </NavSidebarLink>
-                        <NavSidebarLink page="fileExplorer">
+                        <NavSidebarLink page="file-explorer">
                             <Folder className="h-4 w-4 mr-2" />
                             File Explorer
                         </NavSidebarLink>
                         <NavSidebarLink page="graph">
                             <GitFork className="h-4 w-4 mr-2" />
                             Graph
+                        </NavSidebarLink>
+                        <NavSidebarLink page="json-editor">
+                            <Braces className="h-4 w-4 mr-2" />
+                            JSON Editor
                         </NavSidebarLink>
                         <NavSidebarLink page="context">
                             <Library className="h-4 w-4 mr-2" />
