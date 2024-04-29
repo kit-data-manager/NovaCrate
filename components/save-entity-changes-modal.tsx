@@ -44,7 +44,10 @@ export function SaveEntityChangesModal({
                     <DialogTitle>Unsaved Changes</DialogTitle>
                 </DialogHeader>
 
-                <div>Please save your changes or revert them before closing this tab</div>
+                <div>
+                    There are unsaved changes in this tab. Please save your changes or revert them
+                    before closing the tab.
+                </div>
                 <div className="flex justify-between">
                     <Button variant="outline" onClick={onRevertEntityClick}>
                         Revert Changes
