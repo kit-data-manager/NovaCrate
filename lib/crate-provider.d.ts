@@ -78,10 +78,10 @@ declare interface CrateServiceProvider {
     /**
      * Remove an entity from the crate and also remove all references
      * @param crateId ID of the target crate
-     * @param entityId ID of the entity to delete
+     * @param entityData Data of the entity that should be deleted. Relevant are only @id and @type
      * @returns Promise - resolves on success
      */
-    deleteEntity(crateId: string, entityId: string): Promise<boolean>
+    deleteEntity(crateId: string, entityData: IFlatEntity): Promise<boolean>
 
     /**
      * Rename an entity (change the @id) and also rename all references
@@ -99,6 +99,14 @@ declare interface CrateServiceProvider {
      * @returns Promise - resolves on success
      */
     getCrateFilesList(crateId: string): Promise<ICrateFile[]>
+
+    /**
+     * Get a list of files in the crate archive that are not describe by a data entity, excluding ro-crate-metadata.json,
+     * ro-crate-preview.html and related files
+     * @param crateId ID of the target crate
+     * @returns Promise - resolves on success
+     */
+    getCrateUndeclaredFilesList(crateId: string): Promise<ICrateFile[]>
 
     /**
      * Get a file in the crate archive, including its data

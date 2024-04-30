@@ -2,52 +2,54 @@ import { isContextualEntity, isFolderDataEntity, isRootEntity } from "@/lib/util
 
 export class RestProvider implements CrateServiceProvider {
     createCrateFromFilesZip(id: string, zip: Buffer): Promise<void> {
-        return Promise.resolve(undefined)
+        throw "Not implemented"
     }
 
     getCrateFileURL(crateId: string, filePath: string): Promise<string> {
-        return Promise.resolve("")
+        throw "Not implemented"
     }
 
     getCrateFileWithData(crateId: string, filePath: string): Promise<ICrateFileWithData> {
-        return Promise.resolve({
-            filePath: "Not Implemented! ~rest-provider",
-            size: 0,
-            sha256: "",
-            data: new ArrayBuffer(0)
-        })
+        throw "Not implemented"
     }
 
     renameEntity(crateId: string, oldEntityId: string, newEntityId: string): Promise<boolean> {
-        return Promise.resolve(false)
+        throw "Not implemented"
     }
 
     uploadCrateFileWithData(crateId: string, file: ICrateFileWithData): boolean {
-        return false
+        throw "Not implemented"
     }
 
     uploadCrateFileZip(crateId: string, zip: Buffer): boolean {
-        return false
+        throw "Not implemented"
     }
 
     createCrate(id: string): Promise<void> {
-        return Promise.resolve(undefined)
+        throw "Not implemented"
     }
 
     createCrateFromCrateZip(zip: Buffer): Promise<void> {
-        return Promise.resolve(undefined)
+        throw "Not implemented"
     }
 
     createEntity(crateId: string, entityData: IFlatEntity): Promise<boolean> {
-        return Promise.resolve(false)
+        return this.updateEntity(crateId, entityData, true)
     }
 
     deleteCrate(id: string): Promise<boolean> {
-        return Promise.resolve(false)
+        throw "Not implemented"
     }
 
-    deleteEntity(crateId: string, entityId: string): Promise<boolean> {
-        return Promise.resolve(false)
+    async deleteEntity(crateId: string, entityData: IFlatEntity): Promise<boolean> {
+        const request = await fetch(this.getEntityRoute(crateId, entityData), {
+            method: "DELETE"
+        })
+        if (request.ok) {
+            return true
+        } else {
+            throw "Failed to delete crate: " + request.status
+        }
     }
 
     downloadCrateZip(id: string): void {}
@@ -64,33 +66,46 @@ export class RestProvider implements CrateServiceProvider {
     }
 
     getCrateFilesList(crateId: string): Promise<ICrateFile[]> {
-        return Promise.resolve([])
+        throw "Not implemented"
+    }
+
+    getCrateUndeclaredFilesList(crateId: string): Promise<ICrateFile[]> {
+        throw "Not implemented"
     }
 
     getEntity(crateId: string, entityId: string): Promise<IFlatEntity> {
-        return Promise.resolve({ "@id": "Not Implemented! ~rest-provider", "@type": [] })
+        throw "Not implemented"
     }
 
-    async updateEntity(crateId: string, entityData: IFlatEntity): Promise<boolean> {
-        const part = isRootEntity(entityData)
+    async updateEntity(
+        crateId: string,
+        entityData: IFlatEntity,
+        create: boolean = false
+    ): Promise<boolean> {
+        const request = await fetch(this.getEntityRoute(crateId, entityData), {
+            body: JSON.stringify(entityData),
+            method: create ? "PUT" : "PATCH",
+            headers: { "Content-Type": "application/json" }
+        })
+        if (request.ok) {
+            return true
+        } else {
+            throw "Failed to get crate: " + request.status
+        }
+    }
+
+    private getEntityRoutePart(entityData: IFlatEntity) {
+        return isRootEntity(entityData)
             ? "root"
             : isContextualEntity(entityData)
               ? "contextual"
               : isFolderDataEntity(entityData)
                 ? "data/datasets"
                 : "data/files"
-        const request = await fetch(
-            `http://localhost:8080/crates/${encodeURIComponent(crateId)}/entities/${part}/${encodeURIComponent(entityData["@id"])}`,
-            {
-                body: JSON.stringify(entityData),
-                method: "PUT",
-                headers: { "Content-Type": "application/json" }
-            }
-        )
-        if (request.ok) {
-            return true
-        } else {
-            throw "Failed to get crate: " + request.status
-        }
+    }
+
+    private getEntityRoute(crateId: string, entityData: IFlatEntity) {
+        const part = this.getEntityRoutePart(entityData)
+        return `http://localhost:8080/crates/${encodeURIComponent(crateId)}/entities/${part}/${encodeURIComponent(entityData["@id"])}`
     }
 }

@@ -34,6 +34,7 @@ export interface ICrateEditorContext {
         properties?: Record<string, FlatEntityPropertyTypes>,
         autoReference?: AutoReference
     ): boolean
+    removeEntity(entityId: string): void
     addProperty(entityId: string, propertyName: string, value?: FlatEntityPropertyTypes): void
     addPropertyEntry(entityId: string, propertyName: string, type: PropertyEditorTypes): void
     modifyPropertyEntry(
@@ -170,6 +171,12 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
 
                     return true
                 } else return false
+            },
+
+            removeEntity(entityId: string) {
+                setState((state) => {
+                    state.entities.delete(entityId)
+                })
             },
 
             addProperty(entityId: string, propertyName: string, value?: FlatEntityPropertyTypes) {

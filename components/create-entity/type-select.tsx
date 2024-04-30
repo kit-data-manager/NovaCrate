@@ -60,13 +60,11 @@ export function TypeSelect({
                     <CommandGroup>
                         {open && !isPending && types ? (
                             types.map((e) => (
-                                <>
-                                    <CreateEntityModalEntry
-                                        key={e["@id"]}
-                                        slimClass={e}
-                                        onSelect={onTypeSelect}
-                                    />
-                                </>
+                                <CreateEntityModalEntry
+                                    key={e["@id"]}
+                                    slimClass={e}
+                                    onSelect={onTypeSelect}
+                                />
                             ))
                         ) : (
                             <CommandItem className="flex flex-col gap-2">

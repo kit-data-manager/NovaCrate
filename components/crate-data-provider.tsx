@@ -3,7 +3,6 @@
 import { createContext, PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
 import { Error } from "@/components/error"
 import useSWR from "swr"
-import { CrateContext } from "@/lib/crate-context"
 import { useEditorState } from "@/components/editor-state"
 import { Draft, produce } from "immer"
 import { computeServerDifferences, executeForcedUpdates } from "@/components/ensure-sync"
@@ -13,16 +12,17 @@ export interface ICrateDataProvider {
     crateData?: ICrate
     crateDataIsLoading: boolean
     saveEntity: (entity: IFlatEntity) => Promise<boolean>
+    deleteEntity: (entity: IFlatEntity) => Promise<boolean>
     isSaving: boolean
     saveError: string
 }
 
-// TODO remove
-export const TEST_CONTEXT = new CrateContext("https://w3id.org/ro/crate/1.1/context")
-
 export const CrateDataContext = createContext<ICrateDataProvider>({
     crateId: "",
     saveEntity: () => {
+        return Promise.reject("Crate Data Provider not mounted yet")
+    },
+    deleteEntity: () => {
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     crateDataIsLoading: false,
@@ -125,6 +125,37 @@ export function CrateDataProvider(
         [data, mutate, props.crateId, props.serviceProvider]
     )
 
+    const deleteEntity = useCallback(
+        async (entityData: IFlatEntity) => {
+            if (props.crateId) {
+                try {
+                    const deleteResult = await props.serviceProvider.deleteEntity(
+                        props.crateId,
+                        entityData
+                    )
+
+                    if (data) {
+                        const newData = produce<ICrate>(data, (newData: Draft<ICrate>) => {
+                            const index = newData["@graph"].findIndex(
+                                (e) => e["@id"] === entityData["@id"]
+                            )
+                            if (index >= 0) newData["@graph"].splice(index, 1)
+                        })
+
+                        await mutate(newData)
+                    }
+
+                    return deleteResult
+                } catch (e) {
+                    console.error("Error occurred while trying to delete entity", e)
+                    setSaveError(typeof e === "object" ? JSON.stringify(e) : e + "")
+                    return false
+                }
+            } else return false
+        },
+        [data, mutate, props.crateId, props.serviceProvider]
+    )
+
     return (
         <CrateDataContext.Provider
             value={{
@@ -132,6 +163,7 @@ export function CrateDataProvider(
                 crateData: data,
                 crateDataIsLoading: isLoading,
                 saveEntity,
+                deleteEntity,
                 isSaving,
                 saveError
             }}

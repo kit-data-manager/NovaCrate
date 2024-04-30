@@ -15,7 +15,7 @@ import {
     toArray
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
-import { CrateDataContext, TEST_CONTEXT } from "@/components/crate-data-provider"
+import { CrateDataContext } from "@/components/crate-data-provider"
 import { Error } from "@/components/error"
 import { EntityEditorHeader } from "@/components/editor/entity-editor-header"
 import { Plus } from "lucide-react"
@@ -26,6 +26,7 @@ import { AddPropertyModal, PossibleProperty } from "@/components/editor/add-prop
 import { UnknownTypeWarning } from "@/components/editor/unknown-type-warning"
 import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { useEditorState } from "@/components/editor-state"
+import { GlobalModalContext } from "@/components/global-modals-provider"
 
 export function EntityEditor({ entityId }: { entityId: string }) {
     const { saveEntity, isSaving, saveError } = useContext(CrateDataContext)
@@ -37,9 +38,11 @@ export function EntityEditor({ entityId }: { entityId: string }) {
     const modifyPropertyEntry = useEditorState.useModifyPropertyEntry()
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
     const revertEntity = useEditorState.useRevertEntity()
+    const crateContext = useEditorState.useCrateContext()
 
     const { isReady: crateVerifyReady, getClassProperties } = useContext(CrateVerifyContext)
     const { focusProperty } = useContext(EntityEditorTabsContext)
+    const { showDeleteEntityModal } = useContext(GlobalModalContext)
 
     const [addPropertyModelOpen, setAddPropertyModelOpen] = useState(false)
 
@@ -55,7 +58,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
         async (types: string[]) => {
             if (crateVerifyReady) {
                 const resolved = types
-                    .map((type) => TEST_CONTEXT.resolve(type))
+                    .map((type) => crateContext.resolve(type))
                     .filter((s) => typeof s === "string") as string[]
                 const data = await getClassProperties(resolved)
                 return data
@@ -65,15 +68,15 @@ export function EntityEditor({ entityId }: { entityId: string }) {
                             range: s.range.map((r) => r["@id"]),
                             rangeReadable: s.range
                                 .map((r) => r["@id"])
-                                .map((r) => TEST_CONTEXT.reverse(r))
+                                .map((r) => crateContext.reverse(r))
                                 .filter((r) => typeof r === "string"),
-                            propertyName: TEST_CONTEXT.reverse(s["@id"])
+                            propertyName: crateContext.reverse(s["@id"])
                         }
                     })
                     .filter((s) => typeof s.propertyName === "string") as PossibleProperty[]
             }
         },
-        [crateVerifyReady, getClassProperties]
+        [crateContext, crateVerifyReady, getClassProperties]
     )
 
     const typeArray = useMemo(() => {
@@ -139,6 +142,10 @@ export function EntityEditor({ entityId }: { entityId: string }) {
         revertEntity(entityId)
     }, [entityId, revertEntity])
 
+    const onDelete = useCallback(() => {
+        showDeleteEntityModal(entityId)
+    }, [entityId, showDeleteEntityModal])
+
     const properties = useMemo(() => {
         if (!entity) return []
         return mapEntityToProperties(entity)
@@ -190,6 +197,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
                 isSaving={isSaving}
                 onSave={onSave}
                 onRevert={onRevert}
+                onDelete={onDelete}
                 openAddPropertyModal={openAddPropertyModal}
             />
 

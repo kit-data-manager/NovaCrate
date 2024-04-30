@@ -4,6 +4,7 @@ import { createContext, PropsWithChildren, useCallback, useState } from "react"
 import { CreateEntityModal } from "@/components/create-entity/create-entity-modal"
 import { SlimClass } from "@/lib/crate-verify/helpers"
 import { SaveEntityChangesModal } from "@/components/save-entity-changes-modal"
+import { DeleteEntityModal } from "@/components/delete-entity-modal"
 
 export interface AutoReference {
     entityId: string
@@ -14,11 +15,13 @@ export interface AutoReference {
 export interface IGlobalModalContext {
     showCreateEntityModal(restrictToClasses?: SlimClass[], autoReference?: AutoReference): void
     showSaveEntityChangesModal(entityId: string): void
+    showDeleteEntityModal(entityId: string): void
 }
 
 export const GlobalModalContext = createContext<IGlobalModalContext>({
     showCreateEntityModal() {},
-    showSaveEntityChangesModal() {}
+    showSaveEntityChangesModal() {},
+    showDeleteEntityModal() {}
 })
 
 export function GlobalModalProvider(props: PropsWithChildren) {
@@ -30,6 +33,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         open: false
     })
     const [saveEntityChangesModalState, setSaveEntityChangesModalState] = useState({
+        open: false,
+        entityId: ""
+    })
+    const [deleteEntityModalState, setDeleteEntityModalState] = useState({
         open: false,
         entityId: ""
     })
@@ -52,6 +59,13 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         })
     }, [])
 
+    const showDeleteEntityModal = useCallback((entityId: string) => {
+        setDeleteEntityModalState({
+            open: true,
+            entityId
+        })
+    }, [])
+
     const onCreateEntityModalOpenChange = useCallback((isOpen: boolean) => {
         setCreateEntityModalState((oldValue) => {
             return {
@@ -68,6 +82,13 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         })
     }, [])
 
+    const onDeleteEntityModalOpenChange = useCallback((isOpen: boolean) => {
+        setDeleteEntityModalState((old) => ({
+            entityId: old.entityId,
+            open: isOpen
+        }))
+    }, [])
+
     const onEntityCreated = useCallback(() => {
         setCreateEntityModalState({
             open: false
@@ -78,7 +99,8 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         <GlobalModalContext.Provider
             value={{
                 showCreateEntityModal,
-                showSaveEntityChangesModal
+                showSaveEntityChangesModal,
+                showDeleteEntityModal
             }}
         >
             <CreateEntityModal
@@ -92,6 +114,11 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 open={saveEntityChangesModalState.open}
                 onOpenChange={onSaveEntityChangesModalOpenChange}
                 entityId={saveEntityChangesModalState.entityId}
+            />
+            <DeleteEntityModal
+                open={deleteEntityModalState.open}
+                onOpenChange={onDeleteEntityModalOpenChange}
+                entityId={deleteEntityModalState.entityId}
             />
 
             {props.children}
