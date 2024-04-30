@@ -9,11 +9,12 @@ import {
     CommandList
 } from "@/components/ui/command"
 import { Checkbox } from "@/components/ui/checkbox"
-import { CrateDataContext, TEST_CONTEXT } from "@/components/crate-data-provider"
+import { CrateDataContext } from "@/components/crate-data-provider"
 import { getEntityDisplayName, isRoCrateMetadataEntity, isRootEntity, toArray } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EntityIcon } from "@/components/entity-icon"
 import { SlimClass } from "@/lib/crate-verify/helpers"
+import { useEditorState } from "@/components/editor-state"
 
 function SelectReferenceModalEntry({
     entity,
@@ -63,6 +64,7 @@ export function SelectReferenceModal({
     propertyRange?: SlimClass[]
 }) {
     const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
+    const crateContext = useEditorState.useCrateContext()
 
     const propertyRangeIds = useMemo(() => {
         return propertyRange?.map((p) => p["@id"])
@@ -76,14 +78,14 @@ export function SelectReferenceModal({
             .filter((e) => !isRoCrateMetadataEntity(e))
             .filter((entity) => {
                 for (const type of toArray(entity["@type"])) {
-                    const resolved = TEST_CONTEXT.resolve(type)
+                    const resolved = crateContext.resolve(type)
                     if (!resolved) continue
                     if (propertyRangeIds.includes(resolved)) return true
                 }
 
                 return false
             })
-    }, [crateData, crateDataIsLoading, open, propertyRangeIds])
+    }, [crateContext, crateData, crateDataIsLoading, open, propertyRangeIds])
 
     const onSelectAndClose = useCallback(
         (ref: IReference) => {

@@ -22,12 +22,14 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
     onSave,
     hasUnsavedChanges,
     onRevert,
+    onDelete,
     openAddPropertyModal
 }: {
     hasUnsavedChanges: boolean
     isSaving: boolean
     onSave(): void
     onRevert(): void
+    onDelete(): void
     openAddPropertyModal(): void
 }) {
     return (
@@ -41,7 +43,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
             <Button size="sm" variant="outline" className="text-xs">
                 <Search className="w-4 h-4 mr-1" /> Find References
             </Button>
-            <Button size="sm" variant="destructive" className="text-xs">
+            <Button size="sm" variant="destructive" className="text-xs" onClick={onDelete}>
                 <Trash className="w-4 h-4 mr-1" /> Delete Entity
             </Button>
             <div className="grow"></div>

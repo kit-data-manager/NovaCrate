@@ -2,12 +2,12 @@ import { createRef, memo, useCallback, useContext, useEffect, useMemo } from "re
 import { useAsync } from "@/components/use-async"
 import { CrateVerifyContext } from "@/components/crate-verify-provider"
 import { Skeleton } from "@/components/ui/skeleton"
-import { TEST_CONTEXT } from "@/components/crate-data-provider"
 import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
 import { SinglePropertyEditor } from "@/components/editor/single-property-editor"
 import { camelCaseReadable } from "@/lib/utils"
 import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
+import { useEditorState } from "@/components/editor-state"
 
 export interface EntityEditorProperty {
     propertyName: string
@@ -22,6 +22,7 @@ function sortByPropertyName(a: EntityEditorProperty, b: EntityEditorProperty) {
     return a.propertyName > b.propertyName ? 1 : -1
 }
 
+// TODO maybe get rid of this, causes problems with re-rendering
 export function mapEntityToProperties(data: IFlatEntity): EntityEditorProperty[] {
     return Object.keys(data)
         .map((key) => {
@@ -100,6 +101,7 @@ export const PropertyEditor = memo(function PropertyEditor({
         getPropertyRange
     } = useContext(CrateVerifyContext)
     const { focusedProperty, unFocusProperty } = useContext(EntityEditorTabsContext)
+    const crateContext = useEditorState.useCrateContext()
     const container = createRef<HTMLDivElement>()
 
     const isFocused = useMemo(() => {
@@ -132,12 +134,12 @@ export const PropertyEditor = memo(function PropertyEditor({
     const referenceTypeRangeResolver = useCallback(
         async (propertyName: string) => {
             if (crateVerifyReady) {
-                const resolved = TEST_CONTEXT.resolve(propertyName)
+                const resolved = crateContext.resolve(propertyName)
                 if (!resolved) return []
                 return await getPropertyRange(resolved)
             }
         },
-        [crateVerifyReady, getPropertyRange]
+        [crateContext, crateVerifyReady, getPropertyRange]
     )
 
     const { data: propertyRange, error: propertyRangeError } = useAsync(
@@ -150,10 +152,10 @@ export const PropertyEditor = memo(function PropertyEditor({
             if (propertyId === "@id") return "The unique identifier of the entity"
             if (propertyId === "@type")
                 return "The type defines which properties can occur on the entity"
-            const resolved = TEST_CONTEXT.resolve(propertyId)
+            const resolved = crateContext.resolve(propertyId)
             return await getPropertyComment(resolved || "unresolved")
         },
-        [getPropertyComment]
+        [crateContext, getPropertyComment]
     )
 
     const {
