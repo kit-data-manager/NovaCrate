@@ -118,6 +118,7 @@ export function CrateDataProvider(
                 } catch (e) {
                     console.error("Error occurred while trying to update entity", e)
                     setSaveError(typeof e === "object" ? JSON.stringify(e) : e + "")
+                    setIsSaving(false)
                     return false
                 }
             } else return false
