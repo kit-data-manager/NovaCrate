@@ -50,10 +50,7 @@ function Tab({
 
     useEffect(() => {
         if (!entity) {
-            console.error(
-                "Closed a tab because the entity could not be found. This indicates a bug somewhere else.",
-                tab
-            )
+            console.warn("Closed a tab because the entity could not be found. ", tab)
             close()
         }
     }, [close, entity, tab])
