@@ -26,11 +26,11 @@ export default function EditorLayout(props: PropsWithChildren) {
     return (
         <CrateDataProvider serviceProvider={serviceProvider} crateId={getCrateId(pathname)}>
             <CrateVerifyProvider>
-                <GlobalModalProvider>
-                    <EntityEditorTabsProvider>
+                <EntityEditorTabsProvider>
+                    <GlobalModalProvider>
                         <Nav>{props.children}</Nav>
-                    </EntityEditorTabsProvider>
-                </GlobalModalProvider>
+                    </GlobalModalProvider>
+                </EntityEditorTabsProvider>
             </CrateVerifyProvider>
         </CrateDataProvider>
     )

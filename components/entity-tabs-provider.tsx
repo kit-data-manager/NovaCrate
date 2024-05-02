@@ -21,6 +21,8 @@ export interface IEntityEditorTabsContext {
     openTab(tab: IEntityEditorTab, focus?: boolean): void
     focusTab(id: string): void
     closeTab(id: string): void
+    closeOtherTabs(id: string): void
+    closeAllTabs(): void
     focusProperty(entityId: string, propertyName: string): void
     unFocusProperty(): void
 }
@@ -36,6 +38,12 @@ export const EntityEditorTabsContext = createContext<IEntityEditorTabsContext>({
         console.warn("EntityEditorTabsContextProvider not mounted yet")
     },
     closeTab() {
+        console.warn("EntityEditorTabsContextProvider not mounted yet")
+    },
+    closeOtherTabs() {
+        console.warn("EntityEditorTabsContextProvider not mounted yet")
+    },
+    closeAllTabs() {
         console.warn("EntityEditorTabsContextProvider not mounted yet")
     },
     focusProperty() {
@@ -67,6 +75,7 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
 
     const focusTab = useCallback((id: string) => {
         setFocusedEntity(id)
+        setFocusedProperty("")
     }, [])
 
     const openTab = useCallback(
@@ -110,6 +119,31 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
         })
     }, [])
 
+    const closeOtherTabs = useCallback(
+        (id: string) => {
+            setTabs((oldTabs) => {
+                return oldTabs.filter(
+                    (tab) =>
+                        tab.entityId === id || entitiesChangelist.get(tab.entityId) !== Diff.None
+                )
+            })
+            focusTab(id)
+        },
+        [entitiesChangelist, focusTab]
+    )
+
+    const closeAllTabs = useCallback(() => {
+        setTabs((oldTabs) => {
+            const remainingTabs = oldTabs.filter(
+                (tab) => entitiesChangelist.get(tab.entityId) !== Diff.None
+            )
+            if (remainingTabs.length > 0) {
+                focusTab(remainingTabs[0].entityId)
+            }
+            return remainingTabs
+        })
+    }, [entitiesChangelist, focusTab])
+
     const focusProperty = useCallback(
         (entityId: string, propertyName: string) => {
             focusTab(entityId)
@@ -131,6 +165,8 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
                 openTab,
                 focusTab,
                 closeTab,
+                closeAllTabs,
+                closeOtherTabs,
                 focusProperty,
                 unFocusProperty
             }}
