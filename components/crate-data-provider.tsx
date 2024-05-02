@@ -5,7 +5,7 @@ import { Error } from "@/components/error"
 import useSWR from "swr"
 import { useEditorState } from "@/components/editor-state"
 import { Draft, produce } from "immer"
-import { computeServerDifferences, executeForcedUpdates } from "@/components/ensure-sync"
+import { applyServerDifferences } from "@/components/ensure-sync"
 
 export interface ICrateDataProvider {
     crateId: string
@@ -62,14 +62,8 @@ export function CrateDataProvider(
 
             const entities = getEntities()
 
-            const { forceProperties, forceEntities } = computeServerDifferences(
-                data,
-                lastCrateData.current,
-                entities
-            )
-
             const updatedEntities = produce(entities, (newEntities) => {
-                executeForcedUpdates(newEntities, forceEntities, forceProperties)
+                applyServerDifferences(data, lastCrateData.current, newEntities)
             })
 
             setEntities(updatedEntities)
