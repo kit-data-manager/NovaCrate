@@ -245,6 +245,10 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                     setState((state) => {
                         state.entities.set(entityId, original)
                     })
+                } else {
+                    setState((state) => {
+                        state.entities.delete(entityId)
+                    })
                 }
             },
 
