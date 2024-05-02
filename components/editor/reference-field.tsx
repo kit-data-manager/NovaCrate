@@ -10,6 +10,7 @@ import { GlobalModalContext } from "@/components/global-modals-provider"
 import { SlimClass } from "@/lib/crate-verify/helpers"
 import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { useEditorState } from "@/components/editor-state"
+import { EntityIcon } from "@/components/entity-icon"
 
 export const ReferenceField = memo(function ReferenceField({
     entityId,
@@ -111,28 +112,29 @@ export const ReferenceField = memo(function ReferenceField({
                     <Button
                         className="grow rounded-r-none justify-start pl-3 truncate"
                         variant="outline"
-                        onClick={() => {
-                            setSelectModalOpen(true)
-                        }}
+                        onClick={openInNewTab}
                     >
-                        <LinkIcon className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
-                        <div className="flex items-end truncate">
+                        <EntityIcon entity={referencedEntity} />
+                        <div className="flex items-end truncate grow">
                             <ReferenceText />
                             <span className="text-muted-foreground ml-1 text-xs truncate">
                                 {value["@id"]}
                             </span>
+                            <div className="flex items-center self-center grow justify-end">
+                                <ExternalLink className="w-4 h-4" />
+                            </div>
                         </div>
                     </Button>
-                    {referencedEntityName || value["@id"].startsWith("http") ? (
-                        <Button
-                            onClick={openInNewTab}
-                            size="icon"
-                            variant="outline"
-                            className="rounded-none border-l-0"
-                        >
-                            <ExternalLink className="w-4 h-4" />
-                        </Button>
-                    ) : null}
+                    <Button
+                        onClick={() => {
+                            setSelectModalOpen(true)
+                        }}
+                        size="icon"
+                        variant="outline"
+                        className="rounded-none border-l-0"
+                    >
+                        <LinkIcon className="w-4 h-4" />
+                    </Button>
                 </>
             )}
 

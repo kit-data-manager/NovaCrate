@@ -169,6 +169,7 @@ export function EntityBrowser() {
                     variant="outline"
                     className={`text-xs`}
                     disabled={crate.crateDataIsLoading}
+                    onClick={() => crate.reload()}
                 >
                     <RefreshCw
                         className={`w-4 h-4 ${crate.crateDataIsLoading ? "animate-spin" : ""}`}

@@ -26,7 +26,7 @@ export function TypeSelect({
     onTypeSelect: (value: string) => void
 }) {
     const crateContext = useEditorState.useCrateContext()
-    const { getAllComments } = useContext(CrateVerifyContext)
+    const { getAllClasses } = useContext(CrateVerifyContext)
     const [bypassRestrictions, setBypassRestrictions] = useState(false)
 
     const toggleRestrictions = useCallback((state: boolean | "indeterminate") => {
@@ -35,14 +35,16 @@ export function TypeSelect({
 
     const typesResolver = useCallback(async () => {
         if (bypassRestrictions || !restrictToClasses) {
-            const classNames = crateContext.getAllClasses()
-            return await getAllComments(classNames)
+            const classUrls = crateContext.getAllClasses()
+            return (await getAllClasses()).filter((slimClass) => {
+                return classUrls.includes(slimClass["@id"])
+            })
         } else {
             if (restrictToClasses) {
                 return restrictToClasses.filter((c) => crateContext.reverse(c["@id"])) // Reversible classes are known via specification
             } else return []
         }
-    }, [bypassRestrictions, crateContext, getAllComments, restrictToClasses])
+    }, [bypassRestrictions, crateContext, getAllClasses, restrictToClasses])
 
     const {
         data: types,

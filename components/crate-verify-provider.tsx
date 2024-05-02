@@ -2,7 +2,8 @@ import {
     getPropertyComment as localGetPropertyComment,
     getPropertyRange as localGetPropertyRange,
     getPossibleEntityProperties as localGetEntityPossibleProperties,
-    getAllComments as localGetAllComments
+    getAllComments as localGetAllComments,
+    getAllClasses as localGetAllClasses
 } from "@/lib/crate-verify/helpers"
 import { createContext, PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
 
@@ -15,21 +16,30 @@ export interface ICrateVerifyContext {
         types: string[]
     ) => Promise<ReturnType<typeof localGetEntityPossibleProperties>>
     getAllComments: (types: string[]) => Promise<ReturnType<typeof localGetAllComments>>
+    getAllClasses: () => Promise<ReturnType<typeof localGetAllClasses>>
 }
 
 export const CrateVerifyContext = createContext<ICrateVerifyContext>({
     isReady: false,
     isUsingWebWorker: false,
     async getPropertyComment() {
+        console.warn("CrateVerifyContext not mounted")
         return undefined
     },
     async getPropertyRange() {
+        console.warn("CrateVerifyContext not mounted")
         return []
     },
     async getClassProperties() {
+        console.warn("CrateVerifyContext not mounted")
         return []
     },
     async getAllComments() {
+        console.warn("CrateVerifyContext not mounted")
+        return []
+    },
+    async getAllClasses() {
+        console.warn("CrateVerifyContext not mounted")
         return []
     }
 })
@@ -114,6 +124,16 @@ export function CrateVerifyProvider(props: PropsWithChildren) {
         }
     }, [])
 
+    const getAllClasses = useCallback(() => {
+        if (worker.current) {
+            return post(worker.current, {
+                operation: "getAllClasses"
+            }) as Promise<ReturnType<typeof localGetAllClasses>>
+        } else {
+            return Promise.resolve(localGetAllClasses())
+        }
+    }, [])
+
     useEffect(() => {
         if (window.Worker) {
             worker.current = new Worker("/crate-verify-worker.js")
@@ -131,7 +151,8 @@ export function CrateVerifyProvider(props: PropsWithChildren) {
                 getPropertyComment,
                 getPropertyRange,
                 getClassProperties,
-                getAllComments
+                getAllComments,
+                getAllClasses
             }}
         >
             {props.children}

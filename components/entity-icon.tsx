@@ -4,12 +4,24 @@ import { isDataEntity, isRootEntity } from "@/lib/utils"
 const entityBrowserItemIconBaseCN =
     "min-w-5 min-h-5 flex justify-center items-center border mr-2  rounded font-bold text-xs"
 
-export function EntityIcon(props: { entity: IFlatEntity; size?: "md" | "lg" }) {
+export function EntityIcon(props: { entity?: IFlatEntity; size?: "md" | "lg" }) {
     const sizeMod = useMemo(() => {
         return props.size == "lg" ? " min-w-7 min-h-7 rounded-lg" : ""
     }, [props.size])
 
-    if (isRootEntity(props.entity)) {
+    if (!props.entity) {
+        return (
+            <div
+                className={
+                    entityBrowserItemIconBaseCN +
+                    " border-muted-foreground text-muted-foreground" +
+                    sizeMod
+                }
+            >
+                ?
+            </div>
+        )
+    } else if (isRootEntity(props.entity)) {
         return (
             <div className={entityBrowserItemIconBaseCN + " border-root text-root" + sizeMod}>
                 R

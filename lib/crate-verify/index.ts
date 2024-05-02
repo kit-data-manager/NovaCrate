@@ -1,6 +1,7 @@
 // This file defines a web worker for offloading create-verify into a different thread
 
 import {
+    getAllClasses,
     getAllComments,
     getPossibleEntityProperties,
     getPropertyComment,
@@ -78,6 +79,16 @@ addEventListener("message", (event) => {
                         nonce: msg.nonce
                     })
                 }
+            }
+        case "getAllClasses":
+            try {
+                const data = getAllClasses()
+                return postMessage({ data, nonce: msg.nonce })
+            } catch (e) {
+                return postMessage({
+                    error: e + "",
+                    nonce: msg.nonce
+                })
             }
         default:
             return postMessage({ error: "Unknown operation " + msg.operation, nonce: msg.nonce })

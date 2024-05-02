@@ -1,10 +1,11 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { SlimClass } from "@/lib/crate-verify/helpers"
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useContext, useState } from "react"
 import { AutoReference } from "@/components/global-modals-provider"
 import { useEditorState } from "@/components/editor-state"
 import { TypeSelect } from "@/components/create-entity/type-select"
 import { CreateEntity } from "@/components/create-entity/create-entity"
+import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 
 export function CreateEntityModal({
     open,
@@ -20,6 +21,7 @@ export function CreateEntityModal({
     autoReference?: AutoReference
 }) {
     const addEntity = useEditorState.useAddEntity()
+    const { focusTab } = useContext(EntityEditorTabsContext)
 
     const [selectedType, setSelectedType] = useState("")
 
@@ -49,9 +51,11 @@ export function CreateEntityModal({
             ) {
                 onEntityCreated()
                 setSelectedType("")
+                console.log(id)
+                focusTab(id)
             }
         },
-        [addEntity, autoReference, onEntityCreated, selectedType]
+        [addEntity, autoReference, focusTab, onEntityCreated, selectedType]
     )
 
     const backToTypeSelect = useCallback(() => {

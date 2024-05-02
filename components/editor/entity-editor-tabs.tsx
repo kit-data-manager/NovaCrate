@@ -9,6 +9,12 @@ import { EntityIcon } from "@/components/entity-icon"
 import { EntityEditor } from "@/components/editor/entity-editor"
 import { GlobalModalContext } from "@/components/global-modals-provider"
 import { useEditorState } from "@/components/editor-state"
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuTrigger
+} from "@/components/ui/context-menu"
 
 function Tab({
     tab,
@@ -20,7 +26,7 @@ function Tab({
     entitiesChangelist: Map<string, Diff>
 }) {
     const entity = useEditorState((store) => store.entities.get(tab.entityId))
-    const { focusTab, closeTab } = useContext(EntityEditorTabsContext)
+    const { focusTab, closeTab, closeOtherTabs, closeAllTabs } = useContext(EntityEditorTabsContext)
     const { showSaveEntityChangesModal } = useContext(GlobalModalContext)
 
     const button = useRef<HTMLButtonElement>(null)
@@ -79,30 +85,45 @@ function Tab({
         )
 
     return (
-        <Button
-            onClick={focus}
-            variant="tab"
-            data-active={active}
-            className={`cursor-default ${active ? "pr-1" : ""}`}
-            ref={button}
-        >
-            <EntityIcon entity={entity} />
-            <div className={`ml-1 transition-colors max-w-[300px] truncate`}>
-                {getEntityDisplayName(entity)}
-                {dirty ? <b>*</b> : null}
-            </div>
-            {active ? (
-                <div
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        close()
-                    }}
-                    className="ml-2 shrink-0 hover:bg-background p-1 text-xs rounded transition cursor-pointer"
+        <ContextMenu>
+            <ContextMenuTrigger>
+                <Button
+                    onClick={focus}
+                    variant="tab"
+                    data-active={active}
+                    className={`cursor-default ${active ? "pr-1" : ""}`}
+                    ref={button}
                 >
-                    <XIcon className="w-4 h-4" />
-                </div>
-            ) : null}
-        </Button>
+                    <EntityIcon entity={entity} />
+                    <div className={`ml-1 transition-colors max-w-[300px] truncate`}>
+                        {getEntityDisplayName(entity)}
+                        {dirty ? <b>*</b> : null}
+                    </div>
+                    {active ? (
+                        <div
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                close()
+                            }}
+                            className="ml-2 shrink-0 hover:bg-background p-1 text-xs rounded transition cursor-pointer"
+                        >
+                            <XIcon className="w-4 h-4" />
+                        </div>
+                    ) : null}
+                </Button>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+                <ContextMenuItem onClick={close}>
+                    <XIcon className="w-4 h-4 mr-2" /> Close Tab
+                </ContextMenuItem>
+                <ContextMenuItem onClick={closeAllTabs}>
+                    <XIcon className="w-4 h-4 mr-2" /> Close All
+                </ContextMenuItem>
+                <ContextMenuItem onClick={() => closeOtherTabs(tab.entityId)}>
+                    <XIcon className="w-4 h-4 mr-2" /> Close Others
+                </ContextMenuItem>
+            </ContextMenuContent>
+        </ContextMenu>
     )
 }
 
@@ -113,14 +134,14 @@ function Tabs({ tabs, currentTab }: { tabs: IEntityEditorTab[]; currentTab?: IEn
     return (
         <div
             ref={container}
-            className="flex overflow-x-auto shrink-0"
+            className="flex overflow-x-auto shrink-0 no-scrollbar"
             onWheel={(s) => {
                 if (s.deltaY !== 0 && container.current) {
                     // noinspection JSSuspiciousNameCombination
                     container.current.scrollBy({
                         left: s.deltaY,
                         top: 0,
-                        behavior: "smooth"
+                        behavior: "auto"
                     })
                 }
             }}

@@ -11,8 +11,9 @@ export interface ICrateDataProvider {
     crateId: string
     crateData?: ICrate
     crateDataIsLoading: boolean
-    saveEntity: (entity: IFlatEntity) => Promise<boolean>
-    deleteEntity: (entity: IFlatEntity) => Promise<boolean>
+    saveEntity(entity: IFlatEntity): Promise<boolean>
+    deleteEntity(entity: IFlatEntity): Promise<boolean>
+    reload(): void
     isSaving: boolean
     saveError: string
 }
@@ -24,6 +25,9 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
     },
     deleteEntity: () => {
         return Promise.reject("Crate Data Provider not mounted yet")
+    },
+    reload: () => {
+        console.warn("Crate Data Provider not mounted yet")
     },
     crateDataIsLoading: false,
     isSaving: false,
@@ -86,10 +90,13 @@ export function CrateDataProvider(
             if (props.crateId) {
                 setIsSaving(true)
                 try {
-                    const updateResult = await props.serviceProvider.updateEntity(
-                        props.crateId,
-                        entityData
+                    const fn = lastCrateData.current?.["@graph"].find(
+                        (e) => e["@id"] === entityData["@id"]
                     )
+                        ? props.serviceProvider.updateEntity.bind(props.serviceProvider)
+                        : props.serviceProvider.createEntity.bind(props.serviceProvider)
+
+                    const updateResult = await fn(props.crateId, entityData)
                     setIsSaving(false)
                     setSaveError("")
 
@@ -111,7 +118,7 @@ export function CrateDataProvider(
                     return updateResult
                 } catch (e) {
                     console.error("Error occurred while trying to update entity", e)
-                    setSaveError(typeof e === "object" ? JSON.stringify(e) : e + "")
+                    setSaveError(typeof e === "object" && e ? e.toString() : e + "")
                     setIsSaving(false)
                     return false
                 }
@@ -160,6 +167,7 @@ export function CrateDataProvider(
                 saveEntity,
                 deleteEntity,
                 isSaving,
+                reload: mutate,
                 saveError
             }}
         >
