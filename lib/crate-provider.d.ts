@@ -11,19 +11,17 @@
 declare interface CrateServiceProvider {
     /**
      * Create an empty crate with no files except ro-crate-metadata.json
-     * @param id ID of the new crate
-     * @returns Promise - resolves on success
-     * @throws Error when the ID is already in use or when an error occurred
+     * @returns Promise - resolves on success with the crate id
      */
-    createCrate(id: string): Promise<void>
+    createCrate(): Promise<string>
 
     /**
      * Upload a valid crate in form of a zip archive
      * @param zip zip archive of a valid crate
-     * @returns Promise - resolves on success
+     * @returns Promise - resolves on success with the id if the new crate
      * @throws Error when the ID is already in use or when an error occurred
      */
-    createCrateFromCrateZip(zip: Buffer): Promise<void>
+    createCrateFromCrateZip(zip: File): Promise<string>
 
     /**
      * Create a new crate from a zip archive of files. The zip archive is not required to already
@@ -33,7 +31,7 @@ declare interface CrateServiceProvider {
      * @returns Promise - resolves on success
      * @throws Error when the ID is already in use or when an error occurred
      */
-    createCrateFromFilesZip?: (id: string, zip: Buffer) => Promise<void>
+    createCrateFromFilesZip?: (id: string, zip: File) => Promise<void>
 
     /**
      * Return the entire ro-crate-metadata.json fully flattened as a JavaScript object
@@ -136,7 +134,7 @@ declare interface CrateServiceProvider {
      * @param zip zip buffer to upload and unpack
      * @returns true on success
      */
-    uploadCrateFileZip?: (crateId: string, zip: Buffer) => boolean
+    uploadCrateFileZip?: (crateId: string, zip: File) => boolean
 
     /**
      * Get the crate archive. This function should initiate a download or save dialog (or similar)

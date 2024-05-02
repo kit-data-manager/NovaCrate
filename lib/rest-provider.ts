@@ -1,7 +1,7 @@
 import { isContextualEntity, isFolderDataEntity, isRootEntity } from "@/lib/utils"
 
 export class RestProvider implements CrateServiceProvider {
-    createCrateFromFilesZip(id: string, zip: Buffer): Promise<void> {
+    createCrateFromFilesZip(id: string, zip: File): Promise<void> {
         throw "Not implemented"
     }
 
@@ -21,16 +21,37 @@ export class RestProvider implements CrateServiceProvider {
         throw "Not implemented"
     }
 
-    uploadCrateFileZip(crateId: string, zip: Buffer): boolean {
+    uploadCrateFileZip(crateId: string, zip: File): boolean {
         throw "Not implemented"
     }
 
-    createCrate(id: string): Promise<void> {
-        throw "Not implemented"
+    async createCrate() {
+        const request = await fetch("http://localhost:8080/crates/new", {
+            method: "POST"
+        })
+        if (request.ok) {
+            const response = await request.json()
+            return response.id + ""
+        } else {
+            throw "Failed to upload crate: " + request.status
+        }
     }
 
-    createCrateFromCrateZip(zip: Buffer): Promise<void> {
-        throw "Not implemented"
+    async createCrateFromCrateZip(zip: File) {
+        if (zip.type !== "application/zip") throw "Unsupported file type " + zip.type
+        const body = new FormData()
+        body.append("file", zip)
+
+        const request = await fetch("http://localhost:8080/crates", {
+            method: "POST",
+            body
+        })
+        if (request.ok) {
+            const response = await request.json()
+            return response.id + ""
+        } else {
+            throw "Failed to upload crate: " + request.status
+        }
     }
 
     createEntity(crateId: string, entityData: IFlatEntity): Promise<boolean> {
