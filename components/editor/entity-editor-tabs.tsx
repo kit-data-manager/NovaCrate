@@ -4,7 +4,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef } from "react"
 import { EntityEditorTabsContext, IEntityEditorTab } from "@/components/entity-tabs-provider"
 import { Diff, getEntityDisplayName } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Braces, Plus, XIcon } from "lucide-react"
+import { Package, Plus, XIcon } from "lucide-react"
 import { EntityIcon } from "@/components/entity-icon"
 import { EntityEditor } from "@/components/editor/entity-editor"
 import { GlobalModalContext } from "@/components/global-modals-provider"
@@ -15,6 +15,8 @@ import {
     ContextMenuItem,
     ContextMenuTrigger
 } from "@/components/ui/context-menu"
+import { CrateDataContext } from "@/components/crate-data-provider"
+import { Skeleton } from "@/components/ui/skeleton"
 
 function Tab({
     tab,
@@ -26,8 +28,10 @@ function Tab({
     entitiesChangelist: Map<string, Diff>
 }) {
     const entity = useEditorState((store) => store.entities.get(tab.entityId))
+    const entitiesSize = useEditorState((store) => store.entities.size)
     const { focusTab, closeTab, closeOtherTabs, closeAllTabs } = useContext(EntityEditorTabsContext)
     const { showSaveEntityChangesModal } = useContext(GlobalModalContext)
+    const { crateDataIsLoading } = useContext(CrateDataContext)
 
     const button = useRef<HTMLButtonElement>(null)
 
@@ -55,23 +59,22 @@ function Tab({
     })
 
     useEffect(() => {
-        if (!entity) {
+        if (!entity && !crateDataIsLoading && entitiesSize > 0) {
             console.warn("Closed a tab because the entity could not be found. ", tab)
             close()
         }
-    }, [close, entity, tab])
+    }, [close, crateDataIsLoading, entitiesSize, entity, tab])
 
     if (!entity)
         return (
             <Button
                 variant="tab"
                 data-active={active}
-                className={`cursor-default text-destructive ${active ? "pr-1" : ""}`}
+                className={`cursor-default ${active ? "pr-1" : ""}`}
                 ref={button}
             >
-                <div className={`ml-1 transition-colors max-w-[300px] truncate`}>
-                    Entity not found
-                </div>
+                <Skeleton className="mr-2 h-6 w-6 bg-muted-foreground/30" />
+                <Skeleton className="h-6 w-32 bg-muted-foreground/30 mr-2" />
                 <div
                     onClick={(e) => {
                         e.stopPropagation()
@@ -162,6 +165,7 @@ function Tabs({ tabs, currentTab }: { tabs: IEntityEditorTab[]; currentTab?: IEn
 
 export function EntityEditorTabs() {
     const { tabs, activeTabEntityID } = useContext(EntityEditorTabsContext)
+    const { showCreateEntityModal } = useContext(GlobalModalContext)
 
     const currentTab = useMemo(() => {
         return tabs.find((tab) => tab.entityId === activeTabEntityID)
@@ -169,12 +173,12 @@ export function EntityEditorTabs() {
 
     if (tabs.length == 0) {
         return (
-            <div className="flex flex-col justify-center items-center h-full text-muted-foreground">
-                <Braces className="w-52 h-52 mb-20 text-muted" />
+            <div className="flex flex-col justify-center items-center h-full">
+                <Package className="w-52 h-52 mb-20 text-muted" />
                 <div>Select an Entity on the left</div>
-                <div className="mt-2">or</div>
+                <div className="mt-2 text-muted-foreground">or</div>
                 <div>
-                    <Button variant="link">
+                    <Button variant="link" onClick={() => showCreateEntityModal()}>
                         <Plus className="w-4 h-4 mr-2" /> Create a new Entity
                     </Button>
                 </div>

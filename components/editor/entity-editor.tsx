@@ -27,6 +27,7 @@ import { useEditorState } from "@/components/editor-state"
 import { GlobalModalContext } from "@/components/global-modals-provider"
 import { FindReferencesModal } from "@/components/editor/find-references-modal"
 import { SaveAsModal } from "@/components/editor/save-as-modal"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function EntityEditor({ entityId }: { entityId: string }) {
     const { saveEntity, isSaving, saveError } = useContext(CrateDataContext)
@@ -154,6 +155,32 @@ export function EntityEditor({ entityId }: { entityId: string }) {
 
         return () => window.removeEventListener("keydown", handler)
     }, [hasUnsavedChanges, onSave])
+
+    if (!entity) {
+        return (
+            <div>
+                <div className="flex mb-2 gap-2 p-2 bg-accent">
+                    <Skeleton className="w-10 h-7 my-1 bg-muted-foreground/30" />
+                    <Skeleton className="w-32 h-7 my-1 bg-muted-foreground/30" />
+                    <Skeleton className="w-32 h-7 my-1 bg-muted-foreground/30" />
+                    <div className="grow" />
+                    <Skeleton className="w-32 h-7 my-1 bg-muted-foreground/30" />
+                    <Skeleton className="w-10 h-7 my-1 bg-muted-foreground/30" />
+                </div>
+
+                <div className="p-4 flex flex-col gap-4">
+                    <Skeleton className="h-10 w-52 mb-10 mt-4" />
+
+                    {[0, 0, 0, 0, 0, 0].map((_, i) => (
+                        <div key={i} className="grid grid-cols-2 mr-10">
+                            <Skeleton className="h-6 w-52" />
+                            <Skeleton className="h-6 w-full" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="relative">

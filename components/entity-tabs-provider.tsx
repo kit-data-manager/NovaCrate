@@ -58,8 +58,8 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
     const entitiesChangelist = useEditorState((store) => store.getEntitiesChangelist())
     const entities = useEditorState.useEntities()
 
-    const [tabs, setTabs] = useState<IEntityEditorTab[]>([])
-    const [focusedEntity, setFocusedEntity] = useState("")
+    const [tabs, setTabs] = useState<IEntityEditorTab[]>([{ entityId: "./" }])
+    const [focusedEntity, setFocusedEntity] = useState("./")
     const [focusedProperty, setFocusedProperty] = useState("")
 
     useEffect(() => {
