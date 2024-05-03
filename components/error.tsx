@@ -11,9 +11,9 @@ function cn(size?: "md" | "xl") {
 
 function cnIcon(size?: "md" | "xl") {
     if (!size || size == "md") {
-        return "w-4 h-4 mr-2"
+        return "w-4 h-4 mr-2 shrink-0"
     } else {
-        return "w-8 h-8 mr-4"
+        return "w-8 h-8 mr-4 shrink-0"
     }
 }
 

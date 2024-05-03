@@ -64,7 +64,8 @@ export function DeleteEntityModal({
                 <Error text={deleteError} />
                 <div>
                     Are you sure that you want to delete{" "}
-                    {entity ? getEntityDisplayName(entity) : <i>Unresolved Entity</i>}?
+                    {entity ? getEntityDisplayName(entity) : <i>Unresolved Entity</i>}? The
+                    associated data will be <b>permanently deleted</b>.
                 </div>
                 <div className="flex justify-between">
                     <Button variant="outline" onClick={onCloseClick} disabled={isDeleting}>

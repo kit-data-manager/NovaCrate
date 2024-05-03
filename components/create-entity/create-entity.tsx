@@ -7,12 +7,14 @@ import { ArrowLeft, Plus } from "lucide-react"
 
 export function CreateEntity({
     onBackClick,
-    onCreateClick
+    onCreateClick,
+    defaultName
 }: {
     onBackClick: () => void
     onCreateClick: (id: string, name: string) => void
+    defaultName?: string
 }) {
-    const [name, setName] = useState("")
+    const [name, setName] = useState(defaultName || "")
     const [identifier, setIdentifier] = useState<null | string>(null)
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {

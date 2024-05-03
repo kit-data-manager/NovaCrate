@@ -151,9 +151,9 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                 if (!getState().entities.has(entityId)) {
                     setState((state) => {
                         state.entities.set(entityId, {
+                            ...properties,
                             "@id": entityId,
-                            "@type": types,
-                            ...properties
+                            "@type": types
                         })
 
                         if (autoReference) {
