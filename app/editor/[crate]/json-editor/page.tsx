@@ -56,7 +56,7 @@ export default function JSONEditorPage() {
         <div className="w-full h-full flex flex-col">
             <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
                 <Braces className="w-4 h-4 shrink-0 mr-2" />
-                JSON-Editor
+                JSON Editor
             </div>
             <div className="flex gap-2 sticky top-0 z-10 p-2 px-4 bg-accent items-center">
                 <Noticer hasErrors={editorHasErrors} hasChanges={editorHasChanges} />

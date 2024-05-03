@@ -24,7 +24,8 @@ export function UnknownTypeWarning({ entityType }: { entityType: string | string
                     <div>
                         The following types of this entity could not be resolved in the current
                         context: {notResolvable.map((e) => e.type).join(", ")}. Some features will
-                        be limited.
+                        be limited. Please try to specify a valid type using the JSON Editor or add
+                        the missing type to your context in the Context tab.
                     </div>
                 }
             />

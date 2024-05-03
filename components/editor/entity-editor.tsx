@@ -26,6 +26,7 @@ import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { useEditorState } from "@/components/editor-state"
 import { GlobalModalContext } from "@/components/global-modals-provider"
 import { FindReferencesModal } from "@/components/editor/find-references-modal"
+import { SaveAsModal } from "@/components/editor/save-as-modal"
 
 export function EntityEditor({ entityId }: { entityId: string }) {
     const { saveEntity, isSaving, saveError } = useContext(CrateDataContext)
@@ -43,14 +44,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
 
     const [addPropertyModelOpen, setAddPropertyModelOpen] = useState(false)
     const [findReferencesModalOpen, setFindReferencesModalOpen] = useState(false)
-
-    const addPropertyModelOpenChange = useCallback((isOpen: boolean) => {
-        setAddPropertyModelOpen(isOpen)
-    }, [])
-
-    const findReferencesModalOpenChange = useCallback((isOpen: boolean) => {
-        setFindReferencesModalOpen(isOpen)
-    }, [])
+    const [saveAsModalOpen, setSaveAsModalOpen] = useState(false)
 
     const openAddPropertyModal = useCallback(() => {
         setAddPropertyModelOpen(true)
@@ -58,6 +52,10 @@ export function EntityEditor({ entityId }: { entityId: string }) {
 
     const openFindReferencesModal = useCallback(() => {
         setFindReferencesModalOpen(true)
+    }, [])
+
+    const openSaveAsModal = useCallback(() => {
+        setSaveAsModalOpen(true)
     }, [])
 
     const typeArray = useMemo(() => {
@@ -162,14 +160,15 @@ export function EntityEditor({ entityId }: { entityId: string }) {
             <AddPropertyModal
                 open={addPropertyModelOpen}
                 onPropertyAdd={onPropertyAdd}
-                onOpenChange={addPropertyModelOpenChange}
+                onOpenChange={setAddPropertyModelOpen}
                 typeArray={typeArray}
             />
             <FindReferencesModal
                 open={findReferencesModalOpen}
-                onOpenChange={findReferencesModalOpenChange}
+                onOpenChange={setFindReferencesModalOpen}
                 entityId={entityId}
             />
+            <SaveAsModal open={saveAsModalOpen} onOpenChange={setSaveAsModalOpen} entity={entity} />
 
             <EntityEditorHeader
                 hasUnsavedChanges={hasUnsavedChanges}
@@ -179,6 +178,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
                 onDelete={onDelete}
                 openAddPropertyModal={openAddPropertyModal}
                 openFindReferencesModal={openFindReferencesModal}
+                openSaveAsModal={isDataEntity ? undefined : openSaveAsModal}
             />
 
             <div className="p-4 mr-10">
@@ -191,17 +191,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
                         >
                             {isRootEntity ? "Root" : isDataEntity ? "Data" : "Contextual"}
                         </div>
-                        {/*<div className="border-success border text-success px-1.5 rounded ml-2 text-sm flex gap-1 items-center">*/}
-                        {/*    <Check className="w-4 h-4" /> ORCID*/}
-                        {/*</div>*/}
                     </h2>
-
-                    {/*<div className="flex items-center mr-2">*/}
-                    {/*    <Switch id="easy-mode" />*/}
-                    {/*    <Label className="p-2" htmlFor="easy-mode">*/}
-                    {/*        Easy Mode*/}
-                    {/*    </Label>*/}
-                    {/*</div>*/}
                 </div>
 
                 <WebWorkerWarning />

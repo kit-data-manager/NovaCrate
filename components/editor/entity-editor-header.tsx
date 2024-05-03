@@ -13,6 +13,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { memo } from "react"
@@ -24,7 +25,8 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
     onRevert,
     onDelete,
     openAddPropertyModal,
-    openFindReferencesModal
+    openFindReferencesModal,
+    openSaveAsModal
 }: {
     hasUnsavedChanges: boolean
     isSaving: boolean
@@ -33,6 +35,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
     onDelete(): void
     openAddPropertyModal(): void
     openFindReferencesModal(): void
+    openSaveAsModal?: () => void
 }) {
     return (
         <div className="flex mb-2 gap-2 sticky top-0 z-10 p-2 bg-accent">
@@ -50,9 +53,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
             >
                 <Search className="w-4 h-4 mr-1" /> Find References
             </Button>
-            <Button size="sm" variant="destructive" className="text-xs" onClick={onDelete}>
-                <Trash className="w-4 h-4 mr-1" /> Delete Entity
-            </Button>
+
             <div className="grow"></div>
             <div className="flex gap-2 items-center text-sm">
                 {hasUnsavedChanges ? (
@@ -79,11 +80,17 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem>
-                            <Save className="w-4 h-4 mr-2" /> Save as...
-                        </DropdownMenuItem>
+                        {openSaveAsModal ? (
+                            <DropdownMenuItem onClick={openSaveAsModal}>
+                                <Save className="w-4 h-4 mr-2" /> Save as...
+                            </DropdownMenuItem>
+                        ) : null}
                         <DropdownMenuItem onClick={() => onRevert()}>
                             <Undo2 className="w-4 h-4 mr-2" /> Revert Changes
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="bg-destructive" onClick={onDelete}>
+                            <Trash className="w-4 h-4 mr-2" /> Delete Entity
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
