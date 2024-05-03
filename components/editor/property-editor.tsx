@@ -114,7 +114,7 @@ export const PropertyEditor = memo(function PropertyEditor({
 
             const timer = setTimeout(() => {
                 unFocusProperty()
-            }, 2000)
+            }, 1000)
 
             return () => clearTimeout(timer)
         }
