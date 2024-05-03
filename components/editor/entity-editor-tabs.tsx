@@ -163,7 +163,11 @@ function Tabs({ tabs, currentTab }: { tabs: IEntityEditorTab[]; currentTab?: IEn
     )
 }
 
-export function EntityEditorTabs() {
+export function EntityEditorTabs({
+    toggleEntityBrowserPanel
+}: {
+    toggleEntityBrowserPanel(): void
+}) {
     const { tabs, activeTabEntityID } = useContext(EntityEditorTabsContext)
     const { showCreateEntityModal } = useContext(GlobalModalContext)
 
@@ -190,7 +194,11 @@ export function EntityEditorTabs() {
                 <Tabs tabs={tabs} currentTab={currentTab} />
                 <div className="overflow-auto">
                     {currentTab ? (
-                        <EntityEditor key={currentTab.entityId} entityId={currentTab.entityId} />
+                        <EntityEditor
+                            key={currentTab.entityId}
+                            entityId={currentTab.entityId}
+                            toggleEntityBrowserPanel={toggleEntityBrowserPanel}
+                        />
                     ) : null}
                 </div>
             </div>
