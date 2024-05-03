@@ -10,10 +10,15 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SchemaNode } from "@/lib/crate-verify/SchemaGraph"
-import { useCallback, useMemo } from "react"
+import { memo, useCallback, useContext, useMemo, useState } from "react"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
 import { camelCaseReadable } from "@/lib/utils"
+import { useAsync } from "@/components/use-async"
+import { Error } from "@/components/error"
+import { useEditorState } from "@/components/editor-state"
+import { CrateVerifyContext } from "@/components/crate-verify-provider"
+import { CheckedState } from "@radix-ui/react-checkbox"
 
 export interface PossibleProperty {
     propertyName: string
@@ -22,7 +27,7 @@ export interface PossibleProperty {
     comment: SchemaNode["comment"]
 }
 
-function AddPropertyModalEntry({
+const AddPropertyModalEntry = memo(function AddPropertyModalEntry({
     property,
     onSelect
 }: {
@@ -39,9 +44,12 @@ function AddPropertyModalEntry({
         <CommandItem
             className="text-md"
             key={property.propertyName}
-            value={property.propertyName}
-            onSelect={(v) =>
-                onSelect(v, canBeText ? PropertyEditorTypes.Text : PropertyEditorTypes.Reference)
+            value={readableName}
+            onSelect={() =>
+                onSelect(
+                    property.propertyName,
+                    canBeText ? PropertyEditorTypes.Text : PropertyEditorTypes.Reference
+                )
             }
         >
             <div className="flex flex-col max-w-full w-full py-1">
@@ -57,21 +65,27 @@ function AddPropertyModalEntry({
             </div>
         </CommandItem>
     )
-}
+})
 
 export function AddPropertyModal({
     open,
     onPropertyAdd,
     onOpenChange,
-    possibleProperties,
-    possiblePropertiesPending
+    typeArray
 }: {
     open: boolean
     onPropertyAdd: (propertyName: string, values?: FlatEntitySinglePropertyTypes[]) => void
     onOpenChange: (open: boolean) => void
-    possibleProperties?: PossibleProperty[]
-    possiblePropertiesPending: boolean
+    typeArray: string[]
 }) {
+    const crateContext = useEditorState.useCrateContext()
+    const {
+        isReady: crateVerifyReady,
+        getClassProperties,
+        getAllProperties
+    } = useContext(CrateVerifyContext)
+    const [bypassRestrictions, setBypassRestrictions] = useState(false)
+
     const onSelect = useCallback(
         (propertyName: string, propertyType: PropertyEditorTypes) => {
             onOpenChange(false)
@@ -84,12 +98,64 @@ export function AddPropertyModal({
         [onOpenChange, onPropertyAdd]
     )
 
+    const possiblePropertiesResolver = useCallback(
+        async (types: string[]) => {
+            if (crateVerifyReady) {
+                const data = bypassRestrictions
+                    ? await getAllProperties()
+                    : await getClassProperties(
+                          types
+                              .map((type) => crateContext.resolve(type))
+                              .filter((s) => typeof s === "string") as string[]
+                      )
+                return data
+                    .map((s) => {
+                        return {
+                            ...s,
+                            range: s.range.map((r) => r["@id"]),
+                            rangeReadable: s.range
+                                .map((r) => r["@id"])
+                                .map((r) => crateContext.reverse(r))
+                                .filter((r) => typeof r === "string"),
+                            propertyName: crateContext.reverse(s["@id"])
+                        }
+                    })
+                    .filter((s) => typeof s.propertyName === "string") as PossibleProperty[]
+            }
+        },
+        [bypassRestrictions, crateContext, crateVerifyReady, getAllProperties, getClassProperties]
+    )
+
+    const handleBypassCheckedChange = useCallback((s: CheckedState) => {
+        if (!s) {
+            setBypassRestrictions(true)
+        } else setBypassRestrictions(false)
+    }, [])
+
+    const {
+        data: possibleProperties,
+        error: possiblePropertiesError,
+        isPending: possiblePropertiesPending
+    } = useAsync(
+        crateVerifyReady ? (bypassRestrictions ? ["*"] : typeArray) : null,
+        possiblePropertiesResolver
+    )
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Select a Property</DialogTitle>
                 </DialogHeader>
+
+                <Error
+                    className="mt-4"
+                    text={
+                        possiblePropertiesError
+                            ? "Error while determining properties: " + possiblePropertiesError
+                            : ""
+                    }
+                />
 
                 <Command className="py-2">
                     <CommandInput placeholder="Search..." />
@@ -118,8 +184,12 @@ export function AddPropertyModal({
                 </Command>
 
                 <div className="flex gap-2 items-center">
-                    <Checkbox checked id="onlyShowAllowed-create" />
-                    <label htmlFor="onlyShowMatching">Only show allowed Properties</label>
+                    <Checkbox
+                        checked={!bypassRestrictions}
+                        onCheckedChange={handleBypassCheckedChange}
+                        id="onlyShowAllowed-create"
+                    />
+                    <label htmlFor="onlyShowAllowed-create">Only show allowed Properties</label>
                 </div>
             </DialogContent>
         </Dialog>

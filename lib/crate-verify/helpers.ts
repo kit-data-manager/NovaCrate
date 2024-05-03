@@ -90,6 +90,25 @@ export function getAllClasses(): SlimClass[] {
         })
 }
 
+export function getAllProperties(): SlimProperty[] {
+    return schemaGraph
+        .getAllNodes()
+        .filter((n) => n.isProperty())
+        .map((p) => {
+            return {
+                "@id": schemaGraph.expandIRI(p["@id"]),
+                comment: p.comment,
+                range: p.range
+                    ? toArray(p.range).map((r) => {
+                          return {
+                              "@id": schemaGraph.expandIRI(r["@id"])
+                          }
+                      })
+                    : []
+            }
+        })
+}
+
 export function getAllComments(types: string[]): SlimClass[] {
     const result: SlimClass[] = []
     for (const id of types) {
