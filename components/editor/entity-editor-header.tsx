@@ -26,7 +26,8 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
     onDelete,
     openAddPropertyModal,
     openFindReferencesModal,
-    openSaveAsModal
+    openSaveAsModal,
+    toggleEntityBrowserPanel
 }: {
     hasUnsavedChanges: boolean
     isSaving: boolean
@@ -36,10 +37,16 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
     openAddPropertyModal(): void
     openFindReferencesModal(): void
     openSaveAsModal?: () => void
+    toggleEntityBrowserPanel(): void
 }) {
     return (
         <div className="flex mb-2 gap-2 sticky top-0 z-10 p-2 bg-accent">
-            <Button size="sm" variant="outline" className="text-xs">
+            <Button
+                size="sm"
+                variant="outline"
+                className="text-xs"
+                onClick={toggleEntityBrowserPanel}
+            >
                 <PanelLeftClose className="w-4 h-4" />
             </Button>
             <Button size="sm" variant="outline" className="text-xs" onClick={openAddPropertyModal}>

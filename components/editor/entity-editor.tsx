@@ -29,7 +29,13 @@ import { FindReferencesModal } from "@/components/editor/find-references-modal"
 import { SaveAsModal } from "@/components/editor/save-as-modal"
 import { Skeleton } from "@/components/ui/skeleton"
 
-export function EntityEditor({ entityId }: { entityId: string }) {
+export function EntityEditor({
+    entityId,
+    toggleEntityBrowserPanel
+}: {
+    entityId: string
+    toggleEntityBrowserPanel(): void
+}) {
     const { saveEntity, isSaving, saveError } = useContext(CrateDataContext)
     const entity = useEditorState((store) => store.entities.get(entityId))
     const originalEntity = useEditorState((store) => store.initialEntities.get(entityId))
@@ -206,6 +212,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
                 openAddPropertyModal={openAddPropertyModal}
                 openFindReferencesModal={openFindReferencesModal}
                 openSaveAsModal={isDataEntity ? undefined : openSaveAsModal}
+                toggleEntityBrowserPanel={toggleEntityBrowserPanel}
             />
 
             <div className="p-4 mr-10">
