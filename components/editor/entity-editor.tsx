@@ -25,6 +25,7 @@ import { UnknownTypeWarning } from "@/components/editor/unknown-type-warning"
 import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { useEditorState } from "@/components/editor-state"
 import { GlobalModalContext } from "@/components/global-modals-provider"
+import { FindReferencesModal } from "@/components/editor/find-references-modal"
 
 export function EntityEditor({ entityId }: { entityId: string }) {
     const { saveEntity, isSaving, saveError } = useContext(CrateDataContext)
@@ -41,13 +42,22 @@ export function EntityEditor({ entityId }: { entityId: string }) {
     const { showDeleteEntityModal } = useContext(GlobalModalContext)
 
     const [addPropertyModelOpen, setAddPropertyModelOpen] = useState(false)
+    const [findReferencesModalOpen, setFindReferencesModalOpen] = useState(false)
 
     const addPropertyModelOpenChange = useCallback((isOpen: boolean) => {
         setAddPropertyModelOpen(isOpen)
     }, [])
 
+    const findReferencesModalOpenChange = useCallback((isOpen: boolean) => {
+        setFindReferencesModalOpen(isOpen)
+    }, [])
+
     const openAddPropertyModal = useCallback(() => {
         setAddPropertyModelOpen(true)
+    }, [])
+
+    const openFindReferencesModal = useCallback(() => {
+        setFindReferencesModalOpen(true)
     }, [])
 
     const typeArray = useMemo(() => {
@@ -155,6 +165,11 @@ export function EntityEditor({ entityId }: { entityId: string }) {
                 onOpenChange={addPropertyModelOpenChange}
                 typeArray={typeArray}
             />
+            <FindReferencesModal
+                open={findReferencesModalOpen}
+                onOpenChange={findReferencesModalOpenChange}
+                entityId={entityId}
+            />
 
             <EntityEditorHeader
                 hasUnsavedChanges={hasUnsavedChanges}
@@ -163,6 +178,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
                 onRevert={onRevert}
                 onDelete={onDelete}
                 openAddPropertyModal={openAddPropertyModal}
+                openFindReferencesModal={openFindReferencesModal}
             />
 
             <div className="p-4 mr-10">

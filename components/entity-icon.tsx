@@ -2,7 +2,7 @@ import { useMemo } from "react"
 import { isDataEntity, isRootEntity } from "@/lib/utils"
 
 const entityBrowserItemIconBaseCN =
-    "min-w-5 min-h-5 flex justify-center items-center border mr-2  rounded font-bold text-xs"
+    "min-w-5 min-h-5 flex justify-center items-center border mr-2 rounded font-bold text-xs shrink-0"
 
 export function EntityIcon(props: { entity?: IFlatEntity; size?: "md" | "lg" }) {
     const sizeMod = useMemo(() => {

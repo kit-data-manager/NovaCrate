@@ -23,7 +23,8 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
     hasUnsavedChanges,
     onRevert,
     onDelete,
-    openAddPropertyModal
+    openAddPropertyModal,
+    openFindReferencesModal
 }: {
     hasUnsavedChanges: boolean
     isSaving: boolean
@@ -31,6 +32,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
     onRevert(): void
     onDelete(): void
     openAddPropertyModal(): void
+    openFindReferencesModal(): void
 }) {
     return (
         <div className="flex mb-2 gap-2 sticky top-0 z-10 p-2 bg-accent">
@@ -40,7 +42,12 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
             <Button size="sm" variant="outline" className="text-xs" onClick={openAddPropertyModal}>
                 <Plus className={"w-4 h-4 mr-1"} /> Add Property
             </Button>
-            <Button size="sm" variant="outline" className="text-xs">
+            <Button
+                size="sm"
+                variant="outline"
+                className="text-xs"
+                onClick={openFindReferencesModal}
+            >
                 <Search className="w-4 h-4 mr-1" /> Find References
             </Button>
             <Button size="sm" variant="destructive" className="text-xs" onClick={onDelete}>
