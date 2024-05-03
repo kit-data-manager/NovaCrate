@@ -21,7 +21,7 @@ export const AddEntryDropdown = memo(function AddEntryDropdown(props: {
 
     const propertyCanBe = usePropertyCanBe(props.propertyRange)
 
-    if (props.propertyName === "@id") return null
+    if (props.propertyName === "@id" || props.propertyName === "@type") return null
 
     return (
         <DropdownMenu>

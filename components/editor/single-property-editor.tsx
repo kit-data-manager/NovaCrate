@@ -58,7 +58,7 @@ export const SinglePropertyEditor = memo(function SinglePropertyEditor({
 
     if (propertyName === "@type") return <TypeField value={value as string} onChange={() => {}} />
 
-    if (propertyName === "@id") return <IDField value={value as string} onChange={() => {}} />
+    if (propertyName === "@id") return <IDField value={value as string} />
 
     if (isReference(value))
         return (
