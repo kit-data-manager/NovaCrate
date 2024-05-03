@@ -75,6 +75,7 @@ export function AddPropertyModal({
     const onSelect = useCallback(
         (propertyName: string, propertyType: PropertyEditorTypes) => {
             onOpenChange(false)
+            console.log(propertyType)
             onPropertyAdd(
                 propertyName,
                 propertyType === PropertyEditorTypes.Reference ? [{ "@id": "" }] : [""]

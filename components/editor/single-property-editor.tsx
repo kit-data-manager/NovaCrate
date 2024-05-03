@@ -4,7 +4,7 @@ import { IDField } from "@/components/editor/id-field"
 import { isReference } from "@/lib/utils"
 import { ReferenceField } from "@/components/editor/reference-field"
 import { TextField } from "@/components/editor/text-field"
-import { PropertyEditorProps } from "@/components/editor/property-editor"
+import { PropertyEditorProps, PropertyEditorTypes } from "@/components/editor/property-editor"
 import { SlimClass } from "@/lib/crate-verify/helpers"
 
 export interface SinglePropertyEditorProps {
@@ -44,6 +44,18 @@ export const SinglePropertyEditor = memo(function SinglePropertyEditor({
         onRemovePropertyEntry(propertyName, valueIndex)
     }, [onRemovePropertyEntry, propertyName, valueIndex])
 
+    const onChangeType = useCallback(
+        (type: PropertyEditorTypes) => {
+            if (type === PropertyEditorTypes.Reference) {
+                if (!isReference(value))
+                    onModifyProperty(propertyName, valueIndex, { "@id": value })
+            } else {
+                if (isReference(value)) onModifyProperty(propertyName, valueIndex, value["@id"])
+            }
+        },
+        [onModifyProperty, propertyName, value, valueIndex]
+    )
+
     if (propertyName === "@type") return <TypeField value={value as string} onChange={() => {}} />
 
     if (propertyName === "@id") return <IDField value={value as string} onChange={() => {}} />
@@ -54,6 +66,7 @@ export const SinglePropertyEditor = memo(function SinglePropertyEditor({
                 entityId={entityId}
                 value={value}
                 onChange={onReferenceChange}
+                onChangeType={onChangeType}
                 propertyName={propertyName}
                 valueIdx={valueIndex}
                 propertyRange={propertyRange}
@@ -65,6 +78,7 @@ export const SinglePropertyEditor = memo(function SinglePropertyEditor({
         <TextField
             value={value}
             onChange={onTextChange}
+            onChangeType={onChangeType}
             propertyRange={propertyRange}
             onRemoveEntry={onRemoveEntry}
         />
