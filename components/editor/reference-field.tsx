@@ -11,11 +11,13 @@ import { SlimClass } from "@/lib/crate-verify/helpers"
 import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { useEditorState } from "@/components/editor-state"
 import { EntityIcon } from "@/components/entity-icon"
+import { PropertyEditorTypes } from "@/components/editor/property-editor"
 
 export const ReferenceField = memo(function ReferenceField({
     entityId,
     value,
     onChange,
+    onChangeType,
     valueIdx,
     propertyRange,
     onRemoveEntry,
@@ -24,6 +26,7 @@ export const ReferenceField = memo(function ReferenceField({
     entityId: string
     value: IReference
     onChange: (value: IReference) => void
+    onChangeType: (type: PropertyEditorTypes) => void
     propertyName: string
     valueIdx: number
     propertyRange?: SlimClass[]
@@ -143,6 +146,7 @@ export const ReferenceField = memo(function ReferenceField({
                 isReference
                 onModifyReferenceProperty={onChange}
                 onRemoveEntry={onRemoveEntry}
+                onChangeType={onChangeType}
             />
         </div>
     )

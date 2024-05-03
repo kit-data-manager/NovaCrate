@@ -3,15 +3,18 @@ import { Input } from "@/components/ui/input"
 import { TypeIcon } from "lucide-react"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { SlimClass } from "@/lib/crate-verify/helpers"
+import { PropertyEditorTypes } from "@/components/editor/property-editor"
 
 export const TextField = memo(function TextField({
     value,
     onChange,
+    onChangeType,
     propertyRange,
     onRemoveEntry
 }: {
     value: string
     onChange: (value: string) => void
+    onChangeType: (type: PropertyEditorTypes) => void
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
@@ -34,6 +37,7 @@ export const TextField = memo(function TextField({
                 propertyRange={propertyRange}
                 onModifyTextLikeProperty={onChange}
                 onRemoveEntry={onRemoveEntry}
+                onChangeType={onChangeType}
             />
         </div>
     )

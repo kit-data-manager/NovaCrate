@@ -35,7 +35,7 @@ export function usePropertyCanBe(_propertyRange?: SlimClass[] | string[]) {
     const canBeNumber = useMemo(() => {
         return propertyRange
             ? propertyRange.includes(SCHEMA_ORG_NUMBER) ||
-                  SCHEMA_ORG_NUMBERLIKE.find((s) => propertyRange.includes(s))
+                  SCHEMA_ORG_NUMBERLIKE.find((s) => propertyRange.includes(s)) !== undefined
             : undefined
     }, [propertyRange])
 
@@ -47,9 +47,14 @@ export function usePropertyCanBe(_propertyRange?: SlimClass[] | string[]) {
         return propertyRange
             ? propertyRange.length === 0 ||
                   propertyRange.includes(SCHEMA_ORG_TEXT) ||
-                  SCHEMA_ORG_TEXTLIKE.find((s) => propertyRange.includes(s))
+                  SCHEMA_ORG_TEXTLIKE.find((s) => propertyRange.includes(s)) !== undefined ||
+                  canBeTime ||
+                  canBeBoolean ||
+                  canBeDate ||
+                  canBeDateTime ||
+                  canBeNumber
             : undefined
-    }, [propertyRange])
+    }, [canBeBoolean, canBeDate, canBeDateTime, canBeNumber, canBeTime, propertyRange])
 
     const canBeReference = useMemo(() => {
         return propertyRange

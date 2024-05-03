@@ -13,18 +13,21 @@ import { ArrowLeftRight, EllipsisVertical, Eraser, Trash, Unlink } from "lucide-
 import TypeSelectDropdown from "@/components/editor/type-select-dropdown"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
 import { SlimClass } from "@/lib/crate-verify/helpers"
+import { PropertyEditorTypes } from "@/components/editor/property-editor"
 
 export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
     propertyRange,
     isReference,
     onModifyTextLikeProperty,
     onModifyReferenceProperty,
+    onChangeType,
     onRemoveEntry
 }: {
     propertyRange?: SlimClass[]
     isReference?: boolean
     onModifyTextLikeProperty?: (value: string) => void
     onModifyReferenceProperty?: (value: IReference) => void
+    onChangeType: (type: PropertyEditorTypes) => void
     onRemoveEntry: () => void
 }) {
     const canClear = useMemo(() => {
@@ -70,7 +73,7 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
                     <TypeSelectDropdown
                         sub
                         propertyCanBe={propertyCanBe}
-                        onPropertyTypeSelect={() => {}}
+                        onPropertyTypeSelect={onChangeType}
                     />
                 </DropdownMenuSub>
 
