@@ -1,7 +1,7 @@
 "use client"
 
 import { Skeleton } from "@/components/ui/skeleton"
-import { useCallback, useContext, useState } from "react"
+import { useCallback, useContext, useEffect, useState } from "react"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { Button } from "@/components/ui/button"
 import {
@@ -24,6 +24,8 @@ import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/ent
 import { EntityIcon } from "./entity-icon"
 import { GlobalModalContext } from "@/components/global-modals-provider"
 import { useEditorState } from "@/components/editor-state"
+
+type DefaultSectionOpen = boolean | "indeterminate"
 
 export function EntityBrowserItem(props: { entityId: string }) {
     const { openTab } = useContext(EntityEditorTabsContext)
@@ -56,7 +58,11 @@ export function EntityBrowserItem(props: { entityId: string }) {
     )
 }
 
-export function EntityBrowserSection(props: { section: "Data" | "Contextual" }) {
+export function EntityBrowserSection(props: {
+    section: "Data" | "Contextual"
+    defaultSectionOpen: DefaultSectionOpen
+    onSectionOpenChange(): void
+}) {
     const entities = useEditorState(
         (store) => {
             return Array.from(store.entities.entries())
@@ -81,11 +87,18 @@ export function EntityBrowserSection(props: { section: "Data" | "Contextual" }) 
         }
     )
 
-    const [open, setOpen] = useState(true)
+    const [open, setOpen] = useState(
+        props.defaultSectionOpen !== "indeterminate" ? props.defaultSectionOpen : true
+    )
+
+    useEffect(() => {
+        if (props.defaultSectionOpen !== "indeterminate") setOpen(props.defaultSectionOpen)
+    }, [props.defaultSectionOpen])
 
     const toggle = useCallback(() => {
         setOpen(!open)
-    }, [open])
+        props.onSectionOpenChange()
+    }, [open, props])
 
     return (
         <div>
@@ -112,7 +125,13 @@ export function EntityBrowserSection(props: { section: "Data" | "Contextual" }) 
     )
 }
 
-export function EntityBrowserContent() {
+export function EntityBrowserContent({
+    defaultSectionOpen,
+    onSectionOpenChange
+}: {
+    defaultSectionOpen: DefaultSectionOpen
+    onSectionOpenChange(): void
+}) {
     const crate = useContext(CrateDataContext)
 
     if (crate.crateDataIsLoading && !crate.crateData)
@@ -133,8 +152,16 @@ export function EntityBrowserContent() {
     return (
         <div className="flex flex-col p-2">
             <EntityBrowserItem entityId={"./"} />
-            <EntityBrowserSection section={"Data"} />
-            <EntityBrowserSection section={"Contextual"} />
+            <EntityBrowserSection
+                section={"Data"}
+                defaultSectionOpen={defaultSectionOpen}
+                onSectionOpenChange={onSectionOpenChange}
+            />
+            <EntityBrowserSection
+                section={"Contextual"}
+                defaultSectionOpen={defaultSectionOpen}
+                onSectionOpenChange={onSectionOpenChange}
+            />
         </div>
     )
 }
@@ -142,6 +169,19 @@ export function EntityBrowserContent() {
 export function EntityBrowser() {
     const crate = useContext(CrateDataContext)
     const { showCreateEntityModal } = useContext(GlobalModalContext)
+    const [defaultSectionOpen, setDefaultSectionOpen] = useState<DefaultSectionOpen>(true)
+
+    const collapseAllSections = useCallback(() => {
+        setDefaultSectionOpen(false)
+    }, [])
+
+    const expandAllSections = useCallback(() => {
+        setDefaultSectionOpen(true)
+    }, [])
+
+    const onSectionOpenChange = useCallback(() => {
+        setDefaultSectionOpen("indeterminate")
+    }, [])
 
     return (
         <div>
@@ -157,10 +197,15 @@ export function EntityBrowser() {
                 >
                     <Plus className={"w-4 h-4"} />
                 </Button>
-                <Button size="sm" variant="outline" className="text-xs">
+                <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs"
+                    onClick={collapseAllSections}
+                >
                     <ChevronsDownUp className={"w-4 h-4"} />
                 </Button>
-                <Button size="sm" variant="outline" className="text-xs">
+                <Button size="sm" variant="outline" className="text-xs" onClick={expandAllSections}>
                     <ChevronsUpDown className={"w-4 h-4"} />
                 </Button>
                 <div className="grow"></div>
@@ -176,7 +221,10 @@ export function EntityBrowser() {
                     />
                 </Button>
             </div>
-            <EntityBrowserContent />
+            <EntityBrowserContent
+                defaultSectionOpen={defaultSectionOpen}
+                onSectionOpenChange={onSectionOpenChange}
+            />
         </div>
     )
 }
