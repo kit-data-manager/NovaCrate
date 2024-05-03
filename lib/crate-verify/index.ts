@@ -3,6 +3,7 @@
 import {
     getAllClasses,
     getAllComments,
+    getAllProperties,
     getPossibleEntityProperties,
     getPropertyComment,
     getPropertyRange
@@ -83,6 +84,16 @@ addEventListener("message", (event) => {
         case "getAllClasses":
             try {
                 const data = getAllClasses()
+                return postMessage({ data, nonce: msg.nonce })
+            } catch (e) {
+                return postMessage({
+                    error: e + "",
+                    nonce: msg.nonce
+                })
+            }
+        case "getAllProperties":
+            try {
+                const data = getAllProperties()
                 return postMessage({ data, nonce: msg.nonce })
             } catch (e) {
                 return postMessage({

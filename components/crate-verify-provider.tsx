@@ -3,7 +3,8 @@ import {
     getPropertyRange as localGetPropertyRange,
     getPossibleEntityProperties as localGetEntityPossibleProperties,
     getAllComments as localGetAllComments,
-    getAllClasses as localGetAllClasses
+    getAllClasses as localGetAllClasses,
+    getAllProperties as localGetAllProperties
 } from "@/lib/crate-verify/helpers"
 import { createContext, PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
 
@@ -17,6 +18,7 @@ export interface ICrateVerifyContext {
     ) => Promise<ReturnType<typeof localGetEntityPossibleProperties>>
     getAllComments: (types: string[]) => Promise<ReturnType<typeof localGetAllComments>>
     getAllClasses: () => Promise<ReturnType<typeof localGetAllClasses>>
+    getAllProperties: () => Promise<ReturnType<typeof localGetAllProperties>>
 }
 
 export const CrateVerifyContext = createContext<ICrateVerifyContext>({
@@ -39,6 +41,10 @@ export const CrateVerifyContext = createContext<ICrateVerifyContext>({
         return []
     },
     async getAllClasses() {
+        console.warn("CrateVerifyContext not mounted")
+        return []
+    },
+    async getAllProperties() {
         console.warn("CrateVerifyContext not mounted")
         return []
     }
@@ -134,6 +140,16 @@ export function CrateVerifyProvider(props: PropsWithChildren) {
         }
     }, [])
 
+    const getAllProperties = useCallback(() => {
+        if (worker.current) {
+            return post(worker.current, {
+                operation: "getAllProperties"
+            }) as Promise<ReturnType<typeof localGetAllProperties>>
+        } else {
+            return Promise.resolve(localGetAllProperties())
+        }
+    }, [])
+
     useEffect(() => {
         if (window.Worker) {
             worker.current = new Worker("/crate-verify-worker.js")
@@ -152,7 +168,8 @@ export function CrateVerifyProvider(props: PropsWithChildren) {
                 getPropertyRange,
                 getClassProperties,
                 getAllComments,
-                getAllClasses
+                getAllClasses,
+                getAllProperties
             }}
         >
             {props.children}

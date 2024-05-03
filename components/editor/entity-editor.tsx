@@ -20,9 +20,7 @@ import { Error } from "@/components/error"
 import { EntityEditorHeader } from "@/components/editor/entity-editor-header"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useAsync } from "@/components/use-async"
-import { CrateVerifyContext } from "@/components/crate-verify-provider"
-import { AddPropertyModal, PossibleProperty } from "@/components/editor/add-property-modal"
+import { AddPropertyModal } from "@/components/editor/add-property-modal"
 import { UnknownTypeWarning } from "@/components/editor/unknown-type-warning"
 import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { useEditorState } from "@/components/editor-state"
@@ -38,9 +36,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
     const modifyPropertyEntry = useEditorState.useModifyPropertyEntry()
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
     const revertEntity = useEditorState.useRevertEntity()
-    const crateContext = useEditorState.useCrateContext()
 
-    const { isReady: crateVerifyReady, getClassProperties } = useContext(CrateVerifyContext)
     const { focusProperty } = useContext(EntityEditorTabsContext)
     const { showDeleteEntityModal } = useContext(GlobalModalContext)
 
@@ -54,41 +50,10 @@ export function EntityEditor({ entityId }: { entityId: string }) {
         setAddPropertyModelOpen(true)
     }, [])
 
-    const possiblePropertiesResolver = useCallback(
-        async (types: string[]) => {
-            if (crateVerifyReady) {
-                const resolved = types
-                    .map((type) => crateContext.resolve(type))
-                    .filter((s) => typeof s === "string") as string[]
-                const data = await getClassProperties(resolved)
-                return data
-                    .map((s) => {
-                        return {
-                            ...s,
-                            range: s.range.map((r) => r["@id"]),
-                            rangeReadable: s.range
-                                .map((r) => r["@id"])
-                                .map((r) => crateContext.reverse(r))
-                                .filter((r) => typeof r === "string"),
-                            propertyName: crateContext.reverse(s["@id"])
-                        }
-                    })
-                    .filter((s) => typeof s.propertyName === "string") as PossibleProperty[]
-            }
-        },
-        [crateContext, crateVerifyReady, getClassProperties]
-    )
-
     const typeArray = useMemo(() => {
         if (!entity) return []
         return toArray(entity["@type"])
     }, [entity])
-
-    const {
-        data: possibleProperties,
-        error: possiblePropertiesError,
-        isPending: possiblePropertiesPending
-    } = useAsync(crateVerifyReady ? typeArray : null, possiblePropertiesResolver)
 
     const isRootEntity = useMemo(() => {
         if (!entity) return false
@@ -188,8 +153,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
                 open={addPropertyModelOpen}
                 onPropertyAdd={onPropertyAdd}
                 onOpenChange={addPropertyModelOpenChange}
-                possibleProperties={possibleProperties}
-                possiblePropertiesPending={possiblePropertiesPending}
+                typeArray={typeArray}
             />
 
             <EntityEditorHeader
@@ -229,14 +193,6 @@ export function EntityEditor({ entityId }: { entityId: string }) {
                 <Error
                     className="mt-4"
                     text={saveError ? "Error while saving: " + saveError : ""}
-                />
-                <Error
-                    className="mt-4"
-                    text={
-                        possiblePropertiesError
-                            ? "Error while determining properties: " + possiblePropertiesError
-                            : ""
-                    }
                 />
 
                 <div className="my-12 flex flex-col gap-4 mr-2">
