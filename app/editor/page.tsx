@@ -30,6 +30,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { RestProvider } from "@/lib/rest-provider"
 import { useRouter } from "next/navigation"
 import { Error } from "@/components/error"
+import { useAsync } from "@/components/use-async"
 
 interface RecentCrates {
     id: string
@@ -41,17 +42,17 @@ const demoRecentCrates: RecentCrates[] = [
     {
         id: "448b5807-c3db-4297-81d3-54103d3b885a",
         name: "My Research Data",
-        lastOpened: new Date("10.04.2023")
+        lastOpened: new Date("04.10.2024 14:32:21")
     },
     {
         id: "d4388eb2-d363-4786-94fa-8da508f02ea6",
         name: "Quantum Mechanics for React",
-        lastOpened: new Date("01.01.1970")
+        lastOpened: new Date("04.09.2024 17:21:43")
     },
     {
         id: "bcbabcca-5233-4978-9104-b37fcb1fda57",
         name: "React for Quantum Mechanics",
-        lastOpened: new Date("10.23.2001")
+        lastOpened: new Date("04.03.2024 09:11:03")
     }
 ]
 
@@ -103,6 +104,20 @@ export default function EditorLandingPage() {
         }
     }, [createCrateFromCrateZip, plainFiles])
 
+    const storedCratesResolver = useCallback(async () => {
+        if (serviceProvider.current) {
+            return await serviceProvider.current.getStoredCrateIds()
+        }
+
+        return []
+    }, [])
+
+    const {
+        data: storedCrates,
+        error: storedCratesError,
+        isPending: storedCratesIsPending
+    } = useAsync("", storedCratesResolver)
+
     return (
         <div className="flex flex-col w-full h-full">
             <div className="flex flex-col items-center justify-center h-[max(45vh,200px)] p-10">
@@ -117,7 +132,7 @@ export default function EditorLandingPage() {
                     className="border-r-0 rounded-r-none h-16"
                     onClick={() => openFilePicker()}
                 >
-                    <PackageOpen className="w-6 h-6 mr-3" /> Open Crate
+                    <PackageOpen className="w-6 h-6 mr-3" /> Import Crate
                 </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

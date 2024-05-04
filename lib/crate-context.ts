@@ -12,8 +12,12 @@ export class CrateContext {
 
     constructor(crateContext: CrateContextType) {
         this.raw = crateContext
-        if (Array.isArray(crateContext) && crateContext.length === 0) {
-            this.context = {}
+        if (Array.isArray(crateContext)) {
+            if (crateContext.includes(Context_1_1["@id"])) {
+                this.context = Context_1_1["@context"]
+            } else {
+                this.context = {}
+            }
         } else if (crateContext === Context_1_1["@id"]) {
             this.context = Context_1_1["@context"]
         } else if (
