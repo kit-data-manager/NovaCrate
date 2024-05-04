@@ -41,6 +41,11 @@ declare interface CrateServiceProvider {
     getCrate(id: string): Promise<ICrate>
 
     /**
+     * Get a list of all ids of all crates stored in the provider
+     */
+    getStoredCrateIds(): Promise<string[]>
+
+    /**
      * Delete the specified crate including its archive
      * @param id ID of the target crate
      * @returns Promise - resolves on success

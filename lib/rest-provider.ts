@@ -105,11 +105,21 @@ export class RestProvider implements CrateServiceProvider {
     ): Promise<boolean> {
         const request = await fetch(this.getEntityRoute(crateId, entityData), {
             body: JSON.stringify(entityData),
-            method: create ? "PUT" : "PATCH",
+            method: /*create ?*/ "PUT" /*: "PATCH"*/,
             headers: { "Content-Type": "application/json" }
         })
         if (request.ok) {
             return true
+        } else {
+            throw "Failed to get crate: " + request.status
+        }
+    }
+
+    async getStoredCrateIds() {
+        const request = await fetch("http://localhost:8080/crates")
+        if (request.ok) {
+            const response = await request.json()
+            return response as string[]
         } else {
             throw "Failed to get crate: " + request.status
         }
