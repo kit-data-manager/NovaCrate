@@ -54,7 +54,7 @@ export default function Context() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="rocrate-1.2-draft">
-                                    RO-Crate 1.2 (Draft)
+                                    RO-Crate 1.2 (Experimental)
                                 </SelectItem>
                                 <SelectItem value="rocrate-1.1">RO-Crate 1.1</SelectItem>
                                 <SelectItem value="rocrate-1.0">RO-Crate 1.0</SelectItem>
@@ -103,16 +103,16 @@ export default function Context() {
                         </TableHeader>
                         <TableBody>
                             <TableRow>
-                                <TableCell className="font-medium">something</TableCell>
-                                <TableCell>https://schema.org/something</TableCell>
+                                <TableCell className="font-medium">CustomClass</TableCell>
+                                <TableCell>https://example.org/CustomClass</TableCell>
                                 <TableCell className="flex gap-2">
                                     <EditButton />
                                     <DeleteButton />
                                 </TableCell>
                             </TableRow>
                             <TableRow>
-                                <TableCell className="font-medium">another</TableCell>
-                                <TableCell>https://schema.org/another</TableCell>
+                                <TableCell className="font-medium">customProperty</TableCell>
+                                <TableCell>https://example.org/customProperty</TableCell>
                                 <TableCell className="flex gap-2">
                                     <EditButton />
                                     <DeleteButton />

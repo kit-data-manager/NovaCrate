@@ -35,7 +35,7 @@ export default function EntityNode({
                 className="!border-none !bg-primary/80"
             />
             <div
-                className={`p-3 rounded-lg border border-accent bg-background max-w-[600px] ${selected ? "bg-secondary" : ""}`}
+                className={`p-3 rounded-lg border dark:border-accent bg-background max-w-[600px] ${selected ? "bg-secondary" : ""}`}
             >
                 <div className="flex gap-2 items-center">
                     <EntityIcon entity={data.entity} size="lg" />
