@@ -4,9 +4,11 @@ import {
     Blocks,
     BookOpen,
     ChevronDown,
+    Clock,
     Cog,
-    EllipsisVertical,
     FolderOpen,
+    HardDrive,
+    InfoIcon,
     Moon,
     Package,
     PackageOpen,
@@ -26,44 +28,53 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useFilePicker } from "use-file-picker"
-import { useCallback, useEffect, useRef, useState } from "react"
-import { RestProvider } from "@/lib/rest-provider"
+import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Error } from "@/components/error"
 import { useAsync } from "@/components/use-async"
-
-interface RecentCrates {
-    id: string
-    name: string
-    lastOpened: Date
-}
-
-const demoRecentCrates: RecentCrates[] = [
-    {
-        id: "448b5807-c3db-4297-81d3-54103d3b885a",
-        name: "My Research Data",
-        lastOpened: new Date("04.10.2024 14:32:21")
-    },
-    {
-        id: "d4388eb2-d363-4786-94fa-8da508f02ea6",
-        name: "Quantum Mechanics for React",
-        lastOpened: new Date("04.09.2024 17:21:43")
-    },
-    {
-        id: "bcbabcca-5233-4978-9104-b37fcb1fda57",
-        name: "React for Quantum Mechanics",
-        lastOpened: new Date("04.03.2024 09:11:03")
-    }
-]
+import { CrateEntry } from "@/components/landing/crate-entry"
+import { CrateDataContext } from "@/components/crate-data-provider"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useRecentCrates } from "@/components/hooks"
+import { DeleteCrateModal } from "@/components/delete-crate-modal"
 
 export default function EditorLandingPage() {
     const router = useRouter()
     const theme = useTheme()
     const [error, setError] = useState("")
-    const serviceProvider = useRef(new RestProvider())
+    const { recentCrates, removeFromRecentCrates } = useRecentCrates()
+    const [showStoredCratesAmount, setShowStoredCratesAmount] = useState(5)
+    const [showRecentCratesAmount, setShowRecentCratesAmount] = useState(5)
+    const { serviceProvider } = useContext(CrateDataContext)
     const { openFilePicker, plainFiles } = useFilePicker({
         accept: ".zip"
     })
+    const [deleteCrateModalState, setDeleteCrateModalState] = useState({
+        open: false,
+        crateId: ""
+    })
+
+    const showDeleteCrateModal = useCallback((crateId: string) => {
+        setDeleteCrateModalState({
+            open: true,
+            crateId
+        })
+    }, [])
+
+    const onDeleteCrateModalOpenChange = useCallback((isOpen: boolean) => {
+        setDeleteCrateModalState((old) => ({
+            crateId: old.crateId,
+            open: isOpen
+        }))
+    }, [])
+
+    const onShowMoreStoredClick = useCallback(() => {
+        setShowStoredCratesAmount((old) => old + 5)
+    }, [])
+
+    const onShowMoreRecentClick = useCallback(() => {
+        setShowRecentCratesAmount((old) => old + 5)
+    }, [])
 
     const redirectToCrate = useCallback(
         (id: string) => {
@@ -73,8 +84,8 @@ export default function EditorLandingPage() {
     )
 
     const createEmptyCrate = useCallback(() => {
-        if (serviceProvider.current) {
-            serviceProvider.current
+        if (serviceProvider) {
+            serviceProvider
                 .createCrate()
                 .then((id) => {
                     redirectToCrate(id)
@@ -83,11 +94,11 @@ export default function EditorLandingPage() {
                     setError(e.toString())
                 })
         }
-    }, [redirectToCrate])
+    }, [serviceProvider, redirectToCrate])
 
     const createCrateFromCrateZip = useCallback(() => {
-        if (plainFiles.length > 0 && serviceProvider.current) {
-            serviceProvider.current
+        if (plainFiles.length > 0 && serviceProvider) {
+            serviceProvider
                 .createCrateFromCrateZip(plainFiles[0])
                 .then((id) => {
                     redirectToCrate(id)
@@ -96,30 +107,49 @@ export default function EditorLandingPage() {
                     setError(e.toString())
                 })
         }
-    }, [plainFiles, redirectToCrate])
+    }, [serviceProvider, plainFiles, redirectToCrate])
 
     useEffect(() => {
-        if (plainFiles.length > 0 && serviceProvider.current) {
+        if (plainFiles.length > 0 && serviceProvider) {
             createCrateFromCrateZip()
         }
-    }, [createCrateFromCrateZip, plainFiles])
+    }, [serviceProvider, createCrateFromCrateZip, plainFiles])
 
     const storedCratesResolver = useCallback(async () => {
-        if (serviceProvider.current) {
-            return await serviceProvider.current.getStoredCrateIds()
+        if (serviceProvider) {
+            return await serviceProvider.getStoredCrateIds()
         }
 
         return []
-    }, [])
+    }, [serviceProvider])
 
     const {
         data: storedCrates,
         error: storedCratesError,
-        isPending: storedCratesIsPending
+        revalidate
     } = useAsync("", storedCratesResolver)
+
+    const showShowMoreStoredButton = useMemo(() => {
+        return !!(storedCrates && storedCrates.length > showStoredCratesAmount)
+    }, [showStoredCratesAmount, storedCrates])
+
+    const showShowMoreRecentButton = useMemo(() => {
+        return !!(recentCrates && recentCrates.length > showRecentCratesAmount)
+    }, [recentCrates, showRecentCratesAmount])
 
     return (
         <div className="flex flex-col w-full h-full">
+            <DeleteCrateModal
+                open={deleteCrateModalState.open}
+                onOpenChange={onDeleteCrateModalOpenChange}
+                crateId={deleteCrateModalState.crateId}
+                onDeleted={(crateId) => {
+                    revalidate()
+                    onDeleteCrateModalOpenChange(false)
+                    removeFromRecentCrates(crateId)
+                }}
+            />
+
             <div className="flex flex-col items-center justify-center h-[max(45vh,200px)] p-10">
                 <Package className="w-32 h-32 mb-10" />
                 <h2 className="text-5xl font-bold">Editor Name</h2>
@@ -187,77 +217,148 @@ export default function EditorLandingPage() {
                 </Button>
             </div>
             <div className="flex justify-center p-20">
-                <table className="w-[min(90vw,1000px)] rounded-lg [&_td]:border-t [&_td]:p-2 [&_th]:p-2 [&_th]:text-left">
-                    <thead>
-                        <tr>
-                            <th className="w-0"></th>
-                            <th>Recent Crates</th>
-                            <th>Last Opened</th>
-                            <th className="w-0">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {demoRecentCrates.map((recentCrate) => {
-                            return (
-                                <tr key={recentCrate.id}>
+                <div className="flex flex-col w-[min(90vw,1000px)]">
+                    <table className="rounded-lg [&_td]:border-t [&_td]:p-2 [&_th]:p-2 [&_th]:text-left">
+                        <thead>
+                            <tr>
+                                <th className="w-0">
+                                    <Clock className="w-4 h-4" />
+                                </th>
+                                <th>Recent Crates</th>
+                                <th>Last Opened</th>
+                                <th className="w-0">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {!recentCrates ? (
+                                [0, 0, 0].map((_, i) => {
+                                    return (
+                                        <tr key={i}>
+                                            <td>
+                                                <Skeleton className="w-4 h-4" />
+                                            </td>
+                                            <td>
+                                                <Skeleton className="w-full h-8" />
+                                            </td>
+                                            <td>
+                                                <Skeleton className="w-full h-8" />
+                                            </td>
+                                            <td>
+                                                <Skeleton className="w-full h-8" />
+                                            </td>
+                                        </tr>
+                                    )
+                                })
+                            ) : recentCrates.length === 0 ? (
+                                <tr>
                                     <td>
-                                        <Package className="w-4 h-4" />
+                                        <InfoIcon className="w-4 h-4" />
                                     </td>
                                     <td>
-                                        <div>{recentCrate.name}</div>
-                                        <div className="text-muted-foreground text-xs flex items-center">
-                                            {recentCrate.id}
-                                        </div>
+                                        Your recently used crates will be shown here once you start
+                                        working on a crate.
                                     </td>
-                                    <td>{recentCrate.lastOpened.toLocaleString()}</td>
-                                    <td className="flex gap-2">
-                                        <Button>Open</Button>
-                                        <Button variant="outline" size="icon">
-                                            <EllipsisVertical className="w-4 h-4" />
-                                        </Button>
-                                    </td>
+                                    <td />
+                                    <td />
                                 </tr>
-                            )
-                        })}
-                    </tbody>
-                </table>
+                            ) : (
+                                recentCrates.slice(0, showRecentCratesAmount).map((recentCrate) => {
+                                    return (
+                                        <CrateEntry
+                                            key={recentCrate}
+                                            crateId={recentCrate}
+                                            redirectToCrate={redirectToCrate}
+                                            removeFromRecentCrates={removeFromRecentCrates}
+                                            isRecentCrate={recentCrates.includes(recentCrate)}
+                                            deleteCrate={showDeleteCrateModal}
+                                        />
+                                    )
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                    {showShowMoreRecentButton ? (
+                        <Button
+                            className="w-20 self-center"
+                            variant="link"
+                            onClick={onShowMoreRecentClick}
+                        >
+                            Show More
+                        </Button>
+                    ) : null}
+                </div>
             </div>
 
+            <Error text={storedCratesError} />
+
             <div className="flex justify-center p-20 pt-0">
-                <table className="w-[min(90vw,1000px)] rounded-lg [&_td]:border-t [&_td]:p-2 [&_th]:p-2 [&_th]:text-left">
-                    <thead>
-                        <tr>
-                            <th className="w-0"></th>
-                            <th>Your Crates</th>
-                            <th>Last Opened</th>
-                            <th className="w-0">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {demoRecentCrates.map((recentCrate) => {
-                            return (
-                                <tr key={recentCrate.id}>
+                <div className="flex flex-col w-[min(90vw,1000px)]">
+                    <table className="rounded-lg [&_td]:border-t [&_td]:p-2 [&_th]:p-2 [&_th]:text-left grow">
+                        <thead>
+                            <tr>
+                                <th className="w-0">
+                                    <HardDrive className="w-4 h-4" />
+                                </th>
+                                <th>Stored Crates</th>
+                                <th>Last Opened</th>
+                                <th className="w-0">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {!storedCrates ? (
+                                [0, 0, 0].map((_, i) => {
+                                    return (
+                                        <tr key={i}>
+                                            <td>
+                                                <Skeleton className="w-4 h-4" />
+                                            </td>
+                                            <td>
+                                                <Skeleton className="w-full h-8" />
+                                            </td>
+                                            <td>
+                                                <Skeleton className="w-full h-8" />
+                                            </td>
+                                            <td>
+                                                <Skeleton className="w-full h-8" />
+                                            </td>
+                                        </tr>
+                                    )
+                                })
+                            ) : storedCrates.length === 0 ? (
+                                <tr>
                                     <td>
-                                        <Package className="w-4 h-4" />
+                                        <InfoIcon className="w-4 h-4" />
                                     </td>
-                                    <td>
-                                        <div>{recentCrate.name}</div>
-                                        <div className="text-muted-foreground text-xs flex items-center">
-                                            {recentCrate.id}
-                                        </div>
-                                    </td>
-                                    <td>{recentCrate.lastOpened.toLocaleString()}</td>
-                                    <td className="flex gap-2">
-                                        <Button>Open</Button>
-                                        <Button variant="outline" size="icon">
-                                            <EllipsisVertical className="w-4 h-4" />
-                                        </Button>
-                                    </td>
+                                    <td>A list of all your crates will be shown here.</td>
+                                    <td />
+                                    <td />
                                 </tr>
-                            )
-                        })}
-                    </tbody>
-                </table>
+                            ) : (
+                                storedCrates
+                                    .slice(0, showStoredCratesAmount)
+                                    .map((recentCrate) => (
+                                        <CrateEntry
+                                            key={recentCrate}
+                                            crateId={recentCrate}
+                                            redirectToCrate={redirectToCrate}
+                                            removeFromRecentCrates={removeFromRecentCrates}
+                                            isRecentCrate={recentCrates?.includes(recentCrate)}
+                                            deleteCrate={showDeleteCrateModal}
+                                        />
+                                    ))
+                            )}
+                        </tbody>
+                    </table>
+                    {showShowMoreStoredButton ? (
+                        <Button
+                            className="w-20 self-center"
+                            variant="link"
+                            onClick={onShowMoreStoredClick}
+                        >
+                            Show More
+                        </Button>
+                    ) : null}
+                </div>
             </div>
 
             <div className="flex flex-col items-center text-muted-foreground pb-4">

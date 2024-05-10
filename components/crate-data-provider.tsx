@@ -8,6 +8,7 @@ import { Draft, produce } from "immer"
 import { applyServerDifferences } from "@/components/ensure-sync"
 
 export interface ICrateDataProvider {
+    readonly serviceProvider?: CrateServiceProvider
     crateId: string
     crateData?: ICrate
     crateDataIsLoading: boolean
@@ -19,6 +20,7 @@ export interface ICrateDataProvider {
 }
 
 export const CrateDataContext = createContext<ICrateDataProvider>({
+    serviceProvider: undefined,
     crateId: "",
     saveEntity: () => {
         return Promise.reject("Crate Data Provider not mounted yet")
@@ -161,6 +163,7 @@ export function CrateDataProvider(
     return (
         <CrateDataContext.Provider
             value={{
+                serviceProvider: props.serviceProvider,
                 crateId: props.crateId || "",
                 crateData: data,
                 crateDataIsLoading: isLoading,

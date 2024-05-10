@@ -58,8 +58,15 @@ export class RestProvider implements CrateServiceProvider {
         return this.updateEntity(crateId, entityData, true)
     }
 
-    deleteCrate(id: string): Promise<boolean> {
-        throw "Not implemented"
+    async deleteCrate(id: string): Promise<boolean> {
+        const request = await fetch("http://localhost:8080/crates/" + id, {
+            method: "DELETE"
+        })
+        if (request.ok) {
+            return true
+        } else {
+            throw "Failed to delete crate: " + request.status
+        }
     }
 
     async deleteEntity(crateId: string, entityData: IFlatEntity): Promise<boolean> {
