@@ -24,14 +24,13 @@ declare interface CrateServiceProvider {
     createCrateFromCrateZip(zip: File): Promise<string>
 
     /**
-     * Create a new crate from a zip archive of files. The zip archive is not required to already
+     * Create a new crate with a folder of files. The folder is not required to already
      * be a valid crate, thus ro-crate-metadata.json and related files could be missing
-     * @param id ID the new crate should have
-     * @param zip zip archive of files for the new crate
-     * @returns Promise - resolves on success
+     * @param files files for the new crate
+     * @returns Promise - resolves with the crate id on success
      * @throws Error when the ID is already in use or when an error occurred
      */
-    createCrateFromFilesZip?: (id: string, zip: File) => Promise<void>
+    createCrateFromFiles(files: File[]): Promise<string>
 
     /**
      * Return the entire ro-crate-metadata.json fully flattened as a JavaScript object
