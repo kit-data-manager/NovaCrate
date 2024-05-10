@@ -143,10 +143,22 @@ export function CrateEntry({
                                 <HardDriveDownload className="w-4 h-4 mr-2" /> Export...
                             </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        if (serviceProvider) {
+                                            serviceProvider.downloadCrateZip(crateId)
+                                        }
+                                    }}
+                                >
                                     <FolderArchive className="w-4 h-4 mr-2" /> Crate as .zip
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        if (serviceProvider) {
+                                            serviceProvider.downloadRoCrateMetadataJSON(crateId)
+                                        }
+                                    }}
+                                >
                                     <FileIcon className="w-4 h-4 mr-2" /> ro-crate-metadata.json
                                 </DropdownMenuItem>
                             </DropdownMenuSubContent>

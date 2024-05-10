@@ -147,4 +147,11 @@ declare interface CrateServiceProvider {
      * @returns void - This function should not return anything
      */
     downloadCrateZip(id: string): void
+
+    /**
+     * Get the `ro-crate-metadata.json`. This function should initiate a download or save dialog (or similar)
+     * @param id ID of the target crate
+     * @returns void - This function should not return anything
+     */
+    downloadRoCrateMetadataJSON(id: string): void
 }
