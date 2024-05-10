@@ -24,6 +24,7 @@ import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/ent
 import { EntityIcon } from "./entity-icon"
 import { GlobalModalContext } from "@/components/global-modals-provider"
 import { useEditorState } from "@/components/editor-state"
+import { Error } from "@/components/error"
 
 type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -134,7 +135,7 @@ export function EntityBrowserContent({
 }) {
     const crate = useContext(CrateDataContext)
 
-    if (crate.crateDataIsLoading && !crate.crateData)
+    if (!crate.crateData)
         return (
             <div className="flex flex-col gap-2 p-2">
                 <Skeleton className="h-6 w-60" />
@@ -221,6 +222,7 @@ export function EntityBrowser() {
                     />
                 </Button>
             </div>
+            <Error text={crate.error} />
             <EntityBrowserContent
                 defaultSectionOpen={defaultSectionOpen}
                 onSectionOpenChange={onSectionOpenChange}

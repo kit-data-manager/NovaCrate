@@ -31,7 +31,7 @@ interface CrateDetails {
 
 export function CrateEntry({
     crateId,
-    redirectToCrate,
+    openEditor,
     deleteCrate,
     removeFromRecentCrates,
     isRecentCrate
@@ -39,7 +39,7 @@ export function CrateEntry({
     crateId: string
     isRecentCrate?: boolean
     removeFromRecentCrates(id: string): void
-    redirectToCrate(id: string): void
+    openEditor(id: string): void
     deleteCrate(id: string): void
 }) {
     const { serviceProvider } = useContext(CrateDataContext)
@@ -117,7 +117,7 @@ export function CrateEntry({
             <td className="flex gap-2">
                 <Button
                     onClick={() => {
-                        redirectToCrate(crateId)
+                        openEditor(crateId)
                     }}
                 >
                     Open
