@@ -76,7 +76,7 @@ export default function EditorLandingPage() {
         setShowRecentCratesAmount((old) => old + 5)
     }, [])
 
-    const redirectToCrate = useCallback(
+    const openEditor = useCallback(
         (id: string) => {
             if (id !== "undefined") router.push(`/editor/${id}/entities`)
         },
@@ -88,26 +88,26 @@ export default function EditorLandingPage() {
             serviceProvider
                 .createCrate()
                 .then((id) => {
-                    redirectToCrate(id)
+                    openEditor(id)
                 })
                 .catch((e) => {
                     setError(e.toString())
                 })
         }
-    }, [serviceProvider, redirectToCrate])
+    }, [serviceProvider, openEditor])
 
     const createCrateFromCrateZip = useCallback(() => {
         if (plainFiles.length > 0 && serviceProvider) {
             serviceProvider
                 .createCrateFromCrateZip(plainFiles[0])
                 .then((id) => {
-                    redirectToCrate(id)
+                    openEditor(id)
                 })
                 .catch((e) => {
                     setError(e.toString())
                 })
         }
-    }, [serviceProvider, plainFiles, redirectToCrate])
+    }, [serviceProvider, plainFiles, openEditor])
 
     useEffect(() => {
         if (plainFiles.length > 0 && serviceProvider) {
@@ -267,7 +267,7 @@ export default function EditorLandingPage() {
                                         <CrateEntry
                                             key={recentCrate}
                                             crateId={recentCrate}
-                                            redirectToCrate={redirectToCrate}
+                                            openEditor={openEditor}
                                             removeFromRecentCrates={removeFromRecentCrates}
                                             isRecentCrate={recentCrates.includes(recentCrate)}
                                             deleteCrate={showDeleteCrateModal}
@@ -340,7 +340,7 @@ export default function EditorLandingPage() {
                                         <CrateEntry
                                             key={recentCrate}
                                             crateId={recentCrate}
-                                            redirectToCrate={redirectToCrate}
+                                            openEditor={openEditor}
                                             removeFromRecentCrates={removeFromRecentCrates}
                                             isRecentCrate={recentCrates?.includes(recentCrate)}
                                             deleteCrate={showDeleteCrateModal}

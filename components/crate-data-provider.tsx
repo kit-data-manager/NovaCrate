@@ -17,6 +17,7 @@ export interface ICrateDataProvider {
     reload(): void
     isSaving: boolean
     saveError: string
+    error: string
 }
 
 export const CrateDataContext = createContext<ICrateDataProvider>({
@@ -33,7 +34,8 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
     },
     crateDataIsLoading: false,
     isSaving: false,
-    saveError: ""
+    saveError: "",
+    error: ""
 })
 
 export function CrateDataProvider(
@@ -171,7 +173,8 @@ export function CrateDataProvider(
                 deleteEntity,
                 isSaving,
                 reload: mutate,
-                saveError
+                saveError,
+                error
             }}
         >
             <Error text={error ? error + "" : ""} size={"xl"} />
