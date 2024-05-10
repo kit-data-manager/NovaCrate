@@ -1,4 +1,5 @@
 import { isContextualEntity, isFolderDataEntity, isRootEntity } from "@/lib/utils"
+import fileDownload from "js-file-download"
 
 export class RestProvider implements CrateServiceProvider {
     createCrateFromFilesZip(id: string, zip: File): Promise<void> {
@@ -80,7 +81,25 @@ export class RestProvider implements CrateServiceProvider {
         }
     }
 
-    downloadCrateZip(id: string): void {}
+    async downloadCrateZip(id: string) {
+        const request = await fetch(`http://localhost:8080/crates/${id}`)
+        if (request.ok) {
+            fileDownload(await request.arrayBuffer(), `${id}.zip`, "application/zip")
+        } else {
+            throw "Failed to download crate zip: " + request.status
+        }
+    }
+
+    async downloadRoCrateMetadataJSON(id: string) {
+        const request = await fetch(
+            `http://localhost:8080/crates/${encodeURIComponent(id)}/ro-crate-metadata.json`
+        )
+        if (request.ok) {
+            fileDownload(await request.arrayBuffer(), "ro-crate-metadata.json", "application/json")
+        } else {
+            throw "Failed to get crate: " + request.status
+        }
+    }
 
     async getCrate(id: string): Promise<ICrate> {
         const request = await fetch(
