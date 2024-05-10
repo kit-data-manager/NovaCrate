@@ -28,6 +28,7 @@ import { GlobalModalContext } from "@/components/global-modals-provider"
 import { FindReferencesModal } from "@/components/editor/find-references-modal"
 import { SaveAsModal } from "@/components/editor/save-as-modal"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useRecentCrates } from "@/components/hooks"
 
 export function EntityEditor({
     entityId,

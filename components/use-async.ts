@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 function isEqual<I>(data: I | I[], oldData: I | I[]) {
     if (Array.isArray(data) && Array.isArray(oldData)) {
@@ -15,18 +15,15 @@ function isEqual<I>(data: I | I[], oldData: I | I[]) {
 export function useAsync<I, O>(
     input: I | null,
     resolver: (input: I) => Promise<O>
-): { data: O | undefined; error: string; isPending: boolean } {
+): { data: O | undefined; error: string; isPending: boolean; revalidate(): void } {
     const [internalState, setInternalState] = useState<O | undefined>(undefined)
     const [pending, setPending] = useState(false)
     const [error, setError] = useState<string>("")
 
     const lastInput = useRef<I | null>(null)
 
-    useEffect(() => {
-        if (isEqual(input, lastInput.current)) return
-        lastInput.current = input
-
-        if (input !== null) {
+    const action = useCallback(
+        (input: I) => {
             setPending(true)
 
             resolver(input)
@@ -41,8 +38,25 @@ export function useAsync<I, O>(
                 .finally(() => {
                     setPending(false)
                 })
-        }
-    }, [input, resolver])
+        },
+        [resolver]
+    )
 
-    return { data: internalState, error, isPending: pending }
+    useEffect(() => {
+        if (isEqual(input, lastInput.current)) return
+        lastInput.current = input
+
+        if (input !== null) {
+            action(input)
+        }
+    }, [action, input, resolver])
+
+    return {
+        data: internalState,
+        error,
+        isPending: pending,
+        revalidate: () => {
+            if (lastInput.current !== null) action(lastInput.current)
+        }
+    }
 }
