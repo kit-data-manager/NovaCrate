@@ -46,8 +46,13 @@ export default function EditorLandingPage() {
     const [showStoredCratesAmount, setShowStoredCratesAmount] = useState(5)
     const [showRecentCratesAmount, setShowRecentCratesAmount] = useState(5)
     const { serviceProvider } = useContext(CrateDataContext)
-    const { openFilePicker, plainFiles } = useFilePicker({
+    const { openFilePicker: openZipFilePicker, plainFiles: zipFiles } = useFilePicker({
         accept: ".zip"
+    })
+    const { openFilePicker: openFolderPicker, plainFiles: files } = useFilePicker({
+        initializeWithCustomParameters(input) {
+            input.setAttribute("webkitdirectory", "")
+        }
     })
     const [deleteCrateModalState, setDeleteCrateModalState] = useState({
         open: false,
@@ -97,9 +102,9 @@ export default function EditorLandingPage() {
     }, [serviceProvider, openEditor])
 
     const createCrateFromCrateZip = useCallback(() => {
-        if (plainFiles.length > 0 && serviceProvider) {
+        if (zipFiles.length > 0 && serviceProvider) {
             serviceProvider
-                .createCrateFromCrateZip(plainFiles[0])
+                .createCrateFromCrateZip(zipFiles[0])
                 .then((id) => {
                     openEditor(id)
                 })
@@ -107,13 +112,17 @@ export default function EditorLandingPage() {
                     setError(e.toString())
                 })
         }
-    }, [serviceProvider, plainFiles, openEditor])
+    }, [zipFiles, serviceProvider, openEditor])
 
     useEffect(() => {
-        if (plainFiles.length > 0 && serviceProvider) {
+        if (zipFiles.length > 0 && serviceProvider) {
             createCrateFromCrateZip()
         }
-    }, [serviceProvider, createCrateFromCrateZip, plainFiles])
+    }, [serviceProvider, createCrateFromCrateZip, zipFiles.length])
+
+    useEffect(() => {
+        console.log(files)
+    }, [files])
 
     const storedCratesResolver = useCallback(async () => {
         if (serviceProvider) {
@@ -160,7 +169,7 @@ export default function EditorLandingPage() {
                     size="lg"
                     variant="outline"
                     className="border-r-0 rounded-r-none h-16"
-                    onClick={() => openFilePicker()}
+                    onClick={() => openZipFilePicker()}
                 >
                     <PackageOpen className="w-6 h-6 mr-3" /> Import Crate
                 </Button>
@@ -180,7 +189,7 @@ export default function EditorLandingPage() {
                             <PackagePlus className="w-4 h-4 mr-2" />
                             Empty Crate
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={openFolderPicker}>
                             <FolderOpen className="w-4 h-4 mr-2" /> From Folder
                         </DropdownMenuItem>
                         <DropdownMenuSub>

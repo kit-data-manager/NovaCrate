@@ -2,8 +2,15 @@ import { isContextualEntity, isFolderDataEntity, isRootEntity } from "@/lib/util
 import fileDownload from "js-file-download"
 
 export class RestProvider implements CrateServiceProvider {
-    createCrateFromFilesZip(id: string, zip: File): Promise<void> {
-        throw "Not implemented"
+    // TODO continue...
+    async createCrateFromFiles(
+        files: File[],
+        progressCallback?: (current: number, total: number) => void
+    ) {
+        const id = await this.createCrate()
+        progressCallback?.(0, files.length)
+        for (const file of files) {
+        }
     }
 
     getCrateFileURL(crateId: string, filePath: string): Promise<string> {
