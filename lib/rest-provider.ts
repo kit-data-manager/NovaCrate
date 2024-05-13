@@ -165,6 +165,7 @@ export class RestProvider implements CrateServiceProvider {
         throw "Not implemented"
     }
 
+    // TODO properly handle data entities, route changed
     async updateEntity(
         crateId: string,
         entityData: IFlatEntity,
