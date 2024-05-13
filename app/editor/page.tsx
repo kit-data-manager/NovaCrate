@@ -36,7 +36,8 @@ import { CrateEntry } from "@/components/landing/crate-entry"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useRecentCrates } from "@/components/hooks"
-import { DeleteCrateModal } from "@/components/delete-crate-modal"
+import { DeleteCrateModal } from "@/components/landing/delete-crate-modal"
+import { UploadProgressModal } from "@/components/landing/upload-progress-modal"
 
 export default function EditorLandingPage() {
     const router = useRouter()
@@ -58,6 +59,11 @@ export default function EditorLandingPage() {
         open: false,
         crateId: ""
     })
+    const [uploadProgressModalState, setUploadProgressModalState] = useState({
+        open: false,
+        currentProgress: 0,
+        maxProgress: 0
+    })
 
     const showDeleteCrateModal = useCallback((crateId: string) => {
         setDeleteCrateModalState({
@@ -71,6 +77,22 @@ export default function EditorLandingPage() {
             crateId: old.crateId,
             open: isOpen
         }))
+    }, [])
+
+    const showUploadProgressModal = useCallback((currentProgress: number, maxProgress: number) => {
+        setUploadProgressModalState({
+            open: true,
+            currentProgress,
+            maxProgress
+        })
+    }, [])
+
+    const onUploadProgressModalOpenChange = useCallback((isOpen: boolean) => {
+        setUploadProgressModalState({
+            open: isOpen,
+            maxProgress: 0,
+            currentProgress: 0
+        })
     }, [])
 
     const onShowMoreStoredClick = useCallback(() => {
@@ -114,15 +136,26 @@ export default function EditorLandingPage() {
         }
     }, [zipFiles, serviceProvider, openEditor])
 
-    useEffect(() => {
-        if (zipFiles.length > 0 && serviceProvider) {
-            createCrateFromCrateZip()
+    const createCrateFromCrateFiles = useCallback(() => {
+        if (files.length > 0 && serviceProvider) {
+            serviceProvider
+                .createCrateFromFiles(files, showUploadProgressModal)
+                .then((id) => {
+                    openEditor(id)
+                })
+                .catch((e) => {
+                    setError(e.toString())
+                })
         }
-    }, [serviceProvider, createCrateFromCrateZip, zipFiles.length])
+    }, [files, serviceProvider, showUploadProgressModal, openEditor])
 
     useEffect(() => {
-        console.log(files)
-    }, [files])
+        createCrateFromCrateZip()
+    }, [createCrateFromCrateZip])
+
+    useEffect(() => {
+        createCrateFromCrateFiles()
+    }, [createCrateFromCrateFiles])
 
     const storedCratesResolver = useCallback(async () => {
         if (serviceProvider) {
@@ -157,6 +190,12 @@ export default function EditorLandingPage() {
                     onDeleteCrateModalOpenChange(false)
                     removeFromRecentCrates(crateId)
                 }}
+            />
+            <UploadProgressModal
+                open={uploadProgressModalState.open}
+                onOpenChange={onUploadProgressModalOpenChange}
+                currentProgress={uploadProgressModalState.currentProgress}
+                maxProgress={uploadProgressModalState.maxProgress}
             />
 
             <div className="flex flex-col items-center justify-center h-[max(45vh,200px)] p-10">

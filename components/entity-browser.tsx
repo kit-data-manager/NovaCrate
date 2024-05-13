@@ -222,7 +222,7 @@ export function EntityBrowser() {
                     />
                 </Button>
             </div>
-            <Error text={crate.error} />
+            <Error text={crate.error ? crate.error + "" : ""} />
             <EntityBrowserContent
                 defaultSectionOpen={defaultSectionOpen}
                 onSectionOpenChange={onSectionOpenChange}
