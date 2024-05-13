@@ -2,15 +2,29 @@ import { isContextualEntity, isFolderDataEntity, isRootEntity } from "@/lib/util
 import fileDownload from "js-file-download"
 
 export class RestProvider implements CrateServiceProvider {
-    // TODO continue...
     async createCrateFromFiles(
         files: File[],
         progressCallback?: (current: number, total: number) => void
     ) {
         const id = await this.createCrate()
         progressCallback?.(0, files.length)
+
         for (const file of files) {
+            const pathSplit = file.webkitRelativePath.split("/")
+            if (pathSplit.length > 1) pathSplit[0] = "."
+            await this.createFileEntity(
+                id,
+                {
+                    "@id": pathSplit.join("/"),
+                    "@type": "File",
+                    name: pathSplit[pathSplit.length - 1]
+                },
+                file
+            )
+            progressCallback?.(files.indexOf(file) + 1, files.length)
         }
+
+        return id
     }
 
     getCrateFileURL(crateId: string, filePath: string): Promise<string> {
@@ -64,6 +78,26 @@ export class RestProvider implements CrateServiceProvider {
 
     createEntity(crateId: string, entityData: IFlatEntity): Promise<boolean> {
         return this.updateEntity(crateId, entityData, true)
+    }
+
+    async createFileEntity(crateId: string, entityData: IFlatEntity, file: File) {
+        const body = new FormData()
+
+        body.append(
+            "metadata",
+            new Blob([JSON.stringify(entityData)], { type: "application/json" })
+        )
+        body.append("file", file)
+
+        const request = await fetch(this.getEntityRoute(crateId, entityData), {
+            body,
+            method: "PUT"
+        })
+        if (request.ok) {
+            return true
+        } else {
+            throw "Failed to create file entity: " + request.status
+        }
     }
 
     async deleteCrate(id: string): Promise<boolean> {

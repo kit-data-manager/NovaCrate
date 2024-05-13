@@ -27,10 +27,14 @@ declare interface CrateServiceProvider {
      * Create a new crate with a folder of files. The folder is not required to already
      * be a valid crate, thus ro-crate-metadata.json and related files could be missing
      * @param files files for the new crate
+     * @param progressCallback Callback that will be called with the current upload progress
      * @returns Promise - resolves with the crate id on success
      * @throws Error when the ID is already in use or when an error occurred
      */
-    createCrateFromFiles(files: File[]): Promise<string>
+    createCrateFromFiles(
+        files: File[],
+        progressCallback?: (current: number, total: number) => void
+    ): Promise<string>
 
     /**
      * Return the entire ro-crate-metadata.json fully flattened as a JavaScript object
@@ -76,6 +80,8 @@ declare interface CrateServiceProvider {
      * @returns Promise - resolves on success
      */
     createEntity(crateId: string, entityData: IFlatEntity): Promise<boolean>
+
+    createFileEntity(crateId: string, entityData: IFlatEntity, file: File): Promise<boolean>
 
     /**
      * Remove an entity from the crate and also remove all references

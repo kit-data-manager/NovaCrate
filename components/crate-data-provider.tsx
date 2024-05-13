@@ -17,7 +17,7 @@ export interface ICrateDataProvider {
     reload(): void
     isSaving: boolean
     saveError: string
-    error: string
+    error: unknown
 }
 
 export const CrateDataContext = createContext<ICrateDataProvider>({
