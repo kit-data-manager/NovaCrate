@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from "react"
+import React, { useCallback, useContext, useState } from "react"
 import {
     Dialog,
     DialogContent,
@@ -58,6 +58,7 @@ export function CreateCrateModal({
     const createCrateFromCrateFiles = useCallback(() => {
         if (files.length > 0 && serviceProvider) {
             setUploading(true)
+            setUploadErrors([])
             serviceProvider
                 .createCrateFromFiles(name, description, files, (current, max, errors) => {
                     setCurrentProgress(current)
@@ -76,9 +77,14 @@ export function CreateCrateModal({
 
     const createEmptyCrate = useCallback(() => {
         if (serviceProvider) {
+            setUploading(true)
+            setCurrentProgress(0)
+            setMaxProgress(1)
+            setUploadErrors([])
             serviceProvider
                 .createCrate(name, description)
                 .then((id) => {
+                    setCurrentProgress(1)
                     openEditor(id)
                 })
                 .catch((e) => {
@@ -111,7 +117,8 @@ export function CreateCrateModal({
                         <div>
                             Importing: {currentProgress}/{maxProgress || "?"}
                         </div>
-                        <Progress value={currentProgress} max={maxProgress} />
+                        <DialogDescription>Large files will take some time...</DialogDescription>
+                        <Progress value={currentProgress * (100 / maxProgress)} />
                         {uploadErrors.map((error, i) => (
                             <Error prefix="A file failed to upload: " key={i} text={error} />
                         ))}
