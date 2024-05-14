@@ -15,8 +15,6 @@ import { ArrowLeft, Folder, PackagePlus } from "lucide-react"
 import { CrateDataContext } from "../crate-data-provider"
 import { Progress } from "../ui/progress"
 
-// TODO prevent closing? What happens in case of error?
-
 export function CreateCrateModal({
     open,
     onOpenChange,
