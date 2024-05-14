@@ -109,7 +109,7 @@ export function CreateCrateModal({
                 {uploading ? (
                     <>
                         <div>
-                            Uploading: {currentProgress}/{maxProgress || "?"}
+                            Importing: {currentProgress}/{maxProgress || "?"}
                         </div>
                         <Progress value={currentProgress} max={maxProgress} />
                         {uploadErrors.map((error, i) => (
@@ -139,22 +139,31 @@ export function CreateCrateModal({
 
                         {fromFolder ? (
                             <div>
-                                <Button>
-                                    <Folder className="w-4 h-4 mr-2" /> Select Folder
-                                    <span>
+                                <Label>Folder</Label>
+                                <div>
+                                    <Button variant="outline" onClick={openFolderPicker}>
+                                        <Folder className="w-4 h-4 mr-2" />{" "}
+                                        {files.length == 0
+                                            ? "Select Folder"
+                                            : files[0].webkitRelativePath.split("/")[0]}
+                                    </Button>
+                                    <span className="ml-2 text-muted-foreground">
                                         {files.length > 0
                                             ? `${files.length} file${files.length === 1 ? "" : "s"} selected`
                                             : "No files selected"}
                                     </span>
-                                </Button>
+                                </div>
                             </div>
                         ) : null}
 
-                        <div>
-                            <Button onClick={() => localOnOpenChange(false)}>
+                        <div className="mt-4 flex justify-between">
+                            <Button variant="secondary" onClick={() => localOnOpenChange(false)}>
                                 <ArrowLeft className="w-4 h-4 mr-2" /> Abort
                             </Button>
-                            <Button onClick={onCreateClick}>
+                            <Button
+                                onClick={onCreateClick}
+                                disabled={fromFolder && files.length == 0}
+                            >
                                 <PackagePlus className="w-4 h-4 mr-2" /> Create
                             </Button>
                         </div>
