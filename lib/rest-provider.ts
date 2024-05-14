@@ -3,25 +3,34 @@ import fileDownload from "js-file-download"
 
 export class RestProvider implements CrateServiceProvider {
     async createCrateFromFiles(
+        name: string,
+        description: string,
         files: File[],
-        progressCallback?: (current: number, total: number) => void
+        progressCallback?: (current: number, total: number, errors: string[]) => void
     ) {
-        const id = await this.createCrate()
-        progressCallback?.(0, files.length)
+        const errors: string[] = []
+        const id = await this.createCrate(name, description)
+        progressCallback?.(0, files.length, errors)
 
         for (const file of files) {
             const pathSplit = file.webkitRelativePath.split("/")
             if (pathSplit.length > 1) pathSplit[0] = "."
-            await this.createFileEntity(
-                id,
-                {
-                    "@id": pathSplit.join("/"),
-                    "@type": "File",
-                    name: pathSplit[pathSplit.length - 1]
-                },
-                file
-            )
-            progressCallback?.(files.indexOf(file) + 1, files.length)
+            try {
+                await this.createFileEntity(
+                    id,
+                    {
+                        "@id": pathSplit.join("/"),
+                        "@type": "File",
+                        name: pathSplit[pathSplit.length - 1]
+                    },
+                    file
+                )
+            } catch (e) {
+                console.error(e)
+                errors.push(typeof e === "object" && e ? e.toString() : e + "")
+            }
+
+            progressCallback?.(files.indexOf(file) + 1, files.length, errors)
         }
 
         return id
@@ -47,9 +56,11 @@ export class RestProvider implements CrateServiceProvider {
         throw "Not implemented"
     }
 
-    async createCrate() {
+    async createCrate(name: string, description: string) {
         const request = await fetch("http://localhost:8080/crates/new", {
-            method: "POST"
+            method: "POST",
+            body: JSON.stringify({ name, description }),
+            headers: { "Content-Type": "application/json" }
         })
         if (request.ok) {
             const response = await request.json()

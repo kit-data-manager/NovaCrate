@@ -37,7 +37,7 @@ import { CrateDataContext } from "@/components/crate-data-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useRecentCrates } from "@/components/hooks"
 import { DeleteCrateModal } from "@/components/landing/delete-crate-modal"
-import { UploadProgressModal } from "@/components/landing/upload-progress-modal"
+import { CreateCrateModal } from "@/components/landing/create-crate-modal"
 
 export default function EditorLandingPage() {
     const router = useRouter()
@@ -50,19 +50,15 @@ export default function EditorLandingPage() {
     const { openFilePicker: openZipFilePicker, plainFiles: zipFiles } = useFilePicker({
         accept: ".zip"
     })
-    const { openFilePicker: openFolderPicker, plainFiles: files } = useFilePicker({
-        initializeWithCustomParameters(input) {
-            input.setAttribute("webkitdirectory", "")
-        }
-    })
+
     const [deleteCrateModalState, setDeleteCrateModalState] = useState({
         open: false,
         crateId: ""
     })
-    const [uploadProgressModalState, setUploadProgressModalState] = useState({
+    const [createCrateModalState, setCreateCrateModalState] = useState({
         open: false,
-        currentProgress: 0,
-        maxProgress: 0
+        fromFolder: false,
+        fromExample: undefined as undefined | string
     })
 
     const showDeleteCrateModal = useCallback((crateId: string) => {
@@ -79,19 +75,34 @@ export default function EditorLandingPage() {
         }))
     }, [])
 
-    const showUploadProgressModal = useCallback((currentProgress: number, maxProgress: number) => {
-        setUploadProgressModalState({
-            open: true,
-            currentProgress,
-            maxProgress
+    const onCreateCrateModalOpenChange = useCallback((isOpen: boolean) => {
+        setCreateCrateModalState((old) => ({
+            ...old,
+            open: isOpen
+        }))
+    }, [])
+
+    const createEmptyCrate = useCallback(() => {
+        setCreateCrateModalState({
+            fromExample: undefined,
+            fromFolder: false,
+            open: true
         })
     }, [])
 
-    const onUploadProgressModalOpenChange = useCallback((isOpen: boolean) => {
-        setUploadProgressModalState({
-            open: isOpen,
-            maxProgress: 0,
-            currentProgress: 0
+    const createCrateFromFolder = useCallback(() => {
+        setCreateCrateModalState({
+            fromExample: undefined,
+            fromFolder: true,
+            open: true
+        })
+    }, [])
+
+    const createCrateFromExample = useCallback((example: string) => {
+        setCreateCrateModalState({
+            fromExample: example,
+            fromFolder: false,
+            open: true
         })
     }, [])
 
@@ -110,19 +121,6 @@ export default function EditorLandingPage() {
         [router]
     )
 
-    const createEmptyCrate = useCallback(() => {
-        if (serviceProvider) {
-            serviceProvider
-                .createCrate()
-                .then((id) => {
-                    openEditor(id)
-                })
-                .catch((e) => {
-                    setError(e.toString())
-                })
-        }
-    }, [serviceProvider, openEditor])
-
     const createCrateFromCrateZip = useCallback(() => {
         if (zipFiles.length > 0 && serviceProvider) {
             serviceProvider
@@ -136,33 +134,14 @@ export default function EditorLandingPage() {
         }
     }, [zipFiles, serviceProvider, openEditor])
 
-    const createCrateFromCrateFiles = useCallback(() => {
-        if (files.length > 0 && serviceProvider) {
-            serviceProvider
-                .createCrateFromFiles(files, showUploadProgressModal)
-                .then((id) => {
-                    openEditor(id)
-                })
-                .catch((e) => {
-                    setError(e.toString())
-                })
-        }
-    }, [files, serviceProvider, showUploadProgressModal, openEditor])
-
     useEffect(() => {
         createCrateFromCrateZip()
     }, [createCrateFromCrateZip])
 
-    useEffect(() => {
-        createCrateFromCrateFiles()
-    }, [createCrateFromCrateFiles])
-
     const storedCratesResolver = useCallback(async () => {
         if (serviceProvider) {
             return await serviceProvider.getStoredCrateIds()
-        }
-
-        return []
+        } else return []
     }, [serviceProvider])
 
     const {
@@ -191,19 +170,18 @@ export default function EditorLandingPage() {
                     removeFromRecentCrates(crateId)
                 }}
             />
-            <UploadProgressModal
-                open={uploadProgressModalState.open}
-                onOpenChange={onUploadProgressModalOpenChange}
-                currentProgress={uploadProgressModalState.currentProgress}
-                maxProgress={uploadProgressModalState.maxProgress}
+            <CreateCrateModal
+                {...createCrateModalState}
+                onOpenChange={onCreateCrateModalOpenChange}
+                openEditor={openEditor}
             />
 
             <div className="flex flex-col items-center justify-center h-[max(45vh,200px)] p-10">
                 <Package className="w-32 h-32 mb-10" />
                 <h2 className="text-5xl font-bold">Editor Name</h2>
             </div>
-            <Error text={error} />
             <div className="flex justify-center">
+                <Error text={error} />
                 <Button
                     size="lg"
                     variant="outline"
@@ -224,12 +202,12 @@ export default function EditorLandingPage() {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
+                        <DropdownMenuItem onClick={createCrateFromFolder}>
+                            <FolderOpen className="w-4 h-4 mr-2" /> From Folder
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={createEmptyCrate}>
                             <PackagePlus className="w-4 h-4 mr-2" />
                             Empty Crate
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={openFolderPicker}>
-                            <FolderOpen className="w-4 h-4 mr-2" /> From Folder
                         </DropdownMenuItem>
                         <DropdownMenuSub>
                             <DropdownMenuSubTrigger>
@@ -337,10 +315,9 @@ export default function EditorLandingPage() {
                 </div>
             </div>
 
-            <Error text={storedCratesError} />
-
-            <div className="flex justify-center p-20 pt-0">
+            <div className="flex justify-center p-20 pt-0 w-full">
                 <div className="flex flex-col w-[min(90vw,1000px)]">
+                    <Error text={storedCratesError} />
                     <table className="rounded-lg [&_td]:border-t [&_td]:p-2 [&_th]:p-2 [&_th]:text-left grow">
                         <thead>
                             <tr>
