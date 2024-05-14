@@ -33,7 +33,7 @@ export function Error({
     return (
         <div className={cn(size) + " " + className}>
             <CircleAlert className={cnIcon(size)} />
-            {prefix ? prefix + text : text}
+            {prefix ? prefix + text : text + ""}
         </div>
     )
 }
@@ -56,7 +56,7 @@ export function Warn({
             className={cn(size) + " " + className + " !bg-transparent border-warn border text-warn"}
         >
             <TriangleAlert className={cnIcon(size)} />
-            {prefix ? prefix + text : text}
+            {prefix ? prefix + text : text + ""}
         </div>
     )
 }

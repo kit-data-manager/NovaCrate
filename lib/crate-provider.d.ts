@@ -11,9 +11,11 @@
 declare interface CrateServiceProvider {
     /**
      * Create an empty crate with no files except ro-crate-metadata.json
+     * @param name Name of the crate
+     * @param description Description of the crate
      * @returns Promise - resolves on success with the crate id
      */
-    createCrate(): Promise<string>
+    createCrate(name: string, description: string): Promise<string>
 
     /**
      * Upload a valid crate in form of a zip archive
@@ -26,14 +28,18 @@ declare interface CrateServiceProvider {
     /**
      * Create a new crate with a folder of files. The folder is not required to already
      * be a valid crate, thus ro-crate-metadata.json and related files could be missing
+     * @param name name of the crate
+     * @param description description of the crate
      * @param files files for the new crate
      * @param progressCallback Callback that will be called with the current upload progress
      * @returns Promise - resolves with the crate id on success
      * @throws Error when the ID is already in use or when an error occurred
      */
     createCrateFromFiles(
+        name: string,
+        description: string,
         files: File[],
-        progressCallback?: (current: number, total: number) => void
+        progressCallback?: (current: number, total: number, errors: string[]) => void
     ): Promise<string>
 
     /**
