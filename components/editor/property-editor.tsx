@@ -8,6 +8,7 @@ import { SinglePropertyEditor } from "@/components/editor/single-property-editor
 import { camelCaseReadable } from "@/lib/utils"
 import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { useEditorState } from "@/components/editor-state"
+import { handleSpringError } from "@/lib/spring-error-handling"
 
 export interface EntityEditorProperty {
     propertyName: string
@@ -168,7 +169,7 @@ export const PropertyEditor = memo(function PropertyEditor({
         if (commentIsPending) {
             return <Skeleton className="h-3 w-4/12 mt-1" />
         } else if (commentError) {
-            return <span className="text-destructive">{commentError}</span>
+            return <span className="text-destructive">{handleSpringError(commentError)}</span>
         } else if (comment !== undefined) {
             return <span>{comment + ""}</span>
         } else return null
@@ -195,8 +196,8 @@ export const PropertyEditor = memo(function PropertyEditor({
             <div className="truncate p-1">
                 <Error
                     className="mb-2"
-                    text={propertyRangeError}
-                    prefix="Error while determining type range: "
+                    error={propertyRangeError}
+                    title="Error while determining type range"
                 />
                 <div className="flex flex-col gap-4">
                     {property.values.map((v, i) => {

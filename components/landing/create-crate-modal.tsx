@@ -34,7 +34,7 @@ export function CreateCrateModal({
     const [description, setDescription] = useState("")
 
     const [uploading, setUploading] = useState(false)
-    const [error, setError] = useState("")
+    const [error, setError] = useState<unknown>()
     const [currentProgress, setCurrentProgress] = useState(0)
     const [maxProgress, setMaxProgress] = useState(0)
     const [uploadErrors, setUploadErrors] = useState<string[]>([])
@@ -68,7 +68,7 @@ export function CreateCrateModal({
                 })
                 .catch((e) => {
                     setUploading(false)
-                    setError(e.toString())
+                    setError(e)
                 })
         }
     }, [files, serviceProvider, name, description, openEditor])
@@ -86,7 +86,8 @@ export function CreateCrateModal({
                     openEditor(id)
                 })
                 .catch((e) => {
-                    setError(e.toString())
+                    setUploading(false)
+                    setError(e)
                 })
         }
     }, [serviceProvider, name, description, openEditor])
@@ -118,12 +119,12 @@ export function CreateCrateModal({
                         <DialogDescription>Large files will take some time...</DialogDescription>
                         <Progress value={currentProgress * (100 / maxProgress)} />
                         {uploadErrors.map((error, i) => (
-                            <Error prefix="A file failed to upload: " key={i} text={error} />
+                            <Error title="A file failed to upload" key={i} error={error} />
                         ))}
                     </>
                 ) : (
                     <>
-                        <Error text={error} />
+                        <Error title="Could not create a new Crate" error={error} />
                         <div>
                             <Label>Name</Label>
                             <Input

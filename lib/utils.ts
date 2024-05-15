@@ -109,18 +109,6 @@ export function camelCaseReadable(propertyName: string) {
     return split.charAt(0).toUpperCase() + split.slice(1)
 }
 
-export function errorToString(e: unknown) {
-    if (e) {
-        if (typeof e === "object") {
-            return e.toString()
-        } else {
-            return e + ""
-        }
-    } else {
-        return "[undefined error]"
-    }
-}
-
 export enum Diff {
     None,
     Changed,

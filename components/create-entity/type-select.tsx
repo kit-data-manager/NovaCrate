@@ -54,7 +54,7 @@ export function TypeSelect({
 
     return (
         <>
-            <Error text={error} />
+            <Error title="Error while getting list of possible classes" error={error} />
             <Command className="py-2">
                 <CommandInput placeholder="Search all matching Classes..." />
                 <CommandList>

@@ -15,10 +15,10 @@ function isEqual<I>(data: I | I[], oldData: I | I[]) {
 export function useAsync<I, O>(
     input: I | null,
     resolver: (input: I) => Promise<O>
-): { data: O | undefined; error: string; isPending: boolean; revalidate(): void } {
+): { data: O | undefined; error: unknown; isPending: boolean; revalidate(): void } {
     const [internalState, setInternalState] = useState<O | undefined>(undefined)
     const [pending, setPending] = useState(false)
-    const [error, setError] = useState<string>("")
+    const [error, setError] = useState<any>()
 
     const lastInput = useRef<I | null>(null)
 
@@ -29,11 +29,11 @@ export function useAsync<I, O>(
             resolver(input)
                 .then((output) => {
                     setInternalState(output)
-                    setError("")
+                    setError(undefined)
                 })
                 .catch((e) => {
                     console.error("Error in useAsync", e)
-                    setError(e + "")
+                    setError(e)
                 })
                 .finally(() => {
                     setPending(false)
