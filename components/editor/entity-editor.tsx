@@ -29,6 +29,7 @@ import { FindReferencesModal } from "@/components/editor/find-references-modal"
 import { SaveAsModal } from "@/components/editor/save-as-modal"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useRecentCrates } from "@/components/hooks"
+import { RootEntityHint } from "@/components/editor/root-entity-hint"
 
 export function EntityEditor({
     entityId,
@@ -231,6 +232,7 @@ export function EntityEditor({
 
                 <WebWorkerWarning />
                 <UnknownTypeWarning entityType={entity?.["@type"] || []} />
+                <RootEntityHint entity={entity} />
                 <Error
                     className="mt-4"
                     text={saveError ? "Error while saving: " + saveError : ""}
