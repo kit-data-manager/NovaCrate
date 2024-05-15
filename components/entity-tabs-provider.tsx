@@ -106,11 +106,16 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
             if (index >= 0) {
                 const newTabs = oldTabs.slice()
                 newTabs.splice(index, 1)
-                if (newTabs.length > 0) {
-                    setFocusedEntity(newTabs[index > 0 ? index - 1 : index].entityId)
-                } else {
-                    setFocusedEntity("")
-                }
+                setFocusedEntity((currentFocus) => {
+                    if (currentFocus !== id) {
+                        return currentFocus
+                    }
+                    if (newTabs.length > 0) {
+                        return newTabs[index > 0 ? index - 1 : index].entityId
+                    } else {
+                        return ""
+                    }
+                })
 
                 return newTabs
             }
