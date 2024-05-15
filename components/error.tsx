@@ -1,5 +1,6 @@
-import { CircleAlert, TriangleAlert } from "lucide-react"
-import { ReactNode } from "react"
+import { CircleAlert, TriangleAlert, XIcon } from "lucide-react"
+import { PropsWithChildren, useEffect, useMemo, useState } from "react"
+import { handleSpringError } from "@/lib/spring-error-handling"
 
 function cn(size?: "md" | "xl") {
     if (!size || size == "md") {
@@ -17,46 +18,65 @@ function cnIcon(size?: "md" | "xl") {
     }
 }
 
-export function Error({
-    text,
-    size,
-    className,
-    prefix
-}: {
-    text: string | ReactNode
-    size?: "md" | "xl"
-    className?: string
-    prefix?: string
-}) {
-    if (!text) return null
+export function Error(
+    props: (
+        | {
+              title?: string
+              error: unknown
+              prefix?: string
+          }
+        | PropsWithChildren<{}>
+    ) & { size?: "md" | "xl"; className?: string; warn?: boolean }
+) {
+    const [forceHide, setForceHide] = useState(false)
 
-    return (
-        <div className={cn(size) + " " + className}>
-            <CircleAlert className={cnIcon(size)} />
-            {prefix ? prefix + text : text + ""}
-        </div>
-    )
-}
+    const parsedText = useMemo(() => {
+        if (!("error" in props)) return undefined
+        return props.error ? handleSpringError(props.error) : ""
+    }, [props])
 
-export function Warn({
-    text,
-    size,
-    className,
-    prefix
-}: {
-    text: string | ReactNode
-    size?: "md" | "xl"
-    className?: string
-    prefix?: string
-}) {
-    if (!text) return null
+    useEffect(() => {
+        setForceHide(false)
+    }, [props])
+
+    if ("error" in props && !props.error) return null
+    if ("children" in props && !props.children) return null
+    if (forceHide) return null
 
     return (
         <div
-            className={cn(size) + " " + className + " !bg-transparent border-warn border text-warn"}
+            className={
+                cn(props.size) +
+                " " +
+                props.className +
+                (props.warn ? " !bg-transparent border-warn border text-warn" : "")
+            }
         >
-            <TriangleAlert className={cnIcon(size)} />
-            {prefix ? prefix + text : text + ""}
+            {props.warn ? (
+                <TriangleAlert className={cnIcon(props.size)} />
+            ) : (
+                <CircleAlert className={cnIcon(props.size)} />
+            )}
+            {"error" in props ? (
+                <div>
+                    <div className="">{props.title}</div>
+                    <div className={props.title ? "text-xs" : ""}>
+                        {props.prefix} {parsedText}
+                    </div>
+                </div>
+            ) : (
+                props.children
+            )}
+            <div className="grow" />
+            <button
+                className={
+                    "p-2 rounded transition hover:bg-primary/10" +
+                    (props.warn ? "" : "bg-destructive hover:bg-destructive-foreground/20")
+                }
+                onClick={() => setForceHide(true)}
+            >
+                <XIcon className="w-4 h-4" />
+            </button>
         </div>
     )
 }

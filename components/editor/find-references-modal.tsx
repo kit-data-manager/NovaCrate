@@ -115,11 +115,8 @@ export function FindReferencesModal({
 
                 <Error
                     className="mt-4"
-                    text={
-                        referencingEntitiesError
-                            ? "Error while searching for references: " + referencingEntitiesError
-                            : ""
-                    }
+                    title="Error while searching for references"
+                    error={referencingEntitiesError}
                 />
 
                 <Command className="py-2">

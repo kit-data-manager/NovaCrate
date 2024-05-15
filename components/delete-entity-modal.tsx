@@ -22,7 +22,7 @@ export function DeleteEntityModal({
     const { deleteEntity } = useContext(CrateDataContext)
     const removeEntity = useEditorState.useRemoveEntity()
     const [isDeleting, setIsDeleting] = useState(false)
-    const [deleteError, setDeleteError] = useState("")
+    const [deleteError, setDeleteError] = useState<unknown>()
 
     const localOnOpenChange = useCallback(
         (isOpen: boolean) => {
@@ -37,12 +37,12 @@ export function DeleteEntityModal({
             setIsDeleting(true)
             deleteEntity(entity)
                 .then(() => {
-                    setDeleteError("")
+                    setDeleteError(undefined)
                     removeEntity(entity["@id"])
                 })
                 .catch((e) => {
                     console.error(e)
-                    setDeleteError(typeof e === "object" ? JSON.stringify(e) : e + "")
+                    setDeleteError(e)
                 })
                 .finally(() => {
                     setIsDeleting(false)
@@ -61,7 +61,7 @@ export function DeleteEntityModal({
                     <DialogTitle>Confirm Deletion</DialogTitle>
                 </DialogHeader>
 
-                <Error text={deleteError} />
+                <Error title="An error occured while deleting this entity" error={deleteError} />
                 <div>
                     Are you sure that you want to delete{" "}
                     {entity ? getEntityDisplayName(entity) : <i>Unresolved Entity</i>}? The

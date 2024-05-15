@@ -44,7 +44,7 @@ export function CrateEntry({
 }) {
     const { serviceProvider } = useContext(CrateDataContext)
     const [crateDetails, setCrateDetails] = useState<CrateDetails | undefined>()
-    const [error, setError] = useState("")
+    const [error, setError] = useState<unknown>()
 
     useEffect(() => {
         const content = window.localStorage.getItem(crateDetailsKey(crateId))
@@ -86,15 +86,17 @@ export function CrateEntry({
     }, [serviceProvider, crateId])
 
     const title = useMemo(() => {
-        if (crateDetails) {
+        if (crateDetails && crateDetails.name) {
             return (
                 <>
                     <div>{crateDetails.name ?? null}</div>
-                    <div className="text-muted-foreground text-xs flex items-center">{crateId}</div>
+                    <code className="text-muted-foreground text-xs flex items-center">
+                        {crateId}
+                    </code>
                 </>
             )
         } else {
-            return <div>{crateId}</div>
+            return <code>{crateId}</code>
         }
     }, [crateDetails, crateId])
 
@@ -105,7 +107,11 @@ export function CrateEntry({
             </td>
             <td>
                 {title}
-                <Error text={error} />
+                <Error
+                    title="Could not fetch details for this crate"
+                    error={error}
+                    warn={!!(crateDetails && crateDetails.name)}
+                />
             </td>
             <td>
                 {crateDetails && crateDetails.lastOpened

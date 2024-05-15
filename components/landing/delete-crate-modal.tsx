@@ -18,7 +18,7 @@ export function DeleteCrateModal({
 }) {
     const { serviceProvider } = useContext(CrateDataContext)
     const [isDeleting, setIsDeleting] = useState(false)
-    const [deleteError, setDeleteError] = useState("")
+    const [deleteError, setDeleteError] = useState<unknown>()
 
     const localOnOpenChange = useCallback(
         (isOpen: boolean) => {
@@ -33,12 +33,12 @@ export function DeleteCrateModal({
             serviceProvider
                 .deleteCrate(crateId)
                 .then(() => {
-                    setDeleteError("")
+                    setDeleteError(undefined)
                     onDeleted(crateId)
                 })
                 .catch((e) => {
                     console.error(e)
-                    setDeleteError(typeof e === "object" ? JSON.stringify(e) : e + "")
+                    setDeleteError(e)
                 })
                 .finally(() => {
                     setIsDeleting(false)
@@ -57,7 +57,7 @@ export function DeleteCrateModal({
                     <DialogTitle>Confirm Deletion</DialogTitle>
                 </DialogHeader>
 
-                <Error text={deleteError} />
+                <Error title="An error occured while deleting this crate" error={deleteError} />
                 <div>
                     Are you sure that you want to delete this crate? <b>All data</b> will be{" "}
                     <b>permanently deleted</b>.

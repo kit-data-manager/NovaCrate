@@ -150,11 +150,8 @@ export function AddPropertyModal({
 
                 <Error
                     className="mt-4"
-                    text={
-                        possiblePropertiesError
-                            ? "Error while determining properties: " + possiblePropertiesError
-                            : ""
-                    }
+                    title="Error while determining possible properties"
+                    error={possiblePropertiesError}
                 />
 
                 <Command className="py-2">

@@ -24,7 +24,6 @@ import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/ent
 import { EntityIcon } from "./entity-icon"
 import { GlobalModalContext } from "@/components/global-modals-provider"
 import { useEditorState } from "@/components/editor-state"
-import { Error } from "@/components/error"
 
 type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -222,7 +221,6 @@ export function EntityBrowser() {
                     />
                 </Button>
             </div>
-            <Error text={crate.error ? crate.error + "" : ""} />
             <EntityBrowserContent
                 defaultSectionOpen={defaultSectionOpen}
                 onSectionOpenChange={onSectionOpenChange}

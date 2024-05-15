@@ -26,12 +26,14 @@ export function CreateFromORCIDModal({
 }) {
     const [url, setUrl] = useState("")
     const [previewData, setPreviewData] = useState<PreviewData | null>(null)
-    const [fetchError, setFetchError] = useState("")
+    const [fetchError, setFetchError] = useState<unknown>()
     const [loading, setLoading] = useState(false)
+
+    // TODO: use SWR
 
     const fetchPreview = useCallback(() => {
         setLoading(true)
-        setFetchError("")
+        setFetchError(undefined)
         const promise = fetch("/api/proxy/orcid", {
             method: "POST",
             headers: {
@@ -46,10 +48,10 @@ export function CreateFromORCIDModal({
                     data.json()
                         .then((parsed) => {
                             setPreviewData(parsed)
-                            setFetchError("")
+                            setFetchError(undefined)
                         })
                         .catch((e) => {
-                            setFetchError(e.toString())
+                            setFetchError(e)
                         })
                 } else if (data.status === 404) {
                     setFetchError("Not Found")
@@ -93,7 +95,7 @@ export function CreateFromORCIDModal({
                             disabled={loading}
                         />
 
-                        <Error text={fetchError} />
+                        <Error title="Error while fetching from orcid.org" error={fetchError} />
 
                         {loading ? (
                             <div className="flex justify-center p-2">

@@ -16,7 +16,7 @@ export interface ICrateDataProvider {
     deleteEntity(entity: IFlatEntity): Promise<boolean>
     reload(): void
     isSaving: boolean
-    saveError: string
+    saveError: unknown
     error: unknown
 }
 
@@ -34,8 +34,8 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
     },
     crateDataIsLoading: false,
     isSaving: false,
-    saveError: "",
-    error: ""
+    saveError: undefined,
+    error: undefined
 })
 
 export function CrateDataProvider(
@@ -87,7 +87,7 @@ export function CrateDataProvider(
     ])
 
     const [isSaving, setIsSaving] = useState(false)
-    const [saveError, setSaveError] = useState("")
+    const [saveError, setSaveError] = useState<any>()
 
     const saveEntity = useCallback(
         async (entityData: IFlatEntity) => {
@@ -102,7 +102,7 @@ export function CrateDataProvider(
 
                     const updateResult = await fn(props.crateId, entityData)
                     setIsSaving(false)
-                    setSaveError("")
+                    setSaveError(undefined)
 
                     if (data) {
                         const newData = produce<ICrate>(data, (newData: Draft<ICrate>) => {
@@ -122,7 +122,7 @@ export function CrateDataProvider(
                     return updateResult
                 } catch (e) {
                     console.error("Error occurred while trying to update entity", e)
-                    setSaveError(typeof e === "object" && e ? e.toString() : e + "")
+                    setSaveError(e)
                     setIsSaving(false)
                     return false
                 }
@@ -154,7 +154,7 @@ export function CrateDataProvider(
                     return deleteResult
                 } catch (e) {
                     console.error("Error occurred while trying to delete entity", e)
-                    setSaveError(typeof e === "object" ? JSON.stringify(e) : e + "")
+                    setSaveError(e)
                     return false
                 }
             } else return false
@@ -177,7 +177,6 @@ export function CrateDataProvider(
                 error
             }}
         >
-            <Error text={error ? error + "" : ""} size={"xl"} />
             {props.children}
         </CrateDataContext.Provider>
     )

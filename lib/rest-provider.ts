@@ -1,5 +1,6 @@
 import { isContextualEntity, isFolderDataEntity, isRootEntity } from "@/lib/utils"
 import fileDownload from "js-file-download"
+import { handleSpringError } from "@/lib/spring-error-handling"
 
 export class RestProvider implements CrateServiceProvider {
     async createCrateFromFiles(
@@ -19,7 +20,7 @@ export class RestProvider implements CrateServiceProvider {
                 await this.createFileEntity(
                     id,
                     {
-                        "@id": pathSplit.join("/"),
+                        "@id": pathSplit.join("/").slice(2),
                         "@type": "File",
                         name: pathSplit[pathSplit.length - 1]
                     },
@@ -27,7 +28,7 @@ export class RestProvider implements CrateServiceProvider {
                 )
             } catch (e) {
                 console.error(e)
-                errors.push(typeof e === "object" && e ? e.toString() : e + "")
+                errors.push(handleSpringError(e))
             }
 
             progressCallback?.(files.indexOf(file) + 1, files.length, errors)
@@ -57,8 +58,8 @@ export class RestProvider implements CrateServiceProvider {
     }
 
     async createCrate(name: string, description: string) {
-        const request = await fetch("http://localhost:8080/crates/new", {
-            method: "POST",
+        const request = await fetch("http://localhost:8080/crates", {
+            method: "PUT",
             body: JSON.stringify({ name, description }),
             headers: { "Content-Type": "application/json" }
         })
@@ -66,24 +67,25 @@ export class RestProvider implements CrateServiceProvider {
             const response = await request.json()
             return response.id + ""
         } else {
-            throw "Failed to upload crate: " + request.status
+            throw handleSpringError(await request.json())
         }
     }
 
     async createCrateFromCrateZip(zip: File) {
-        if (zip.type !== "application/zip") throw "Unsupported file type " + zip.type
+        if (zip.type !== "application/zip" && zip.type !== "application/x-zip-compressed")
+            throw "Unsupported file type " + zip.type
         const body = new FormData()
         body.append("file", zip)
 
         const request = await fetch("http://localhost:8080/crates", {
-            method: "POST",
+            method: "PUT",
             body
         })
         if (request.ok) {
             const response = await request.json()
             return response.id + ""
         } else {
-            throw "Failed to upload crate: " + request.status
+            throw handleSpringError(await request.json())
         }
     }
 
@@ -107,7 +109,7 @@ export class RestProvider implements CrateServiceProvider {
         if (request.ok) {
             return true
         } else {
-            throw "Failed to create file entity: " + request.status
+            throw handleSpringError(await request.json())
         }
     }
 
@@ -118,7 +120,7 @@ export class RestProvider implements CrateServiceProvider {
         if (request.ok) {
             return true
         } else {
-            throw "Failed to delete crate: " + request.status
+            throw handleSpringError(await request.json())
         }
     }
 
@@ -129,7 +131,7 @@ export class RestProvider implements CrateServiceProvider {
         if (request.ok) {
             return true
         } else {
-            throw "Failed to delete crate: " + request.status
+            throw handleSpringError(await request.json())
         }
     }
 
@@ -138,7 +140,7 @@ export class RestProvider implements CrateServiceProvider {
         if (request.ok) {
             fileDownload(await request.arrayBuffer(), `${id}.zip`, "application/zip")
         } else {
-            throw "Failed to download crate zip: " + request.status
+            throw handleSpringError(await request.json())
         }
     }
 
@@ -149,18 +151,18 @@ export class RestProvider implements CrateServiceProvider {
         if (request.ok) {
             fileDownload(await request.arrayBuffer(), "ro-crate-metadata.json", "application/json")
         } else {
-            throw "Failed to get crate: " + request.status
+            throw handleSpringError(await request.json())
         }
     }
 
     async getCrate(id: string): Promise<ICrate> {
         const request = await fetch(
-            `http://localhost:8080/crates/${encodeURIComponent(id)}/ro-crate-metadata.json`
+            `http://localhost:8080/crates/${encodeURIComponent(id)}/files/ro-crate-metadata.json`
         )
         if (request.ok) {
             return await request.json()
         } else {
-            throw "Failed to get crate: " + request.status
+            throw handleSpringError(await request.json())
         }
     }
 
@@ -190,7 +192,7 @@ export class RestProvider implements CrateServiceProvider {
         if (request.ok) {
             return true
         } else {
-            throw "Failed to get crate: " + request.status
+            throw handleSpringError(await request.json())
         }
     }
 
@@ -200,7 +202,7 @@ export class RestProvider implements CrateServiceProvider {
             const response = await request.json()
             return response as string[]
         } else {
-            throw "Failed to get crate: " + request.status
+            throw handleSpringError(await request.json())
         }
     }
 

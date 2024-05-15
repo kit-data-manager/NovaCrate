@@ -42,7 +42,7 @@ import { CreateCrateModal } from "@/components/landing/create-crate-modal"
 export default function EditorLandingPage() {
     const router = useRouter()
     const theme = useTheme()
-    const [error, setError] = useState("")
+    const [error, setError] = useState<unknown>()
     const { recentCrates, removeFromRecentCrates } = useRecentCrates()
     const [showStoredCratesAmount, setShowStoredCratesAmount] = useState(5)
     const [showRecentCratesAmount, setShowRecentCratesAmount] = useState(5)
@@ -98,13 +98,13 @@ export default function EditorLandingPage() {
         })
     }, [])
 
-    const createCrateFromExample = useCallback((example: string) => {
-        setCreateCrateModalState({
-            fromExample: example,
-            fromFolder: false,
-            open: true
-        })
-    }, [])
+    // const createCrateFromExample = useCallback((example: string) => {
+    //     setCreateCrateModalState({
+    //         fromExample: example,
+    //         fromFolder: false,
+    //         open: true
+    //     })
+    // }, [])
 
     const onShowMoreStoredClick = useCallback(() => {
         setShowStoredCratesAmount((old) => old + 5)
@@ -129,7 +129,7 @@ export default function EditorLandingPage() {
                     openEditor(id)
                 })
                 .catch((e) => {
-                    setError(e.toString())
+                    setError(e)
                 })
         }
     }, [zipFiles, serviceProvider, openEditor])
@@ -180,8 +180,8 @@ export default function EditorLandingPage() {
                 <Package className="w-32 h-32 mb-10" />
                 <h2 className="text-5xl font-bold">Editor Name</h2>
             </div>
+            <Error title="An error occured on this page" error={error} />
             <div className="flex justify-center">
-                <Error text={error} />
                 <Button
                     size="lg"
                     variant="outline"
@@ -317,7 +317,7 @@ export default function EditorLandingPage() {
 
             <div className="flex justify-center p-20 pt-0 w-full">
                 <div className="flex flex-col w-[min(90vw,1000px)]">
-                    <Error text={storedCratesError} />
+                    <Error title="Failed to fetch stored crates" error={storedCratesError} />
                     <table className="rounded-lg [&_td]:border-t [&_td]:p-2 [&_th]:p-2 [&_th]:text-left grow">
                         <thead>
                             <tr>
