@@ -12,10 +12,9 @@ import {
     GitFork,
     Library,
     Package,
-    PackageSearch,
-    ScanBarcode
+    PackageSearch
 } from "lucide-react"
-import { PropsWithChildren, useContext, useMemo } from "react"
+import { PropsWithChildren, useCallback, useContext, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { CrateDataContext } from "@/components/crate-data-provider"
@@ -27,6 +26,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
+import { useCopyToClipboard } from "usehooks-ts"
 
 function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>) {
     const pathname = usePathname()
@@ -60,6 +60,18 @@ function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>)
 
 export function NavSidebar({ children }: PropsWithChildren<{}>) {
     const crate = useContext(CrateDataContext)
+    const [_, copyFn] = useCopyToClipboard()
+
+    const copy = useCallback(
+        (text: string) => {
+            copyFn(text).catch((e) => console.error("Failed to copy to clipboard", e))
+        },
+        [copyFn]
+    )
+
+    const crateName = useMemo(() => {
+        return (crate.crateData?.["@graph"].find(isRootEntity)?.name || "") + ""
+    }, [crate.crateData])
 
     return (
         <ResizablePanelGroup direction="horizontal" autoSaveId="globalSidebarLayout">
@@ -71,19 +83,19 @@ export function NavSidebar({ children }: PropsWithChildren<{}>) {
                         ) : (
                             <div className="text-sm w-full flex items-center">
                                 <Package className="w-4 h-4 shrink-0 mr-2" />{" "}
-                                <div className="truncate shrink">
-                                    {crate.crateData?.["@graph"].find(isRootEntity)?.name + ""}
-                                </div>
+                                <div className="truncate shrink">{crateName || crate.crateId}</div>
                                 <div className="grow" />
                                 <DropdownMenu>
                                     <DropdownMenuTrigger>
                                         <EllipsisVertical className="w-4 h-4" />
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
-                                        <DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => copy(crate.crateId)}>
                                             <Copy className="w-4 h-4 mr-2" /> Copy Crate ID
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() => copy(crateName || crate.crateId)}
+                                        >
                                             <Copy className="w-4 h-4 mr-2" /> Copy Crate Name
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
