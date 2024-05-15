@@ -71,7 +71,8 @@ export class RestProvider implements CrateServiceProvider {
     }
 
     async createCrateFromCrateZip(zip: File) {
-        if (zip.type !== "application/zip") throw "Unsupported file type " + zip.type
+        if (zip.type !== "application/zip" && zip.type !== "application/x-zip-compressed")
+            throw "Unsupported file type " + zip.type
         const body = new FormData()
         body.append("file", zip)
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from "react"
+import React, { useCallback, useContext, useEffect, useState } from "react"
 import {
     Dialog,
     DialogContent,
@@ -14,18 +14,21 @@ import { Button } from "../ui/button"
 import { ArrowLeft, Folder, PackagePlus } from "lucide-react"
 import { CrateDataContext } from "../crate-data-provider"
 import { Progress } from "../ui/progress"
+import { errorToString } from "@/lib/utils"
 
 export function CreateCrateModal({
     open,
     onOpenChange,
     fromFolder,
     fromExample,
+    fromZip,
     openEditor
 }: {
     open: boolean
     onOpenChange: (isOpen: boolean) => void
     fromFolder: boolean
     fromExample?: string
+    fromZip?: File
     openEditor(id: string): void
 }) {
     const { serviceProvider } = useContext(CrateDataContext)
@@ -68,7 +71,7 @@ export function CreateCrateModal({
                 })
                 .catch((e) => {
                     setUploading(false)
-                    setError(e.toString())
+                    setError(errorToString(e))
                 })
         }
     }, [files, serviceProvider, name, description, openEditor])
@@ -86,10 +89,32 @@ export function CreateCrateModal({
                     openEditor(id)
                 })
                 .catch((e) => {
-                    setError(e.toString())
+                    setError(errorToString(e))
                 })
         }
     }, [serviceProvider, name, description, openEditor])
+
+    const createCrateFromCrateZip = useCallback(() => {
+        if (fromZip && serviceProvider) {
+            setUploading(true)
+            setCurrentProgress(0)
+            setMaxProgress(1)
+            setUploadErrors([])
+            serviceProvider
+                .createCrateFromCrateZip(fromZip)
+                .then((id) => {
+                    setCurrentProgress(1)
+                    openEditor(id)
+                })
+                .catch((e) => {
+                    setError(errorToString(e))
+                })
+        }
+    }, [fromZip, serviceProvider, openEditor])
+
+    useEffect(() => {
+        createCrateFromCrateZip()
+    }, [createCrateFromCrateZip])
 
     const onCreateClick = useCallback(() => {
         if (fromExample) {
