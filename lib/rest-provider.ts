@@ -1,6 +1,7 @@
 import { isContextualEntity, isDataEntity, isFolderDataEntity, isRootEntity } from "@/lib/utils"
 import fileDownload from "js-file-download"
 import { handleSpringError } from "@/lib/spring-error-handling"
+import { CrateServiceProvider } from "@/lib/crate-provider"
 
 export class RestProvider implements CrateServiceProvider {
     async createCrateFromFiles(
@@ -142,6 +143,18 @@ export class RestProvider implements CrateServiceProvider {
         )
         if (request.ok) {
             fileDownload(await request.arrayBuffer(), "ro-crate-metadata.json", "application/json")
+        } else {
+            throw handleSpringError(await request.json())
+        }
+    }
+
+    async downloadFile(crateId: string, filePath: string) {
+        const request = await fetch(
+            `http://localhost:8080/crates/${encodeURIComponent(crateId)}/files/${filePath}`
+        )
+        if (request.ok) {
+            const filePathSplit = filePath.split("/")
+            fileDownload(await request.arrayBuffer(), filePathSplit[filePathSplit.length - 1])
         } else {
             throw handleSpringError(await request.json())
         }

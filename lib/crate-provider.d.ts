@@ -1,3 +1,6 @@
+import fileDownload from "js-file-download"
+import { handleSpringError } from "@/lib/spring-error-handling"
+
 /**
  * The Crate Service Provider is in charge of delivering crate data and performing manipulations
  * of the crate data in response to UI events
@@ -140,4 +143,12 @@ declare interface CrateServiceProvider {
      * @returns void - This function should not return anything
      */
     downloadRoCrateMetadataJSON(id: string): void
+
+    /**
+     * Download any file from the crate. This function should initiate a download or save dialog (or similar)
+     * @param crateId ID of the target crate
+     * @param filePath Path to the file in the archive
+     * @returns void - This function should not return anything
+     */
+    downloadFile(crateId: string, filePath: string)
 }

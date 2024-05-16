@@ -1,11 +1,12 @@
 import { useEditorState } from "@/components/editor-state"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useContext, useMemo, useState } from "react"
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, File, FileX, Folder, FolderX } from "lucide-react"
 import { getEntityDisplayName, isFileDataEntity } from "@/lib/utils"
 import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { FolderContent } from "@/components/file-explorer/content"
+import { FileExplorerContext } from "@/components/file-explorer/context"
 
 function isNonEmptyPart(part: string) {
     return part !== "" && part !== "."
@@ -66,7 +67,12 @@ export function FolderEntry(props: { filePath: string; filePaths: string[] }) {
                         </div>
                     </Button>
                 </ContextMenuTrigger>
-                <EntryContextMenu entity={entity} folder />
+                <EntryContextMenu
+                    entity={entity}
+                    folder
+                    filePath={props.filePath}
+                    fileName={filePathLastSegment(props.filePath)}
+                />
             </ContextMenu>
             {isOpen ? (
                 <div className="ml-6">
@@ -79,19 +85,11 @@ export function FolderEntry(props: { filePath: string; filePaths: string[] }) {
 
 export function FileEntry(props: { filePath: string }) {
     const entity = useEditorState((state) => state.entities.get(props.filePath))
-    const [isOpen, setIsOpen] = useState(true)
-
-    const isFile = useMemo(() => {
-        return entity ? isFileDataEntity(entity) : false
-    }, [entity])
+    const { setPreviewingFilePath } = useContext(FileExplorerContext)
 
     const isMock = useMemo(() => {
         return entity == undefined
     }, [entity])
-
-    const toggleOpen = useCallback(() => {
-        if (!isFile) setIsOpen(!isOpen)
-    }, [isFile, isOpen])
 
     return (
         <ContextMenu>
@@ -99,7 +97,7 @@ export function FileEntry(props: { filePath: string }) {
                 <Button
                     className={`gap-2 group/fileBrowserEntry w-full pl-1`}
                     variant="list-entry"
-                    onClick={() => toggleOpen()}
+                    onClick={() => setPreviewingFilePath(props.filePath)}
                 >
                     <div className="w-4 h-4 shrink-0" />
                     {isMock ? (
@@ -122,7 +120,11 @@ export function FileEntry(props: { filePath: string }) {
                     </div>
                 </Button>
             </ContextMenuTrigger>
-            <EntryContextMenu entity={entity} />
+            <EntryContextMenu
+                entity={entity}
+                filePath={props.filePath}
+                fileName={filePathLastSegment(props.filePath)}
+            />
         </ContextMenu>
     )
 }
