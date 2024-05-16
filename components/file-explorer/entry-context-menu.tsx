@@ -9,14 +9,58 @@ import {
 import { Copy, Download, Eye, Plus } from "lucide-react"
 import { EntityIcon } from "@/components/entity-icon"
 import HelpTooltip from "@/components/help-tooltip"
+import { usePathname, useRouter } from "next/navigation"
+import { useCallback, useContext } from "react"
+import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
+import { useCopyToClipboard } from "usehooks-ts"
+import { CrateDataContext } from "@/components/crate-data-provider"
 
-export function EntryContextMenu({ entity, folder }: { entity?: IFlatEntity; folder?: boolean }) {
+export function EntryContextMenu({
+    entity,
+    filePath,
+    fileName,
+    folder
+}: {
+    entity?: IFlatEntity
+    filePath: string
+    fileName: string
+    folder?: boolean
+}) {
+    const { serviceProvider, crateId } = useContext(CrateDataContext)
+    const { openTab } = useContext(EntityEditorTabsContext)
+    const pathname = usePathname()
+    const router = useRouter()
+    const [_, copy] = useCopyToClipboard()
+
+    const goToEntity = useCallback(() => {
+        if (entity) {
+            openTab(createEntityEditorTab(entity), true)
+        }
+
+        const href =
+            pathname
+                .split("/")
+                .filter((_, i) => i < 3)
+                .join("/") + "/entities"
+        router.push(href)
+    }, [entity, openTab, pathname, router])
+
+    const copyText = useCallback(
+        (text: string) => {
+            copy(text).catch(console.error)
+        },
+        [copy]
+    )
+
+    const downloadFile = useCallback(() => {
+        if (serviceProvider) {
+            serviceProvider.downloadFile(crateId, filePath)
+        }
+    }, [crateId, filePath, serviceProvider])
+
     return (
         <ContextMenuContent>
-            <ContextMenuItem>
-                <Eye className="w-4 h-4 mr-2" /> Preview
-            </ContextMenuItem>
-            <ContextMenuItem>
+            <ContextMenuItem onClick={goToEntity}>
                 {entity ? (
                     <>
                         <EntityIcon entity={entity} size="sm" /> Go to Entity
@@ -38,13 +82,17 @@ export function EntryContextMenu({ entity, folder }: { entity?: IFlatEntity; fol
                     <Copy className="w-4 h-4 mr-2" /> Copy
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
-                    <ContextMenuItem>File Name</ContextMenuItem>
-                    <ContextMenuItem>Full Path</ContextMenuItem>
-                    {entity ? <ContextMenuItem>Entity ID</ContextMenuItem> : null}
+                    <ContextMenuItem onClick={() => copyText(fileName)}>File Name</ContextMenuItem>
+                    <ContextMenuItem onClick={() => copyText(filePath)}>Full Path</ContextMenuItem>
+                    {entity ? (
+                        <ContextMenuItem onClick={() => copyText(entity["@id"])}>
+                            Entity ID
+                        </ContextMenuItem>
+                    ) : null}
                 </ContextMenuSubContent>
             </ContextMenuSub>
             {!folder ? (
-                <ContextMenuItem>
+                <ContextMenuItem onClick={downloadFile}>
                     <Download className="w-4 h-4 mr-2" /> Download File
                 </ContextMenuItem>
             ) : null}

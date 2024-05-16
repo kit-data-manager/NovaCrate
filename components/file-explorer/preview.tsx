@@ -1,14 +1,12 @@
 import { Download, Eye, Pencil, Trash, X } from "lucide-react"
 import HelpTooltip from "@/components/help-tooltip"
 import { Button } from "@/components/ui/button"
+import { useContext } from "react"
+import { FileExplorerContext } from "@/components/file-explorer/context"
 
-export function FilePreview({
-    previewingFilePath,
-    setPreviewingFilePath
-}: {
-    previewingFilePath: string
-    setPreviewingFilePath(path: string): void
-}) {
+export function FilePreview() {
+    const { previewingFilePath, setPreviewingFilePath } = useContext(FileExplorerContext)
+
     return (
         <>
             <div className="pl-4 bg-accent text-sm h-10 flex items-center gap-2">
@@ -24,7 +22,12 @@ export function FilePreview({
                 <Button size="sm" variant="outline" className="text-xs">
                     <Download className={"w-4 h-4 mr-2"} /> Download File
                 </Button>
-                <Button size="sm" variant="outline" className="text-xs">
+                <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs"
+                    onClick={() => setPreviewingFilePath("")}
+                >
                     <X className={"w-4 h-4 mr-1"} /> Close Preview
                 </Button>
             </div>
