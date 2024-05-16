@@ -24,7 +24,6 @@ export function getEntityDisplayName(entity: IFlatEntity, fallback: boolean = tr
             .filter((p) => p)
             .join(", ")
     } else if (fallback) {
-        if (entity["@id"] === "./") return "Crate Root"
         return entity["@id"]
     }
 

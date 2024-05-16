@@ -121,23 +121,6 @@ export default function EditorLandingPage() {
         [router]
     )
 
-    const createCrateFromCrateZip = useCallback(() => {
-        if (zipFiles.length > 0 && serviceProvider) {
-            serviceProvider
-                .createCrateFromCrateZip(zipFiles[0])
-                .then((id) => {
-                    openEditor(id)
-                })
-                .catch((e) => {
-                    setError(e)
-                })
-        }
-    }, [zipFiles, serviceProvider, openEditor])
-
-    useEffect(() => {
-        createCrateFromCrateZip()
-    }, [createCrateFromCrateZip])
-
     const storedCratesResolver = useCallback(async () => {
         if (serviceProvider) {
             return await serviceProvider.getStoredCrateIds()
@@ -158,6 +141,10 @@ export default function EditorLandingPage() {
         return !!(recentCrates && recentCrates.length > showRecentCratesAmount)
     }, [recentCrates, showRecentCratesAmount])
 
+    const fromZip = useMemo(() => {
+        return zipFiles.length > 0 ? zipFiles[0] : undefined
+    }, [zipFiles])
+
     return (
         <div className="flex flex-col w-full h-full">
             <DeleteCrateModal
@@ -174,6 +161,7 @@ export default function EditorLandingPage() {
                 {...createCrateModalState}
                 onOpenChange={onCreateCrateModalOpenChange}
                 openEditor={openEditor}
+                fromZip={fromZip}
             />
 
             <div className="flex flex-col items-center justify-center h-[max(45vh,200px)] p-10">
@@ -209,16 +197,16 @@ export default function EditorLandingPage() {
                             <PackagePlus className="w-4 h-4 mr-2" />
                             Empty Crate
                         </DropdownMenuItem>
-                        <DropdownMenuSub>
-                            <DropdownMenuSubTrigger>
-                                <Blocks className="w-4 h-4 mr-2" /> Examples
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent>
-                                <DropdownMenuItem>
-                                    <Blocks className="w-4 h-4 mr-2" /> Example One
-                                </DropdownMenuItem>
-                            </DropdownMenuSubContent>
-                        </DropdownMenuSub>
+                        {/*<DropdownMenuSub>*/}
+                        {/*    <DropdownMenuSubTrigger>*/}
+                        {/*        <Blocks className="w-4 h-4 mr-2" /> Examples*/}
+                        {/*    </DropdownMenuSubTrigger>*/}
+                        {/*    <DropdownMenuSubContent>*/}
+                        {/*        <DropdownMenuItem>*/}
+                        {/*            <Blocks className="w-4 h-4 mr-2" /> Example One*/}
+                        {/*        </DropdownMenuItem>*/}
+                        {/*    </DropdownMenuSubContent>*/}
+                        {/*</DropdownMenuSub>*/}
                     </DropdownMenuContent>
                 </DropdownMenu>
 
