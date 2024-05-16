@@ -10,8 +10,10 @@ export function RootEntityHint({ entity }: { entity: IFlatEntity }) {
                 <InfoIcon className="w-4 h-4" />
                 <AlertTitle>Hint: Crate Root</AlertTitle>
                 <AlertDescription>
-                    This is the root entity of your crate. It defines the name of the crate and some
-                    contextual information. It is recommended to not edit the <i>Has Part</i>{" "}
+                    This is the root entity of your crate. In this editor they are identified by the
+                    letter <b className="text-root">R</b> and the color{" "}
+                    <span className="text-root">orange</span>. It defines the name of the crate and
+                    some contextual information. It is recommended to not edit the <i>Has Part</i>{" "}
                     property manually. Contextual Information that applies to the whole crate should
                     be added here. More information can be found here:{" "}
                     <a

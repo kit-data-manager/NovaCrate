@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { toArray } from "@/lib/utils"
-import { Warn } from "@/components/error"
 import { useEditorState } from "@/components/editor-state"
+import { Error } from "@/components/error"
 
 export function UnknownTypeWarning({ entityType }: { entityType: string | string[] }) {
     const crateContext = useEditorState.useCrateContext()
@@ -18,9 +18,10 @@ export function UnknownTypeWarning({ entityType }: { entityType: string | string
     if (notResolvable.length === 0) return null
     else
         return (
-            <Warn
+            <Error
+                warn
                 className="mt-4"
-                text={
+                error={
                     <div>
                         The following types of this entity could not be resolved in the current
                         context: {notResolvable.map((e) => e.type).join(", ")}. Some features will

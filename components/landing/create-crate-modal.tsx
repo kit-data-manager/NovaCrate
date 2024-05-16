@@ -50,6 +50,7 @@ export function CreateCrateModal({
         (isOpen: boolean) => {
             if (!uploading) {
                 onOpenChange(isOpen)
+                setError(undefined)
             }
         },
         [onOpenChange, uploading]
@@ -150,23 +151,27 @@ export function CreateCrateModal({
                 ) : (
                     <>
                         <Error title="Could not create a new Crate" error={error} />
-                        <div>
-                            <Label>Name</Label>
-                            <Input
-                                placeholder="Name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                autoFocus
-                            />
-                        </div>
-                        <div>
-                            <Label>Description</Label>
-                            <Input
-                                placeholder="Description"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                            />
-                        </div>
+                        {!fromZip ? (
+                            <>
+                                <div>
+                                    <Label>Name</Label>
+                                    <Input
+                                        placeholder="Name"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        autoFocus
+                                    />
+                                </div>
+                                <div>
+                                    <Label>Description</Label>
+                                    <Input
+                                        placeholder="Description"
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                    />
+                                </div>
+                            </>
+                        ) : null}
 
                         {fromFolder ? (
                             <div>
@@ -193,7 +198,7 @@ export function CreateCrateModal({
                             </Button>
                             <Button
                                 onClick={onCreateClick}
-                                disabled={fromFolder && files.length == 0}
+                                disabled={(fromFolder && files.length == 0) || !!fromZip}
                             >
                                 <PackagePlus className="w-4 h-4 mr-2" /> Create
                             </Button>

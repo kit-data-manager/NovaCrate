@@ -146,7 +146,7 @@ export class RestProvider implements CrateServiceProvider {
 
     async downloadRoCrateMetadataJSON(id: string) {
         const request = await fetch(
-            `http://localhost:8080/crates/${encodeURIComponent(id)}/ro-crate-metadata.json`
+            `http://localhost:8080/crates/${encodeURIComponent(id)}/files/ro-crate-metadata.json`
         )
         if (request.ok) {
             fileDownload(await request.arrayBuffer(), "ro-crate-metadata.json", "application/json")
