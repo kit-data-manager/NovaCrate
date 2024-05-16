@@ -1,4 +1,4 @@
-import { isContextualEntity, isFolderDataEntity, isRootEntity } from "@/lib/utils"
+import { isContextualEntity, isDataEntity, isFolderDataEntity, isRootEntity } from "@/lib/utils"
 import fileDownload from "js-file-download"
 import { handleSpringError } from "@/lib/spring-error-handling"
 
@@ -41,19 +41,11 @@ export class RestProvider implements CrateServiceProvider {
         throw "Not implemented"
     }
 
-    getCrateFileWithData(crateId: string, filePath: string): Promise<ICrateFileWithData> {
+    getCrateFileWithData(crateId: string, filePath: string): Promise<File> {
         throw "Not implemented"
     }
 
     renameEntity(crateId: string, oldEntityId: string, newEntityId: string): Promise<boolean> {
-        throw "Not implemented"
-    }
-
-    uploadCrateFileWithData(crateId: string, file: ICrateFileWithData): boolean {
-        throw "Not implemented"
-    }
-
-    uploadCrateFileZip(crateId: string, zip: File): boolean {
         throw "Not implemented"
     }
 
@@ -166,33 +158,52 @@ export class RestProvider implements CrateServiceProvider {
         }
     }
 
-    getCrateFilesList(crateId: string): Promise<ICrateFile[]> {
-        throw "Not implemented"
-    }
-
-    getCrateUndeclaredFilesList(crateId: string): Promise<ICrateFile[]> {
-        throw "Not implemented"
+    async getCrateFilesList(crateId: string): Promise<string[]> {
+        const request = await fetch(
+            `http://localhost:8080/crates/${encodeURIComponent(crateId)}/files/`
+        )
+        if (request.ok) {
+            return await request.json()
+        } else {
+            throw handleSpringError(await request.json())
+        }
     }
 
     getEntity(crateId: string, entityId: string): Promise<IFlatEntity> {
         throw "Not implemented"
     }
 
-    // TODO properly handle data entities, route changed
     async updateEntity(
         crateId: string,
         entityData: IFlatEntity,
         create: boolean = false
     ): Promise<boolean> {
-        const request = await fetch(this.getEntityRoute(crateId, entityData), {
-            body: JSON.stringify(entityData),
-            method: /*create ?*/ "PUT" /*: "PATCH"*/,
-            headers: { "Content-Type": "application/json" }
-        })
-        if (request.ok) {
-            return true
+        if (isDataEntity(entityData) && !isRootEntity(entityData)) {
+            const formData = new FormData()
+            formData.append(
+                "metadata",
+                new Blob([JSON.stringify(entityData)], { type: "application/json" })
+            )
+            const request = await fetch(this.getEntityRoute(crateId, entityData), {
+                body: formData,
+                method: "PUT"
+            })
+            if (request.ok) {
+                return true
+            } else {
+                throw handleSpringError(await request.json())
+            }
         } else {
-            throw handleSpringError(await request.json())
+            const request = await fetch(this.getEntityRoute(crateId, entityData), {
+                body: JSON.stringify(entityData),
+                method: /*create ?*/ "PUT" /*: "PATCH"*/,
+                headers: { "Content-Type": "application/json" }
+            })
+            if (request.ok) {
+                return true
+            } else {
+                throw handleSpringError(await request.json())
+            }
         }
     }
 

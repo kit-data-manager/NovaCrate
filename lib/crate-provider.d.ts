@@ -107,27 +107,18 @@ declare interface CrateServiceProvider {
     renameEntity?: (crateId: string, oldEntityId: string, newEntityId: string) => Promise<boolean>
 
     /**
-     * Get a complete list of files in the crate archive, excluding ro-crate-metadata.json,
-     * ro-crate-preview.html and related files
+     * Get a complete list of file names in the crate archive
      * @param crateId ID of the target crate
      * @returns Promise - resolves on success
      */
-    getCrateFilesList(crateId: string): Promise<ICrateFile[]>
+    getCrateFilesList(crateId: string): Promise<string[]>
 
     /**
-     * Get a list of files in the crate archive that are not describe by a data entity, excluding ro-crate-metadata.json,
-     * ro-crate-preview.html and related files
-     * @param crateId ID of the target crate
-     * @returns Promise - resolves on success
-     */
-    getCrateUndeclaredFilesList(crateId: string): Promise<ICrateFile[]>
-
-    /**
-     * Get a file in the crate archive, including its data
+     * Get a file in the crate archive
      * @param crateId ID of the target crate
      * @param filePath Path to the desired file, including file name and extension
      */
-    getCrateFileWithData?: (crateId: string, filePath: string) => Promise<ICrateFileWithData>
+    getCrateFileWithData?: (crateId: string, filePath: string) => Promise<File>
 
     /**
      * Get a URL to a file from the crate archive, for preview or download purposes
@@ -135,22 +126,6 @@ declare interface CrateServiceProvider {
      * @param filePath Path to the desired file, including file name and extension
      */
     getCrateFileURL?: (crateId: string, filePath: string) => Promise<string>
-
-    /**
-     * Upload a file to the service and add it to the crate archive
-     * @param crateId ID of the target crate
-     * @param file file to upload
-     * @returns Promise - resolves on success
-     */
-    uploadCrateFileWithData?: (crateId: string, file: ICrateFileWithData) => boolean
-
-    /**
-     * Upload a zip archive of files to the service and unzip the files into the crate archive
-     * @param crateId ID of the target crate
-     * @param zip zip buffer to upload and unpack
-     * @returns true on success
-     */
-    uploadCrateFileZip?: (crateId: string, zip: File) => boolean
 
     /**
      * Get the crate archive. This function should initiate a download or save dialog (or similar)
