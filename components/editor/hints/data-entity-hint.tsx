@@ -1,10 +1,10 @@
-import { isDataEntity } from "@/lib/utils"
+import { isDataEntity, isRootEntity } from "@/lib/utils"
 import { AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { InfoIcon, PlusIcon } from "lucide-react"
 import { Hint } from "@/components/hint"
 
 export function DataEntityHint({ entity }: { entity: IFlatEntity }) {
-    if (isDataEntity(entity)) {
+    if (isDataEntity(entity) && !isRootEntity(entity)) {
         return (
             <Hint name="data-entity">
                 <InfoIcon className="w-4 h-4" />

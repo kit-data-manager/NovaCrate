@@ -1,7 +1,6 @@
 "use client"
 
 import {
-    Blocks,
     BookOpen,
     ChevronDown,
     Clock,
@@ -22,9 +21,6 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useFilePicker } from "use-file-picker"
@@ -42,7 +38,6 @@ import { CreateCrateModal } from "@/components/landing/create-crate-modal"
 export default function EditorLandingPage() {
     const router = useRouter()
     const theme = useTheme()
-    const [error, setError] = useState<unknown>()
     const { recentCrates, removeFromRecentCrates } = useRecentCrates()
     const [showStoredCratesAmount, setShowStoredCratesAmount] = useState(5)
     const [showRecentCratesAmount, setShowRecentCratesAmount] = useState(5)
@@ -58,7 +53,8 @@ export default function EditorLandingPage() {
     const [createCrateModalState, setCreateCrateModalState] = useState({
         open: false,
         fromFolder: false,
-        fromExample: undefined as undefined | string
+        fromExample: undefined as undefined | string,
+        fromZip: undefined as File | undefined
     })
 
     const showDeleteCrateModal = useCallback((crateId: string) => {
@@ -86,6 +82,7 @@ export default function EditorLandingPage() {
         setCreateCrateModalState({
             fromExample: undefined,
             fromFolder: false,
+            fromZip: undefined,
             open: true
         })
     }, [])
@@ -94,6 +91,7 @@ export default function EditorLandingPage() {
         setCreateCrateModalState({
             fromExample: undefined,
             fromFolder: true,
+            fromZip: undefined,
             open: true
         })
     }, [])
@@ -105,6 +103,17 @@ export default function EditorLandingPage() {
     //         open: true
     //     })
     // }, [])
+
+    useEffect(() => {
+        if (zipFiles.length > 0) {
+            setCreateCrateModalState({
+                fromExample: undefined,
+                fromFolder: false,
+                fromZip: zipFiles[0],
+                open: true
+            })
+        }
+    }, [zipFiles])
 
     const onShowMoreStoredClick = useCallback(() => {
         setShowStoredCratesAmount((old) => old + 5)
@@ -141,10 +150,6 @@ export default function EditorLandingPage() {
         return !!(recentCrates && recentCrates.length > showRecentCratesAmount)
     }, [recentCrates, showRecentCratesAmount])
 
-    const fromZip = useMemo(() => {
-        return zipFiles.length > 0 ? zipFiles[0] : undefined
-    }, [zipFiles])
-
     return (
         <div className="flex flex-col w-full h-full">
             <DeleteCrateModal
@@ -161,14 +166,13 @@ export default function EditorLandingPage() {
                 {...createCrateModalState}
                 onOpenChange={onCreateCrateModalOpenChange}
                 openEditor={openEditor}
-                fromZip={fromZip}
             />
 
             <div className="flex flex-col items-center justify-center h-[max(45vh,200px)] p-10">
                 <Package className="w-32 h-32 mb-10" />
                 <h2 className="text-5xl font-bold">Editor Name</h2>
             </div>
-            <Error title="An error occured on this page" error={error} />
+
             <div className="flex justify-center">
                 <Button
                     size="lg"
