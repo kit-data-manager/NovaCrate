@@ -28,6 +28,10 @@ import { GlobalModalContext } from "@/components/global-modals-provider"
 import { FindReferencesModal } from "@/components/editor/find-references-modal"
 import { SaveAsModal } from "@/components/editor/save-as-modal"
 import { Skeleton } from "@/components/ui/skeleton"
+import { RootEntityHint } from "@/components/editor/hints/root-entity-hint"
+import { InternalEntityHint } from "@/components/editor/hints/internal-entity-hint"
+import { DataEntityHint } from "@/components/editor/hints/data-entity-hint"
+import { ContextualEntityHint } from "@/components/editor/hints/contextual-entity-hint"
 
 export function EntityEditor({
     entityId,
@@ -230,6 +234,10 @@ export function EntityEditor({
 
                 <WebWorkerWarning />
                 <UnknownTypeWarning entityType={entity?.["@type"] || []} />
+                <RootEntityHint entity={entity} />
+                <InternalEntityHint entity={entity} />
+                <DataEntityHint entity={entity} />
+                <ContextualEntityHint entity={entity} />
                 <Error className="mt-4" title="Error while saving" error={saveError} />
 
                 <div className="my-12 flex flex-col gap-4 mr-2">

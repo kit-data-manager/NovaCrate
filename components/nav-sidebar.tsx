@@ -6,17 +6,27 @@ import {
     BookOpenText,
     Braces,
     Bug,
+    Copy,
+    EllipsisVertical,
     Folder,
     GitFork,
     Library,
-    PackageSearch,
-    ScanBarcode
+    Package,
+    PackageSearch
 } from "lucide-react"
-import { PropsWithChildren, useContext, useMemo } from "react"
+import { PropsWithChildren, useCallback, useContext, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { Skeleton } from "@/components/ui/skeleton"
+import { isRootEntity } from "@/lib/utils"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
+import { useCopyToClipboard } from "usehooks-ts"
 
 function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>) {
     const pathname = usePathname()
@@ -50,18 +60,46 @@ function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>)
 
 export function NavSidebar({ children }: PropsWithChildren<{}>) {
     const crate = useContext(CrateDataContext)
+    const [_, copyFn] = useCopyToClipboard()
+
+    const copy = useCallback(
+        (text: string) => {
+            copyFn(text).catch((e) => console.error("Failed to copy to clipboard", e))
+        },
+        [copyFn]
+    )
+
+    const crateName = useMemo(() => {
+        return (crate.crateData?.["@graph"].find(isRootEntity)?.name || "") + ""
+    }, [crate.crateData])
 
     return (
         <ResizablePanelGroup direction="horizontal" autoSaveId="globalSidebarLayout">
             <ResizablePanel minSize={10} defaultSize={10}>
                 <div className="h-full flex flex-col">
-                    <div className="px-4 h-10 flex items-center bg-accent shrink-0">
+                    <div className="pl-4 pr-2 h-10 flex items-center bg-accent shrink-0">
                         {crate.crateDataIsLoading ? (
                             <Skeleton className="h-6 w-full mr-4 bg-muted-foreground/20" />
                         ) : (
                             <div className="text-sm w-full flex items-center">
-                                <ScanBarcode className="w-4 h-4 shrink-0 mr-2" />{" "}
-                                <div className="truncate shrink">{crate.crateId}</div>
+                                <Package className="w-4 h-4 shrink-0 mr-2" />{" "}
+                                <div className="truncate shrink">{crateName || crate.crateId}</div>
+                                <div className="grow" />
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger>
+                                        <EllipsisVertical className="w-4 h-4" />
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem onClick={() => copy(crate.crateId)}>
+                                            <Copy className="w-4 h-4 mr-2" /> Copy Crate ID
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() => copy(crateName || crate.crateId)}
+                                        >
+                                            <Copy className="w-4 h-4 mr-2" /> Copy Crate Name
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
                         )}
                     </div>
