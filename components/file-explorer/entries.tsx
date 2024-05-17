@@ -1,12 +1,13 @@
 import { useEditorState } from "@/components/editor-state"
-import { useCallback, useContext, useMemo, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { Button } from "@/components/ui/button"
-import { ChevronDown, File, FileX, Folder, FolderX } from "lucide-react"
-import { getEntityDisplayName, isFileDataEntity } from "@/lib/utils"
+import { ChevronDown, Eye, File, FileX, Folder, FolderX } from "lucide-react"
+import { getEntityDisplayName } from "@/lib/utils"
 import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { FolderContent } from "@/components/file-explorer/content"
 import { FileExplorerContext } from "@/components/file-explorer/context"
+import { DefaultSectionOpen } from "@/components/file-explorer/explorer"
 
 function isNonEmptyPart(part: string) {
     return part !== "" && part !== "."
@@ -22,17 +23,29 @@ function filePathLastSegment(filePath: string) {
     return split[split.length - 1]
 }
 
-export function FolderEntry(props: { filePath: string; filePaths: string[] }) {
+export function FolderEntry(props: {
+    filePath: string
+    filePaths: string[]
+    defaultSectionOpen: DefaultSectionOpen
+    onSectionOpenChange(): void
+}) {
     const entity = useEditorState((state) => state.entities.get(props.filePath))
-    const [isOpen, setIsOpen] = useState(true)
+    const [isOpen, setIsOpen] = useState(
+        props.defaultSectionOpen !== "indeterminate" ? props.defaultSectionOpen : false
+    )
+
+    useEffect(() => {
+        if (props.defaultSectionOpen !== "indeterminate") setIsOpen(props.defaultSectionOpen)
+    }, [props.defaultSectionOpen])
+
+    const toggle = useCallback(() => {
+        setIsOpen(!isOpen)
+        props.onSectionOpenChange()
+    }, [isOpen, props])
 
     const isMock = useMemo(() => {
         return entity == undefined
     }, [entity])
-
-    const toggleOpen = useCallback(() => {
-        setIsOpen(!isOpen)
-    }, [isOpen])
 
     return (
         <>
@@ -41,7 +54,7 @@ export function FolderEntry(props: { filePath: string; filePaths: string[] }) {
                     <Button
                         className={`gap-2 group/fileBrowserEntry w-full pl-1`}
                         variant="list-entry"
-                        onClick={() => toggleOpen()}
+                        onClick={() => toggle()}
                     >
                         <ChevronDown
                             className="w-4 h-4 text-foreground shrink-0 aria-disabled:-rotate-90"
@@ -76,7 +89,12 @@ export function FolderEntry(props: { filePath: string; filePaths: string[] }) {
             </ContextMenu>
             {isOpen ? (
                 <div className="ml-6">
-                    <FolderContent path={props.filePath} filePaths={props.filePaths} />
+                    <FolderContent
+                        path={props.filePath}
+                        filePaths={props.filePaths}
+                        defaultSectionOpen={props.defaultSectionOpen}
+                        onSectionOpenChange={props.onSectionOpenChange}
+                    />
                 </div>
             ) : null}
         </>
@@ -85,11 +103,15 @@ export function FolderEntry(props: { filePath: string; filePaths: string[] }) {
 
 export function FileEntry(props: { filePath: string }) {
     const entity = useEditorState((state) => state.entities.get(props.filePath))
-    const { setPreviewingFilePath } = useContext(FileExplorerContext)
+    const { setPreviewingFilePath, previewingFilePath } = useContext(FileExplorerContext)
 
     const isMock = useMemo(() => {
         return entity == undefined
     }, [entity])
+
+    const isBeingPreviewed = useMemo(() => {
+        return previewingFilePath === props.filePath
+    }, [previewingFilePath, props.filePath])
 
     return (
         <ContextMenu>
@@ -118,6 +140,7 @@ export function FileEntry(props: { filePath: string }) {
                             {entity ? getEntityDisplayName(entity, false) : ""}
                         </span>
                     </div>
+                    {isBeingPreviewed ? <Eye className="w-4 h-4 ml-2" /> : null}
                 </Button>
             </ContextMenuTrigger>
             <EntryContextMenu
