@@ -13,7 +13,11 @@ export interface AutoReference {
 }
 
 export interface IGlobalModalContext {
-    showCreateEntityModal(restrictToClasses?: SlimClass[], autoReference?: AutoReference): void
+    showCreateEntityModal(
+        restrictToClasses?: SlimClass[],
+        autoReference?: AutoReference,
+        name?: string
+    ): void
     showSaveEntityChangesModal(entityId: string): void
     showDeleteEntityModal(entityId: string): void
 }
@@ -29,6 +33,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         open: boolean
         autoReference?: AutoReference
         restrictToClasses?: SlimClass[]
+        id?: string
     }>({
         open: false
     })
@@ -42,11 +47,12 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     })
 
     const showCreateEntityModal = useCallback(
-        (restrictToClasses?: SlimClass[], autoReference?: AutoReference) => {
+        (restrictToClasses?: SlimClass[], autoReference?: AutoReference, id?: string) => {
             setCreateEntityModalState({
                 open: true,
                 restrictToClasses,
-                autoReference
+                autoReference,
+                id
             })
         },
         []
@@ -109,6 +115,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 onOpenChange={onCreateEntityModalOpenChange}
                 restrictToClasses={createEntityModalState.restrictToClasses}
                 autoReference={createEntityModalState.autoReference}
+                forceId={createEntityModalState.id}
             />
             <SaveEntityChangesModal
                 open={saveEntityChangesModalState.open}

@@ -37,7 +37,8 @@ export function FolderContent(props: {
             return (
                 fileSplit.length === pathSplit.length &&
                 fileSplit.slice(0, fileSplit.length - 1).join() ===
-                    pathSplit.slice(0, pathSplit.length - 1).join()
+                    pathSplit.slice(0, pathSplit.length - 1).join() &&
+                !file.endsWith("/")
             )
         })
     }, [props.filePaths, props.path])
