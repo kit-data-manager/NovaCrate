@@ -9,6 +9,7 @@ import { EntityEditorTabsProvider } from "@/components/entity-tabs-provider"
 import { CrateVerifyProvider } from "@/components/crate-verify-provider"
 import { GlobalModalProvider } from "@/components/global-modals-provider"
 import { useRecentCrates } from "@/components/hooks"
+import { FileExplorerProvider } from "@/components/file-explorer/context"
 
 const CRATE_ID_REGEX = /^\/editor\/([^\/]*)\/.*$/
 
@@ -37,9 +38,11 @@ export default function EditorLayout(props: PropsWithChildren) {
         <CrateDataProvider serviceProvider={serviceProvider} crateId={crateId}>
             <CrateVerifyProvider>
                 <EntityEditorTabsProvider>
-                    <GlobalModalProvider>
-                        <Nav>{props.children}</Nav>
-                    </GlobalModalProvider>
+                    <FileExplorerProvider>
+                        <GlobalModalProvider>
+                            <Nav>{props.children}</Nav>
+                        </GlobalModalProvider>
+                    </FileExplorerProvider>
                 </EntityEditorTabsProvider>
             </CrateVerifyProvider>
         </CrateDataProvider>

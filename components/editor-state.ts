@@ -45,12 +45,6 @@ export interface ICrateEditorContext {
     ): void
     removePropertyEntry(entityId: string, propertyName: string, valueIdx: number): void
     revertEntity(entityId: string): void
-    //
-    // isSaving: boolean
-    // saveError?: string
-    // saveContext(): void
-    // saveEntity(entityId: string): void
-    // saveAllEntities(): void
     revertAllEntities(): void
 }
 

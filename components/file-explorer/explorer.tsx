@@ -16,9 +16,12 @@ import {
 import { Error } from "@/components/error"
 import { FolderContent } from "@/components/file-explorer/content"
 import HelpTooltip from "@/components/help-tooltip"
+import { FileExplorerContext } from "@/components/file-explorer/context"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function FileExplorer() {
     const crateData = useContext(CrateDataContext)
+    const { downloadError } = useContext(FileExplorerContext)
 
     const filesListResolver = useCallback(
         async (crateId: string) => {
@@ -29,7 +32,7 @@ export function FileExplorer() {
         [crateData.serviceProvider]
     )
 
-    const { data, error, isPending } = useAsync(crateData.crateId, filesListResolver)
+    const { data, error } = useAsync(crateData.crateId, filesListResolver)
 
     return (
         <div>
@@ -80,8 +83,20 @@ export function FileExplorer() {
                 </Button>
             </div>
             <Error error={error} title="Failed to fetch files list" />
+            <Error error={downloadError} title="Download failed" />
             <div className="p-2">
-                {!crateData.crateData || !data ? null : (
+                {!data ? (
+                    <div className="flex flex-col gap-2">
+                        {[0, 0, 0, 0, 0, 0].map((_, i) => {
+                            return (
+                                <Skeleton
+                                    key={i}
+                                    className={`w-96 h-8 ${i % 3 !== 0 ? "ml-10" : ""}`}
+                                />
+                            )
+                        })}
+                    </div>
+                ) : (
                     <FolderContent filePaths={data} path={""} />
                 )}
             </div>
