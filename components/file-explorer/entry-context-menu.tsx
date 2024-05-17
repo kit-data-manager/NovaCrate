@@ -15,6 +15,9 @@ import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/ent
 import { useCopyToClipboard } from "usehooks-ts"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { FileExplorerContext } from "@/components/file-explorer/context"
+import { GlobalModalContext } from "@/components/global-modals-provider"
+import { CrateVerifyContext } from "@/components/crate-verify-provider"
+import { encodeFilePath } from "@/lib/utils"
 
 export function EntryContextMenu({
     entity,
@@ -30,6 +33,7 @@ export function EntryContextMenu({
     const { serviceProvider, crateId } = useContext(CrateDataContext)
     const { openTab } = useContext(EntityEditorTabsContext)
     const { setDownloadError } = useContext(FileExplorerContext)
+    const { showCreateEntityModal } = useContext(GlobalModalContext)
     const pathname = usePathname()
     const router = useRouter()
     const [_, copy] = useCopyToClipboard()
@@ -60,24 +64,31 @@ export function EntryContextMenu({
         }
     }, [crateId, filePath, serviceProvider, setDownloadError])
 
+    const createEntity = useCallback(() => {
+        showCreateEntityModal(
+            [{ "@id": "https://schema.org/Dataset", comment: "" }],
+            undefined,
+            encodeFilePath(filePath)
+        )
+    }, [])
+
     return (
         <ContextMenuContent>
-            <ContextMenuItem onClick={goToEntity}>
-                {entity ? (
-                    <>
-                        <EntityIcon entity={entity} size="sm" /> Go to Entity
-                    </>
-                ) : (
-                    <>
-                        <Plus className="w-4 h-4 mr-2" /> Create Entity
-                        <HelpTooltip className="ml-2">
-                            This file or folder is present in the RO-Crate, but currently no
-                            corresponding Data Entity exists. Create a corresponding Entity to add
-                            metadata to the file.
-                        </HelpTooltip>
-                    </>
-                )}
-            </ContextMenuItem>
+            {entity ? (
+                <ContextMenuItem onClick={goToEntity}>
+                    <EntityIcon entity={entity} size="sm" /> Go to Entity
+                </ContextMenuItem>
+            ) : (
+                <ContextMenuItem onClick={createEntity}>
+                    <Plus className="w-4 h-4 mr-2" /> Create Entity
+                    <HelpTooltip className="ml-2">
+                        This file or folder is present in the RO-Crate, but currently no
+                        corresponding Data Entity exists. Create a corresponding Entity to add
+                        metadata to the file.
+                    </HelpTooltip>
+                </ContextMenuItem>
+            )}
+
             <ContextMenuSeparator />
             <ContextMenuSub>
                 <ContextMenuSubTrigger>

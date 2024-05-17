@@ -8,11 +8,15 @@ import { ArrowLeft, Plus } from "lucide-react"
 export function CreateEntity({
     onBackClick,
     onCreateClick,
-    defaultName
+    defaultName,
+    creatingContextual,
+    forceId
 }: {
     onBackClick: () => void
     onCreateClick: (id: string, name: string) => void
     defaultName?: string
+    forceId?: string
+    creatingContextual: boolean
 }) {
     const [name, setName] = useState(defaultName || "")
     const [identifier, setIdentifier] = useState<null | string>(null)
@@ -25,10 +29,10 @@ export function CreateEntity({
         setIdentifier(e.target.value)
     }, [])
 
-    const _autoId = useAutoId(identifier || name)
+    const _autoId = useAutoId(identifier || name, creatingContextual)
 
     const autoId = useMemo(() => {
-        return identifier || _autoId
+        return forceId || identifier || _autoId
     }, [_autoId, identifier])
 
     const localOnCreateClick = useCallback(() => {
@@ -48,7 +52,12 @@ export function CreateEntity({
         <div className="flex flex-col gap-4">
             <div>
                 <Label>Identifier</Label>
-                <Input placeholder={"#localname"} value={autoId} onChange={onIdentifierChange} />
+                <Input
+                    placeholder={"#localname"}
+                    value={autoId}
+                    onChange={onIdentifierChange}
+                    disabled={!!forceId}
+                />
             </div>
 
             <div>

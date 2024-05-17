@@ -1,4 +1,10 @@
-import { isContextualEntity, isDataEntity, isFolderDataEntity, isRootEntity } from "@/lib/utils"
+import {
+    isContextualEntity,
+    isDataEntity,
+    isFileDataEntity,
+    isFolderDataEntity,
+    isRootEntity
+} from "@/lib/utils"
 import fileDownload from "js-file-download"
 import { handleSpringError } from "@/lib/spring-error-handling"
 
@@ -190,7 +196,7 @@ export class RestProvider implements CrateServiceProvider {
         entityData: IFlatEntity,
         create: boolean = false
     ): Promise<boolean> {
-        if (isDataEntity(entityData) && !isRootEntity(entityData)) {
+        if (isFileDataEntity(entityData)) {
             const formData = new FormData()
             formData.append(
                 "metadata",

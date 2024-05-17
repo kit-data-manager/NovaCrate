@@ -34,7 +34,7 @@ export function FileExplorer() {
         [crateData.serviceProvider]
     )
 
-    const { data, error } = useAsync(crateData.crateId, filesListResolver)
+    const { data, error, isPending, revalidate } = useAsync(crateData.crateId, filesListResolver)
 
     const [defaultSectionOpen, setDefaultSectionOpen] = useState<DefaultSectionOpen>(true)
 
@@ -96,11 +96,10 @@ export function FileExplorer() {
                     size="sm"
                     variant="outline"
                     className={`text-xs`}
-                    disabled={crateData.crateDataIsLoading}
+                    disabled={isPending}
+                    onClick={revalidate}
                 >
-                    <RefreshCw
-                        className={`w-4 h-4 ${crateData.crateDataIsLoading ? "animate-spin" : ""}`}
-                    />
+                    <RefreshCw className={`w-4 h-4 ${isPending ? "animate-spin" : ""}`} />
                 </Button>
             </div>
             <Error error={error} title="Failed to fetch files list" />

@@ -16,3 +16,6 @@ export const SCHEMA_ORG_TEXTLIKE = [
 
 export const SCHEMA_ORG_PERSON = "https://schema.org/Person"
 export const SCHEMA_ORG_ORGANIZATION = "https://schema.org/Organization"
+
+export const RO_CRATE_DATASET = "https://schema.org/Dataset"
+export const RO_CRATE_FILE = "https://schema.org/MediaObject"

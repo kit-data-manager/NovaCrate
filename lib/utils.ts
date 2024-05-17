@@ -108,6 +108,12 @@ export function camelCaseReadable(propertyName: string) {
     return split.charAt(0).toUpperCase() + split.slice(1)
 }
 
+export function encodeFilePath(fileID: string) {
+    // TODO: Issue with ro-crate-java
+    // return fileID.replaceAll("\\", "/").split("/").map(encodeURIComponent).join("/")
+    return fileID
+}
+
 export enum Diff {
     None,
     Changed,

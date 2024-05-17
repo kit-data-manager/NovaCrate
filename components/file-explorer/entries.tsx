@@ -3,7 +3,7 @@ import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, Eye, File, FileX, Folder, FolderX } from "lucide-react"
-import { getEntityDisplayName } from "@/lib/utils"
+import { encodeFilePath, getEntityDisplayName } from "@/lib/utils"
 import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { FolderContent } from "@/components/file-explorer/content"
 import { FileExplorerContext } from "@/components/file-explorer/context"
@@ -29,7 +29,7 @@ export function FolderEntry(props: {
     defaultSectionOpen: DefaultSectionOpen
     onSectionOpenChange(): void
 }) {
-    const entity = useEditorState((state) => state.entities.get(props.filePath))
+    const entity = useEditorState((state) => state.entities.get(encodeFilePath(props.filePath)))
     const [isOpen, setIsOpen] = useState(
         props.defaultSectionOpen !== "indeterminate" ? props.defaultSectionOpen : false
     )
