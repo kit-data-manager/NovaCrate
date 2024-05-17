@@ -6,7 +6,7 @@ import {
     ContextMenuSubContent,
     ContextMenuSubTrigger
 } from "@/components/ui/context-menu"
-import { Copy, Download, Eye, Plus } from "lucide-react"
+import { Copy, Download, Plus } from "lucide-react"
 import { EntityIcon } from "@/components/entity-icon"
 import HelpTooltip from "@/components/help-tooltip"
 import { usePathname, useRouter } from "next/navigation"
@@ -14,6 +14,7 @@ import { useCallback, useContext } from "react"
 import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { useCopyToClipboard } from "usehooks-ts"
 import { CrateDataContext } from "@/components/crate-data-provider"
+import { FileExplorerContext } from "@/components/file-explorer/context"
 
 export function EntryContextMenu({
     entity,
@@ -28,6 +29,7 @@ export function EntryContextMenu({
 }) {
     const { serviceProvider, crateId } = useContext(CrateDataContext)
     const { openTab } = useContext(EntityEditorTabsContext)
+    const { setDownloadError } = useContext(FileExplorerContext)
     const pathname = usePathname()
     const router = useRouter()
     const [_, copy] = useCopyToClipboard()
@@ -54,9 +56,9 @@ export function EntryContextMenu({
 
     const downloadFile = useCallback(() => {
         if (serviceProvider) {
-            serviceProvider.downloadFile(crateId, filePath)
+            serviceProvider.downloadFile(crateId, filePath).catch(setDownloadError)
         }
-    }, [crateId, filePath, serviceProvider])
+    }, [crateId, filePath, serviceProvider, setDownloadError])
 
     return (
         <ContextMenuContent>

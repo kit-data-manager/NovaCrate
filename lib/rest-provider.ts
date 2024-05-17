@@ -1,7 +1,6 @@
 import { isContextualEntity, isDataEntity, isFolderDataEntity, isRootEntity } from "@/lib/utils"
 import fileDownload from "js-file-download"
 import { handleSpringError } from "@/lib/spring-error-handling"
-import { CrateServiceProvider } from "@/lib/crate-provider"
 
 export class RestProvider implements CrateServiceProvider {
     async createCrateFromFiles(
@@ -38,8 +37,8 @@ export class RestProvider implements CrateServiceProvider {
         return id
     }
 
-    getCrateFileURL(crateId: string, filePath: string): Promise<string> {
-        throw "Not implemented"
+    getCrateFileURL(crateId: string, filePath: string): string {
+        return `http://localhost:8080/crates/${encodeURIComponent(crateId)}/files/${encodeURIComponent(filePath)}`
     }
 
     getCrateFileWithData(crateId: string, filePath: string): Promise<File> {

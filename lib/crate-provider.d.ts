@@ -1,6 +1,3 @@
-import fileDownload from "js-file-download"
-import { handleSpringError } from "@/lib/spring-error-handling"
-
 /**
  * The Crate Service Provider is in charge of delivering crate data and performing manipulations
  * of the crate data in response to UI events
@@ -128,27 +125,27 @@ declare interface CrateServiceProvider {
      * @param crateId ID of the target crate
      * @param filePath Path to the desired file, including file name and extension
      */
-    getCrateFileURL?: (crateId: string, filePath: string) => Promise<string>
+    getCrateFileURL?: (crateId: string, filePath: string) => string
 
     /**
      * Get the crate archive. This function should initiate a download or save dialog (or similar)
      * @param id ID of the target crate
-     * @returns void - This function should not return anything
+     * @returns Promise<void> - Resolves on success
      */
-    downloadCrateZip(id: string): void
+    downloadCrateZip(id: string): Promise<void>
 
     /**
      * Get the `ro-crate-metadata.json`. This function should initiate a download or save dialog (or similar)
      * @param id ID of the target crate
-     * @returns void - This function should not return anything
+     * @returns Promise<void> - Resolves on success
      */
-    downloadRoCrateMetadataJSON(id: string): void
+    downloadRoCrateMetadataJSON(id: string): Promise<void>
 
     /**
      * Download any file from the crate. This function should initiate a download or save dialog (or similar)
      * @param crateId ID of the target crate
      * @param filePath Path to the file in the archive
-     * @returns void - This function should not return anything
+     * @returns Promise<void> - Resolves on success
      */
-    downloadFile(crateId: string, filePath: string)
+    downloadFile(crateId: string, filePath: string): Promise<void>
 }
