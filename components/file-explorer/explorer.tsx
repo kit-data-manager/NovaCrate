@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useContext } from "react"
+import { useCallback, useContext, useState } from "react"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { useAsync } from "@/components/use-async"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,8 @@ import HelpTooltip from "@/components/help-tooltip"
 import { FileExplorerContext } from "@/components/file-explorer/context"
 import { Skeleton } from "@/components/ui/skeleton"
 
+export type DefaultSectionOpen = boolean | "indeterminate"
+
 export function FileExplorer() {
     const crateData = useContext(CrateDataContext)
     const { downloadError } = useContext(FileExplorerContext)
@@ -34,9 +36,23 @@ export function FileExplorer() {
 
     const { data, error } = useAsync(crateData.crateId, filesListResolver)
 
+    const [defaultSectionOpen, setDefaultSectionOpen] = useState<DefaultSectionOpen>(true)
+
+    const collapseAllSections = useCallback(() => {
+        setDefaultSectionOpen(false)
+    }, [])
+
+    const expandAllSections = useCallback(() => {
+        setDefaultSectionOpen(true)
+    }, [])
+
+    const onSectionOpenChange = useCallback(() => {
+        setDefaultSectionOpen("indeterminate")
+    }, [])
+
     return (
-        <div>
-            <div className="pl-4 bg-accent text-sm h-10 flex items-center gap-2 truncate">
+        <div className="flex flex-col h-full">
+            <div className="pl-4 bg-accent text-sm h-10 flex items-center gap-2 truncate shrink-0">
                 <Folder className="w-4 h-4 shrink-0" /> File Explorer
                 <HelpTooltip>
                     <div>
@@ -60,14 +76,19 @@ export function FileExplorer() {
                     </div>
                 </HelpTooltip>
             </div>
-            <div className="flex gap-2 sticky top-0 z-10 p-2 bg-accent">
+            <div className="flex gap-2 sticky top-0 z-10 p-2 bg-accent shrink-0">
                 <Button size="sm" variant="outline" className="text-xs">
                     <Plus className={"w-4 h-4"} />
                 </Button>
-                <Button size="sm" variant="outline" className="text-xs">
+                <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs"
+                    onClick={collapseAllSections}
+                >
                     <ChevronsDownUp className={"w-4 h-4"} />
                 </Button>
-                <Button size="sm" variant="outline" className="text-xs">
+                <Button size="sm" variant="outline" className="text-xs" onClick={expandAllSections}>
                     <ChevronsUpDown className={"w-4 h-4"} />
                 </Button>
                 <div className="grow"></div>
@@ -84,7 +105,7 @@ export function FileExplorer() {
             </div>
             <Error error={error} title="Failed to fetch files list" />
             <Error error={downloadError} title="Download failed" />
-            <div className="p-2">
+            <div className="p-2 overflow-y-auto">
                 {!data ? (
                     <div className="flex flex-col gap-2">
                         {[0, 0, 0, 0, 0, 0].map((_, i) => {
@@ -97,7 +118,12 @@ export function FileExplorer() {
                         })}
                     </div>
                 ) : (
-                    <FolderContent filePaths={data} path={""} />
+                    <FolderContent
+                        filePaths={data}
+                        path={""}
+                        onSectionOpenChange={onSectionOpenChange}
+                        defaultSectionOpen={defaultSectionOpen}
+                    />
                 )}
             </div>
         </div>

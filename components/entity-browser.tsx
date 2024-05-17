@@ -42,7 +42,7 @@ export function EntityBrowserItem(props: { entityId: string }) {
         <Button
             size="sm"
             variant="list-entry"
-            className="group/entityBrowserItem"
+            className="group/entityBrowserItem shrink-0"
             onClick={openSelf}
         >
             <EntityIcon entity={entity} />
@@ -101,7 +101,7 @@ export function EntityBrowserSection(props: {
     }, [open, props])
 
     return (
-        <div>
+        <div className="shrink-0">
             <Button
                 size="sm"
                 variant="list-entry"
@@ -150,7 +150,7 @@ export function EntityBrowserContent({
         )
 
     return (
-        <div className="flex flex-col p-2">
+        <div className="flex flex-col p-2 overflow-y-auto">
             <EntityBrowserItem entityId={"./"} />
             <EntityBrowserSection
                 section={"Data"}
@@ -184,11 +184,11 @@ export function EntityBrowser() {
     }, [])
 
     return (
-        <div>
-            <div className="pl-4 bg-accent text-sm h-10 flex items-center">
+        <div className="flex flex-col h-full">
+            <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
                 <PackageSearch className="w-4 h-4 shrink-0 mr-2" /> Entity Explorer
             </div>
-            <div className="flex gap-2 sticky top-0 z-10 p-2 bg-accent">
+            <div className="flex gap-2 top-0 z-10 p-2 bg-accent shrink-0">
                 <Button
                     size="sm"
                     variant="outline"

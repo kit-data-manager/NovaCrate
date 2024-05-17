@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button"
 import { createRef, useCallback, useContext, useEffect, useState } from "react"
 import { FileExplorerContext } from "@/components/file-explorer/context"
 import { CrateDataContext } from "@/components/crate-data-provider"
+import { Error } from "@/components/error"
+import { BaseViewer } from "@/components/file-explorer/viewers/base"
 
 export function FilePreview() {
     const { previewingFilePath, setPreviewingFilePath, setDownloadError } =
@@ -11,41 +13,34 @@ export function FilePreview() {
     const { serviceProvider, crateId } = useContext(CrateDataContext)
     const [previewNotSupported, setPreviewNotSupported] = useState(false)
     const [loading, setLoading] = useState(true)
-
-    const previewObject = createRef<HTMLObjectElement>()
-
-    const handlePreviewObjectError = useCallback(() => {
-        setPreviewNotSupported(true)
-        setLoading(false)
-    }, [])
-
-    const handlePreviewObjectLoad = useCallback(() => {
-        setPreviewNotSupported(false)
-        setLoading(false)
-    }, [])
-
-    useEffect(() => {
-        if (previewObject.current) {
-            const node = previewObject.current
-            node.addEventListener("error", handlePreviewObjectError)
-            node.addEventListener("load", handlePreviewObjectLoad)
-
-            return () => {
-                node.removeEventListener("error", handlePreviewObjectError)
-                node.removeEventListener("load", handlePreviewObjectLoad)
-            }
-        }
-    }, [handlePreviewObjectError, handlePreviewObjectLoad, previewObject])
-
-    useEffect(() => {
-        setLoading(true)
-    }, [previewingFilePath])
+    const [data, setData] = useState<Blob>()
+    const [previewError, setPreviewError] = useState<unknown>()
 
     const downloadFile = useCallback(() => {
         if (serviceProvider) {
             serviceProvider.downloadFile(crateId, previewingFilePath).catch(setDownloadError)
         }
     }, [crateId, previewingFilePath, serviceProvider, setDownloadError])
+
+    useEffect(() => {
+        if (serviceProvider && serviceProvider.getCrateFileURL) {
+            setLoading(true)
+            setPreviewNotSupported(false)
+            const url = serviceProvider.getCrateFileURL(crateId, previewingFilePath)
+            fetch(url)
+                .then(async (res) => {
+                    const data = await res.blob()
+                    setData(data)
+                    setPreviewError(undefined)
+                })
+                .catch((e) => {
+                    setPreviewError(e)
+                })
+                .finally(() => {
+                    setLoading(false)
+                })
+        }
+    }, [crateId, previewingFilePath, serviceProvider])
 
     return (
         <div className="flex flex-col h-full">
@@ -80,27 +75,13 @@ export function FilePreview() {
                     Loading...
                 </div>
             </div>
-            {previewNotSupported ? (
-                <div className="grow flex justify-center items-center">
-                    <div className="flex flex-col justify-center items-center p-10 text-center text-muted-foreground">
-                        <EyeOff className="w-20 h-20" />
-                        <div className="text-2xl py-4">Preview not available</div>
-                        <div>
-                            There is no preview available for this file type. Download it to view it
-                            or select a different file to preview.
-                        </div>
-                    </div>
-                </div>
-            ) : null}
-            {serviceProvider && serviceProvider.getCrateFileURL ? (
-                <object
-                    ref={previewObject}
-                    className={"grow " + (previewNotSupported ? "hidden" : "")}
-                    data={serviceProvider.getCrateFileURL(crateId, previewingFilePath)}
-                />
-            ) : (
-                <div>No preview!</div>
-            )}
+            <Error title="Could not load file for preview" error={previewError} />
+            <BaseViewer
+                setPreviewNotSupported={setPreviewNotSupported}
+                previewNotSupported={previewNotSupported}
+                loading={loading}
+                data={data}
+            />
         </div>
     )
 }

@@ -2,8 +2,14 @@
 
 import { useMemo } from "react"
 import { FileEntry, FolderEntry } from "@/components/file-explorer/entries"
+import { DefaultSectionOpen } from "@/components/file-explorer/explorer"
 
-export function FolderContent(props: { path: string; filePaths: string[] }) {
+export function FolderContent(props: {
+    path: string
+    filePaths: string[]
+    defaultSectionOpen: DefaultSectionOpen
+    onSectionOpenChange(): void
+}) {
     const subFolders = useMemo(() => {
         const set = new Set<string>()
         props.filePaths
@@ -40,7 +46,13 @@ export function FolderContent(props: { path: string; filePaths: string[] }) {
         <div>
             {subFolders.map((filePath) => {
                 return (
-                    <FolderEntry filePath={filePath} filePaths={props.filePaths} key={filePath} />
+                    <FolderEntry
+                        filePath={filePath}
+                        filePaths={props.filePaths}
+                        key={filePath}
+                        defaultSectionOpen={props.defaultSectionOpen}
+                        onSectionOpenChange={props.onSectionOpenChange}
+                    />
                 )
             })}
             {contents.map((filePath) => {
