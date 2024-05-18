@@ -1,10 +1,4 @@
-import {
-    isContextualEntity,
-    isDataEntity,
-    isFileDataEntity,
-    isFolderDataEntity,
-    isRootEntity
-} from "@/lib/utils"
+import { isContextualEntity, isFileDataEntity, isFolderDataEntity, isRootEntity } from "@/lib/utils"
 import fileDownload from "js-file-download"
 import { handleSpringError } from "@/lib/spring-error-handling"
 

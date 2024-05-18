@@ -140,7 +140,7 @@ export function FileEntry(props: { filePath: string }) {
                             {entity ? getEntityDisplayName(entity, false) : ""}
                         </span>
                     </div>
-                    {isBeingPreviewed ? <Eye className="w-4 h-4 ml-2" /> : null}
+                    {isBeingPreviewed ? <Eye className="w-4 h-4 ml-2 shrink-0" /> : null}
                 </Button>
             </ContextMenuTrigger>
             <EntryContextMenu

@@ -1,6 +1,7 @@
 import { createRef, useCallback, useEffect } from "react"
 import { ViewerProps } from "@/components/file-explorer/viewers/base"
 import { EyeOff } from "lucide-react"
+import { PreviewNotSupported } from "@/components/file-explorer/viewers/not-supported"
 
 export function ObjectViewer({
     data,
@@ -33,18 +34,7 @@ export function ObjectViewer({
 
     return (
         <>
-            {previewNotSupported ? (
-                <div className="grow flex justify-center items-center">
-                    <div className="flex flex-col justify-center items-center p-10 text-center text-muted-foreground">
-                        <EyeOff className="w-20 h-20" />
-                        <div className="text-2xl py-4">Preview not available</div>
-                        <div>
-                            There is no preview available for this file type. Download it to view it
-                            or select a different file to preview.
-                        </div>
-                    </div>
-                </div>
-            ) : null}
+            {previewNotSupported ? <PreviewNotSupported /> : null}
             <object
                 ref={previewObject}
                 className={"grow " + (previewNotSupported || loading ? "hidden" : "")}

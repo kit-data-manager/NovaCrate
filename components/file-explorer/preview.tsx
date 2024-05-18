@@ -1,19 +1,18 @@
-import { Download, Eye, EyeOff, X } from "lucide-react"
+import { Download, Eye, X } from "lucide-react"
 import HelpTooltip from "@/components/help-tooltip"
 import { Button } from "@/components/ui/button"
-import { createRef, useCallback, useContext, useEffect, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { FileExplorerContext } from "@/components/file-explorer/context"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { Error } from "@/components/error"
 import { BaseViewer } from "@/components/file-explorer/viewers/base"
+import useSWR from "swr"
 
 export function FilePreview() {
     const { previewingFilePath, setPreviewingFilePath, setDownloadError } =
         useContext(FileExplorerContext)
     const { serviceProvider, crateId } = useContext(CrateDataContext)
     const [previewNotSupported, setPreviewNotSupported] = useState(false)
-    const [loading, setLoading] = useState(true)
-    const [data, setData] = useState<Blob>()
     const [previewError, setPreviewError] = useState<unknown>()
 
     const downloadFile = useCallback(() => {
@@ -22,25 +21,27 @@ export function FilePreview() {
         }
     }, [crateId, previewingFilePath, serviceProvider, setDownloadError])
 
-    useEffect(() => {
+    const resourceUrl = useMemo(() => {
         if (serviceProvider && serviceProvider.getCrateFileURL) {
-            setLoading(true)
-            setPreviewNotSupported(false)
-            const url = serviceProvider.getCrateFileURL(crateId, previewingFilePath)
-            fetch(url)
-                .then(async (res) => {
-                    const data = await res.blob()
-                    setData(data)
-                    setPreviewError(undefined)
-                })
-                .catch((e) => {
-                    setPreviewError(e)
-                })
-                .finally(() => {
-                    setLoading(false)
-                })
-        }
+            return serviceProvider.getCrateFileURL(crateId, previewingFilePath)
+        } else return undefined
     }, [crateId, previewingFilePath, serviceProvider])
+
+    const fileFetcher = useCallback(async (url: string) => {
+        return await (await fetch(url)).blob()
+    }, [])
+
+    const { data, error, isLoading } = useSWR(resourceUrl, fileFetcher)
+
+    useEffect(() => {
+        setPreviewError("")
+    }, [data])
+
+    useEffect(() => {
+        if (error) {
+            setPreviewError(error)
+        }
+    }, [error])
 
     return (
         <div className="flex flex-col h-full">
@@ -69,7 +70,7 @@ export function FilePreview() {
                 <div
                     className={
                         "text-muted-foreground transition " +
-                        (loading ? "opacity-100" : "opacity-0")
+                        (isLoading ? "opacity-100" : "opacity-0")
                     }
                 >
                     Loading...
@@ -79,7 +80,7 @@ export function FilePreview() {
             <BaseViewer
                 setPreviewNotSupported={setPreviewNotSupported}
                 previewNotSupported={previewNotSupported}
-                loading={loading}
+                loading={isLoading}
                 data={data}
             />
         </div>

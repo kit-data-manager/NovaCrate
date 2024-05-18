@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { SlimClass } from "@/lib/crate-verify/helpers"
-import React, { useCallback, useContext, useMemo, useState } from "react"
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { AutoReference } from "@/components/global-modals-provider"
 import { useEditorState } from "@/components/editor-state"
 import { TypeSelect } from "@/components/create-entity/type-select"
@@ -30,17 +30,15 @@ export function CreateEntityModal({
 
     const [selectedType, setSelectedType] = useState("")
 
+    useEffect(() => {
+        if (!open) {
+            setSelectedType("")
+        }
+    }, [open])
+
     const onTypeSelect = useCallback((value: string) => {
         setSelectedType(value)
     }, [])
-
-    const localOnOpenChange = useCallback(
-        (isOpen: boolean) => {
-            setSelectedType("")
-            onOpenChange(isOpen)
-        },
-        [onOpenChange]
-    )
 
     const onCreate = useCallback(
         (id: string, name: string) => {
@@ -55,8 +53,6 @@ export function CreateEntityModal({
                 )
             ) {
                 onEntityCreated()
-                setSelectedType("")
-                console.log(id)
                 focusTab(id)
             }
         },
@@ -76,7 +72,7 @@ export function CreateEntityModal({
     }, [])
 
     return (
-        <Dialog open={open} onOpenChange={localOnOpenChange}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>

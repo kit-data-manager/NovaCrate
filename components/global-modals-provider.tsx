@@ -73,11 +73,11 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     }, [])
 
     const onCreateEntityModalOpenChange = useCallback((isOpen: boolean) => {
-        setCreateEntityModalState((oldValue) => {
-            return {
-                ...oldValue,
-                open: isOpen
-            }
+        setCreateEntityModalState({
+            autoReference: undefined,
+            id: undefined,
+            restrictToClasses: undefined,
+            open: isOpen
         })
     }, [])
 

@@ -7,6 +7,7 @@ import { ArrowLeft, File, Folder, Plus } from "lucide-react"
 import { useFilePicker } from "use-file-picker"
 import { fileNameWithoutEnding } from "@/lib/utils"
 import { Error } from "@/components/error"
+import prettyBytes from "pretty-bytes"
 
 // TODO data entities
 
@@ -92,6 +93,9 @@ export function CreateEntity({
                             <File className="w-4 h-4 mr-2" />
                             {plainFiles.length == 0 ? "Select File" : plainFiles[0].name}
                         </Button>
+                        <span className="ml-2 text-muted-foreground">
+                            {plainFiles.length == 0 ? "" : prettyBytes(plainFiles[0].size)}
+                        </span>
                     </div>
                 </div>
             ) : null}
@@ -106,6 +110,11 @@ export function CreateEntity({
                                 ? "Select Folder"
                                 : folderFiles[0].webkitRelativePath.split("/")[0]}
                         </Button>
+                        <span className="ml-2 text-muted-foreground">
+                            {folderFiles.length == 0
+                                ? ""
+                                : `${folderFiles.length} files (${prettyBytes(folderFiles.map((f) => f.size).reduce((a, b) => a + b))} total)`}
+                        </span>
                     </div>
                 </div>
             ) : null}
