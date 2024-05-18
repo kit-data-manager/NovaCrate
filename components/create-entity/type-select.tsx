@@ -1,6 +1,6 @@
 import { SlimClass } from "@/lib/crate-verify/helpers"
 import { useEditorState } from "@/components/editor-state"
-import React, { useCallback, useContext, useState } from "react"
+import React, { useCallback, useContext, useEffect, useState } from "react"
 import {
     Command,
     CommandEmpty,
@@ -51,6 +51,12 @@ export function TypeSelect({
         isPending,
         error
     } = useAsync([bypassRestrictions, restrictToClasses], typesResolver)
+
+    useEffect(() => {
+        if (types && types.length === 1) {
+            onTypeSelect(crateContext.reverse(types[0]["@id"]) || types[0]["@id"])
+        }
+    }, [onTypeSelect, types, crateContext])
 
     return (
         <>

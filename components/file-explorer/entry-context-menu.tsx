@@ -16,8 +16,8 @@ import { useCopyToClipboard } from "usehooks-ts"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { FileExplorerContext } from "@/components/file-explorer/context"
 import { GlobalModalContext } from "@/components/global-modals-provider"
-import { CrateVerifyContext } from "@/components/crate-verify-provider"
 import { encodeFilePath } from "@/lib/utils"
+import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 
 export function EntryContextMenu({
     entity,
@@ -66,11 +66,11 @@ export function EntryContextMenu({
 
     const createEntity = useCallback(() => {
         showCreateEntityModal(
-            [{ "@id": "https://schema.org/Dataset", comment: "" }],
+            [{ "@id": folder ? RO_CRATE_DATASET : RO_CRATE_FILE, comment: "Click here" }],
             undefined,
             encodeFilePath(filePath)
         )
-    }, [])
+    }, [filePath, folder, showCreateEntityModal])
 
     return (
         <ContextMenuContent>
@@ -84,7 +84,7 @@ export function EntryContextMenu({
                     <HelpTooltip className="ml-2">
                         This file or folder is present in the RO-Crate, but currently no
                         corresponding Data Entity exists. Create a corresponding Entity to add
-                        metadata to the file.
+                        metadata to the file or folder.
                     </HelpTooltip>
                 </ContextMenuItem>
             )}
