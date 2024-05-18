@@ -7,6 +7,7 @@ import { TypeSelect } from "@/components/create-entity/type-select"
 import { CreateEntity } from "@/components/create-entity/create-entity"
 import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
+import { camelCaseReadable } from "@/lib/utils"
 
 export function CreateEntityModal({
     open,
@@ -24,6 +25,7 @@ export function CreateEntityModal({
     forceId?: string
 }) {
     const addEntity = useEditorState.useAddEntity()
+    const context = useEditorState.useCrateContext()
     const { focusTab } = useContext(EntityEditorTabsContext)
 
     const [selectedType, setSelectedType] = useState("")
@@ -61,9 +63,13 @@ export function CreateEntityModal({
         [addEntity, autoReference, focusTab, onEntityCreated, selectedType]
     )
 
-    const creatingContextual = useMemo(() => {
-        return selectedType !== "Dataset" && selectedType !== "File"
-    }, [])
+    const fileUpload = useMemo(() => {
+        return context.resolve(selectedType) === RO_CRATE_FILE
+    }, [context, selectedType])
+
+    const folderUpload = useMemo(() => {
+        return context.resolve(selectedType) === RO_CRATE_DATASET
+    }, [context, selectedType])
 
     const backToTypeSelect = useCallback(() => {
         setSelectedType("")
@@ -75,7 +81,7 @@ export function CreateEntityModal({
                 <DialogHeader>
                     <DialogTitle>
                         {selectedType
-                            ? `Create new ${selectedType} Entity`
+                            ? `Create new ${camelCaseReadable(selectedType)} Entity`
                             : "Select Type of new Entity"}
                     </DialogTitle>
                 </DialogHeader>
@@ -91,7 +97,8 @@ export function CreateEntityModal({
                         onBackClick={backToTypeSelect}
                         onCreateClick={onCreate}
                         forceId={forceId}
-                        creatingContextual={creatingContextual}
+                        fileUpload={fileUpload}
+                        folderUpload={folderUpload}
                     />
                 )}
             </DialogContent>

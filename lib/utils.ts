@@ -114,6 +114,12 @@ export function encodeFilePath(fileID: string) {
     return fileID
 }
 
+export function fileNameWithoutEnding(fileName: string) {
+    if (fileName.match(/\.[A-z0-9]+$/)) {
+        return fileName.replace(/\.[A-z0-9]+$/, "")
+    } else return fileName
+}
+
 export enum Diff {
     None,
     Changed,
