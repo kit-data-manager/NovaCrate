@@ -1,25 +1,38 @@
-import React, { ChangeEvent, useCallback, useMemo, useState } from "react"
+import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react"
 import { useAutoId } from "@/components/use-auto-id"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Plus } from "lucide-react"
+import { ArrowLeft, File, Folder, Plus } from "lucide-react"
+import { useFilePicker } from "use-file-picker"
+import { fileNameWithoutEnding } from "@/lib/utils"
+import { Error } from "@/components/error"
+
+// TODO data entities
 
 export function CreateEntity({
     onBackClick,
     onCreateClick,
     defaultName,
-    creatingContextual,
-    forceId
+    forceId,
+    fileUpload,
+    folderUpload
 }: {
     onBackClick: () => void
     onCreateClick: (id: string, name: string) => void
     defaultName?: string
     forceId?: string
-    creatingContextual: boolean
+    fileUpload: boolean
+    folderUpload: boolean
 }) {
     const [name, setName] = useState(defaultName || "")
     const [identifier, setIdentifier] = useState<null | string>(null)
+    const { plainFiles, openFilePicker } = useFilePicker({})
+    const { plainFiles: folderFiles, openFilePicker: openFolderPicker } = useFilePicker({
+        initializeWithCustomParameters(input: HTMLInputElement) {
+            input.setAttribute("webkitdirectory", "")
+        }
+    })
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         setName(e.target.value)
@@ -29,11 +42,11 @@ export function CreateEntity({
         setIdentifier(e.target.value)
     }, [])
 
-    const _autoId = useAutoId(identifier || name, creatingContextual)
+    const _autoId = useAutoId(identifier || name)
 
     const autoId = useMemo(() => {
         return forceId || identifier || _autoId
-    }, [_autoId, identifier])
+    }, [_autoId, forceId, identifier])
 
     const localOnCreateClick = useCallback(() => {
         onCreateClick(autoId, name)
@@ -48,17 +61,66 @@ export function CreateEntity({
         [localOnCreateClick]
     )
 
+    useEffect(() => {
+        if (plainFiles.length > 0) {
+            setName((oldName) =>
+                oldName === "" ? fileNameWithoutEnding(plainFiles[0].name) : oldName
+            )
+        }
+    }, [plainFiles])
+
+    useEffect(() => {
+        if (folderFiles.length > 0) {
+            setName((oldName) =>
+                oldName === "" ? folderFiles[0].webkitRelativePath.split("/")[0] : oldName
+            )
+        }
+    }, [folderFiles])
+
+    if (fileUpload && folderUpload)
+        return (
+            <Error error="Cannot determine whether this is a file upload or a folder upload. Make sure your context is not ambiguous." />
+        )
+
     return (
         <div className="flex flex-col gap-4">
-            <div>
-                <Label>Identifier</Label>
-                <Input
-                    placeholder={"#localname"}
-                    value={autoId}
-                    onChange={onIdentifierChange}
-                    disabled={!!forceId}
-                />
-            </div>
+            {fileUpload ? (
+                <div>
+                    <Label>File</Label>
+                    <div>
+                        <Button variant="outline" onClick={openFilePicker}>
+                            <File className="w-4 h-4 mr-2" />
+                            {plainFiles.length == 0 ? "Select File" : plainFiles[0].name}
+                        </Button>
+                    </div>
+                </div>
+            ) : null}
+
+            {folderUpload ? (
+                <div>
+                    <Label>Folder</Label>
+                    <div>
+                        <Button variant="outline" onClick={openFolderPicker}>
+                            <Folder className="w-4 h-4 mr-2" />
+                            {folderFiles.length == 0
+                                ? "Select Folder"
+                                : folderFiles[0].webkitRelativePath.split("/")[0]}
+                        </Button>
+                    </div>
+                </div>
+            ) : null}
+
+            {!fileUpload && !folderUpload ? (
+                <div>
+                    <Label>Identifier</Label>
+                    <Input
+                        placeholder={"#localname"}
+                        value={autoId}
+                        onChange={onIdentifierChange}
+                        disabled={!!forceId}
+                    />
+                </div>
+            ) : null}
 
             <div>
                 <Label>Name</Label>
