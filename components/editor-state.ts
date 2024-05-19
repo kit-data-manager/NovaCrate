@@ -33,7 +33,7 @@ export interface ICrateEditorContext {
         types: string[],
         properties?: Record<string, FlatEntityPropertyTypes>,
         autoReference?: AutoReference
-    ): boolean
+    ): IFlatEntity | undefined
     removeEntity(entityId: string): void
     addProperty(entityId: string, propertyName: string, value?: FlatEntityPropertyTypes): void
     addPropertyEntry(entityId: string, propertyName: string, type: PropertyEditorTypes): void
@@ -141,14 +141,16 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                 types: string[],
                 properties?: Record<string, FlatEntityPropertyTypes>,
                 autoReference?: AutoReference
-            ): boolean {
+            ): IFlatEntity | undefined {
                 if (!getState().entities.has(entityId)) {
+                    const entity = {
+                        ...properties,
+                        "@id": entityId,
+                        "@type": types
+                    }
+
                     setState((state) => {
-                        state.entities.set(entityId, {
-                            ...properties,
-                            "@id": entityId,
-                            "@type": types
-                        })
+                        state.entities.set(entityId, entity)
 
                         if (autoReference) {
                             const target = state.entities.get(autoReference.entityId)
@@ -163,8 +165,8 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                         }
                     })
 
-                    return true
-                } else return false
+                    return entity
+                } else return undefined
             },
 
             removeEntity(entityId: string) {

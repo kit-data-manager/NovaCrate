@@ -16,6 +16,7 @@ import {
     ChevronDown,
     ChevronsDownUp,
     ChevronsUpDown,
+    Eye,
     PackageSearch,
     Plus,
     RefreshCw
@@ -24,6 +25,13 @@ import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/ent
 import { EntityIcon } from "./entity-icon"
 import { GlobalModalContext } from "@/components/global-modals-provider"
 import { useEditorState } from "@/components/editor-state"
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
 
 type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -197,18 +205,40 @@ export function EntityBrowser() {
                 >
                     <Plus className={"w-4 h-4"} />
                 </Button>
-                <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-xs"
-                    onClick={collapseAllSections}
-                >
-                    <ChevronsDownUp className={"w-4 h-4"} />
-                </Button>
-                <Button size="sm" variant="outline" className="text-xs" onClick={expandAllSections}>
-                    <ChevronsUpDown className={"w-4 h-4"} />
-                </Button>
                 <div className="grow"></div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button size="sm" variant="outline" className={`text-xs`}>
+                            <Eye className={`w-4 h-4`} />{" "}
+                            <ChevronDown className="w-4 h-4 ml-2 text-muted-foreground" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuCheckboxItem>Show Folder Structure</DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem checked>
+                            Show Entity Type
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem>Show ID instead of Name</DropdownMenuCheckboxItem>
+                        <DropdownMenuSeparator />
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs"
+                            onClick={collapseAllSections}
+                        >
+                            <ChevronsDownUp className={"w-4 h-4"} />
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs ml-2"
+                            onClick={expandAllSections}
+                        >
+                            <ChevronsUpDown className={"w-4 h-4"} />
+                        </Button>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
                 <Button
                     size="sm"
                     variant="outline"

@@ -1,10 +1,11 @@
 "use client"
 
-import { createContext, PropsWithChildren, useCallback, useState } from "react"
+import { createContext, PropsWithChildren, useCallback, useContext, useState } from "react"
 import { CreateEntityModal } from "@/components/create-entity/create-entity-modal"
 import { SlimClass } from "@/lib/crate-verify/helpers"
 import { SaveEntityChangesModal } from "@/components/save-entity-changes-modal"
 import { DeleteEntityModal } from "@/components/delete-entity-modal"
+import { CrateDataContext } from "@/components/crate-data-provider"
 
 export interface AutoReference {
     entityId: string
@@ -29,6 +30,8 @@ export const GlobalModalContext = createContext<IGlobalModalContext>({
 })
 
 export function GlobalModalProvider(props: PropsWithChildren) {
+    const { saveEntity } = useContext(CrateDataContext)
+
     const [createEntityModalState, setCreateEntityModalState] = useState<{
         open: boolean
         autoReference?: AutoReference
@@ -95,11 +98,15 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         }))
     }, [])
 
-    const onEntityCreated = useCallback(() => {
-        setCreateEntityModalState({
-            open: false
-        })
-    }, [])
+    const onEntityCreated = useCallback(
+        (entity: IFlatEntity) => {
+            setCreateEntityModalState({
+                open: false
+            })
+            saveEntity(entity).catch(console.error)
+        },
+        [saveEntity]
+    )
 
     return (
         <GlobalModalContext.Provider

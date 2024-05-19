@@ -18,7 +18,7 @@ export function CreateEntityModal({
     forceId
 }: {
     open: boolean
-    onEntityCreated: () => void
+    onEntityCreated: (entity: IFlatEntity) => void
     onOpenChange: (open: boolean) => void
     restrictToClasses?: SlimClass[]
     autoReference?: AutoReference
@@ -42,17 +42,16 @@ export function CreateEntityModal({
 
     const onCreate = useCallback(
         (id: string, name: string) => {
-            if (
-                addEntity(
-                    id,
-                    [selectedType],
-                    {
-                        name
-                    },
-                    autoReference
-                )
-            ) {
-                onEntityCreated()
+            const newEntity = addEntity(
+                id,
+                [selectedType],
+                {
+                    name
+                },
+                autoReference
+            )
+            if (newEntity) {
+                onEntityCreated(newEntity)
                 focusTab(id)
             }
         },
