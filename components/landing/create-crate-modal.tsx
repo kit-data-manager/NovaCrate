@@ -14,6 +14,8 @@ import { Button } from "../ui/button"
 import { ArrowLeft, Folder, PackagePlus } from "lucide-react"
 import { CrateDataContext } from "../crate-data-provider"
 import { Progress } from "../ui/progress"
+import { sum } from "@/lib/utils"
+import prettyBytes from "pretty-bytes"
 
 export function CreateCrateModal({
     open,
@@ -118,6 +120,13 @@ export function CreateCrateModal({
         createCrateFromCrateZip()
     }, [createCrateFromCrateZip])
 
+    useEffect(() => {
+        setName((old) => {
+            if (old === "" && files.length > 0) return files[0].webkitRelativePath.split("/")[0]
+            else return old
+        })
+    }, [files])
+
     const onCreateClick = useCallback(() => {
         if (fromExample) {
         } else if (fromFolder) {
@@ -185,7 +194,7 @@ export function CreateCrateModal({
                                     </Button>
                                     <span className="ml-2 text-muted-foreground">
                                         {files.length > 0
-                                            ? `${files.length} file${files.length === 1 ? "" : "s"} selected`
+                                            ? `${files.length} file${files.length === 1 ? "" : "s"} selected (${prettyBytes(files.map((f) => f.size).reduce(sum))} total)`
                                             : "No files selected"}
                                     </span>
                                 </div>

@@ -23,8 +23,8 @@ export function CreateEntity({
     onCreateClick: (id: string, name: string) => void
     defaultName?: string
     forceId?: string
-    fileUpload: boolean
-    folderUpload: boolean
+    fileUpload?: boolean
+    folderUpload?: boolean
 }) {
     const [name, setName] = useState(defaultName || "")
     const [identifier, setIdentifier] = useState<null | string>(null)
@@ -78,14 +78,22 @@ export function CreateEntity({
         }
     }, [folderFiles])
 
-    if (fileUpload && folderUpload)
+    const hasFileUpload = useMemo(() => {
+        return fileUpload && !forceId
+    }, [fileUpload, forceId])
+
+    const hasFolderUpload = useMemo(() => {
+        return folderUpload && !forceId
+    }, [folderUpload, forceId])
+
+    if (hasFileUpload && hasFolderUpload)
         return (
             <Error error="Cannot determine whether this is a file upload or a folder upload. Make sure your context is not ambiguous." />
         )
 
     return (
         <div className="flex flex-col gap-4">
-            {fileUpload ? (
+            {hasFileUpload ? (
                 <div>
                     <Label>File</Label>
                     <div>
@@ -100,7 +108,7 @@ export function CreateEntity({
                 </div>
             ) : null}
 
-            {folderUpload ? (
+            {hasFolderUpload ? (
                 <div>
                     <Label>Folder</Label>
                     <div>
@@ -119,7 +127,7 @@ export function CreateEntity({
                 </div>
             ) : null}
 
-            {!fileUpload && !folderUpload ? (
+            {!hasFileUpload && !hasFolderUpload && !forceId ? (
                 <div>
                     <Label>Identifier</Label>
                     <Input

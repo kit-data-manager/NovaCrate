@@ -71,6 +71,13 @@ export function CreateEntityModal({
         setSelectedType("")
     }, [])
 
+    const defaultName = useMemo(() => {
+        if ((fileUpload || folderUpload) && forceId) {
+            const split = forceId.split("/").filter((part) => !!part)
+            return split[split.length - 1]
+        } else return undefined
+    }, [fileUpload, folderUpload, forceId])
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
@@ -95,6 +102,7 @@ export function CreateEntityModal({
                         forceId={forceId}
                         fileUpload={fileUpload}
                         folderUpload={folderUpload}
+                        defaultName={defaultName}
                     />
                 )}
             </DialogContent>

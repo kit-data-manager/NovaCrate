@@ -120,6 +120,10 @@ export function fileNameWithoutEnding(fileName: string) {
     } else return fileName
 }
 
+export function sum(a: number, b: number) {
+    return a + b
+}
+
 export enum Diff {
     None,
     Changed,
