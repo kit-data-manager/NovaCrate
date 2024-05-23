@@ -8,6 +8,8 @@ import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { FolderContent } from "@/components/file-explorer/content"
 import { FileExplorerContext } from "@/components/file-explorer/context"
 import { DefaultSectionOpen } from "@/components/file-explorer/explorer"
+import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
+import { usePathname, useRouter } from "next/navigation"
 
 function isNonEmptyPart(part: string) {
     return part !== "" && part !== "."
@@ -23,6 +25,25 @@ function filePathLastSegment(filePath: string) {
     return split[split.length - 1]
 }
 
+function useGoToEntity(entity?: IFlatEntity) {
+    const pathname = usePathname()
+    const router = useRouter()
+    const { openTab } = useContext(EntityEditorTabsContext)
+
+    return useCallback(() => {
+        if (entity) {
+            openTab(createEntityEditorTab(entity), true)
+        }
+
+        const href =
+            pathname
+                .split("/")
+                .filter((_, i) => i < 3)
+                .join("/") + "/entities"
+        router.push(href)
+    }, [entity, openTab, pathname, router])
+}
+
 export function FolderEntry(props: {
     filePath: string
     filePaths: string[]
@@ -33,6 +54,7 @@ export function FolderEntry(props: {
     const [isOpen, setIsOpen] = useState(
         props.defaultSectionOpen !== "indeterminate" ? props.defaultSectionOpen : false
     )
+    const goToEntity = useGoToEntity(entity)
 
     useEffect(() => {
         if (props.defaultSectionOpen !== "indeterminate") setIsOpen(props.defaultSectionOpen)
@@ -55,6 +77,7 @@ export function FolderEntry(props: {
                         className={`gap-2 group/fileBrowserEntry w-full pl-1`}
                         variant="list-entry"
                         onClick={() => toggle()}
+                        onDoubleClick={goToEntity}
                     >
                         <ChevronDown
                             className="w-4 h-4 text-foreground shrink-0 aria-disabled:-rotate-90"
@@ -85,6 +108,7 @@ export function FolderEntry(props: {
                     folder
                     filePath={props.filePath}
                     fileName={filePathLastSegment(props.filePath)}
+                    goToEntity={goToEntity}
                 />
             </ContextMenu>
             {isOpen ? (
@@ -104,6 +128,7 @@ export function FolderEntry(props: {
 export function FileEntry(props: { filePath: string }) {
     const entity = useEditorState((state) => state.entities.get(props.filePath))
     const { setPreviewingFilePath, previewingFilePath } = useContext(FileExplorerContext)
+    const goToEntity = useGoToEntity(entity)
 
     const isMock = useMemo(() => {
         return entity == undefined
@@ -120,6 +145,7 @@ export function FileEntry(props: { filePath: string }) {
                     className={`gap-2 group/fileBrowserEntry w-full pl-1`}
                     variant="list-entry"
                     onClick={() => setPreviewingFilePath(props.filePath)}
+                    onDoubleClick={goToEntity}
                 >
                     <div className="w-4 h-4 shrink-0" />
                     {isMock ? (
@@ -147,6 +173,7 @@ export function FileEntry(props: { filePath: string }) {
                 entity={entity}
                 filePath={props.filePath}
                 fileName={filePathLastSegment(props.filePath)}
+                goToEntity={goToEntity}
             />
         </ContextMenu>
     )

@@ -124,6 +124,12 @@ export function sum(a: number, b: number) {
     return a + b
 }
 
+export function getFolderPath(filePath: string) {
+    const split = filePath.split("/")
+    if (split[split.length - 1] === "") return filePath
+    else return split.slice(0, split.length - 1).join("/") + "/"
+}
+
 export enum Diff {
     None,
     Changed,

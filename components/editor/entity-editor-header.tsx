@@ -97,7 +97,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="bg-destructive" onClick={onDelete}>
-                            <Trash className="w-4 h-4 mr-2" /> Delete Entity
+                            <Trash className="w-4 h-4 mr-2" /> Delete
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

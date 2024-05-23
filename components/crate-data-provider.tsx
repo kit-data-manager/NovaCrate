@@ -1,7 +1,6 @@
 "use client"
 
 import { createContext, PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
-import { Error } from "@/components/error"
 import useSWR from "swr"
 import { useEditorState } from "@/components/editor-state"
 import { Draft, produce } from "immer"
@@ -13,6 +12,12 @@ export interface ICrateDataProvider {
     crateData?: ICrate
     crateDataIsLoading: boolean
     saveEntity(entity: IFlatEntity): Promise<boolean>
+    createFileEntity(entity: IFlatEntity, file: File): Promise<boolean>
+    createFolderEntity(
+        entity: IFlatEntity,
+        files: IFlatEntityWithFile[],
+        progressCallback?: (current: number, max: number, errors: unknown[]) => void
+    ): Promise<boolean>
     deleteEntity(entity: IFlatEntity): Promise<boolean>
     reload(): void
     isSaving: boolean
@@ -27,6 +32,12 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     deleteEntity: () => {
+        return Promise.reject("Crate Data Provider not mounted yet")
+    },
+    createFileEntity(): Promise<boolean> {
+        return Promise.reject("Crate Data Provider not mounted yet")
+    },
+    createFolderEntity(): Promise<boolean> {
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     reload: () => {
@@ -131,6 +142,78 @@ export function CrateDataProvider(
         [data, mutate, props.crateId, props.serviceProvider]
     )
 
+    const createFileEntity = useCallback(
+        async (entity: IFlatEntity, file: File) => {
+            if (props.crateId) {
+                setIsSaving(true)
+                try {
+                    const result = await props.serviceProvider.createFileEntity(
+                        props.crateId,
+                        entity,
+                        file
+                    )
+                    setIsSaving(false)
+                    setSaveError(undefined)
+                    mutate().then()
+
+                    return result
+                } catch (e) {
+                    console.error("Error occurred while trying to create file entity", e)
+                    setSaveError(e)
+                    setIsSaving(false)
+                    return false
+                }
+            } else return false
+        },
+        [mutate, props.crateId, props.serviceProvider]
+    )
+
+    const createFolderEntity = useCallback(
+        async (
+            entity: IFlatEntity,
+            files: IFlatEntityWithFile[],
+            progressCallback?: (current: number, max: number, errors: unknown[]) => void
+        ) => {
+            if (props.crateId) {
+                setIsSaving(true)
+                try {
+                    const folderResult = await props.serviceProvider.createEntity(
+                        props.crateId,
+                        entity
+                    )
+
+                    if (!folderResult) return false
+
+                    const errors: unknown[] = []
+                    let progress = 0
+
+                    for (const file of files) {
+                        try {
+                            const result = await createFileEntity(file, file.getFile())
+                            if (progressCallback) progressCallback(progress++, files.length, errors)
+                            if (!result) errors.push("Failed to upload file " + file["@id"])
+                        } catch (e) {
+                            errors.push(e)
+                            if (progressCallback) progressCallback(progress++, files.length, errors)
+                        }
+                    }
+
+                    setIsSaving(false)
+                    setSaveError(undefined)
+                    mutate().then()
+
+                    return true
+                } catch (e) {
+                    console.error("Error occurred while trying to create file entity", e)
+                    setSaveError(e)
+                    setIsSaving(false)
+                    return false
+                }
+            } else return false
+        },
+        [createFileEntity, mutate, props.crateId, props.serviceProvider]
+    )
+
     const deleteEntity = useCallback(
         async (entityData: IFlatEntity) => {
             if (props.crateId) {
@@ -170,6 +253,8 @@ export function CrateDataProvider(
                 crateData: data,
                 crateDataIsLoading: isLoading,
                 saveEntity,
+                createFileEntity,
+                createFolderEntity,
                 deleteEntity,
                 isSaving,
                 reload: mutate,
