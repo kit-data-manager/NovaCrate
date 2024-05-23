@@ -11,7 +11,8 @@ export function DataEntityHint({ entity }: { entity: IFlatEntity }) {
                 <AlertTitle>Hint: Data Entities</AlertTitle>
                 <AlertDescription>
                     This is a data entity. In this editor they are identified by the letter{" "}
-                    <b className="text-data">D</b> and the color{" "}
+                    <b className="text-data">D</b> (for Datasets, which represent Folders) or the
+                    letter <b className="text-data">F</b> (for files) and the color{" "}
                     <span className="text-data">purple</span>. A Data Entity directly corresponds to
                     a file in the File Explorer. The purpose of the Entity is to hold the metadata
                     of the corresponding file. That could be things like the file size or file type,
