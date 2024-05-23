@@ -6,6 +6,7 @@ import { useEditorState } from "@/components/editor-state"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { getEntityDisplayName } from "@/lib/utils"
 import { Error } from "@/components/error"
+import { RO_CRATE_FILE } from "@/lib/constants"
 
 // TODO: How to handle data files?
 
@@ -19,7 +20,8 @@ export function DeleteEntityModal({
     entityId: string
 }) {
     const entity = useEditorState((store) => store.entities.get(entityId))
-    const { deleteEntity } = useContext(CrateDataContext)
+    const context = useEditorState.useCrateContext()
+    const { deleteEntity, serviceProvider, crateId } = useContext(CrateDataContext)
     const removeEntity = useEditorState.useRemoveEntity()
     const [isDeleting, setIsDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState<unknown>()
@@ -47,8 +49,37 @@ export function DeleteEntityModal({
                 .finally(() => {
                     setIsDeleting(false)
                 })
+        } else if (serviceProvider && crateId) {
+            // Attempt to delete anyway. The user has able to access the delete button, so there must be something here...
+            // Assumes the type to be a file, since files can exist without having an entity
+            onOpenChange(false)
+            setIsDeleting(true)
+            serviceProvider
+                .deleteEntity(crateId, {
+                    "@id": entityId,
+                    "@type": [context.reverse(RO_CRATE_FILE) || RO_CRATE_FILE]
+                })
+                .then(() => {
+                    setDeleteError(undefined)
+                })
+                .catch((e) => {
+                    console.error(e)
+                    setDeleteError(e)
+                })
+                .finally(() => {
+                    setIsDeleting(false)
+                })
         }
-    }, [entity, onOpenChange, deleteEntity, removeEntity])
+    }, [
+        entity,
+        serviceProvider,
+        crateId,
+        onOpenChange,
+        deleteEntity,
+        removeEntity,
+        entityId,
+        context
+    ])
 
     const onCloseClick = useCallback(() => {
         onOpenChange(false)

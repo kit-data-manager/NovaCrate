@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useContext, useState } from "react"
+import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { useAsync } from "@/components/use-async"
 import { Button } from "@/components/ui/button"
@@ -18,11 +18,13 @@ import { FolderContent } from "@/components/file-explorer/content"
 import HelpTooltip from "@/components/help-tooltip"
 import { FileExplorerContext } from "@/components/file-explorer/context"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useEditorState } from "@/components/editor-state"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 
 export function FileExplorer() {
     const crateData = useContext(CrateDataContext)
+    const entities = useEditorState.useEntities()
     const { downloadError } = useContext(FileExplorerContext)
 
     const filesListResolver = useCallback(
@@ -35,6 +37,15 @@ export function FileExplorer() {
     )
 
     const { data, error, isPending, revalidate } = useAsync(crateData.crateId, filesListResolver)
+
+    const revalidateRef = useRef(revalidate)
+    useEffect(() => {
+        revalidateRef.current = revalidate
+    }, [revalidate])
+
+    useEffect(() => {
+        revalidateRef.current()
+    }, [entities])
 
     const [defaultSectionOpen, setDefaultSectionOpen] = useState<DefaultSectionOpen>(true)
 

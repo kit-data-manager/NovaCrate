@@ -15,6 +15,10 @@ declare interface IFlatEntity extends Record<string, FlatEntityPropertyTypes> {
     "@type": string | string[]
 }
 
+declare interface IFlatEntityWithFile extends IFlatEntity {
+    getFile(): File // Will automatically be dropped in JSON
+}
+
 declare interface ICrate {
     "@context": CrateContextType
     "@graph": IFlatEntity[]

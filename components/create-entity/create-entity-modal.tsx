@@ -7,6 +7,7 @@ import { TypeSelect } from "@/components/create-entity/type-select"
 import { CreateEntity } from "@/components/create-entity/create-entity"
 import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { SimpleTypeSelect } from "@/components/create-entity/simple-type-select"
+import { CrateDataContext } from "@/components/crate-data-provider"
 
 export function CreateEntityModal({
     open,
@@ -27,9 +28,23 @@ export function CreateEntityModal({
 }) {
     const addEntity = useEditorState.useAddEntity()
     const { focusTab } = useContext(EntityEditorTabsContext)
+    const { createFileEntity, createFolderEntity } = useContext(CrateDataContext)
 
     const [fullTypeBrowser, setFullTypeBrowser] = useState(!!forceId || !!restrictToClasses)
     const [selectedType, setSelectedType] = useState("")
+
+    // TODO work
+    const [uploading, setUploading] = useState(false)
+    const [currentUploadProgress, setCurrentUploadProgress] = useState(0)
+    const [maxUploadProgress, setMaxUploadProgress] = useState(0)
+    const [uploadErrors, setUploadErrors] = useState<unknown[]>([])
+
+    const resetUploadState = useCallback(() => {
+        setUploading(false)
+        setCurrentUploadProgress(0)
+        setMaxUploadProgress(0)
+        setUploadErrors([])
+    }, [])
 
     useEffect(() => {
         if (!open) {
@@ -64,6 +79,33 @@ export function CreateEntityModal({
         [addEntity, autoReference, focusTab, onEntityCreated, selectedType]
     )
 
+    const onUploadFile = useCallback(
+        async (id: string, name: string, file: File) => {
+            setUploading(true)
+            setMaxUploadProgress(1)
+            try {
+                const result = await createFileEntity(
+                    {
+                        "@id": id,
+                        "@type": selectedType,
+                        name
+                    },
+                    file
+                )
+                if (!result) setUploadErrors(["File upload failed"])
+                else {
+                    setCurrentUploadProgress(1)
+                    onOpenChange(false)
+                }
+            } catch (e) {
+                setUploadErrors([e])
+            }
+        },
+        [createFileEntity, onOpenChange, selectedType]
+    )
+
+    const onUploadFolder = useCallback(() => {}, [])
+
     const backToTypeSelect = useCallback(() => {
         setSelectedType("")
     }, [])
@@ -96,6 +138,9 @@ export function CreateEntityModal({
                         onCreateClick={onCreate}
                         forceId={forceId}
                         selectedType={selectedType}
+                        basePath={basePath}
+                        onUploadFile={onUploadFile}
+                        onUploadFolder={onUploadFolder}
                     />
                 )}
             </DialogContent>

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, File, Folder, FolderDot, Plus } from "lucide-react"
 import { useFilePicker } from "use-file-picker"
-import { camelCaseReadable, fileNameWithoutEnding } from "@/lib/utils"
+import { camelCaseReadable, encodeFilePath, fileNameWithoutEnding } from "@/lib/utils"
 import { Error } from "@/components/error"
 import prettyBytes from "pretty-bytes"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -20,13 +20,17 @@ export function CreateEntity({
     onBackClick,
     onCreateClick,
     forceId,
-    basePath
+    basePath,
+    onUploadFile,
+    onUploadFolder
 }: {
     selectedType: string
     onBackClick: () => void
     onCreateClick: (id: string, name: string) => void
     forceId?: string
     basePath?: string
+    onUploadFile(id: string, name: string, file: File): void
+    onUploadFolder(id: string, name: string, files: File[]): void
 }) {
     const context = useEditorState.useCrateContext()
 
@@ -69,9 +73,50 @@ export function CreateEntity({
         return forceId || identifier || _autoId
     }, [_autoId, forceId, identifier])
 
+    const hasFileUpload = useMemo(() => {
+        return fileUpload && !forceId
+    }, [fileUpload, forceId])
+
+    const hasFolderUpload = useMemo(() => {
+        return folderUpload && !forceId
+    }, [folderUpload, forceId])
+
+    const baseFileName = useMemo(() => {
+        if (plainFiles.length > 0) {
+            return plainFiles[0].name
+        } else if (folderFiles.length > 0) {
+            return folderFiles[0].webkitRelativePath.split("/")[0]
+        } else return undefined
+    }, [folderFiles, plainFiles])
+
+    const path = useMemo(() => {
+        return (
+            (basePath || "") +
+            (emptyFolder ? encodeFilePath(name.replaceAll("/", "")) : baseFileName || "")
+        )
+    }, [baseFileName, basePath, emptyFolder, name])
+
     const localOnCreateClick = useCallback(() => {
-        onCreateClick(autoId, name)
-    }, [autoId, name, onCreateClick])
+        if (!forceId && (hasFileUpload || hasFolderUpload)) {
+            if (hasFileUpload) {
+                onUploadFile(path, name, plainFiles[0])
+            } else {
+                onUploadFolder(path, name, folderFiles)
+            }
+        } else onCreateClick(autoId, name)
+    }, [
+        autoId,
+        folderFiles,
+        forceId,
+        hasFileUpload,
+        hasFolderUpload,
+        name,
+        onCreateClick,
+        onUploadFile,
+        onUploadFolder,
+        path,
+        plainFiles
+    ])
 
     const onNameInputKeyDown = useCallback(
         (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -97,22 +142,6 @@ export function CreateEntity({
             )
         }
     }, [folderFiles])
-
-    const hasFileUpload = useMemo(() => {
-        return fileUpload && !forceId
-    }, [fileUpload, forceId])
-
-    const hasFolderUpload = useMemo(() => {
-        return folderUpload && !forceId
-    }, [folderUpload, forceId])
-
-    const baseFileName = useMemo(() => {
-        if (plainFiles.length > 0) {
-            return plainFiles[0].name
-        } else if (folderFiles.length > 0) {
-            return folderFiles[0].webkitRelativePath.split("/")[0]
-        } else return undefined
-    }, [folderFiles, plainFiles])
 
     if (hasFileUpload && hasFolderUpload)
         return (
@@ -209,14 +238,7 @@ export function CreateEntity({
                             different path, use the File Explorer
                         </HelpTooltip>
                     </Label>
-                    <Input
-                        value={
-                            basePath ||
-                            "." +
-                                (emptyFolder ? "/" + name : baseFileName ? "/" + baseFileName : "")
-                        }
-                        disabled
-                    />
+                    <Input value={path} disabled />
                 </div>
             ) : null}
 
@@ -236,7 +258,7 @@ export function CreateEntity({
                 <Label>Name</Label>
                 <Input
                     value={name}
-                    placeholder={"Entity Name"}
+                    placeholder={emptyFolder ? "Folder Name" : "Entity Name"}
                     onChange={onNameChange}
                     autoFocus
                     onKeyDown={onNameInputKeyDown}
