@@ -16,7 +16,7 @@ import {
     ChevronDown,
     ChevronsDownUp,
     ChevronsUpDown,
-    Eye,
+    EllipsisVertical,
     PackageSearch,
     Plus,
     RefreshCw
@@ -29,13 +29,18 @@ import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
+import { useEntityBrowserState } from "@/lib/state/entity-browser-state"
 
 type DefaultSectionOpen = boolean | "indeterminate"
 
 export function EntityBrowserItem(props: { entityId: string }) {
+    const showEntityType = useEntityBrowserState((store) => store.showEntityType)
+    const showIdInsteadOfName = useEntityBrowserState((store) => store.showIdInsteadOfName)
     const { openTab } = useContext(EntityEditorTabsContext)
     const entity = useEditorState((state) => state.entities.get(props.entityId))
 
@@ -56,11 +61,13 @@ export function EntityBrowserItem(props: { entityId: string }) {
             <EntityIcon entity={entity} />
             <div className="truncate">
                 <span className="group-hover/entityBrowserItem:underline underline-offset-2">
-                    {getEntityDisplayName(entity)}
+                    {showIdInsteadOfName ? props.entityId : getEntityDisplayName(entity)}
                 </span>
-                <span className="ml-2 text-xs text-muted-foreground">
-                    {toArray(entity["@type"]).join(", ")}
-                </span>
+                {showEntityType ? (
+                    <span className="ml-2 text-xs text-muted-foreground">
+                        {toArray(entity["@type"]).join(", ")}
+                    </span>
+                ) : null}
             </div>
         </Button>
     )
@@ -175,6 +182,7 @@ export function EntityBrowserContent({
 }
 
 export function EntityBrowser() {
+    const state = useEntityBrowserState()
     const crate = useContext(CrateDataContext)
     const { showCreateEntityModal } = useContext(GlobalModalContext)
     const [defaultSectionOpen, setDefaultSectionOpen] = useState<DefaultSectionOpen>(true)
@@ -209,47 +217,48 @@ export function EntityBrowser() {
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button size="sm" variant="outline" className={`text-xs`}>
-                            <Eye className={`w-4 h-4`} />{" "}
-                            <ChevronDown className="w-4 h-4 ml-2 text-muted-foreground" />
+                            <EllipsisVertical className={`w-4 h-4`} />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuCheckboxItem>Show Folder Structure</DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem checked>
+                        <DropdownMenuLabel>Entity Explorer Settings</DropdownMenuLabel>
+                        {/*<DropdownMenuCheckboxItem*/}
+                        {/*    checked={state.showFolderStructure}*/}
+                        {/*    onClick={() => state.setShowFolderStructure(!state.showFolderStructure)}*/}
+                        {/*>*/}
+                        {/*    Show Folder Structure*/}
+                        {/*</DropdownMenuCheckboxItem>*/}
+                        <DropdownMenuCheckboxItem
+                            checked={state.showEntityType}
+                            onClick={() => state.setShowEntityType(!state.showEntityType)}
+                        >
                             Show Entity Type
                         </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem>Show ID instead of Name</DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                            checked={state.showIdInsteadOfName}
+                            onClick={() => state.setShowIdInsteadOfName(!state.showIdInsteadOfName)}
+                        >
+                            Show ID instead of Name
+                        </DropdownMenuCheckboxItem>
                         <DropdownMenuSeparator />
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs"
-                            onClick={collapseAllSections}
+                        <DropdownMenuItem onClick={collapseAllSections}>
+                            <ChevronsDownUp className={"w-4 h-4 mr-2"} /> Collapse All
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={expandAllSections}>
+                            <ChevronsUpDown className={"w-4 h-4 mr-2"} /> Expand All
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            disabled={crate.crateDataIsLoading}
+                            onClick={() => crate.reload()}
                         >
-                            <ChevronsDownUp className={"w-4 h-4"} />
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs ml-2"
-                            onClick={expandAllSections}
-                        >
-                            <ChevronsUpDown className={"w-4 h-4"} />
-                        </Button>
+                            <RefreshCw
+                                className={`w-4 h-4 mr-2 ${crate.crateDataIsLoading ? "animate-spin" : ""}`}
+                            />{" "}
+                            Reload Data
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-
-                <Button
-                    size="sm"
-                    variant="outline"
-                    className={`text-xs`}
-                    disabled={crate.crateDataIsLoading}
-                    onClick={() => crate.reload()}
-                >
-                    <RefreshCw
-                        className={`w-4 h-4 ${crate.crateDataIsLoading ? "animate-spin" : ""}`}
-                    />
-                </Button>
             </div>
             <EntityBrowserContent
                 defaultSectionOpen={defaultSectionOpen}
