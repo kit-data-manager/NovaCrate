@@ -3,31 +3,51 @@ import { useAutoId } from "@/components/use-auto-id"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, File, Folder, Plus } from "lucide-react"
+import { ArrowLeft, File, Folder, FolderDot, Plus } from "lucide-react"
 import { useFilePicker } from "use-file-picker"
-import { fileNameWithoutEnding } from "@/lib/utils"
+import { camelCaseReadable, fileNameWithoutEnding } from "@/lib/utils"
 import { Error } from "@/components/error"
 import prettyBytes from "pretty-bytes"
+import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
+import { useEditorState } from "@/components/editor-state"
+import HelpTooltip from "@/components/help-tooltip"
 
 // TODO data entities
 
 export function CreateEntity({
+    selectedType,
     onBackClick,
     onCreateClick,
-    defaultName,
     forceId,
-    fileUpload,
-    folderUpload
+    basePath
 }: {
+    selectedType: string
     onBackClick: () => void
     onCreateClick: (id: string, name: string) => void
-    defaultName?: string
     forceId?: string
-    fileUpload?: boolean
-    folderUpload?: boolean
+    basePath?: string
 }) {
+    const context = useEditorState.useCrateContext()
+
+    const fileUpload = useMemo(() => {
+        return context.resolve(selectedType) === RO_CRATE_FILE
+    }, [context, selectedType])
+
+    const folderUpload = useMemo(() => {
+        return context.resolve(selectedType) === RO_CRATE_DATASET
+    }, [context, selectedType])
+
+    const defaultName = useMemo(() => {
+        if ((fileUpload || folderUpload) && forceId) {
+            const split = forceId.split("/").filter((part) => !!part)
+            return split[split.length - 1]
+        } else return undefined
+    }, [fileUpload, folderUpload, forceId])
+
     const [name, setName] = useState(defaultName || "")
     const [identifier, setIdentifier] = useState<null | string>(null)
+    const [emptyFolder, setEmptyFolder] = useState(false)
     const { plainFiles, openFilePicker } = useFilePicker({})
     const { plainFiles: folderFiles, openFilePicker: openFolderPicker } = useFilePicker({
         initializeWithCustomParameters(input: HTMLInputElement) {
@@ -86,6 +106,14 @@ export function CreateEntity({
         return folderUpload && !forceId
     }, [folderUpload, forceId])
 
+    const baseFileName = useMemo(() => {
+        if (plainFiles.length > 0) {
+            return plainFiles[0].name
+        } else if (folderFiles.length > 0) {
+            return folderFiles[0].webkitRelativePath.split("/")[0]
+        } else return undefined
+    }, [folderFiles, plainFiles])
+
     if (hasFileUpload && hasFolderUpload)
         return (
             <Error error="Cannot determine whether this is a file upload or a folder upload. Make sure your context is not ambiguous." />
@@ -93,6 +121,37 @@ export function CreateEntity({
 
     return (
         <div className="flex flex-col gap-4">
+            <DialogHeader>
+                <DialogTitle>Create a new {camelCaseReadable(selectedType)} Entity</DialogTitle>
+
+                <DialogDescription>
+                    {!hasFileUpload && !hasFolderUpload ? (
+                        <>
+                            Enter a name for the entity. A valid ID will automatically be generated.
+                            You can also manually change the ID. Press the Create Button to start
+                            adding Properties.
+                        </>
+                    ) : null}
+
+                    {hasFileUpload ? (
+                        <>
+                            Add a file to the Crate. Use the File Explorer to upload the file to a
+                            specific folder. This will import the File into the Crate and also
+                            create a corresponding Data Entity.
+                        </>
+                    ) : null}
+
+                    {hasFolderUpload ? (
+                        <>
+                            Add a folder to the Crate. Use the File Explorer to upload the folder to
+                            a specific parent-folder. You can choose to also import all the files in
+                            the selected folder. If you want to create an empty folder, select Empty
+                            Folder and enter a name of your choice.
+                        </>
+                    ) : null}
+                </DialogDescription>
+            </DialogHeader>
+
             {hasFileUpload ? (
                 <div>
                     <Label>File</Label>
@@ -111,19 +170,53 @@ export function CreateEntity({
             {hasFolderUpload ? (
                 <div>
                     <Label>Folder</Label>
-                    <div>
-                        <Button variant="outline" onClick={openFolderPicker}>
-                            <Folder className="w-4 h-4 mr-2" />
-                            {folderFiles.length == 0
-                                ? "Select Folder"
-                                : folderFiles[0].webkitRelativePath.split("/")[0]}
-                        </Button>
+                    <div className="flex items-center">
+                        {!emptyFolder ? (
+                            <Button variant="outline" onClick={openFolderPicker}>
+                                <Folder className="w-4 h-4 mr-2" />
+                                {folderFiles.length == 0
+                                    ? "Select Folder"
+                                    : folderFiles[0].webkitRelativePath.split("/")[0]}
+                            </Button>
+                        ) : null}
+                        {baseFileName || emptyFolder ? null : (
+                            <span className="m-2 text-muted-foreground">or</span>
+                        )}
+                        {baseFileName ? null : (
+                            <Button
+                                variant={emptyFolder ? "default" : "outline"}
+                                onClick={() => setEmptyFolder((v) => !v)}
+                            >
+                                <FolderDot className="w-4 h-4 mr-2" />
+                                Empty Folder
+                            </Button>
+                        )}
                         <span className="ml-2 text-muted-foreground">
                             {folderFiles.length == 0
                                 ? ""
                                 : `${folderFiles.length} files (${prettyBytes(folderFiles.map((f) => f.size).reduce((a, b) => a + b))} total)`}
                         </span>
                     </div>
+                </div>
+            ) : null}
+
+            {(hasFileUpload || hasFolderUpload) && !forceId ? (
+                <div>
+                    <Label className="flex gap-1 items-center py-1">
+                        Path{" "}
+                        <HelpTooltip>
+                            The path where the file(s) will be located in the Crate. To upload to a
+                            different path, use the File Explorer
+                        </HelpTooltip>
+                    </Label>
+                    <Input
+                        value={
+                            basePath ||
+                            "." +
+                                (emptyFolder ? "/" + name : baseFileName ? "/" + baseFileName : "")
+                        }
+                        disabled
+                    />
                 </div>
             ) : null}
 
