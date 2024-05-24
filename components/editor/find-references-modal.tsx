@@ -10,11 +10,14 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { memo, useCallback, useContext, useMemo } from "react"
 import { camelCaseReadable, getEntityDisplayName } from "@/lib/utils"
-import { useAsync } from "@/components/use-async"
 import { Error } from "@/components/error"
-import { useEditorState } from "@/components/editor-state"
-import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
+import { useEditorState } from "@/lib/state/editor-state"
+import {
+    createEntityEditorTab,
+    EntityEditorTabsContext
+} from "@/components/providers/entity-tabs-provider"
 import { EntityIcon } from "@/components/entity-icon"
+import { useAsync } from "@/lib/hooks"
 
 interface ReferencingEntity extends IFlatEntity {
     "@propertyNameReadable": string

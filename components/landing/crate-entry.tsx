@@ -9,7 +9,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useContext, useEffect, useMemo, useState } from "react"
-import { CrateDataContext } from "@/components/crate-data-provider"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { getEntityDisplayName } from "@/lib/utils"
 import { crateDetailsKey } from "@/components/landing/util"
 import {

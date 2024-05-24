@@ -1,8 +1,7 @@
 "use client"
 
 import { useCallback, useContext, useEffect, useRef, useState } from "react"
-import { CrateDataContext } from "@/components/crate-data-provider"
-import { useAsync } from "@/components/use-async"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import {
     ChevronsDownUp,
     ChevronsUpDown,
@@ -17,8 +16,7 @@ import { FolderContent } from "@/components/file-explorer/content"
 import HelpTooltip from "@/components/help-tooltip"
 import { FileExplorerContext } from "@/components/file-explorer/context"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useEditorState } from "@/components/editor-state"
-import { GlobalModalContext } from "@/components/global-modals-provider"
+import { useEditorState } from "@/lib/state/editor-state"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -29,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
+import { useAsync } from "@/lib/hooks"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 

@@ -1,14 +1,14 @@
 import { createRef, memo, useCallback, useContext, useEffect, useMemo } from "react"
-import { useAsync } from "@/components/use-async"
-import { CrateVerifyContext } from "@/components/crate-verify-provider"
+import { CrateVerifyContext } from "@/components/providers/crate-verify-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
 import { SinglePropertyEditor } from "@/components/editor/single-property-editor"
 import { camelCaseReadable } from "@/lib/utils"
-import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
-import { useEditorState } from "@/components/editor-state"
+import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
+import { useEditorState } from "@/lib/state/editor-state"
 import { handleSpringError } from "@/lib/spring-error-handling"
+import { useAsync } from "@/lib/hooks"
 
 export interface EntityEditorProperty {
     propertyName: string

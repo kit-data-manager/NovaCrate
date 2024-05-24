@@ -2,7 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCallback, useContext, useEffect, useState } from "react"
-import { CrateDataContext } from "@/components/crate-data-provider"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Button } from "@/components/ui/button"
 import {
     getEntityDisplayName,
@@ -21,10 +21,13 @@ import {
     Plus,
     RefreshCw
 } from "lucide-react"
-import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
+import {
+    createEntityEditorTab,
+    EntityEditorTabsContext
+} from "@/components/providers/entity-tabs-provider"
 import { EntityIcon } from "./entity-icon"
-import { GlobalModalContext } from "@/components/global-modals-provider"
-import { useEditorState } from "@/components/editor-state"
+import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { useEditorState } from "@/lib/state/editor-state"
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,

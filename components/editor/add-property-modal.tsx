@@ -14,11 +14,11 @@ import { memo, useCallback, useContext, useMemo, useState } from "react"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
 import { camelCaseReadable } from "@/lib/utils"
-import { useAsync } from "@/components/use-async"
 import { Error } from "@/components/error"
-import { useEditorState } from "@/components/editor-state"
-import { CrateVerifyContext } from "@/components/crate-verify-provider"
+import { useEditorState } from "@/lib/state/editor-state"
+import { CrateVerifyContext } from "@/components/providers/crate-verify-provider"
 import { CheckedState } from "@radix-ui/react-checkbox"
+import { useAsync } from "@/lib/hooks"
 
 export interface PossibleProperty {
     propertyName: string

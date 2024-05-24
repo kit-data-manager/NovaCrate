@@ -2,12 +2,12 @@
 
 import { Editor, Monaco } from "@monaco-editor/react"
 import React, { useCallback, useContext, useRef, useState } from "react"
-import { CrateDataContext } from "@/components/crate-data-provider"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useTheme } from "next-themes"
 import type { editor } from "monaco-editor"
 import { Braces, CircleAlert, Info, Save, TriangleAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useEditorState } from "@/components/editor-state"
+import { useEditorState } from "@/lib/state/editor-state"
 
 export default function JSONEditorPage() {
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())

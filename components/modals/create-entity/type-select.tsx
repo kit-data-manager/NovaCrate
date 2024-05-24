@@ -1,5 +1,5 @@
 import { SlimClass } from "@/lib/crate-verify/helpers"
-import { useEditorState } from "@/components/editor-state"
+import { useEditorState } from "@/lib/state/editor-state"
 import React, { useCallback, useContext, useEffect, useState } from "react"
 import {
     Command,
@@ -11,13 +11,13 @@ import {
 } from "@/components/ui/command"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Checkbox } from "@/components/ui/checkbox"
-import { CreateEntityModalEntry } from "@/components/create-entity/modal-entry"
-import { CrateVerifyContext } from "@/components/crate-verify-provider"
-import { useAsync } from "@/components/use-async"
+import { CreateEntityModalEntry } from "@/components/modals/create-entity/modal-entry"
+import { CrateVerifyContext } from "@/components/providers/crate-verify-provider"
 import { Error } from "@/components/error"
 import { Button } from "@/components/ui/button"
 import { Blocks } from "lucide-react"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useAsync } from "@/lib/hooks"
 
 export function TypeSelect({
     open,

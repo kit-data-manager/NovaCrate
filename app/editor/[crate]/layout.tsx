@@ -1,14 +1,14 @@
 "use client"
 
 import { PropsWithChildren, useEffect, useMemo } from "react"
-import { CrateDataProvider } from "@/components/crate-data-provider"
-import { Nav } from "@/components/nav"
+import { CrateDataProvider } from "@/components/providers/crate-data-provider"
+import { Nav } from "@/components/nav/nav"
 import { RestProvider } from "@/lib/rest-provider"
 import { usePathname } from "next/navigation"
-import { EntityEditorTabsProvider } from "@/components/entity-tabs-provider"
-import { CrateVerifyProvider } from "@/components/crate-verify-provider"
-import { GlobalModalProvider } from "@/components/global-modals-provider"
-import { useRecentCrates } from "@/components/hooks"
+import { EntityEditorTabsProvider } from "@/components/providers/entity-tabs-provider"
+import { CrateVerifyProvider } from "@/components/providers/crate-verify-provider"
+import { GlobalModalProvider } from "@/components/providers/global-modals-provider"
+import { useRecentCrates } from "@/lib/hooks"
 import { FileExplorerProvider } from "@/components/file-explorer/context"
 
 const CRATE_ID_REGEX = /^\/editor\/([^\/]*)\/.*$/

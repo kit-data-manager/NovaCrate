@@ -2,9 +2,9 @@
 
 import { createContext, PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
 import useSWR from "swr"
-import { useEditorState } from "@/components/editor-state"
+import { useEditorState } from "@/lib/state/editor-state"
 import { Draft, produce } from "immer"
-import { applyServerDifferences } from "@/components/ensure-sync"
+import { applyServerDifferences } from "@/lib/ensure-sync"
 
 export interface ICrateDataProvider {
     readonly serviceProvider?: CrateServiceProvider

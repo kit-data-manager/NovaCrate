@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { toArray } from "@/lib/utils"
-import { useEditorState } from "@/components/editor-state"
+import { useEditorState } from "@/lib/state/editor-state"
 import { Error } from "@/components/error"
 
 export function UnknownTypeWarning({ entityType }: { entityType: string | string[] }) {
