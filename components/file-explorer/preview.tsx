@@ -1,4 +1,4 @@
-import { Download, Eye, X } from "lucide-react"
+import { Download, Eye, XIcon } from "lucide-react"
 import HelpTooltip from "@/components/help-tooltip"
 import { Button } from "@/components/ui/button"
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
@@ -45,36 +45,21 @@ export function FilePreview() {
 
     return (
         <div className="flex flex-col h-full">
-            <div className="pl-4 bg-accent text-sm h-10 flex items-center gap-2 shrink-0">
-                <Eye className="w-4 h-4 shrink-0" /> File Preview
-                <HelpTooltip>
+            <div className="pl-4 pr-2 bg-accent text-sm h-10 flex items-center shrink-0">
+                <Eye className="w-4 h-4 shrink-0 mr-2" /> File Preview
+                <HelpTooltip className="ml-2">
                     <div>
                         Click on a file in the File Explorer to preview it here. Only supported for
                         some file types.
                     </div>
                 </HelpTooltip>
-            </div>
-            <div className="flex gap-2 sticky top-0 z-10 p-2 bg-accent shrink-0 items-center">
-                <Button size="sm" variant="outline" className="text-xs" onClick={downloadFile}>
-                    <Download className={"w-4 h-4 mr-2"} /> Download File
-                </Button>
-                <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-xs"
-                    onClick={() => setPreviewingFilePath("")}
-                >
-                    <X className={"w-4 h-4 mr-1"} /> Close Preview
-                </Button>
                 <div className="grow" />
-                <div
-                    className={
-                        "text-muted-foreground transition " +
-                        (isLoading ? "opacity-100" : "opacity-0")
-                    }
-                >
-                    Loading...
-                </div>
+                <Button variant="header" size="sm" onClick={downloadFile}>
+                    <Download className="w-4 h-4" />
+                </Button>
+                <Button variant="header" size="sm" onClick={() => setPreviewingFilePath("")}>
+                    <XIcon className="w-4 h-4" />
+                </Button>
             </div>
             <Error title="Could not load file for preview" error={previewError} />
             <BaseViewer

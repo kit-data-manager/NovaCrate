@@ -22,13 +22,15 @@ export function EntryContextMenu({
     filePath,
     fileName,
     folder,
-    goToEntity
+    goToEntity,
+    blankSpace
 }: {
     entity?: IFlatEntity
-    filePath: string
-    fileName: string
+    filePath?: string
+    fileName?: string
     folder?: boolean
-    goToEntity(): void
+    goToEntity?: () => void
+    blankSpace?: boolean
 }) {
     const { serviceProvider, crateId } = useContext(CrateDataContext)
     const { setDownloadError } = useContext(FileExplorerContext)
@@ -43,12 +45,13 @@ export function EntryContextMenu({
     )
 
     const downloadFile = useCallback(() => {
-        if (serviceProvider) {
+        if (serviceProvider && filePath) {
             serviceProvider.downloadFile(crateId, filePath).catch(setDownloadError)
         }
     }, [crateId, filePath, serviceProvider, setDownloadError])
 
     const createEntityForExistingFile = useCallback(() => {
+        if (!filePath) return null
         showCreateEntityModal(
             [{ "@id": folder ? RO_CRATE_DATASET : RO_CRATE_FILE, comment: "Click here" }],
             undefined,
@@ -61,7 +64,7 @@ export function EntryContextMenu({
             [{ "@id": RO_CRATE_FILE, comment: "Click here" }],
             undefined,
             undefined,
-            getFolderPath(filePath)
+            getFolderPath(filePath || "")
         )
     }, [filePath, showCreateEntityModal])
 
@@ -70,12 +73,37 @@ export function EntryContextMenu({
             [{ "@id": RO_CRATE_DATASET, comment: "Click here" }],
             undefined,
             undefined,
-            getFolderPath(filePath)
+            getFolderPath(filePath || "")
         )
     }, [filePath, showCreateEntityModal])
 
+    const NewButtons = useCallback(() => {
+        return (
+            <ContextMenuSub>
+                <ContextMenuSubTrigger>
+                    <Plus className="w-4 h-4 mr-2" /> New
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                    <ContextMenuItem onClick={createNewFile}>
+                        <FileIcon className="w-4 h-4 mr-2" /> File
+                    </ContextMenuItem>
+                    <ContextMenuItem onClick={createNewFolder}>
+                        <FolderOpen className="w-4 h-4 mr-2" /> Folder
+                    </ContextMenuItem>
+                </ContextMenuSubContent>
+            </ContextMenuSub>
+        )
+    }, [createNewFile, createNewFolder])
+
+    if (blankSpace)
+        return (
+            <ContextMenuContent>
+                <NewButtons />
+            </ContextMenuContent>
+        )
+
     return (
-        <ContextMenuContent>
+        <ContextMenuContent className="min-w-52">
             {entity ? (
                 <ContextMenuItem onClick={goToEntity}>
                     <EntityIcon entity={entity} size="sm" /> Go to Entity
@@ -92,13 +120,27 @@ export function EntryContextMenu({
             )}
 
             <ContextMenuSeparator />
+
+            {!folder ? (
+                <ContextMenuItem onClick={downloadFile}>
+                    <Download className="w-4 h-4 mr-2" /> Download
+                </ContextMenuItem>
+            ) : null}
             <ContextMenuSub>
                 <ContextMenuSubTrigger>
                     <Copy className="w-4 h-4 mr-2" /> Copy
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
-                    <ContextMenuItem onClick={() => copyText(fileName)}>File Name</ContextMenuItem>
-                    <ContextMenuItem onClick={() => copyText(filePath)}>Full Path</ContextMenuItem>
+                    {fileName ? (
+                        <ContextMenuItem onClick={() => copyText(fileName)}>
+                            File Name
+                        </ContextMenuItem>
+                    ) : null}
+                    {filePath ? (
+                        <ContextMenuItem onClick={() => copyText(filePath)}>
+                            Full Path
+                        </ContextMenuItem>
+                    ) : null}
                     {entity ? (
                         <ContextMenuItem onClick={() => copyText(entity["@id"])}>
                             Entity ID
@@ -106,34 +148,18 @@ export function EntryContextMenu({
                     ) : null}
                 </ContextMenuSubContent>
             </ContextMenuSub>
-            {!folder ? (
-                <ContextMenuItem onClick={downloadFile}>
-                    <Download className="w-4 h-4 mr-2" /> Export
+
+            {entity || filePath ? (
+                <ContextMenuItem
+                    className="bg-destructive"
+                    onClick={() => showDeleteEntityModal(entity?.["@id"] || filePath!)}
+                >
+                    <Trash className="w-4 h-4 mr-2" /> Delete
                 </ContextMenuItem>
             ) : null}
 
-            <ContextMenuItem
-                className="bg-destructive"
-                onClick={() => showDeleteEntityModal(entity?.["@id"] || filePath)}
-            >
-                <Trash className="w-4 h-4 mr-2" /> Delete
-            </ContextMenuItem>
-
             <ContextMenuSeparator />
-
-            <ContextMenuSub>
-                <ContextMenuSubTrigger>
-                    <Plus className="w-4 h-4 mr-2" /> New
-                </ContextMenuSubTrigger>
-                <ContextMenuSubContent>
-                    <ContextMenuItem onClick={createNewFile}>
-                        <FileIcon className="w-4 h-4 mr-2" /> File
-                    </ContextMenuItem>
-                    <ContextMenuItem onClick={createNewFolder}>
-                        <FolderOpen className="w-4 h-4 mr-2" /> Folder
-                    </ContextMenuItem>
-                </ContextMenuSubContent>
-            </ContextMenuSub>
+            <NewButtons />
         </ContextMenuContent>
     )
 }

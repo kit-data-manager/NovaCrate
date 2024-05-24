@@ -189,9 +189,13 @@ export function CrateDataProvider(
 
                     for (const file of files) {
                         try {
-                            const result = await createFileEntity(file, file.getFile())
+                            const result = await props.serviceProvider.createFileEntity(
+                                props.crateId,
+                                file.entity,
+                                file.file
+                            )
                             if (progressCallback) progressCallback(progress++, files.length, errors)
-                            if (!result) errors.push("Failed to upload file " + file["@id"])
+                            if (!result) errors.push("Failed to upload file " + file.entity["@id"])
                         } catch (e) {
                             errors.push(e)
                             if (progressCallback) progressCallback(progress++, files.length, errors)
@@ -211,7 +215,7 @@ export function CrateDataProvider(
                 }
             } else return false
         },
-        [createFileEntity, mutate, props.crateId, props.serviceProvider]
+        [mutate, props.crateId, props.serviceProvider]
     )
 
     const deleteEntity = useCallback(

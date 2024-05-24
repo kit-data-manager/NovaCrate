@@ -8,6 +8,8 @@ import { CreateEntity } from "@/components/create-entity/create-entity"
 import { EntityEditorTabsContext } from "@/components/entity-tabs-provider"
 import { SimpleTypeSelect } from "@/components/create-entity/simple-type-select"
 import { CrateDataContext } from "@/components/crate-data-provider"
+import { UploadProgress } from "@/components/create-entity/upload-progress"
+import { RO_CRATE_FILE } from "@/lib/constants"
 
 export function CreateEntityModal({
     open,
@@ -29,11 +31,11 @@ export function CreateEntityModal({
     const addEntity = useEditorState.useAddEntity()
     const { focusTab } = useContext(EntityEditorTabsContext)
     const { createFileEntity, createFolderEntity } = useContext(CrateDataContext)
+    const context = useEditorState.useCrateContext()
 
     const [fullTypeBrowser, setFullTypeBrowser] = useState(!!forceId || !!restrictToClasses)
     const [selectedType, setSelectedType] = useState("")
 
-    // TODO work
     const [uploading, setUploading] = useState(false)
     const [currentUploadProgress, setCurrentUploadProgress] = useState(0)
     const [maxUploadProgress, setMaxUploadProgress] = useState(0)
@@ -51,11 +53,12 @@ export function CreateEntityModal({
             setTimeout(() => {
                 setSelectedType("")
                 setFullTypeBrowser(false)
+                resetUploadState()
             }, 1000)
         } else {
             setFullTypeBrowser(!!forceId || !!restrictToClasses)
         }
-    }, [forceId, open, restrictToClasses])
+    }, [forceId, open, resetUploadState, restrictToClasses])
 
     const onTypeSelect = useCallback((value: string) => {
         setSelectedType(value)
@@ -104,7 +107,46 @@ export function CreateEntityModal({
         [createFileEntity, onOpenChange, selectedType]
     )
 
-    const onUploadFolder = useCallback(() => {}, [])
+    const onUploadFolder = useCallback(
+        async (id: string, name: string, files: File[]) => {
+            setUploading(true)
+            setMaxUploadProgress(files.length > 0 ? files.length : 1)
+            try {
+                const result = await createFolderEntity(
+                    {
+                        "@id": id + (id.endsWith("/") ? "" : "/"),
+                        "@type": selectedType,
+                        name
+                    },
+                    files.map((file) => {
+                        return {
+                            entity: {
+                                "@id":
+                                    id +
+                                    (id.endsWith("/") || id.length === 0 ? "" : "/") +
+                                    file.webkitRelativePath.split("/").slice(1).join("/"),
+                                "@type": context.reverse(RO_CRATE_FILE) || RO_CRATE_FILE
+                            },
+                            file
+                        }
+                    }),
+                    (current, max, errors) => {
+                        setCurrentUploadProgress(current)
+                        setMaxUploadProgress(max)
+                        setUploadErrors(errors)
+                    }
+                )
+                if (!result) setUploadErrors(["Folder upload failed"])
+                else {
+                    setCurrentUploadProgress(files.length > 0 ? files.length : 1)
+                    onOpenChange(false)
+                }
+            } catch (e) {
+                setUploadErrors([e])
+            }
+        },
+        [context, createFolderEntity, onOpenChange, selectedType]
+    )
 
     const backToTypeSelect = useCallback(() => {
         setSelectedType("")
@@ -117,7 +159,13 @@ export function CreateEntityModal({
                     "transition-none " + (!selectedType && !fullTypeBrowser ? "max-w-[1000px]" : "")
                 }
             >
-                {!selectedType ? (
+                {uploading ? (
+                    <UploadProgress
+                        current={currentUploadProgress}
+                        max={maxUploadProgress}
+                        errors={uploadErrors}
+                    />
+                ) : !selectedType ? (
                     fullTypeBrowser ? (
                         <TypeSelect
                             open={open}

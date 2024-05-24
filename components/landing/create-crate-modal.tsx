@@ -13,9 +13,9 @@ import { useFilePicker } from "use-file-picker"
 import { Button } from "../ui/button"
 import { ArrowLeft, Folder, PackagePlus } from "lucide-react"
 import { CrateDataContext } from "../crate-data-provider"
-import { Progress } from "../ui/progress"
 import { sum } from "@/lib/utils"
 import prettyBytes from "pretty-bytes"
+import { UploadProgressBar } from "@/components/upload-progress-bar"
 
 export function CreateCrateModal({
     open,
@@ -147,16 +147,11 @@ export function CreateCrateModal({
                 ) : null}
 
                 {uploading ? (
-                    <>
-                        <div>
-                            Importing: {currentProgress}/{maxProgress || "?"}
-                        </div>
-                        <DialogDescription>Large files will take some time...</DialogDescription>
-                        <Progress value={currentProgress * (100 / maxProgress)} />
-                        {uploadErrors.map((error, i) => (
-                            <Error title="A file failed to upload" key={i} error={error} />
-                        ))}
-                    </>
+                    <UploadProgressBar
+                        value={currentProgress}
+                        max={maxProgress}
+                        errors={uploadErrors}
+                    />
                 ) : (
                     <>
                         <Error title="Could not create a new Crate" error={error} />
