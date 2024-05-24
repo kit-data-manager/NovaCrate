@@ -1,6 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { crateDetailsKey } from "@/components/landing/util"
 import { useEditorState } from "@/lib/state/editor-state"
+import { usePathname, useRouter } from "next/navigation"
+import {
+    createEntityEditorTab,
+    EntityEditorTabsContext
+} from "@/components/providers/entity-tabs-provider"
 
 const MAX_LIST_LENGTH = 100
 
@@ -139,4 +144,26 @@ export function useAutoId(name: string) {
         }
         return generated
     }, [entities, name])
+}
+
+export function useGoToEntity(entity?: IFlatEntity) {
+    const pathname = usePathname()
+    const router = useRouter()
+    const { openTab } = useContext(EntityEditorTabsContext)
+
+    return useCallback(
+        (_entity?: IFlatEntity) => {
+            if (_entity || entity) {
+                openTab(createEntityEditorTab(_entity || entity!), true)
+            }
+
+            const href =
+                pathname
+                    .split("/")
+                    .filter((_, i) => i < 3)
+                    .join("/") + "/entities"
+            router.push(href)
+        },
+        [entity, openTab, pathname, router]
+    )
 }
