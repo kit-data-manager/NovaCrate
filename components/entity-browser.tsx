@@ -258,7 +258,7 @@ export function EntityBrowser() {
                             <RefreshCw
                                 className={`w-4 h-4 mr-2 ${crate.crateDataIsLoading ? "animate-spin" : ""}`}
                             />{" "}
-                            Reload Data
+                            Reload Entities
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

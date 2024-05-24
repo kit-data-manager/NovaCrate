@@ -1,25 +1,58 @@
 "use client"
 
-import { Check, ChevronDown, Cog, Moon, Package, Search, Sun } from "lucide-react"
+import {
+    Check,
+    ChevronDown,
+    Cog,
+    FileUp,
+    FolderUp,
+    Moon,
+    Package,
+    Plus,
+    RefreshCcw,
+    Search,
+    Sun
+} from "lucide-react"
 import {
     Menubar,
     MenubarContent,
     MenubarItem,
     MenubarMenu,
     MenubarSeparator,
-    MenubarSub,
-    MenubarSubContent,
-    MenubarSubTrigger,
+    MenubarShortcut,
     MenubarTrigger
 } from "@/components/ui/menubar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
-import { useCallback } from "react"
+import { useCallback, useContext } from "react"
+import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 
 export function NavHeader() {
     const theme = useTheme()
+    const { showCreateEntityModal } = useContext(GlobalModalContext)
+    const { reload } = useContext(CrateDataContext)
     // const { undo, redo } = useEditorState.temporal.getState()
+
+    const showUploadFolderModal = useCallback(() => {
+        showCreateEntityModal([
+            {
+                "@id": RO_CRATE_DATASET,
+                comment: ""
+            }
+        ])
+    }, [showCreateEntityModal])
+
+    const showUploadFileModal = useCallback(() => {
+        showCreateEntityModal([
+            {
+                "@id": RO_CRATE_FILE,
+                comment: ""
+            }
+        ])
+    }, [showCreateEntityModal])
 
     const toggleTheme = useCallback(() => {
         if (theme.theme === "light") {
@@ -57,29 +90,24 @@ export function NavHeader() {
                             Entities <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
                         </MenubarTrigger>
                         <MenubarContent>
-                            <MenubarSub>
-                                <MenubarSubTrigger>Add Contextual</MenubarSubTrigger>
-                                <MenubarSubContent>
-                                    <MenubarItem>Person</MenubarItem>
-                                    <MenubarItem>Organization</MenubarItem>
-                                    <MenubarItem>Place</MenubarItem>
-                                    <MenubarItem>Scholarly Article</MenubarItem>
-                                    <MenubarItem>Creative Work</MenubarItem>
-                                    <MenubarItem>Contact Information</MenubarItem>
-                                    <MenubarSeparator />
-                                    <MenubarItem>Custom...</MenubarItem>
-                                </MenubarSubContent>
-                            </MenubarSub>
-                            <MenubarSub>
-                                <MenubarSubTrigger>Add Data</MenubarSubTrigger>
-                                <MenubarSubContent>
-                                    <MenubarItem>File</MenubarItem>
-                                    <MenubarItem>Folder</MenubarItem>
-                                    <MenubarSeparator />
-                                    <MenubarItem>Custom...</MenubarItem>
-                                </MenubarSubContent>
-                            </MenubarSub>
-                            <MenubarItem>Add Custom Entity</MenubarItem>
+                            <MenubarItem onClick={() => showCreateEntityModal()}>
+                                <Plus className="w-4 h-4 mr-2" /> Add new Entity
+                            </MenubarItem>
+                            <MenubarSeparator />
+                            <MenubarItem onClick={() => showUploadFileModal()}>
+                                <FileUp className="w-4 h-4 mr-2" /> Upload File
+                            </MenubarItem>
+                            <MenubarItem onClick={() => showUploadFolderModal()}>
+                                <FolderUp className="w-4 h-4 mr-2" /> Upload Folder
+                            </MenubarItem>
+                            <MenubarSeparator />
+                            <MenubarItem onClick={() => reload()}>
+                                <RefreshCcw className="w-4 h-4 mr-2" /> Reload Entities
+                            </MenubarItem>
+                            <MenubarItem>
+                                <Search className="w-4 h-4 mr-2" /> Search
+                                <MenubarShortcut>⌘K</MenubarShortcut>
+                            </MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                 </Menubar>

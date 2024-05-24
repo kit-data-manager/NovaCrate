@@ -2,7 +2,7 @@ import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from "r
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, File, Folder, FolderDot, Plus } from "lucide-react"
+import { ArrowLeft, File, Folder, Plus } from "lucide-react"
 import { useFilePicker } from "use-file-picker"
 import { camelCaseReadable, encodeFilePath, fileNameWithoutEnding } from "@/lib/utils"
 import { Error } from "@/components/error"
@@ -49,7 +49,7 @@ export function CreateEntity({
 
     const [name, setName] = useState(defaultName || "")
     const [identifier, setIdentifier] = useState<null | string>(null)
-    const [emptyFolder, setEmptyFolder] = useState(false)
+    const [emptyFolder] = useState(false)
     const { plainFiles, openFilePicker } = useFilePicker({})
     const { plainFiles: folderFiles, openFilePicker: openFolderPicker } = useFilePicker({
         initializeWithCustomParameters(input: HTMLInputElement) {
@@ -207,18 +207,18 @@ export function CreateEntity({
                                     : folderFiles[0].webkitRelativePath.split("/")[0]}
                             </Button>
                         ) : null}
-                        {baseFileName || emptyFolder ? null : (
-                            <span className="m-2 text-muted-foreground">or</span>
-                        )}
-                        {baseFileName ? null : (
-                            <Button
-                                variant={emptyFolder ? "default" : "outline"}
-                                onClick={() => setEmptyFolder((v) => !v)}
-                            >
-                                <FolderDot className="w-4 h-4 mr-2" />
-                                Empty Folder
-                            </Button>
-                        )}
+                        {/*{baseFileName || emptyFolder ? null : (*/}
+                        {/*    <span className="m-2 text-muted-foreground">or</span>*/}
+                        {/*)}*/}
+                        {/*{baseFileName ? null : (*/}
+                        {/*    <Button*/}
+                        {/*        variant={emptyFolder ? "default" : "outline"}*/}
+                        {/*        onClick={() => setEmptyFolder((v) => !v)}*/}
+                        {/*    >*/}
+                        {/*        <FolderDot className="w-4 h-4 mr-2" />*/}
+                        {/*        Empty Folder*/}
+                        {/*    </Button>*/}
+                        {/*)}*/}
                         <span className="ml-2 text-muted-foreground">
                             {folderFiles.length == 0
                                 ? ""

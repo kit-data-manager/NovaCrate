@@ -10,6 +10,7 @@ import { SimpleTypeSelect } from "@/components/modals/create-entity/simple-type-
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { UploadProgress } from "@/components/modals/create-entity/upload-progress"
 import { RO_CRATE_FILE } from "@/lib/constants"
+import { asValidPath, getFolderPath } from "@/lib/utils"
 
 export function CreateEntityModal({
     open,
@@ -54,7 +55,7 @@ export function CreateEntityModal({
                 setSelectedType("")
                 setFullTypeBrowser(false)
                 resetUploadState()
-            }, 1000)
+            }, 100)
         } else {
             setFullTypeBrowser(!!forceId || !!restrictToClasses)
         }
@@ -114,7 +115,7 @@ export function CreateEntityModal({
             try {
                 const result = await createFolderEntity(
                     {
-                        "@id": id + (id.endsWith("/") ? "" : "/"),
+                        "@id": asValidPath(id, true),
                         "@type": selectedType,
                         name
                     },
@@ -122,10 +123,10 @@ export function CreateEntityModal({
                         return {
                             entity: {
                                 "@id":
-                                    id +
-                                    (id.endsWith("/") || id.length === 0 ? "" : "/") +
+                                    getFolderPath(id) +
                                     file.webkitRelativePath.split("/").slice(1).join("/"),
-                                "@type": context.reverse(RO_CRATE_FILE) || RO_CRATE_FILE
+                                "@type": context.reverse(RO_CRATE_FILE) || RO_CRATE_FILE,
+                                name: file.name
                             },
                             file
                         }

@@ -80,7 +80,6 @@ export function FolderEntry(props: {
                         className={`gap-2 group/fileBrowserEntry w-full pl-1`}
                         variant="list-entry"
                         onClick={() => toggle()}
-                        onDoubleClick={goToEntity}
                     >
                         <ChevronDown
                             className="w-4 h-4 text-foreground shrink-0 aria-disabled:-rotate-90"
@@ -148,7 +147,6 @@ export function FileEntry(props: { filePath: string }) {
                     className={`gap-2 group/fileBrowserEntry w-full pl-1`}
                     variant="list-entry"
                     onClick={() => setPreviewingFilePath(props.filePath)}
-                    onDoubleClick={goToEntity}
                 >
                     <div className="w-4 h-4 shrink-0" />
                     {isMock ? (

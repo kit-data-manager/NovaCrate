@@ -1,32 +1,22 @@
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import React from "react"
-import {
-    BookMarked,
-    Building,
-    Contact,
-    File,
-    FolderOpen,
-    GraduationCap,
-    LucideIcon,
-    MapPin,
-    Search,
-    User
-} from "lucide-react"
+import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useTypeIcon } from "@/components/type-icon"
 
 function TypeBadge({
     description,
     type,
-    Icon,
     name,
     onTypeSelect
 }: {
     type: string
     name?: string
     description: string
-    Icon: LucideIcon
     onTypeSelect(value: string): void
 }) {
+    const Icon = useTypeIcon(type)
+
     return (
         <div
             className="p-4 border rounded-lg flex gap-4 hover:bg-secondary cursor-pointer transition"
@@ -69,14 +59,12 @@ export function SimpleTypeSelect({
                     type="File"
                     name="File"
                     description="Import a new single file into the Crate and create a data entity for it"
-                    Icon={File}
                     onTypeSelect={onTypeSelect}
                 />
                 <TypeBadge
                     type="Dataset"
                     name="Folder"
                     description="Import a folder, including the contained files into the Crate and create data entities for it"
-                    Icon={FolderOpen}
                     onTypeSelect={onTypeSelect}
                 />
             </div>
@@ -85,40 +73,34 @@ export function SimpleTypeSelect({
                 <TypeBadge
                     type="Person"
                     description="Use this contextual entity to describe a person (alive, dead, undead, or fictional). "
-                    Icon={User}
                     onTypeSelect={onTypeSelect}
                 />
                 <TypeBadge
                     type="Organization"
                     description="An organization such as a school, NGO, corporation, club, etc."
-                    Icon={Building}
                     onTypeSelect={onTypeSelect}
                 />
                 <TypeBadge
                     type="Place"
                     description="Describes a (more or less fixed) physical location."
-                    Icon={MapPin}
                     onTypeSelect={onTypeSelect}
                 />
                 <TypeBadge
                     type="ScholarlyArticle"
                     name="Scholarly Article"
                     description="A scholarly article that is referenced/used but not included in the Crate"
-                    Icon={GraduationCap}
                     onTypeSelect={onTypeSelect}
                 />
                 <TypeBadge
                     type="CreativeWork"
                     name="Creative Work"
                     description="The most generic kind of creative work, including books, movies, photographs, software programs, etc."
-                    Icon={BookMarked}
                     onTypeSelect={onTypeSelect}
                 />
                 <TypeBadge
                     type="ContactPoint"
                     name="Contact Information"
                     description="A contact point — for example, contact information for a person or a Customer Complaints department."
-                    Icon={Contact}
                     onTypeSelect={onTypeSelect}
                 />
             </div>
