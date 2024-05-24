@@ -22,7 +22,6 @@ import {
     MenubarShortcut,
     MenubarTrigger
 } from "@/components/ui/menubar"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 import { useCallback, useContext } from "react"
@@ -32,7 +31,7 @@ import { CrateDataContext } from "@/components/providers/crate-data-provider"
 
 export function NavHeader() {
     const theme = useTheme()
-    const { showCreateEntityModal } = useContext(GlobalModalContext)
+    const { showCreateEntityModal, showGlobalSearchModal } = useContext(GlobalModalContext)
     const { reload } = useContext(CrateDataContext)
     // const { undo, redo } = useEditorState.temporal.getState()
 
@@ -124,7 +123,13 @@ export function NavHeader() {
 
             <div className="relative flex items-center">
                 <Search className="w-4 h-4 absolute left-2 text-muted-foreground" />
-                <Input className="w-96 pl-8" placeholder="Search for anything..." />
+                <button
+                    className="w-96 p-2 pl-8 text-left text-muted-foreground border rounded-lg flex items-center justify-between cursor-text"
+                    onClick={() => showGlobalSearchModal()}
+                >
+                    <span>Search for anything...</span>
+                    <span className="text-muted-foreground/60 text-sm">⌘K</span>
+                </button>
             </div>
 
             <div className="flex justify-end items-center gap-2">

@@ -8,11 +8,7 @@ import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { FolderContent } from "@/components/file-explorer/content"
 import { FileExplorerContext } from "@/components/file-explorer/context"
 import { DefaultSectionOpen } from "@/components/file-explorer/explorer"
-import {
-    createEntityEditorTab,
-    EntityEditorTabsContext
-} from "@/components/providers/entity-tabs-provider"
-import { usePathname, useRouter } from "next/navigation"
+import { useGoToEntity } from "@/lib/hooks"
 
 function isNonEmptyPart(part: string) {
     return part !== "" && part !== "."
@@ -26,25 +22,6 @@ function entityDisplayNameFileExplorer(entity: IFlatEntity) {
 function filePathLastSegment(filePath: string) {
     const split = filePath.split("/").filter((part) => part !== "")
     return split[split.length - 1]
-}
-
-function useGoToEntity(entity?: IFlatEntity) {
-    const pathname = usePathname()
-    const router = useRouter()
-    const { openTab } = useContext(EntityEditorTabsContext)
-
-    return useCallback(() => {
-        if (entity) {
-            openTab(createEntityEditorTab(entity), true)
-        }
-
-        const href =
-            pathname
-                .split("/")
-                .filter((_, i) => i < 3)
-                .join("/") + "/entities"
-        router.push(href)
-    }, [entity, openTab, pathname, router])
 }
 
 export function FolderEntry(props: {

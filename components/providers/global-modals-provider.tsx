@@ -6,6 +6,7 @@ import { SlimClass } from "@/lib/crate-verify/helpers"
 import { SaveEntityChangesModal } from "@/components/modals/save-entity-changes-modal"
 import { DeleteEntityModal } from "@/components/modals/delete-entity-modal"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { GlobalSearch } from "@/components/global-search"
 
 export interface AutoReference {
     entityId: string
@@ -22,12 +23,14 @@ export interface IGlobalModalContext {
     ): void
     showSaveEntityChangesModal(entityId: string): void
     showDeleteEntityModal(entityId: string): void
+    showGlobalSearchModal(): void
 }
 
 export const GlobalModalContext = createContext<IGlobalModalContext>({
     showCreateEntityModal() {},
     showSaveEntityChangesModal() {},
-    showDeleteEntityModal() {}
+    showDeleteEntityModal() {},
+    showGlobalSearchModal() {}
 })
 
 export function GlobalModalProvider(props: PropsWithChildren) {
@@ -49,6 +52,9 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     const [deleteEntityModalState, setDeleteEntityModalState] = useState({
         open: false,
         entityId: ""
+    })
+    const [globalSearchState, setGlobalSearchState] = useState({
+        open: false
     })
 
     const showCreateEntityModal = useCallback(
@@ -83,6 +89,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         })
     }, [])
 
+    const showGlobalSearchModal = useCallback(() => {
+        setGlobalSearchState({ open: true })
+    }, [])
+
     const onCreateEntityModalOpenChange = useCallback((isOpen: boolean) => {
         setCreateEntityModalState({
             autoReference: undefined,
@@ -106,6 +116,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         }))
     }, [])
 
+    const onGlobalSearchModalOpenChange = useCallback((isOpen: boolean) => {
+        setGlobalSearchState({ open: isOpen })
+    }, [])
+
     const onEntityCreated = useCallback(
         (entity: IFlatEntity) => {
             setCreateEntityModalState({
@@ -121,7 +135,8 @@ export function GlobalModalProvider(props: PropsWithChildren) {
             value={{
                 showCreateEntityModal,
                 showSaveEntityChangesModal,
-                showDeleteEntityModal
+                showDeleteEntityModal,
+                showGlobalSearchModal
             }}
         >
             <CreateEntityModal
@@ -142,6 +157,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 open={deleteEntityModalState.open}
                 onOpenChange={onDeleteEntityModalOpenChange}
                 entityId={deleteEntityModalState.entityId}
+            />
+            <GlobalSearch
+                open={globalSearchState.open}
+                onOpenChange={onGlobalSearchModalOpenChange}
             />
 
             {props.children}
