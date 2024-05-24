@@ -13,8 +13,6 @@ import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { useEditorState } from "@/components/editor-state"
 import HelpTooltip from "@/components/help-tooltip"
 
-// TODO data entities
-
 export function CreateEntity({
     selectedType,
     onBackClick,
@@ -101,11 +99,12 @@ export function CreateEntity({
             if (hasFileUpload) {
                 onUploadFile(path, name, plainFiles[0])
             } else {
-                onUploadFolder(path, name, folderFiles)
+                onUploadFolder(path, name, emptyFolder ? [] : folderFiles)
             }
         } else onCreateClick(autoId, name)
     }, [
         autoId,
+        emptyFolder,
         folderFiles,
         forceId,
         hasFileUpload,

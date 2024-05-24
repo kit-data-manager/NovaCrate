@@ -3,14 +3,13 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import { CrateDataContext } from "@/components/crate-data-provider"
 import { useAsync } from "@/components/use-async"
-import { Button } from "@/components/ui/button"
 import {
     ChevronsDownUp,
     ChevronsUpDown,
+    EllipsisVertical,
     FileX,
     Folder,
     FolderX,
-    Plus,
     RefreshCw
 } from "lucide-react"
 import { Error } from "@/components/error"
@@ -19,6 +18,17 @@ import HelpTooltip from "@/components/help-tooltip"
 import { FileExplorerContext } from "@/components/file-explorer/context"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useEditorState } from "@/components/editor-state"
+import { GlobalModalContext } from "@/components/global-modals-provider"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
+import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
+import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -63,7 +73,7 @@ export function FileExplorer() {
 
     return (
         <div className="flex flex-col h-full">
-            <div className="pl-4 bg-accent text-sm h-10 flex items-center gap-2 truncate shrink-0">
+            <div className="pl-4 pr-2 bg-accent text-sm h-10 flex items-center gap-2 truncate shrink-0">
                 <Folder className="w-4 h-4 shrink-0" /> File Explorer
                 <HelpTooltip>
                     <div>
@@ -86,36 +96,32 @@ export function FileExplorer() {
                         </div>
                     </div>
                 </HelpTooltip>
-            </div>
-            <div className="flex gap-2 sticky top-0 z-10 p-2 bg-accent shrink-0">
-                <Button size="sm" variant="outline" className="text-xs">
-                    <Plus className={"w-4 h-4"} />
-                </Button>
-                <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-xs"
-                    onClick={collapseAllSections}
-                >
-                    <ChevronsDownUp className={"w-4 h-4"} />
-                </Button>
-                <Button size="sm" variant="outline" className="text-xs" onClick={expandAllSections}>
-                    <ChevronsUpDown className={"w-4 h-4"} />
-                </Button>
-                <div className="grow"></div>
-                <Button
-                    size="sm"
-                    variant="outline"
-                    className={`text-xs`}
-                    disabled={isPending}
-                    onClick={revalidate}
-                >
-                    <RefreshCw className={`w-4 h-4 ${isPending ? "animate-spin" : ""}`} />
-                </Button>
+                <div className="grow" />
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="px-1">
+                        <EllipsisVertical className="w-4 h-4 shrink-0" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuLabel>File Explorer Settings</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={collapseAllSections}>
+                            <ChevronsDownUp className={"w-4 h-4 mr-2"} /> Collapse All
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={expandAllSections}>
+                            <ChevronsUpDown className={"w-4 h-4 mr-2"} /> Expand All
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem disabled={isPending} onClick={revalidate}>
+                            <RefreshCw
+                                className={`w-4 h-4 mr-2 ${isPending ? "animate-spin" : ""}`}
+                            />{" "}
+                            Reload
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
             <Error error={error} title="Failed to fetch files list" />
             <Error error={downloadError} title="Download failed" />
-            <div className="p-2 overflow-y-auto">
+            <div className="p-2 overflow-y-auto grow">
                 {!data ? (
                     <div className="flex flex-col gap-2">
                         {[0, 0, 0, 0, 0, 0].map((_, i) => {
@@ -128,12 +134,19 @@ export function FileExplorer() {
                         })}
                     </div>
                 ) : (
-                    <FolderContent
-                        filePaths={data}
-                        path={""}
-                        onSectionOpenChange={onSectionOpenChange}
-                        defaultSectionOpen={defaultSectionOpen}
-                    />
+                    <ContextMenu>
+                        <ContextMenuTrigger>
+                            <div className="w-full h-full">
+                                <FolderContent
+                                    filePaths={data}
+                                    path={""}
+                                    onSectionOpenChange={onSectionOpenChange}
+                                    defaultSectionOpen={defaultSectionOpen}
+                                />
+                            </div>
+                        </ContextMenuTrigger>
+                        <EntryContextMenu blankSpace />
+                    </ContextMenu>
                 )}
             </div>
         </div>
