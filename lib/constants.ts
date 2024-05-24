@@ -16,6 +16,21 @@ export const SCHEMA_ORG_TEXTLIKE = [
 
 export const SCHEMA_ORG_PERSON = "https://schema.org/Person"
 export const SCHEMA_ORG_ORGANIZATION = "https://schema.org/Organization"
+export const SCHEMA_ORG_PLACE = "https://schema.org/Place"
+export const SCHEMA_ORG_SCHOLARLY_ARTICLE = "https://schema.org/ScholarlyArticle"
+export const SCHEMA_ORG_CREATIVE_WORK = "https://schema.org/CreativeWork"
+export const SCHEMA_ORG_CONTACT_POINT = "https://schema.org/ContactPoint"
 
 export const RO_CRATE_DATASET = "https://schema.org/Dataset"
 export const RO_CRATE_FILE = "https://schema.org/MediaObject"
+
+export const COMMON_PROPERTIES = [
+    SCHEMA_ORG_PERSON,
+    SCHEMA_ORG_ORGANIZATION,
+    RO_CRATE_FILE,
+    RO_CRATE_DATASET,
+    SCHEMA_ORG_PLACE,
+    SCHEMA_ORG_SCHOLARLY_ARTICLE,
+    SCHEMA_ORG_CREATIVE_WORK,
+    SCHEMA_ORG_CONTACT_POINT
+]

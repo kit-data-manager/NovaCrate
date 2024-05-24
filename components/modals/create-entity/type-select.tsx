@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Blocks } from "lucide-react"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useAsync } from "@/lib/hooks"
+import { COMMON_PROPERTIES } from "@/lib/constants"
 
 export function TypeSelect({
     open,
@@ -79,18 +80,38 @@ export function TypeSelect({
                 <CommandInput placeholder="Search for a type..." />
                 <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
-                    <CommandGroup>
+                    <CommandGroup heading="Common Types">
                         {open && !isPending && types ? (
-                            types.map((e) => (
-                                <CreateEntityModalEntry
-                                    key={e["@id"]}
-                                    slimClass={e}
-                                    onSelect={onTypeSelect}
-                                />
-                            ))
+                            types
+                                .filter((e) => COMMON_PROPERTIES.includes(e["@id"]))
+                                .map((e) => (
+                                    <CreateEntityModalEntry
+                                        key={e["@id"]}
+                                        slimClass={e}
+                                        onSelect={onTypeSelect}
+                                        common
+                                    />
+                                ))
                         ) : (
                             <CommandItem className="flex flex-col gap-2">
                                 <Skeleton className={"w-full h-8"} />
+                                <Skeleton className={"w-full h-8"} />
+                            </CommandItem>
+                        )}
+                    </CommandGroup>
+                    <CommandGroup heading="All Types">
+                        {open && !isPending && types ? (
+                            types
+                                .filter((e) => !COMMON_PROPERTIES.includes(e["@id"]))
+                                .map((e) => (
+                                    <CreateEntityModalEntry
+                                        key={e["@id"]}
+                                        slimClass={e}
+                                        onSelect={onTypeSelect}
+                                    />
+                                ))
+                        ) : (
+                            <CommandItem className="flex flex-col gap-2">
                                 <Skeleton className={"w-full h-8"} />
                                 <Skeleton className={"w-full h-8"} />
                             </CommandItem>
@@ -100,12 +121,16 @@ export function TypeSelect({
             </Command>
             <div className="flex justify-between items-center gap-2">
                 <div className="flex gap-2 items-center">
-                    <Checkbox
-                        checked={!bypassRestrictions}
-                        onCheckedChange={toggleRestrictions}
-                        id="onlyShowAllowed-create"
-                    />
-                    <label htmlFor="onlyShowAllowed-create">Only show valid Types</label>
+                    {restrictToClasses ? (
+                        <>
+                            <Checkbox
+                                checked={!bypassRestrictions}
+                                onCheckedChange={toggleRestrictions}
+                                id="onlyShowAllowed-create"
+                            />
+                            <label htmlFor="onlyShowAllowed-create">Only show valid Types</label>
+                        </>
+                    ) : null}
                 </div>
 
                 <Button variant="secondary" onClick={() => setFullTypeBrowser(false)}>

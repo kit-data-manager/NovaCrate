@@ -131,6 +131,14 @@ export function getFolderPath(filePath: string) {
     else return split.slice(0, split.length - 1).join("/") + "/"
 }
 
+export function asValidPath(path: string, endWithSlash?: boolean) {
+    const filtered = path
+        .split("/")
+        .filter((part) => part.length > 0)
+        .join("/")
+    return endWithSlash ? filtered + "/" : filtered
+}
+
 export enum Diff {
     None,
     Changed,
