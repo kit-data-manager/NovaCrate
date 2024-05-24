@@ -1,4 +1,4 @@
-import { AutoReference } from "@/components/global-modals-provider"
+import { AutoReference } from "@/components/providers/global-modals-provider"
 import { immer } from "zustand/middleware/immer"
 import { Draft, enableMapSet } from "immer"
 import { createSelectorHooks, ZustandHookSelectors } from "auto-zustand-selectors-hook"

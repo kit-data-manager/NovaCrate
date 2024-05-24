@@ -2,8 +2,8 @@ import React, { useCallback, useContext } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Save } from "lucide-react"
-import { useEditorState } from "@/components/editor-state"
-import { CrateDataContext } from "@/components/crate-data-provider"
+import { useEditorState } from "@/lib/state/editor-state"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 
 export function SaveEntityChangesModal({
     open,

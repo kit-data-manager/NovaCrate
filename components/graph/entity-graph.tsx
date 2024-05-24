@@ -20,10 +20,10 @@ import { Fullscreen, GitCompare, Rows2, Rows4 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import EntityNode, { EntityNodeHandle } from "@/components/graph/entity-node"
 import { useLayout } from "@/components/graph/layout"
-import { CrateDataContext } from "@/components/crate-data-provider"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { isReference, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
 import ExternalNode from "@/components/graph/external-node"
-import { useEditorState } from "@/components/editor-state"
+import { useEditorState } from "@/lib/state/editor-state"
 
 const DEFAULT_POS = { x: 0, y: 0 }
 

@@ -1,21 +1,24 @@
 "use client"
 
 import { useCallback, useContext, useEffect, useMemo, useRef } from "react"
-import { EntityEditorTabsContext, IEntityEditorTab } from "@/components/entity-tabs-provider"
+import {
+    EntityEditorTabsContext,
+    IEntityEditorTab
+} from "@/components/providers/entity-tabs-provider"
 import { Diff, getEntityDisplayName } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Package, Plus, XIcon } from "lucide-react"
 import { EntityIcon } from "@/components/entity-icon"
 import { EntityEditor } from "@/components/editor/entity-editor"
-import { GlobalModalContext } from "@/components/global-modals-provider"
-import { useEditorState } from "@/components/editor-state"
+import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { useEditorState } from "@/lib/state/editor-state"
 import {
     ContextMenu,
     ContextMenuContent,
     ContextMenuItem,
     ContextMenuTrigger
 } from "@/components/ui/context-menu"
-import { CrateDataContext } from "@/components/crate-data-provider"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 
 function Tab({

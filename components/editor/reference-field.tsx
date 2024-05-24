@@ -6,10 +6,13 @@ import { CreateFromORCIDModal } from "@/components/editor/from-orcid-modal"
 import { getEntityDisplayName } from "@/lib/utils"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { SCHEMA_ORG_ORGANIZATION, SCHEMA_ORG_PERSON } from "@/lib/constants"
-import { GlobalModalContext } from "@/components/global-modals-provider"
+import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { SlimClass } from "@/lib/crate-verify/helpers"
-import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
-import { useEditorState } from "@/components/editor-state"
+import {
+    createEntityEditorTab,
+    EntityEditorTabsContext
+} from "@/components/providers/entity-tabs-provider"
+import { useEditorState } from "@/lib/state/editor-state"
 import { EntityIcon } from "@/components/entity-icon"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
 

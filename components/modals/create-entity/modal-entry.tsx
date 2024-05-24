@@ -1,5 +1,5 @@
 import { SlimClass } from "@/lib/crate-verify/helpers"
-import { useEditorState } from "@/components/editor-state"
+import { useEditorState } from "@/lib/state/editor-state"
 import React, { useCallback, useMemo } from "react"
 import { camelCaseReadable } from "@/lib/utils"
 import { CommandItem } from "@/components/ui/command"

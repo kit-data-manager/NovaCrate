@@ -1,5 +1,5 @@
 import { useContext } from "react"
-import { CrateVerifyContext } from "@/components/crate-verify-provider"
+import { CrateVerifyContext } from "@/components/providers/crate-verify-provider"
 import { ExternalLink } from "lucide-react"
 import { Error } from "@/components/error"
 import Link from "next/link"

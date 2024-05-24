@@ -1,6 +1,6 @@
 import { ViewerProps } from "@/components/file-explorer/viewers/base"
 import { Editor } from "@monaco-editor/react"
-import { useAsync } from "@/components/use-async"
+import { useAsync } from "@/lib/hooks"
 
 async function blobAsText(blob: Blob) {
     return await blob.text()

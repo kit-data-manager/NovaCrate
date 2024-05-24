@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, PropsWithChildren, useCallback, useEffect, useState } from "react"
-import { useEditorState } from "@/components/editor-state"
+import { useEditorState } from "@/lib/state/editor-state"
 import { Diff } from "@/lib/utils"
 
 export interface IEntityEditorTab {

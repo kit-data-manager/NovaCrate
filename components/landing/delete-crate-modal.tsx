@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Trash } from "lucide-react"
-import { CrateDataContext } from "@/components/crate-data-provider"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Error } from "@/components/error"
 
 export function DeleteCrateModal({

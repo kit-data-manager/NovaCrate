@@ -9,12 +9,12 @@ import {
     CommandList
 } from "@/components/ui/command"
 import { Checkbox } from "@/components/ui/checkbox"
-import { CrateDataContext } from "@/components/crate-data-provider"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { getEntityDisplayName, isRoCrateMetadataEntity, isRootEntity, toArray } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EntityIcon } from "@/components/entity-icon"
 import { SlimClass } from "@/lib/crate-verify/helpers"
-import { useEditorState } from "@/components/editor-state"
+import { useEditorState } from "@/lib/state/editor-state"
 
 function SelectReferenceModalEntry({
     entity,

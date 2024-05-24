@@ -1,11 +1,11 @@
 "use client"
 
 import { createContext, PropsWithChildren, useCallback, useContext, useState } from "react"
-import { CreateEntityModal } from "@/components/create-entity/create-entity-modal"
+import { CreateEntityModal } from "@/components/modals/create-entity/create-entity-modal"
 import { SlimClass } from "@/lib/crate-verify/helpers"
-import { SaveEntityChangesModal } from "@/components/save-entity-changes-modal"
-import { DeleteEntityModal } from "@/components/delete-entity-modal"
-import { CrateDataContext } from "@/components/crate-data-provider"
+import { SaveEntityChangesModal } from "@/components/modals/save-entity-changes-modal"
+import { DeleteEntityModal } from "@/components/modals/delete-entity-modal"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 
 export interface AutoReference {
     entityId: string

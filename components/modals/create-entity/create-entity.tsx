@@ -1,5 +1,4 @@
 import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react"
-import { useAutoId } from "@/components/use-auto-id"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -10,8 +9,9 @@ import { Error } from "@/components/error"
 import prettyBytes from "pretty-bytes"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
-import { useEditorState } from "@/components/editor-state"
+import { useEditorState } from "@/lib/state/editor-state"
 import HelpTooltip from "@/components/help-tooltip"
+import { useAutoId } from "@/lib/hooks"
 
 export function CreateEntity({
     selectedType,

@@ -1,7 +1,7 @@
-import { NavHeader } from "@/components/nav-header"
-import { NavSidebar } from "@/components/nav-sidebar"
+import { NavHeader } from "@/components/nav/nav-header"
+import { NavSidebar } from "@/components/nav/nav-sidebar"
 import { PropsWithChildren, useContext } from "react"
-import { CrateDataContext } from "@/components/crate-data-provider"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Error } from "@/components/error"
 
 export function Nav({ children }: PropsWithChildren<{}>) {

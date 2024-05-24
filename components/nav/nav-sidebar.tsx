@@ -17,7 +17,7 @@ import {
 import { PropsWithChildren, useCallback, useContext, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { CrateDataContext } from "@/components/crate-data-provider"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { isRootEntity } from "@/lib/utils"
 import {

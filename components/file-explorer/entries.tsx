@@ -1,4 +1,4 @@
-import { useEditorState } from "@/components/editor-state"
+import { useEditorState } from "@/lib/state/editor-state"
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { Button } from "@/components/ui/button"
@@ -8,7 +8,10 @@ import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { FolderContent } from "@/components/file-explorer/content"
 import { FileExplorerContext } from "@/components/file-explorer/context"
 import { DefaultSectionOpen } from "@/components/file-explorer/explorer"
-import { createEntityEditorTab, EntityEditorTabsContext } from "@/components/entity-tabs-provider"
+import {
+    createEntityEditorTab,
+    EntityEditorTabsContext
+} from "@/components/providers/entity-tabs-provider"
 import { usePathname, useRouter } from "next/navigation"
 
 function isNonEmptyPart(part: string) {
