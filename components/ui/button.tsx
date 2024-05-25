@@ -18,7 +18,7 @@ const buttonVariants = cva(
                 link: "text-primary underline-offset-4 hover:underline",
                 "list-entry": "justify-start focus:bg-muted",
                 tab: "data-[active=true]:bg-muted rounded-none hover:bg-muted/70",
-                header: ""
+                header: "text-xs"
             },
             size: {
                 default: "h-10 px-4 py-2",

@@ -167,3 +167,17 @@ export function useGoToEntity(entity?: IFlatEntity) {
         [entity, openTab, pathname, router]
     )
 }
+
+export function useGoToJsonEditor() {
+    const pathname = usePathname()
+    const router = useRouter()
+
+    return useCallback(() => {
+        const href =
+            pathname
+                .split("/")
+                .filter((_, i) => i < 3)
+                .join("/") + "/json-editor"
+        router.push(href)
+    }, [pathname, router])
+}

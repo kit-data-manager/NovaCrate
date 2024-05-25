@@ -79,6 +79,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                         <Save className={"w-4 h-4 mr-2"} />
                     )}{" "}
                     Save
+                    <div className="text-xs text-muted-foreground ml-2">⌘S</div>
                 </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

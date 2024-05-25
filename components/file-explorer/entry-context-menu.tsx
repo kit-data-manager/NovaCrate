@@ -6,7 +6,7 @@ import {
     ContextMenuSubContent,
     ContextMenuSubTrigger
 } from "@/components/ui/context-menu"
-import { Copy, Download, FileIcon, FolderOpen, Plus, Trash } from "lucide-react"
+import { Copy, CurlyBraces, Download, FileIcon, FolderOpen, Plus, Trash } from "lucide-react"
 import { EntityIcon } from "@/components/entity-icon"
 import HelpTooltip from "@/components/help-tooltip"
 import { useCallback, useContext } from "react"
@@ -16,6 +16,7 @@ import { FileExplorerContext } from "@/components/file-explorer/context"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { encodeFilePath, getFolderPath } from "@/lib/utils"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
+import { useGoToJsonEditor } from "@/lib/hooks"
 
 export function EntryContextMenu({
     entity,
@@ -95,6 +96,8 @@ export function EntryContextMenu({
         )
     }, [createNewFile, createNewFolder])
 
+    const goToJsonEditor = useGoToJsonEditor()
+
     if (blankSpace)
         return (
             <ContextMenuContent>
@@ -120,6 +123,12 @@ export function EntryContextMenu({
             )}
 
             <ContextMenuSeparator />
+
+            {filePath === "ro-crate-metadata.json" ? (
+                <ContextMenuItem onClick={goToJsonEditor}>
+                    <CurlyBraces className="w-4 h-4 mr-2" /> Edit in JSON Editor
+                </ContextMenuItem>
+            ) : null}
 
             {!folder ? (
                 <ContextMenuItem onClick={downloadFile}>

@@ -153,9 +153,7 @@ export function EntityEditor({
 
     useEffect(() => {
         function handler(e: KeyboardEvent) {
-            if (e.getModifierState("Control") && e.key === "s") {
-                e.stopPropagation()
-                e.stopImmediatePropagation()
+            if ((e.getModifierState("Control") || e.metaKey) && e.key === "s") {
                 e.preventDefault()
                 onSave()
             }

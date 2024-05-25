@@ -6,6 +6,8 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { useCallback, useState } from "react"
 import { SpecificationModal } from "@/components/context/specification-modal"
 import { CustomPairs } from "@/components/context/custom-pairs"
+import { Error } from "@/components/error"
+import HelpTooltip from "@/components/help-tooltip"
 
 export function ContextPage() {
     const context = useEditorState.useCrateContext()
@@ -29,7 +31,14 @@ export function ContextPage() {
 
             <div className="p-4">
                 <div className="my-4">
-                    <Label>Specification</Label>
+                    <Label>
+                        Specification{" "}
+                        <HelpTooltip>
+                            Determines which RO-Crate Specification the current Crate should follow.
+                            Currently, only RO-Crate v1.1 (https://w3id.org/ro/crate/1.1/contex) is
+                            supported.
+                        </HelpTooltip>
+                    </Label>
                     <div className="mt-2 ml-2">
                         {context.specification}
                         {/*<Button
@@ -41,6 +50,13 @@ export function ContextPage() {
                             <Pencil className="w-4 h-4" />
                         </Button>*/}
                     </div>
+
+                    {context.specification === "unknown" ? (
+                        <Error
+                            title="Invalid Context"
+                            error="The RO-Crate Specification used in this crate could not be identified. Most Types and Properties will not be resolved. Please fix the issue in the JSON Editor by specifying a valid RO-Crate Specification"
+                        />
+                    ) : null}
                 </div>
 
                 <CustomPairs />
