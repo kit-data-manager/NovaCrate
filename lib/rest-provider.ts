@@ -229,6 +229,36 @@ export class RestProvider implements CrateServiceProvider {
         }
     }
 
+    async addCustomContextPair(crateId: string, key: string, value: string) {
+        const request = await fetch(
+            `http://localhost:8080/crates/${crateId}/context/pairs/${key}`,
+            {
+                method: "PUT",
+                body: JSON.stringify({ value }),
+                headers: { "Content-Type": "application/json" }
+            }
+        )
+        if (request.ok) {
+            return
+        } else {
+            throw handleSpringError(await request.json())
+        }
+    }
+
+    async removeCustomContextPair(crateId: string, key: string) {
+        const request = await fetch(
+            `http://localhost:8080/crates/${crateId}/context/pairs/${key}`,
+            {
+                method: "DELETE"
+            }
+        )
+        if (request.ok) {
+            return
+        } else {
+            throw handleSpringError(await request.json())
+        }
+    }
+
     private getEntityRoutePart(entityData: IFlatEntity) {
         return isRootEntity(entityData)
             ? "root"

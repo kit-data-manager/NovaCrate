@@ -19,6 +19,8 @@ export interface ICrateDataProvider {
         progressCallback?: (current: number, max: number, errors: unknown[]) => void
     ): Promise<boolean>
     deleteEntity(entity: IFlatEntity): Promise<boolean>
+    addCustomContextPair(key: string, value: string): Promise<void>
+    removeCustomContextPair(key: string): Promise<void>
     reload(): void
     isSaving: boolean
     saveError: unknown
@@ -38,6 +40,12 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     createFolderEntity(): Promise<boolean> {
+        return Promise.reject("Crate Data Provider not mounted yet")
+    },
+    addCustomContextPair() {
+        return Promise.reject("Crate Data Provider not mounted yet")
+    },
+    removeCustomContextPair() {
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     reload: () => {
@@ -249,6 +257,26 @@ export function CrateDataProvider(
         [data, mutate, props.crateId, props.serviceProvider]
     )
 
+    const addCustomContextPair = useCallback(
+        async (key: string, value: string) => {
+            if (props.crateId) {
+                await props.serviceProvider.addCustomContextPair(props.crateId, key, value)
+                await mutate()
+            }
+        },
+        [mutate, props.crateId, props.serviceProvider]
+    )
+
+    const removeCustomContextPair = useCallback(
+        async (key: string) => {
+            if (props.crateId) {
+                await props.serviceProvider.removeCustomContextPair(props.crateId, key)
+                await mutate()
+            }
+        },
+        [mutate, props.crateId, props.serviceProvider]
+    )
+
     return (
         <CrateDataContext.Provider
             value={{
@@ -263,7 +291,9 @@ export function CrateDataProvider(
                 isSaving,
                 reload: mutate,
                 saveError,
-                error
+                error,
+                addCustomContextPair,
+                removeCustomContextPair
             }}
         >
             {props.children}

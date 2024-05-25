@@ -148,4 +148,8 @@ declare interface CrateServiceProvider {
      * @returns Promise<void> - Resolves on success
      */
     downloadFile(crateId: string, filePath: string): Promise<void>
+
+    addCustomContextPair(crateId: string, key: string, value: string): Promise<void>
+
+    removeCustomContextPair(crateId: string, key: string): Promise<void>
 }
