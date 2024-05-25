@@ -141,6 +141,8 @@ declare interface CrateServiceProvider {
      */
     downloadRoCrateMetadataJSON(id: string): Promise<void>
 
+    saveRoCrateMetadataJSON(crateId: string, json: string): Promise<void>
+
     /**
      * Download any file from the crate. This function should initiate a download or save dialog (or similar)
      * @param crateId ID of the target crate

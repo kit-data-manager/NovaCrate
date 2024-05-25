@@ -53,13 +53,13 @@ export function CustomPairs() {
                 setAddPairError(undefined)
                 setAddPairKey("")
                 setAddPairValue("")
+                setAddPairModalOpen(false)
             })
             .catch((e) => {
                 setAddPairError(e)
             })
             .finally(() => {
                 setAdding(false)
-                setAddPairModalOpen(false)
             })
     }, [addCustomContextPair, addPairKey, addPairValue])
 

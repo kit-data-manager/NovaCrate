@@ -245,6 +245,23 @@ export class RestProvider implements CrateServiceProvider {
         }
     }
 
+    async saveRoCrateMetadataJSON(crateId: string, json: string) {
+        const body = new FormData()
+        body.append("file", new Blob([json], { type: "application/json" }))
+        const request = await fetch(
+            `http://localhost:8080/crates/${encodeURIComponent(crateId)}/files/ro-crate-metadata.json`,
+            {
+                method: "PUT",
+                body
+            }
+        )
+        if (request.ok) {
+            return
+        } else {
+            throw handleSpringError(await request.json())
+        }
+    }
+
     async removeCustomContextPair(crateId: string, key: string) {
         const request = await fetch(
             `http://localhost:8080/crates/${crateId}/context/pairs/${key}`,

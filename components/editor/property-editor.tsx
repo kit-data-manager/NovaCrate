@@ -134,9 +134,10 @@ export const PropertyEditor = memo(function PropertyEditor({
 
     const referenceTypeRangeResolver = useCallback(
         async (propertyName: string) => {
+            if (propertyName.startsWith("@")) return []
             if (crateVerifyReady) {
                 const resolved = crateContext.resolve(propertyName)
-                if (!resolved) return []
+                if (!resolved) throw "Property not defined in context"
                 return await getPropertyRange(resolved)
             }
         },
@@ -154,7 +155,10 @@ export const PropertyEditor = memo(function PropertyEditor({
             if (propertyId === "@type")
                 return "The type defines which properties can occur on the entity"
             const resolved = crateContext.resolve(propertyId)
-            return await getPropertyComment(resolved || "unresolved")
+            if (!resolved) throw "Property not defined in context"
+            const comment = await getPropertyComment(resolved)
+            if (!comment) throw "Could not find comment"
+            return comment
         },
         [crateContext, getPropertyComment]
     )

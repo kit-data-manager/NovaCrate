@@ -21,6 +21,7 @@ export interface ICrateDataProvider {
     deleteEntity(entity: IFlatEntity): Promise<boolean>
     addCustomContextPair(key: string, value: string): Promise<void>
     removeCustomContextPair(key: string): Promise<void>
+    saveRoCrateMetadataJSON(json: string): Promise<void>
     reload(): void
     isSaving: boolean
     saveError: unknown
@@ -46,6 +47,9 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     removeCustomContextPair() {
+        return Promise.reject("Crate Data Provider not mounted yet")
+    },
+    saveRoCrateMetadataJSON() {
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     reload: () => {
@@ -277,6 +281,17 @@ export function CrateDataProvider(
         [mutate, props.crateId, props.serviceProvider]
     )
 
+    const saveRoCrateMetadataJSON = useCallback(
+        async (json: string) => {
+            if (props.crateId) {
+                console.log(json)
+                await props.serviceProvider.saveRoCrateMetadataJSON(props.crateId, json)
+                await mutate()
+            }
+        },
+        [mutate, props.crateId, props.serviceProvider]
+    )
+
     return (
         <CrateDataContext.Provider
             value={{
@@ -293,7 +308,8 @@ export function CrateDataProvider(
                 saveError,
                 error,
                 addCustomContextPair,
-                removeCustomContextPair
+                removeCustomContextPair,
+                saveRoCrateMetadataJSON
             }}
         >
             {props.children}

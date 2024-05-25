@@ -27,7 +27,12 @@ export function handleSpringError(e: unknown) {
     } catch (zodError) {
         if (zodError instanceof ZodError) {
             if (e && typeof e === "object") {
-                return JSON.stringify(e)
+                try {
+                    return JSON.stringify(e)
+                } catch (_) {
+                    console.log(e)
+                    return e.toString()
+                }
             } else {
                 return e + ""
             }
