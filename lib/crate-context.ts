@@ -10,6 +10,7 @@ const KNOWN_CONTEXTS = [Context_1_1]
  */
 export class CrateContext {
     readonly context: Record<string, string> = {}
+    readonly customPairs: Record<string, string> = {}
     readonly specification: string = "unknown"
     readonly raw: CrateContextType
 
@@ -22,7 +23,7 @@ export class CrateContext {
             if (typeof entry === "string") {
                 const known = CrateContext.getKnownContext(entry)
                 if (known) {
-                    this.specification = known.name[0] + known.version
+                    this.specification = `${known.name[0]} (v${known.version})`
                     this.context = { ...this.context, ...known["@context"] }
                 } else console.warn("Failed to parse context entry " + entry)
             } else {
@@ -30,11 +31,12 @@ export class CrateContext {
                     if (key === "@vocab") {
                         const known = CrateContext.getKnownContext(value)
                         if (known) {
-                            this.specification = known.name[0] + known.version
+                            this.specification = `${known.name[0]} (v${known.version})`
                             this.context = { ...this.context, ...known["@context"] }
                         } else console.warn("Failed to parse context @vocab entry " + value)
                     } else {
                         this.context[key] = value
+                        this.customPairs[key] = value
                     }
                 }
             }
