@@ -1,5 +1,8 @@
 import LayoutFlow from "@/components/graph/entity-graph"
 import { GitFork } from "lucide-react"
+import { metadata } from "@/lib/metadata"
+
+export const generateMetadata = metadata("Graph")
 
 export default function Graph() {
     return (

@@ -11,7 +11,7 @@ export function Nav({ children }: PropsWithChildren<{}>) {
 
     const shortcutHandler = useCallback(
         (e: KeyboardEvent) => {
-            if (e.key === "k" && e.ctrlKey) {
+            if (e.key === "k" && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault()
                 showGlobalSearchModal()
             }
