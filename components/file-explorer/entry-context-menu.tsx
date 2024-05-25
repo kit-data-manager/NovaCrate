@@ -16,7 +16,7 @@ import { FileExplorerContext } from "@/components/file-explorer/context"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { encodeFilePath, getFolderPath } from "@/lib/utils"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
-import { useGoToJsonEditor } from "@/lib/hooks"
+import { useGoToPage } from "@/lib/hooks"
 
 export function EntryContextMenu({
     entity,
@@ -96,7 +96,7 @@ export function EntryContextMenu({
         )
     }, [createNewFile, createNewFolder])
 
-    const goToJsonEditor = useGoToJsonEditor()
+    const goToJsonEditor = useGoToPage("json-editor")
 
     if (blankSpace)
         return (

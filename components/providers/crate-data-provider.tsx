@@ -12,6 +12,7 @@ export interface ICrateDataProvider {
     crateData?: ICrate
     crateDataIsLoading: boolean
     saveEntity(entity: IFlatEntity): Promise<boolean>
+    saveAllEntities(entities: IFlatEntity[]): Promise<void>
     createFileEntity(entity: IFlatEntity, file: File): Promise<boolean>
     createFolderEntity(
         entity: IFlatEntity,
@@ -32,6 +33,9 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
     serviceProvider: undefined,
     crateId: "",
     saveEntity: () => {
+        return Promise.reject("Crate Data Provider not mounted yet")
+    },
+    saveAllEntities: () => {
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     deleteEntity: () => {
@@ -113,7 +117,7 @@ export function CrateDataProvider(
     const [saveError, setSaveError] = useState<any>()
 
     const saveEntity = useCallback(
-        async (entityData: IFlatEntity) => {
+        async (entityData: IFlatEntity, mutateNow: boolean = true) => {
             if (props.crateId) {
                 setIsSaving(true)
                 try {
@@ -127,7 +131,7 @@ export function CrateDataProvider(
                     setIsSaving(false)
                     setSaveError(undefined)
 
-                    if (data) {
+                    if (data && mutateNow) {
                         const newData = produce<ICrate>(data, (newData: Draft<ICrate>) => {
                             const index = newData["@graph"].findIndex(
                                 (e) => e["@id"] === entityData["@id"]
@@ -152,6 +156,17 @@ export function CrateDataProvider(
             } else return false
         },
         [data, mutate, props.crateId, props.serviceProvider]
+    )
+
+    const saveAllEntities = useCallback(
+        async (entities: IFlatEntity[]) => {
+            for (const entity of entities) {
+                await saveEntity(entity, false)
+            }
+
+            await mutate()
+        },
+        [mutate, saveEntity]
     )
 
     const createFileEntity = useCallback(
@@ -300,6 +315,7 @@ export function CrateDataProvider(
                 crateData: data,
                 crateDataIsLoading: isLoading,
                 saveEntity,
+                saveAllEntities,
                 createFileEntity,
                 createFolderEntity,
                 deleteEntity,
