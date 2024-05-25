@@ -269,7 +269,7 @@ export class SchemaGraph {
         this.graph.set(entry["@id"], entry)
     }
 
-    expandIRI(IRI: string) {
+    expandCompactIRI(IRI: string) {
         const parts = IRI.split(":")
         const match = this.context.get(parts[0])
         if (match) {

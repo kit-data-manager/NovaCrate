@@ -30,13 +30,13 @@ export function getPropertyRange(propertyId: string) {
 
     for (const ref of refs) {
         range.add({
-            "@id": schemaGraph.expandIRI(ref["@id"]),
+            "@id": schemaGraph.expandCompactIRI(ref["@id"]),
             comment: getPropertyComment(ref["@id"])
         })
 
         const subClasses = schemaGraph
             .getSubClasses(ref["@id"])
-            .map((s) => schemaGraph.expandIRI(s))
+            .map((s) => schemaGraph.expandCompactIRI(s))
         for (const subClass of subClasses) {
             range.add({ "@id": subClass, comment: getPropertyComment(subClass) })
         }
@@ -57,11 +57,11 @@ export function getPossibleEntityProperties(types: string[]) {
     for (const type of types) {
         const properties = schemaGraph.getClassProperties(type).map((node) => {
             return {
-                "@id": schemaGraph.expandIRI(node["@id"]),
+                "@id": schemaGraph.expandCompactIRI(node["@id"]),
                 range: node.range
                     ? toArray(node.range).map((r) => {
                           return {
-                              "@id": schemaGraph.expandIRI(r["@id"])
+                              "@id": schemaGraph.expandCompactIRI(r["@id"])
                           }
                       })
                     : [],
@@ -84,7 +84,7 @@ export function getAllClasses(): SlimClass[] {
         .filter((n) => n.isClass())
         .map((c) => {
             return {
-                "@id": schemaGraph.expandIRI(c["@id"]),
+                "@id": schemaGraph.expandCompactIRI(c["@id"]),
                 comment: c.comment
             }
         })
@@ -96,12 +96,12 @@ export function getAllProperties(): SlimProperty[] {
         .filter((n) => n.isProperty())
         .map((p) => {
             return {
-                "@id": schemaGraph.expandIRI(p["@id"]),
+                "@id": schemaGraph.expandCompactIRI(p["@id"]),
                 comment: p.comment,
                 range: p.range
                     ? toArray(p.range).map((r) => {
                           return {
-                              "@id": schemaGraph.expandIRI(r["@id"])
+                              "@id": schemaGraph.expandCompactIRI(r["@id"])
                           }
                       })
                     : []
@@ -115,7 +115,7 @@ export function getAllComments(types: string[]): SlimClass[] {
         const node = schemaGraph.getNode(id)
         if (node) {
             result.push({
-                "@id": schemaGraph.expandIRI(node["@id"]),
+                "@id": schemaGraph.expandCompactIRI(node["@id"]),
                 comment: node.comment
             })
         }

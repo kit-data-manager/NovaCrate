@@ -1,5 +1,7 @@
 import Context_1_1 from "./crate-verify/assets/context-1.1.json"
 
+const KNOWN_CONTEXTS = [Context_1_1]
+
 /**
  * Provides an easy interface into the crate context for id resolution
  * **Note**: When the context changes, for example when a new key-value pair is added, the context
@@ -7,32 +9,43 @@ import Context_1_1 from "./crate-verify/assets/context-1.1.json"
  * @example resolve("Organization") -> "https://schema.org/Organization"
  */
 export class CrateContext {
-    readonly context: Record<string, string>
+    readonly context: Record<string, string> = {}
+    readonly specification: string = "unknown"
     readonly raw: CrateContextType
 
     constructor(crateContext: CrateContextType) {
         this.raw = crateContext
-        if (Array.isArray(crateContext)) {
-            if (crateContext.includes(Context_1_1["@id"])) {
-                this.context = Context_1_1["@context"]
+
+        const content = Array.isArray(crateContext) ? crateContext : [crateContext]
+
+        for (const entry of content) {
+            if (typeof entry === "string") {
+                const known = CrateContext.getKnownContext(entry)
+                if (known) {
+                    this.specification = known.name[0] + known.version
+                    this.context = { ...this.context, ...known["@context"] }
+                } else console.warn("Failed to parse context entry " + entry)
             } else {
-                this.context = {}
+                for (const [key, value] of Object.entries(entry)) {
+                    if (key === "@vocab") {
+                        const known = CrateContext.getKnownContext(value)
+                        if (known) {
+                            this.specification = known.name[0] + known.version
+                            this.context = { ...this.context, ...known["@context"] }
+                        } else console.warn("Failed to parse context @vocab entry " + value)
+                    } else {
+                        this.context[key] = value
+                    }
+                }
             }
-        } else if (crateContext === Context_1_1["@id"]) {
-            this.context = Context_1_1["@context"]
-        } else if (
-            typeof crateContext === "object" &&
-            "@vocab" in crateContext &&
-            crateContext["@vocab"] === Context_1_1.url["@id"]
-        ) {
-            this.context = Context_1_1["@context"]
-            Object.entries(crateContext).forEach(([key, value]) => {
-                this.context[key] = value
-            })
-        } else {
-            console.warn("Unable to parse crate context", crateContext)
-            this.context = {}
         }
+    }
+
+    static getKnownContext(id: string) {
+        for (const knownContext of KNOWN_CONTEXTS) {
+            if (knownContext["@id"] === id) return knownContext
+        }
+        return undefined
     }
 
     /**
