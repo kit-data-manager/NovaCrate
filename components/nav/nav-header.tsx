@@ -5,13 +5,17 @@ import {
     ChevronDown,
     Cog,
     FileUp,
+    FolderArchive,
     FolderUp,
     Moon,
     Package,
     Plus,
     RefreshCcw,
+    SaveAll,
     Search,
-    Sun
+    Sun,
+    Undo2,
+    XIcon
 } from "lucide-react"
 import {
     Menubar,
@@ -28,11 +32,15 @@ import { useCallback, useContext } from "react"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useGoToMainMenu, useSaveAllEntities } from "@/lib/hooks"
+import { useEditorState } from "@/lib/state/editor-state"
 
 export function NavHeader() {
     const theme = useTheme()
+    const revertAllEntities = useEditorState.useRevertAllEntities()
+    const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const { showCreateEntityModal, showGlobalSearchModal } = useContext(GlobalModalContext)
-    const { reload } = useContext(CrateDataContext)
+    const { reload, serviceProvider, crateId, isSaving } = useContext(CrateDataContext)
     // const { undo, redo } = useEditorState.temporal.getState()
 
     const showUploadFolderModal = useCallback(() => {
@@ -61,6 +69,16 @@ export function NavHeader() {
         }
     }, [theme])
 
+    const downloadCrateZip = useCallback(() => {
+        if (serviceProvider) {
+            serviceProvider.downloadCrateZip(crateId).then()
+        }
+    }, [crateId, serviceProvider])
+
+    const goToMainMenu = useGoToMainMenu()
+
+    const saveAllEntities = useSaveAllEntities()
+
     return (
         <div className="p-4 w-full grid grid-cols-[1fr_auto_1fr] border-b">
             <div className="flex items-center">
@@ -73,15 +91,26 @@ export function NavHeader() {
                             Crate <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
                         </MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem>New</MenubarItem>
-                            <MenubarItem>Open</MenubarItem>
-                            <MenubarItem>Open Recent</MenubarItem>
-                            <MenubarItem>Close</MenubarItem>
+                            <MenubarItem onClick={goToMainMenu}>
+                                <XIcon className="w-4 h-4 mr-2" /> Close Editor
+                            </MenubarItem>
                             <MenubarSeparator />
-                            <MenubarItem>Save All</MenubarItem>
-                            <MenubarItem>Revert All</MenubarItem>
+                            <MenubarItem
+                                onClick={saveAllEntities}
+                                disabled={isSaving || !hasUnsavedChanges}
+                            >
+                                <SaveAll className={"w-4 h-4 mr-2"} /> Save All Entities
+                            </MenubarItem>
+                            <MenubarItem
+                                onClick={revertAllEntities}
+                                disabled={isSaving || !hasUnsavedChanges}
+                            >
+                                <Undo2 className={"w-4 h-4 mr-2"} /> Revert All Entities
+                            </MenubarItem>
                             <MenubarSeparator />
-                            <MenubarItem>Export</MenubarItem>
+                            <MenubarItem onClick={downloadCrateZip}>
+                                <FolderArchive className="w-4 h-4 mr-2" /> Download Crate as .zip
+                            </MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
@@ -103,7 +132,7 @@ export function NavHeader() {
                             <MenubarItem onClick={() => reload()}>
                                 <RefreshCcw className="w-4 h-4 mr-2" /> Reload Entities
                             </MenubarItem>
-                            <MenubarItem>
+                            <MenubarItem onClick={showGlobalSearchModal}>
                                 <Search className="w-4 h-4 mr-2" /> Search
                                 <MenubarShortcut>⌘K</MenubarShortcut>
                             </MenubarItem>

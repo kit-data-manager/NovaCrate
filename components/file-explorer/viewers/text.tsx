@@ -13,22 +13,25 @@ export function TextViewer(props: ViewerProps) {
     const { data } = useAsync(props.data ?? null, blobAsText)
     const theme = useTheme()
 
-    const handleMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-        setTimeout(() => {
-            editor.getAction("editor.action.formatDocument")?.run()
-        }, 100)
+    const handleMount = useCallback(
+        (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+            setTimeout(() => {
+                editor.getAction("editor.action.formatDocument")?.run()
+            }, 100)
 
-        monaco.editor.defineTheme("ro-crate-editor", {
-            base: "vs-dark",
-            colors: {
-                "editor.background": "#000000"
-            },
-            inherit: true,
-            rules: [],
-            encodedTokensColors: []
-        })
-        monaco.editor.setTheme("ro-crate-editor")
-    }, [])
+            monaco.editor.defineTheme("ro-crate-editor", {
+                base: "vs-dark",
+                colors: {
+                    "editor.background": "#000000"
+                },
+                inherit: true,
+                rules: [],
+                encodedTokensColors: []
+            })
+            if (theme.theme === "dark") monaco.editor.setTheme("ro-crate-editor")
+        },
+        [theme.theme]
+    )
 
     if (!props.data) return null
 

@@ -5,13 +5,16 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from "rea
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useTheme } from "next-themes"
 import type { editor } from "monaco-editor"
-import { Braces, CircleAlert, Dot, Info, Save } from "lucide-react"
+import { Braces, CircleAlert, Dot, Info, Save, SaveAll, Undo2 } from "lucide-react"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Error } from "@/components/error"
+import { Button } from "@/components/ui/button"
+import { useSaveAllEntities } from "@/lib/hooks"
 
 export default function JSONEditorPage() {
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
-    const { crateData, saveRoCrateMetadataJSON } = useContext(CrateDataContext)
+    const revertAllEntities = useEditorState.useRevertAllEntities()
+    const { crateData, saveRoCrateMetadataJSON, isSaving } = useContext(CrateDataContext)
     const [crateDataProxy, setCrateDataProxy] = useState(crateData)
     const theme = useTheme()
     const [editorHasErrors, setEditorHasErrors] = useState(false)
@@ -26,22 +29,25 @@ export default function JSONEditorPage() {
         }
     }, [crateData, crateDataProxy])
 
-    const handleMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-        setTimeout(() => {
-            editor.getAction("editor.action.formatDocument")?.run()
-        }, 100)
+    const handleMount = useCallback(
+        (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+            setTimeout(() => {
+                editor.getAction("editor.action.formatDocument")?.run()
+            }, 100)
 
-        monaco.editor.defineTheme("ro-crate-editor", {
-            base: "vs-dark",
-            colors: {
-                "editor.background": "#000000"
-            },
-            inherit: true,
-            rules: [],
-            encodedTokensColors: []
-        })
-        monaco.editor.setTheme("ro-crate-editor")
-    }, [])
+            monaco.editor.defineTheme("ro-crate-editor", {
+                base: "vs-dark",
+                colors: {
+                    "editor.background": "#000000"
+                },
+                inherit: true,
+                rules: [],
+                encodedTokensColors: []
+            })
+            if (theme.theme === "dark") monaco.editor.setTheme("ro-crate-editor")
+        },
+        [theme.theme]
+    )
 
     const handleChange = useCallback((value: string | undefined) => {
         if (value) {
@@ -111,6 +117,8 @@ export default function JSONEditorPage() {
         }
     }, [shortcutHandler, unloadHandler])
 
+    const saveAllEntities = useSaveAllEntities()
+
     return (
         <div className="w-full h-full flex flex-col relative">
             <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
@@ -129,6 +137,18 @@ export default function JSONEditorPage() {
                             The JSON Editor is not available while there are unsaved changes in the
                             Entities Editor. Please save all changes or revert all changes if you
                             want to continue to the JSON Editor.
+                        </div>
+                        <div className="flex justify-between">
+                            <Button
+                                variant="secondary"
+                                onClick={revertAllEntities}
+                                disabled={isSaving}
+                            >
+                                <Undo2 className="w-4 h-4 mr-2" /> Revert all Entities
+                            </Button>
+                            <Button onClick={saveAllEntities} disabled={isSaving}>
+                                <SaveAll className="w-4 h-4 mr-2" /> Save all Entities
+                            </Button>
                         </div>
                     </div>
                 </div>

@@ -9,6 +9,7 @@ import {
     FileX,
     Folder,
     FolderX,
+    Plus,
     RefreshCw
 } from "lucide-react"
 import { Error } from "@/components/error"
@@ -28,6 +29,8 @@ import {
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { useAsync } from "@/lib/hooks"
+import { Button } from "@/components/ui/button"
+import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -35,6 +38,7 @@ export function FileExplorer() {
     const crateData = useContext(CrateDataContext)
     const entities = useEditorState.useEntities()
     const { downloadError } = useContext(FileExplorerContext)
+    const { showCreateEntityModal } = useContext(GlobalModalContext)
 
     const filesListResolver = useCallback(
         async (crateId: string) => {
@@ -96,6 +100,9 @@ export function FileExplorer() {
                     </div>
                 </HelpTooltip>
                 <div className="grow" />
+                <Button variant="header" onClick={() => showCreateEntityModal()}>
+                    <Plus className="w-4 h-4 mr-1" /> New
+                </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger className="px-1">
                         <EllipsisVertical className="w-4 h-4 shrink-0" />

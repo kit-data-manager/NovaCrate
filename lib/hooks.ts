@@ -6,6 +6,7 @@ import {
     createEntityEditorTab,
     EntityEditorTabsContext
 } from "@/components/providers/entity-tabs-provider"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 
 const MAX_LIST_LENGTH = 100
 
@@ -168,7 +169,7 @@ export function useGoToEntity(entity?: IFlatEntity) {
     )
 }
 
-export function useGoToJsonEditor() {
+export function useGoToPage(page: string) {
     const pathname = usePathname()
     const router = useRouter()
 
@@ -177,7 +178,26 @@ export function useGoToJsonEditor() {
             pathname
                 .split("/")
                 .filter((_, i) => i < 3)
-                .join("/") + "/json-editor"
+                .join("/") +
+            "/" +
+            page
         router.push(href)
-    }, [pathname, router])
+    }, [page, pathname, router])
+}
+
+export function useGoToMainMenu() {
+    const router = useRouter()
+
+    return useCallback(() => {
+        router.push("/editor")
+    }, [router])
+}
+
+export function useSaveAllEntities() {
+    const { saveAllEntities } = useContext(CrateDataContext)
+    const getChangedEntities = useEditorState.useGetChangedEntities()
+
+    return useCallback(() => {
+        return saveAllEntities(getChangedEntities())
+    }, [getChangedEntities, saveAllEntities])
 }
