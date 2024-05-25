@@ -20,6 +20,9 @@ import {
 } from "@/components/ui/table"
 import HelpTooltip from "@/components/help-tooltip"
 import Link from "next/link"
+import { metadata } from "@/lib/metadata"
+
+export const generateMetadata = metadata("Context")
 
 function EditButton() {
     return (
