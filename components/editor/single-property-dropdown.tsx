@@ -48,7 +48,7 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="border-l-0 rounded-l-none px-2">
-                    <EllipsisVertical />
+                    <EllipsisVertical className="w-4 h-4" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>

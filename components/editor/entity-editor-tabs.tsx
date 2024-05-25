@@ -100,10 +100,9 @@ function Tab({
                     className={`cursor-default ${active ? "pr-1" : ""}`}
                     ref={button}
                 >
-                    <EntityIcon entity={entity} />
+                    <EntityIcon entity={entity} unsavedChanges={dirty} />
                     <div className={`ml-1 transition-colors max-w-[300px] truncate`}>
                         {getEntityDisplayName(entity)}
-                        {dirty ? <b>*</b> : null}
                     </div>
                     {active ? (
                         <div

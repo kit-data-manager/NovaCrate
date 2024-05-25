@@ -1,11 +1,9 @@
 import { memo, useCallback, useContext, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { SelectReferenceModal } from "@/components/editor/select-reference-modal"
-import { ExternalLink, Globe, LinkIcon, Plus } from "lucide-react"
-import { CreateFromORCIDModal } from "@/components/editor/from-orcid-modal"
+import { ExternalLink, LinkIcon, Plus } from "lucide-react"
 import { getEntityDisplayName } from "@/lib/utils"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
-import { SCHEMA_ORG_ORGANIZATION, SCHEMA_ORG_PERSON } from "@/lib/constants"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { SlimClass } from "@/lib/crate-verify/helpers"
 import {
@@ -93,7 +91,6 @@ export const ReferenceField = memo(function ReferenceField({
 
             {isEmpty ? (
                 <>
-                    <CreateFromExternalButton propertyRange={propertyRange} />
                     <Button
                         className="grow rounded-r-none border-r-0 first:rounded-l-md rounded-l-none"
                         variant="outline"
@@ -137,7 +134,7 @@ export const ReferenceField = memo(function ReferenceField({
                         }}
                         size="icon"
                         variant="outline"
-                        className="rounded-none border-l-0"
+                        className="rounded-none border-l-0 shrink-0"
                     >
                         <LinkIcon className="w-4 h-4" />
                     </Button>
@@ -154,55 +151,3 @@ export const ReferenceField = memo(function ReferenceField({
         </div>
     )
 })
-
-function CreateFromExternalButton({ propertyRange }: { propertyRange?: SlimClass[] }) {
-    const [modalOpen, setModalOpen] = useState(false)
-
-    const openModal = useCallback(() => {
-        setModalOpen(true)
-    }, [])
-
-    const propertyRangeIds = useMemo(() => {
-        return propertyRange?.map((p) => p["@id"])
-    }, [propertyRange])
-
-    const fromORCID = useMemo(() => {
-        if (!propertyRangeIds) return false
-        return propertyRangeIds.includes(SCHEMA_ORG_PERSON)
-    }, [propertyRangeIds])
-
-    const fromROR = useMemo(() => {
-        if (!propertyRangeIds) return false
-        return propertyRangeIds.includes(SCHEMA_ORG_ORGANIZATION)
-    }, [propertyRangeIds])
-
-    return (
-        <>
-            {fromORCID ? (
-                <>
-                    <CreateFromORCIDModal
-                        open={modalOpen}
-                        onEntityCreated={() => {}}
-                        onOpenChange={setModalOpen}
-                    />
-                    <Button
-                        className="grow-[2] rounded-none first:rounded-l-lg"
-                        onClick={openModal}
-                    >
-                        <Globe className="w-4 h-4 mr-2" /> From ORCID
-                    </Button>
-                </>
-            ) : null}
-            {fromROR ? (
-                <>
-                    <Button
-                        className="grow-[2] rounded-none first:rounded-l-lg"
-                        onClick={openModal}
-                    >
-                        <Globe className="w-4 h-4 mr-2" /> From ROR
-                    </Button>
-                </>
-            ) : null}
-        </>
-    )
-}
