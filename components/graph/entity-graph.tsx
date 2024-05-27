@@ -11,7 +11,6 @@ import ReactFlow, {
     NodeChange,
     Panel,
     ReactFlowProvider,
-    useEdgesState,
     useReactFlow
 } from "reactflow"
 import "reactflow/dist/style.css"
@@ -20,12 +19,12 @@ import { Fullscreen, GitCompare, Plus, Rows2, Rows4 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { EntityNodeHandle, NEW_PROP_HANDLE } from "@/components/graph/entity-node"
 import { useLayout } from "@/components/graph/layout"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { isReference, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
 import { useEditorState } from "@/lib/state/editor-state"
 import { AddPropertyModal } from "@/components/editor/add-property-modal"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { nodeTypes } from "@/components/graph/nodes"
+import { create } from "zustand"
 
 const DEFAULT_POS = { x: 0, y: 0 }
 
@@ -122,29 +121,60 @@ interface PendingNewProperty {
     target: string
 }
 
+interface GraphState {
+    nodes: Node[]
+    edges: Edge[]
+    updateNodes(nodes: Node[]): void
+    applyLayout(nodes: Node[]): void
+    handleNodesChange(changes: NodeChange[]): void
+    updateEdges(edges: Edge[]): void
+}
+
+const useGraphState = create<GraphState>()((set, get) => ({
+    edges: [],
+    nodes: [],
+    updateNodes(newNodes: Node[]) {
+        const nodes: Node[] = []
+        for (const newNode of newNodes) {
+            const oldNode = get().nodes.find((node) => node.id === newNode.id)
+            if (oldNode) {
+                nodes.push({
+                    ...newNode,
+                    position: oldNode.position
+                })
+            } else {
+                nodes.push(newNode)
+            }
+        }
+        set({ nodes })
+    },
+    applyLayout(nodes: Node[]) {
+        set({ nodes })
+    },
+    handleNodesChange(changes: NodeChange[]) {
+        set({ nodes: applyNodeChanges(changes, get().nodes) })
+    },
+    updateEdges(edges: Edge[]) {
+        set({ edges })
+    }
+}))
+
 const LayoutFlow = () => {
-    const crateData = useContext(CrateDataContext)
     const entities = useEditorState.useEntities()
     const addProperty = useEditorState.useAddProperty()
     const addPropertyEntry = useEditorState.useAddPropertyEntry()
     const { showCreateEntityModal } = useContext(GlobalModalContext)
 
-    const [nodes, setNodes] = useState<Node[]>([])
-    const [edges, setEdges, onEdgesChange] = useEdgesState([])
+    const { nodes, updateNodes, updateEdges, edges, handleNodesChange, applyLayout } =
+        useGraphState()
+
     const { fitView } = useReactFlow()
     const [selectPropertyModalOpen, setSelectPropertyModalOpen] = useState(false)
     const [selectPropertyTypeArray, setSelectPropertyTypeArray] = useState<string[]>([])
 
     const pendingNewProperty = useRef<PendingNewProperty | undefined>(undefined)
 
-    const { layoutDone, layoutedNodes, layoutedEdges, forceLayout } = useLayout()
-
-    const onNodesChange = useCallback(
-        (changes: NodeChange[]) => {
-            return setNodes(applyNodeChanges(changes, nodes))
-        },
-        [nodes]
-    )
+    const { layoutedNodes, layoutedEdges, doLayout } = useLayout(nodes, edges)
 
     const onConnect = useCallback(
         (params: Edge | Connection) => {
@@ -170,6 +200,12 @@ const LayoutFlow = () => {
     )
 
     const onEdgesDelete = useCallback((edges: Edge[]) => {
+        console.log("edge delete", edges)
+        // TODO do something
+    }, [])
+
+    const onNodesDelete = useCallback((nodes: Node[]) => {
+        console.log("edge nodes", nodes)
         // TODO do something
     }, [])
 
@@ -193,37 +229,24 @@ const LayoutFlow = () => {
     }, [fitView])
 
     useEffect(() => {
-        if (layoutDone) {
-            setNodes([...layoutedNodes])
-            setEdges([...layoutedEdges])
+        applyLayout([...layoutedNodes])
+        updateEdges([...layoutedEdges])
 
-            // Hacky but I see no way around
-            setTimeout(() => {
-                centerView()
-            }, 100)
-        }
-    }, [centerView, layoutDone, layoutedEdges, layoutedNodes, setEdges, setNodes])
+        // Hacky but I see no way around
+        setTimeout(() => {
+            centerView()
+        }, 100)
+    }, [centerView, layoutedEdges, layoutedNodes, updateEdges, applyLayout])
+
+    const updateNodesFromState = useCallback(() => {
+        const [newNodes, newEdges] = entitiesToGraph(entities)
+        updateNodes(newNodes)
+        updateEdges(newEdges)
+    }, [entities, updateEdges, updateNodes])
 
     useEffect(() => {
-        const [newNodes, newEdges] = entitiesToGraph(entities)
-        console.log("New entities", newNodes)
-        setNodes((oldNodes) => {
-            const nodes: Node[] = []
-            for (const newNode of newNodes) {
-                const oldNode = oldNodes.find((node) => node.id === newNode.id)
-                if (oldNode) {
-                    nodes.push({
-                        ...newNode,
-                        position: oldNode.position
-                    })
-                } else {
-                    nodes.push(newNode)
-                }
-            }
-            return nodes
-        })
-        setEdges([...newEdges])
-    }, [crateData.crateData, entities, setEdges, setNodes])
+        updateNodesFromState()
+    }, [updateNodesFromState])
 
     return (
         <>
@@ -236,13 +259,12 @@ const LayoutFlow = () => {
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onEdgesDelete={onEdgesDelete}
                 onConnect={onConnect}
+                onEdgesDelete={onEdgesDelete}
+                onNodesDelete={onNodesDelete}
+                onNodesChange={handleNodesChange}
                 connectionLineType={ConnectionLineType.Bezier}
                 nodeTypes={nodeTypes}
-                proOptions={{ hideAttribution: true }}
             >
                 <Panel position="top-left" className="gap-2 flex items-center">
                     <div className="p-0.5 bg-accent rounded-lg">
@@ -271,7 +293,7 @@ const LayoutFlow = () => {
 
                     <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => forceLayout()}>
+                            <Button variant="outline" size="icon" onClick={() => doLayout()}>
                                 <GitCompare className="w-4 h-4" />
                             </Button>
                         </TooltipTrigger>

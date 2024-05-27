@@ -1,5 +1,5 @@
 import dagre from "dagre"
-import { Edge, Node, Position, useNodesInitialized, useReactFlow } from "reactflow"
+import { Edge, Node, Position, useNodesInitialized } from "reactflow"
 import { useCallback, useEffect, useState } from "react"
 
 const dagreGraph = new dagre.graphlib.Graph()
@@ -37,25 +37,24 @@ export const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
     return { nodes, edges }
 }
 
-export function useLayout() {
-    const { getNodes, getEdges } = useReactFlow()
+export function useLayout(nodes: Node[], edges: Edge[]) {
     const nodesInitialized = useNodesInitialized()
-    const [layoutedNodes, setLayoutedNodes] = useState(getNodes())
-    const [layoutedEdges, setLayoutedEdges] = useState(getEdges())
+    const [layoutedNodes, setLayoutedNodes] = useState(nodes)
+    const [layoutedEdges, setLayoutedEdges] = useState(edges)
     const [done, setDone] = useState(false)
 
     const doLayout = useCallback(() => {
-        const { nodes, edges } = getLayoutedElements(getNodes(), getEdges())
-        setLayoutedNodes(nodes)
-        setLayoutedEdges(edges)
-    }, [getEdges, getNodes])
+        const { nodes: layoutNodes, edges: layoutEdges } = getLayoutedElements(nodes, edges)
+        setLayoutedNodes(layoutNodes)
+        setLayoutedEdges(layoutEdges)
+    }, [edges, nodes])
 
     useEffect(() => {
-        if (nodesInitialized /*&& !done*/) {
+        if (nodesInitialized && !done) {
             doLayout()
             setDone(true)
         }
-    }, [doLayout, getEdges, getNodes, nodesInitialized])
+    }, [doLayout, done, nodesInitialized])
 
-    return { layoutDone: nodesInitialized, layoutedNodes, layoutedEdges, forceLayout: doLayout }
+    return { layoutedNodes, layoutedEdges, doLayout }
 }
