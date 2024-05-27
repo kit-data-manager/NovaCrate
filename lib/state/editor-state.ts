@@ -37,7 +37,11 @@ export interface ICrateEditorContext {
     ): IFlatEntity | undefined
     removeEntity(entityId: string): void
     addProperty(entityId: string, propertyName: string, value?: FlatEntityPropertyTypes): void
-    addPropertyEntry(entityId: string, propertyName: string, type: PropertyEditorTypes): void
+    addPropertyEntry(
+        entityId: string,
+        propertyName: string,
+        typeOrValue: PropertyEditorTypes | FlatEntityPropertyTypes
+    ): void
     modifyPropertyEntry(
         entityId: string,
         propertyName: string,
@@ -199,13 +203,21 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                 }
             },
 
-            addPropertyEntry(entityId: string, propertyName: string, type: PropertyEditorTypes) {
+            addPropertyEntry(
+                entityId: string,
+                propertyName: string,
+                typeOrValue: PropertyEditorTypes | FlatEntitySinglePropertyTypes
+            ) {
                 if (getState().entities.get(entityId)) {
                     setState((state) => {
                         setPropertyValue(
                             state.entities.get(entityId)!,
                             propertyName,
-                            type === PropertyEditorTypes.Reference ? { "@id": "" } : ""
+                            typeof typeOrValue === "number"
+                                ? typeOrValue === PropertyEditorTypes.Reference
+                                    ? { "@id": "" }
+                                    : ""
+                                : typeOrValue
                         )
                     })
                 }
