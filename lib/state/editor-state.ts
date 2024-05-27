@@ -48,7 +48,11 @@ export interface ICrateEditorContext {
         valueIdx: number,
         value: FlatEntitySinglePropertyTypes
     ): void
-    removePropertyEntry(entityId: string, propertyName: string, valueIdx: number): void
+    removePropertyEntry(
+        entityId: string,
+        propertyName: string,
+        valueOrValueIdx: number | FlatEntitySinglePropertyTypes
+    ): void
     revertEntity(entityId: string): void
     revertAllEntities(): void
 }
@@ -241,7 +245,11 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                 }
             },
 
-            removePropertyEntry(entityId: string, propertyName: string, valueIdx: number) {
+            removePropertyEntry(
+                entityId: string,
+                propertyName: string,
+                valueOrValueIdx: number | FlatEntitySinglePropertyTypes
+            ) {
                 if (
                     getState().entities.get(entityId) &&
                     propertyName in getState().entities.get(entityId)!
@@ -253,7 +261,25 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                             if (prop.length === 1) {
                                 delete target[propertyName]
                             } else {
-                                prop.splice(valueIdx, 1)
+                                if (typeof valueOrValueIdx === "number") {
+                                    prop.splice(valueOrValueIdx, 1)
+                                } else {
+                                    if (typeof valueOrValueIdx === "object") {
+                                        const i = prop.findIndex((val) =>
+                                            typeof val === "object"
+                                                ? val["@id"] === valueOrValueIdx["@id"]
+                                                : false
+                                        )
+                                        if (i >= 0) prop.splice(i, 1)
+                                    } else {
+                                        const i = prop.findIndex((val) =>
+                                            typeof val === "string"
+                                                ? val === valueOrValueIdx
+                                                : false
+                                        )
+                                        if (i >= 0) prop.splice(i, 1)
+                                    }
+                                }
                             }
                         } else {
                             delete target[propertyName]
