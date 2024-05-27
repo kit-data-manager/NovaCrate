@@ -42,6 +42,7 @@ export function useLayout() {
     const nodesInitialized = useNodesInitialized()
     const [layoutedNodes, setLayoutedNodes] = useState(getNodes())
     const [layoutedEdges, setLayoutedEdges] = useState(getEdges())
+    const [done, setDone] = useState(false)
 
     const doLayout = useCallback(() => {
         const { nodes, edges } = getLayoutedElements(getNodes(), getEdges())
@@ -50,8 +51,9 @@ export function useLayout() {
     }, [getEdges, getNodes])
 
     useEffect(() => {
-        if (nodesInitialized) {
+        if (nodesInitialized /*&& !done*/) {
             doLayout()
+            setDone(true)
         }
     }, [doLayout, getEdges, getNodes, nodesInitialized])
 

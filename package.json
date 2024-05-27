@@ -42,7 +42,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-resizable-panels": "^2.0.16",
-    "reactflow": "^11.11.1",
+    "reactflow": "^11.11.3",
     "swr": "^2.2.5",
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7",

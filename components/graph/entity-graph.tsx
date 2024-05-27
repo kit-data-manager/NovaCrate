@@ -1,36 +1,33 @@
 "use client"
 
-import React, { useCallback, useContext, useEffect } from "react"
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
 import ReactFlow, {
-    addEdge,
+    applyNodeChanges,
     Background,
     Connection,
     ConnectionLineType,
     Edge,
     Node,
+    NodeChange,
     Panel,
     ReactFlowProvider,
     useEdgesState,
-    useNodesState,
     useReactFlow
 } from "reactflow"
 import "reactflow/dist/style.css"
 import { Button } from "@/components/ui/button"
-import { Fullscreen, GitCompare, Rows2, Rows4 } from "lucide-react"
+import { Fullscreen, GitCompare, Plus, Rows2, Rows4 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import EntityNode, { EntityNodeHandle } from "@/components/graph/entity-node"
+import { EntityNodeHandle, NEW_PROP_HANDLE } from "@/components/graph/entity-node"
 import { useLayout } from "@/components/graph/layout"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { isReference, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
-import ExternalNode from "@/components/graph/external-node"
 import { useEditorState } from "@/lib/state/editor-state"
+import { AddPropertyModal } from "@/components/editor/add-property-modal"
+import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { nodeTypes } from "@/components/graph/nodes"
 
 const DEFAULT_POS = { x: 0, y: 0 }
-
-const nodeTypes = {
-    entityNode: EntityNode,
-    externalNode: ExternalNode
-}
 
 function entitiesToGraph(entitiesMap: Map<string, IFlatEntity>): [Node[], Edge[]] {
     const entities = Array.from(entitiesMap.values())
@@ -55,7 +52,7 @@ function entitiesToGraph(entitiesMap: Map<string, IFlatEntity>): [Node[], Edge[]
             id: entity["@id"],
             position: DEFAULT_POS,
             data: {
-                entity,
+                entityId: entity["@id"],
                 handles: []
             },
             type: "entityNode"
@@ -84,7 +81,7 @@ function entitiesToGraph(entitiesMap: Map<string, IFlatEntity>): [Node[], Edge[]
                         source: entity["@id"],
                         sourceHandle: `${key}`,
                         target,
-                        type: "straight"
+                        type: "default"
                     })
 
                     autoPushHandle(
@@ -102,19 +99,93 @@ function entitiesToGraph(entitiesMap: Map<string, IFlatEntity>): [Node[], Edge[]
     return [nodes, edges]
 }
 
+function propertyEntryExists(entity: IFlatEntity, propertyName: string, targetId: string) {
+    if (propertyName in entity) {
+        const prop = entity[propertyName]
+        if (Array.isArray(prop)) {
+            for (const entry of prop) {
+                if (typeof entry === "object") {
+                    if (entry["@id"] === targetId) return true
+                }
+            }
+        } else {
+            if (typeof prop === "object") {
+                return prop["@id"] === targetId
+            }
+        }
+    }
+    return false
+}
+
+interface PendingNewProperty {
+    source: string
+    target: string
+}
+
 const LayoutFlow = () => {
     const crateData = useContext(CrateDataContext)
     const entities = useEditorState.useEntities()
+    const addProperty = useEditorState.useAddProperty()
+    const addPropertyEntry = useEditorState.useAddPropertyEntry()
+    const { showCreateEntityModal } = useContext(GlobalModalContext)
 
-    const [nodes, setNodes, onNodesChange] = useNodesState([])
+    const [nodes, setNodes] = useState<Node[]>([])
     const [edges, setEdges, onEdgesChange] = useEdgesState([])
     const { fitView } = useReactFlow()
+    const [selectPropertyModalOpen, setSelectPropertyModalOpen] = useState(false)
+    const [selectPropertyTypeArray, setSelectPropertyTypeArray] = useState<string[]>([])
+
+    const pendingNewProperty = useRef<PendingNewProperty | undefined>(undefined)
 
     const { layoutDone, layoutedNodes, layoutedEdges, forceLayout } = useLayout()
 
+    const onNodesChange = useCallback(
+        (changes: NodeChange[]) => {
+            return setNodes(applyNodeChanges(changes, nodes))
+        },
+        [nodes]
+    )
+
     const onConnect = useCallback(
-        (params: Edge | Connection) => setEdges((eds) => addEdge({ ...params }, eds)),
-        [setEdges]
+        (params: Edge | Connection) => {
+            if (!params.source || !params.target || !params.sourceHandle) return
+            const source = entities.get(params.source)
+            const target = entities.get(params.target)
+            if (!source || !target) return
+
+            if (params.sourceHandle === NEW_PROP_HANDLE) {
+                setSelectPropertyModalOpen(true)
+                setSelectPropertyTypeArray(toArray(source["@type"]))
+                pendingNewProperty.current = { source: params.source, target: params.target }
+                // addProperty(params.source, params.sourceHandle, { "@id": params.target })
+            } else {
+                if (!propertyEntryExists(source, params.sourceHandle, params.target)) {
+                    addPropertyEntry(params.source, params.sourceHandle, {
+                        "@id": params.target
+                    })
+                }
+            }
+        },
+        [addPropertyEntry, entities]
+    )
+
+    const onEdgesDelete = useCallback((edges: Edge[]) => {
+        // TODO do something
+    }, [])
+
+    const onPropertySelectOpenChange = useCallback((isOpen: boolean) => {
+        setSelectPropertyModalOpen(isOpen)
+    }, [])
+
+    const handlePropertySelect = useCallback(
+        (propertyName: string) => {
+            if (pendingNewProperty.current) {
+                addProperty(pendingNewProperty.current.source, propertyName, {
+                    "@id": pendingNewProperty.current.target
+                })
+            } else console.warn("Failed to add property, no pending property select")
+        },
+        [addProperty]
     )
 
     const centerView = useCallback(() => {
@@ -135,55 +206,83 @@ const LayoutFlow = () => {
 
     useEffect(() => {
         const [newNodes, newEdges] = entitiesToGraph(entities)
-        setNodes([...newNodes])
+        console.log("New entities", newNodes)
+        setNodes((oldNodes) => {
+            const nodes: Node[] = []
+            for (const newNode of newNodes) {
+                const oldNode = oldNodes.find((node) => node.id === newNode.id)
+                if (oldNode) {
+                    nodes.push({
+                        ...newNode,
+                        position: oldNode.position
+                    })
+                } else {
+                    nodes.push(newNode)
+                }
+            }
+            return nodes
+        })
         setEdges([...newEdges])
     }, [crateData.crateData, entities, setEdges, setNodes])
 
     return (
-        <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            connectionLineType={ConnectionLineType.SmoothStep}
-            nodeTypes={nodeTypes}
-            proOptions={{ hideAttribution: true }}
-        >
-            <Panel position="top-left" className="gap-2 flex items-center">
-                <div className="p-0.5 bg-accent rounded-lg">
-                    <Button variant="secondary" size="sm">
-                        <Rows2 className="w-4 h-4 mr-2" /> Comfortable View
-                    </Button>
-                    <Button variant="secondary" size="sm">
-                        <Rows4 className="w-4 h-4 mr-2" /> Compact View
-                    </Button>
-                </div>
-
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" onClick={() => centerView()}>
-                            <Fullscreen className="w-4 h-4" />
+        <>
+            <AddPropertyModal
+                open={selectPropertyModalOpen}
+                onPropertyAdd={handlePropertySelect}
+                onOpenChange={onPropertySelectOpenChange}
+                typeArray={selectPropertyTypeArray}
+            />
+            <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onEdgesDelete={onEdgesDelete}
+                onConnect={onConnect}
+                connectionLineType={ConnectionLineType.Bezier}
+                nodeTypes={nodeTypes}
+                proOptions={{ hideAttribution: true }}
+            >
+                <Panel position="top-left" className="gap-2 flex items-center">
+                    <div className="p-0.5 bg-accent rounded-lg">
+                        <Button variant="secondary" size="sm">
+                            <Rows2 className="w-4 h-4 mr-2" /> Comfortable View
                         </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Center View</p>
-                    </TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" onClick={() => forceLayout()}>
-                            <GitCompare className="w-4 h-4" />
+                        <Button variant="secondary" size="sm">
+                            <Rows4 className="w-4 h-4 mr-2" /> Compact View
                         </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Auto-Layout</p>
-                    </TooltipContent>
-                </Tooltip>
-            </Panel>
-            <Background />
-        </ReactFlow>
+                    </div>
+
+                    <Button variant="outline" onClick={() => showCreateEntityModal()}>
+                        <Plus className="w-4 h-4 shrink-0 mr-2" /> New
+                    </Button>
+
+                    <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                            <Button variant="outline" size="icon" onClick={() => centerView()}>
+                                <Fullscreen className="w-4 h-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Center View</p>
+                        </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                            <Button variant="outline" size="icon" onClick={() => forceLayout()}>
+                                <GitCompare className="w-4 h-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Auto-Layout</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </Panel>
+                <Background />
+            </ReactFlow>
+        </>
     )
 }
 
