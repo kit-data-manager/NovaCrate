@@ -2,11 +2,11 @@
 
 import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
 import ReactFlow, {
-    applyNodeChanges,
     Background,
     Connection,
     ConnectionLineType,
     Edge,
+    EdgeChange,
     Node,
     NodeChange,
     Panel,
@@ -24,7 +24,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { AddPropertyModal } from "@/components/editor/add-property-modal"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { nodeTypes } from "@/components/graph/nodes"
-import { create } from "zustand"
+import { useGraphState } from "@/lib/state/graph-state"
 
 const DEFAULT_POS = { x: 0, y: 0 }
 
@@ -121,52 +121,22 @@ interface PendingNewProperty {
     target: string
 }
 
-interface GraphState {
-    nodes: Node[]
-    edges: Edge[]
-    updateNodes(nodes: Node[]): void
-    applyLayout(nodes: Node[]): void
-    handleNodesChange(changes: NodeChange[]): void
-    updateEdges(edges: Edge[]): void
-}
-
-const useGraphState = create<GraphState>()((set, get) => ({
-    edges: [],
-    nodes: [],
-    updateNodes(newNodes: Node[]) {
-        const nodes: Node[] = []
-        for (const newNode of newNodes) {
-            const oldNode = get().nodes.find((node) => node.id === newNode.id)
-            if (oldNode) {
-                nodes.push({
-                    ...newNode,
-                    position: oldNode.position
-                })
-            } else {
-                nodes.push(newNode)
-            }
-        }
-        set({ nodes })
-    },
-    applyLayout(nodes: Node[]) {
-        set({ nodes })
-    },
-    handleNodesChange(changes: NodeChange[]) {
-        set({ nodes: applyNodeChanges(changes, get().nodes) })
-    },
-    updateEdges(edges: Edge[]) {
-        set({ edges })
-    }
-}))
-
 const LayoutFlow = () => {
     const entities = useEditorState.useEntities()
     const addProperty = useEditorState.useAddProperty()
     const addPropertyEntry = useEditorState.useAddPropertyEntry()
-    const { showCreateEntityModal } = useContext(GlobalModalContext)
+    const removePropertyEntry = useEditorState.useRemovePropertyEntry()
+    const { showCreateEntityModal, showDeleteEntityModal } = useContext(GlobalModalContext)
 
-    const { nodes, updateNodes, updateEdges, edges, handleNodesChange, applyLayout } =
-        useGraphState()
+    const {
+        nodes,
+        updateNodes,
+        updateEdges,
+        edges,
+        handleNodesChange,
+        applyLayout,
+        handleEdgesChange
+    } = useGraphState()
 
     const { fitView } = useReactFlow()
     const [selectPropertyModalOpen, setSelectPropertyModalOpen] = useState(false)
@@ -198,16 +168,6 @@ const LayoutFlow = () => {
         },
         [addPropertyEntry, entities]
     )
-
-    const onEdgesDelete = useCallback((edges: Edge[]) => {
-        console.log("edge delete", edges)
-        // TODO do something
-    }, [])
-
-    const onNodesDelete = useCallback((nodes: Node[]) => {
-        console.log("edge nodes", nodes)
-        // TODO do something
-    }, [])
 
     const onPropertySelectOpenChange = useCallback((isOpen: boolean) => {
         setSelectPropertyModalOpen(isOpen)
@@ -248,6 +208,35 @@ const LayoutFlow = () => {
         updateNodesFromState()
     }, [updateNodesFromState])
 
+    const beforeNodesChange = useCallback(
+        (changes: NodeChange[]) => {
+            for (const change of changes) {
+                if (change.type === "remove") {
+                    showDeleteEntityModal(change.id)
+                }
+            }
+            handleNodesChange(changes.filter((change) => change.type !== "remove"))
+        },
+        [handleNodesChange, showDeleteEntityModal]
+    )
+
+    const beforeEdgesChange = useCallback(
+        (changes: EdgeChange[]) => {
+            for (const change of changes) {
+                if (change.type === "remove") {
+                    const deleting = edges.find((edge) => edge.id === change.id)
+                    if (deleting && deleting.sourceHandle) {
+                        removePropertyEntry(deleting.source, deleting.sourceHandle, {
+                            "@id": deleting.target
+                        })
+                    }
+                }
+            }
+            handleEdgesChange(changes.filter((change) => change.type !== "remove"))
+        },
+        [edges, handleEdgesChange, removePropertyEntry]
+    )
+
     return (
         <>
             <AddPropertyModal
@@ -260,9 +249,8 @@ const LayoutFlow = () => {
                 nodes={nodes}
                 edges={edges}
                 onConnect={onConnect}
-                onEdgesDelete={onEdgesDelete}
-                onNodesDelete={onNodesDelete}
-                onNodesChange={handleNodesChange}
+                onNodesChange={beforeNodesChange}
+                onEdgesChange={beforeEdgesChange}
                 connectionLineType={ConnectionLineType.Bezier}
                 nodeTypes={nodeTypes}
             >
