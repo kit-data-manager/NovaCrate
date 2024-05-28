@@ -19,6 +19,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { CrateVerifyContext } from "@/components/providers/crate-verify-provider"
 import { CheckedState } from "@radix-ui/react-checkbox"
 import { useAsync } from "@/lib/hooks"
+import { MarkdownComment } from "@/components/markdown-comment"
 
 export interface PossibleProperty {
     propertyName: string
@@ -60,7 +61,7 @@ const AddPropertyModalEntry = memo(function AddPropertyModalEntry({
                     </div>
                 </div>
                 <div className="truncate text-xs">
-                    <span>{property.comment + ""}</span>
+                    <MarkdownComment comment={property.comment} />
                 </div>
             </div>
         </CommandItem>

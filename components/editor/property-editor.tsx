@@ -1,4 +1,12 @@
-import { createRef, memo, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import React, {
+    createRef,
+    memo,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState
+} from "react"
 import { CrateVerifyContext } from "@/components/providers/crate-verify-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Error } from "@/components/error"
@@ -9,7 +17,9 @@ import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-prov
 import { useEditorState } from "@/lib/state/editor-state"
 import { handleSpringError } from "@/lib/spring-error-handling"
 import { useAsync } from "@/lib/hooks"
-import { Trash } from "lucide-react"
+import { ExternalLink, Trash } from "lucide-react"
+import Markdown from "react-markdown"
+import { MarkdownComment } from "@/components/markdown-comment"
 
 export interface EntityEditorProperty {
     propertyName: string
@@ -196,7 +206,7 @@ export const PropertyEditor = memo(function PropertyEditor({
         } else if (comment !== undefined) {
             return (
                 <span className={expandComment ? "" : "line-clamp-3"} onClick={toggleExpandComment}>
-                    {comment + ""}
+                    <MarkdownComment comment={comment} allowLinks />
                 </span>
             )
         } else return null
