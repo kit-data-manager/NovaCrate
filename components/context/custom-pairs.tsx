@@ -177,9 +177,11 @@ export function CustomPairs() {
                         </TableRow>
                     ))}
                     {customPairs.length === 0 ? (
-                        <div className="p-4 text-muted-foreground">
-                            No Custom Context pairs have been configured
-                        </div>
+                        <TableRow>
+                            <TableCell className="p-4 text-muted-foreground">
+                                No Custom Context pairs have been configured
+                            </TableCell>
+                        </TableRow>
                     ) : null}
                 </TableBody>
             </Table>

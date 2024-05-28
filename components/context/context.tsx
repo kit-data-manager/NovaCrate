@@ -3,14 +3,16 @@
 import { Library } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useCallback, useState } from "react"
+import { useCallback, useContext, useState } from "react"
 import { SpecificationModal } from "@/components/context/specification-modal"
 import { CustomPairs } from "@/components/context/custom-pairs"
 import { Error } from "@/components/error"
 import HelpTooltip from "@/components/help-tooltip"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 
 export function ContextPage() {
     const context = useEditorState.useCrateContext()
+    const { crateDataIsLoading } = useContext(CrateDataContext)
 
     const [specificationModalOpen, setSpecificationModalOpen] = useState(false)
 
@@ -29,7 +31,7 @@ export function ContextPage() {
                 <Library className="w-4 h-4 shrink-0 mr-2" /> Context
             </div>
 
-            <div className="p-4">
+            <div className="p-4 pt-0">
                 <div className="my-4">
                     <Label>
                         Specification{" "}
@@ -51,7 +53,7 @@ export function ContextPage() {
                         </Button>*/}
                     </div>
 
-                    {context.specification === "unknown" ? (
+                    {!crateDataIsLoading && context.specification === "unknown" ? (
                         <Error
                             title="Invalid Context"
                             error="The RO-Crate Specification used in this crate could not be identified. Most Types and Properties will not be resolved. Please fix the issue in the JSON Editor by specifying a valid RO-Crate Specification"
