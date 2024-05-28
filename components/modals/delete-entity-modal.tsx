@@ -96,7 +96,8 @@ export function DeleteEntityModal({
                 <div>
                     Are you sure that you want to delete{" "}
                     {entity ? getEntityDisplayName(entity) : <i>Unresolved Entity</i>}? The
-                    associated data will be <b>permanently deleted</b>.
+                    associated data will be <b>permanently deleted</b>. This action is not
+                    reversible.
                 </div>
                 <div className="flex justify-between">
                     <Button variant="outline" onClick={onCloseClick} disabled={isDeleting}>

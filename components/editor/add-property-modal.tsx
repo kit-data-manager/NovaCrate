@@ -60,8 +60,10 @@ const AddPropertyModalEntry = memo(function AddPropertyModalEntry({
                         {property.rangeReadable.join(", ")}
                     </div>
                 </div>
-                <div className="truncate text-xs">
-                    <MarkdownComment comment={property.comment} />
+                <div>
+                    <span className="text-xs max-w-full line-clamp-1">
+                        <MarkdownComment comment={property.comment} />
+                    </span>
                 </div>
             </div>
         </CommandItem>
