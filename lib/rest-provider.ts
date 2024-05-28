@@ -41,14 +41,6 @@ export class RestProvider implements CrateServiceProvider {
         return `http://localhost:8080/crates/${encodeURIComponent(crateId)}/files/${encodeURIComponent(filePath)}`
     }
 
-    getCrateFileWithData(crateId: string, filePath: string): Promise<File> {
-        throw "Not implemented"
-    }
-
-    renameEntity(crateId: string, oldEntityId: string, newEntityId: string): Promise<boolean> {
-        throw "Not implemented"
-    }
-
     async createCrate(name: string, description: string) {
         const request = await fetch("http://localhost:8080/crates", {
             method: "PUT",
@@ -179,10 +171,6 @@ export class RestProvider implements CrateServiceProvider {
         } else {
             throw handleSpringError(await request.json())
         }
-    }
-
-    getEntity(crateId: string, entityId: string): Promise<IFlatEntity> {
-        throw "Not implemented"
     }
 
     async updateEntity(
