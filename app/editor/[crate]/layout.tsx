@@ -10,6 +10,8 @@ import { CrateVerifyProvider } from "@/components/providers/crate-verify-provide
 import { GlobalModalProvider } from "@/components/providers/global-modals-provider"
 import { useCrateName, useRecentCrates } from "@/lib/hooks"
 import { FileExplorerProvider } from "@/components/file-explorer/context"
+import { GraphStateProvider } from "@/components/providers/graph-state-provider"
+import { GraphSettingsProvider } from "@/components/providers/graph-settings-provider"
 
 const CRATE_ID_REGEX = /^\/editor\/([^\/]*)\/.*$/
 
@@ -35,8 +37,12 @@ export default function EditorLayout(props: PropsWithChildren) {
                 <EntityEditorTabsProvider>
                     <FileExplorerProvider>
                         <GlobalModalProvider>
-                            <RecentlyUsed />
-                            <Nav>{props.children}</Nav>
+                            <GraphStateProvider>
+                                <GraphSettingsProvider>
+                                    <RecentlyUsed />
+                                    <Nav>{props.children}</Nav>
+                                </GraphSettingsProvider>
+                            </GraphStateProvider>
                         </GlobalModalProvider>
                     </FileExplorerProvider>
                 </EntityEditorTabsProvider>

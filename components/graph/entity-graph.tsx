@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
+import React, { createRef, useCallback, useContext, useEffect, useRef, useState } from "react"
 import ReactFlow, {
     Background,
     Connection,
@@ -15,7 +15,7 @@ import ReactFlow, {
 } from "reactflow"
 import "reactflow/dist/style.css"
 import { Button } from "@/components/ui/button"
-import { Fullscreen, GitCompare, Plus, Rows2, Rows4 } from "lucide-react"
+import { EllipsisVertical, Fullscreen, GitCompare, Plus, Rows2, Rows4 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { EntityNodeHandle, NEW_PROP_HANDLE } from "@/components/graph/entity-node"
 import { useLayout } from "@/components/graph/layout"
@@ -24,9 +24,23 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { AddPropertyModal } from "@/components/editor/add-property-modal"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { nodeTypes } from "@/components/graph/nodes"
-import { useGraphState } from "@/lib/state/graph-state"
+import { useGraphStateNoSelector } from "@/components/providers/graph-state-provider"
+import { useGraphSettingsNoSelector } from "@/components/providers/graph-settings-provider"
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@/components/ui/context-menu"
 
 const DEFAULT_POS = { x: 0, y: 0 }
+
+function sortByID(a: EntityNodeHandle, b: EntityNodeHandle) {
+    if (a.id === b.id) return 0
+    return a.id > b.id ? 1 : -1
+}
 
 function entitiesToGraph(entitiesMap: Map<string, IFlatEntity>): [Node[], Edge[]] {
     const entities = Array.from(entitiesMap.values())
@@ -41,6 +55,7 @@ function entitiesToGraph(entitiesMap: Map<string, IFlatEntity>): [Node[], Edge[]
 
         if (!node.data.handles.find((h: EntityNodeHandle) => h.id === handle.id)) {
             node.data.handles.push(handle)
+            node.data.handles.sort(sortByID)
         }
     }
 
@@ -61,7 +76,7 @@ function entitiesToGraph(entitiesMap: Map<string, IFlatEntity>): [Node[], Edge[]
             if (key === "@id" || key === "@type") continue
             const values = toArray(value)
             for (const singleValue of values) {
-                if (isReference(singleValue) && singleValue["@id"] !== "") {
+                if (isReference(singleValue) && singleValue["@id"]) {
                     let target = singleValue["@id"]
                     const index = values.indexOf(singleValue)
 
@@ -82,15 +97,16 @@ function entitiesToGraph(entitiesMap: Map<string, IFlatEntity>): [Node[], Edge[]
                         target,
                         type: "default"
                     })
-
-                    autoPushHandle(
-                        nodes.find((n) => n.id === entity["@id"]),
-                        {
-                            id: key,
-                            name: key
-                        }
-                    )
                 }
+
+                autoPushHandle(
+                    nodes.find((n) => n.id === entity["@id"]),
+                    {
+                        id: key,
+                        name: key,
+                        text: !isReference(singleValue)
+                    }
+                )
             }
         }
     }
@@ -117,8 +133,8 @@ function propertyEntryExists(entity: IFlatEntity, propertyName: string, targetId
 }
 
 interface PendingNewProperty {
-    source: string
-    target: string
+    source: IFlatEntity
+    target: IFlatEntity
 }
 
 const LayoutFlow = () => {
@@ -136,7 +152,14 @@ const LayoutFlow = () => {
         handleNodesChange,
         applyLayout,
         handleEdgesChange
-    } = useGraphState()
+    } = useGraphStateNoSelector()
+
+    const {
+        showTextProperties,
+        setAggregateProperties,
+        setShowTextProperties,
+        aggregateProperties
+    } = useGraphSettingsNoSelector()
 
     const { fitView } = useReactFlow()
     const [selectPropertyModalOpen, setSelectPropertyModalOpen] = useState(false)
@@ -145,6 +168,26 @@ const LayoutFlow = () => {
     const pendingNewProperty = useRef<PendingNewProperty | undefined>(undefined)
 
     const { layoutedNodes, layoutedEdges, doLayout } = useLayout(nodes, edges)
+
+    const contextMenuTriggerRef = createRef<HTMLDivElement>()
+
+    const toggleAggregateProperties = useCallback(() => {
+        setAggregateProperties(!aggregateProperties)
+    }, [aggregateProperties, setAggregateProperties])
+
+    const toggleShowTextProperties = useCallback(() => {
+        setShowTextProperties(!showTextProperties)
+    }, [setShowTextProperties, showTextProperties])
+
+    const comfortableView = useCallback(() => {
+        setShowTextProperties(true)
+        setAggregateProperties(false)
+    }, [setAggregateProperties, setShowTextProperties])
+
+    const compactView = useCallback(() => {
+        setShowTextProperties(false)
+        setAggregateProperties(true)
+    }, [setAggregateProperties, setShowTextProperties])
 
     const onConnect = useCallback(
         (params: Edge | Connection) => {
@@ -156,7 +199,7 @@ const LayoutFlow = () => {
             if (params.sourceHandle === NEW_PROP_HANDLE) {
                 setSelectPropertyModalOpen(true)
                 setSelectPropertyTypeArray(toArray(source["@type"]))
-                pendingNewProperty.current = { source: params.source, target: params.target }
+                pendingNewProperty.current = { source, target }
                 // addProperty(params.source, params.sourceHandle, { "@id": params.target })
             } else {
                 if (!propertyEntryExists(source, params.sourceHandle, params.target)) {
@@ -176,12 +219,18 @@ const LayoutFlow = () => {
     const handlePropertySelect = useCallback(
         (propertyName: string) => {
             if (pendingNewProperty.current) {
-                addProperty(pendingNewProperty.current.source, propertyName, {
-                    "@id": pendingNewProperty.current.target
-                })
+                if (propertyName in pendingNewProperty.current.source) {
+                    addPropertyEntry(pendingNewProperty.current.source["@id"], propertyName, {
+                        "@id": pendingNewProperty.current.target["@id"]
+                    })
+                } else {
+                    addProperty(pendingNewProperty.current.source["@id"], propertyName, {
+                        "@id": pendingNewProperty.current.target["@id"]
+                    })
+                }
             } else console.warn("Failed to add property, no pending property select")
         },
-        [addProperty]
+        [addProperty, addPropertyEntry]
     )
 
     const centerView = useCallback(() => {
@@ -237,6 +286,26 @@ const LayoutFlow = () => {
         [edges, handleEdgesChange, removePropertyEntry]
     )
 
+    const backgroundContextMenuHandler = useCallback(
+        (e: Event) => {
+            if ((e as any).target.querySelector(".react-flow__node") !== null) {
+                e.preventDefault()
+                contextMenuTriggerRef.current?.dispatchEvent(new MouseEvent("contextmenu", e))
+            }
+        },
+        [contextMenuTriggerRef]
+    )
+
+    useEffect(() => {
+        const element = document.querySelector(".react-flow__pane")
+
+        if (element) {
+            element.addEventListener("contextmenu", backgroundContextMenuHandler)
+
+            return () => element.removeEventListener("contextmenu", backgroundContextMenuHandler)
+        }
+    }, [backgroundContextMenuHandler])
+
     return (
         <>
             <AddPropertyModal
@@ -256,12 +325,35 @@ const LayoutFlow = () => {
             >
                 <Panel position="top-left" className="gap-2 flex items-center">
                     <div className="p-0.5 bg-accent rounded-lg">
-                        <Button variant="secondary" size="sm">
-                            <Rows2 className="w-4 h-4 mr-2" /> Comfortable View
+                        <Button variant="secondary" size="sm" onClick={comfortableView}>
+                            <Rows2 className="w-4 h-4 mr-2" /> Complete View
                         </Button>
-                        <Button variant="secondary" size="sm">
+                        <Button variant="secondary" size="sm" onClick={compactView}>
                             <Rows4 className="w-4 h-4 mr-2" /> Compact View
                         </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="secondary" size="sm">
+                                    <EllipsisVertical className="w-4 h-4 mx-2" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuLabel>Graph Settings</DropdownMenuLabel>
+                                <DropdownMenuCheckboxItem
+                                    checked={aggregateProperties}
+                                    onClick={toggleAggregateProperties}
+                                >
+                                    Aggregate Properties
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem
+                                    checked={showTextProperties}
+                                    onClick={toggleShowTextProperties}
+                                    disabled={aggregateProperties}
+                                >
+                                    Show Text Properties
+                                </DropdownMenuCheckboxItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
 
                     <Button variant="outline" onClick={() => showCreateEntityModal()}>
@@ -290,7 +382,15 @@ const LayoutFlow = () => {
                         </TooltipContent>
                     </Tooltip>
                 </Panel>
+
                 <Background />
+
+                <ContextMenu>
+                    <ContextMenuTrigger>
+                        <div ref={contextMenuTriggerRef} />
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>Hallo</ContextMenuContent>
+                </ContextMenu>
             </ReactFlow>
         </>
     )
