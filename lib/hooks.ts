@@ -7,6 +7,7 @@ import {
     EntityEditorTabsContext
 } from "@/components/providers/entity-tabs-provider"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { isRootEntity } from "@/lib/utils"
 
 const MAX_LIST_LENGTH = 100
 
@@ -200,4 +201,12 @@ export function useSaveAllEntities() {
     return useCallback(() => {
         return saveAllEntities(getChangedEntities())
     }, [getChangedEntities, saveAllEntities])
+}
+
+export function useCrateName() {
+    const crate = useContext(CrateDataContext)
+
+    return useMemo(() => {
+        return (crate.crateData?.["@graph"].find(isRootEntity)?.name || crate.crateId) + ""
+    }, [crate.crateData, crate.crateId])
 }
