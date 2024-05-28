@@ -215,7 +215,11 @@ export function NavHeader() {
                 <div className="flex items-center mr-2 text-green-500">
                     <Check className="w-4 h-4 mr-2" /> No Issues detected
                 </div>
-                <Button variant="secondary" className="text-muted-foreground">
+                <Button
+                    variant="secondary"
+                    className="text-muted-foreground text-xs"
+                    onClick={showGlobalSearchModal}
+                >
                     <Search className="w-4 h-4 mr-2 text-foreground" /> ⌘K
                 </Button>
                 <Button variant="secondary" size="icon">

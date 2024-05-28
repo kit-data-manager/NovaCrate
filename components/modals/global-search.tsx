@@ -73,7 +73,7 @@ export function GlobalSearch({
     )
 
     return (
-        <CommandDialog open={open} onOpenChange={onOpenChange} top>
+        <CommandDialog open={open} onOpenChange={onOpenChange}>
             <CommandInput placeholder="Search for anything..." />
             <CommandList>
                 <CommandGroup heading="Actions">

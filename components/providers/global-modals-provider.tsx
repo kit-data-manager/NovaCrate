@@ -6,7 +6,7 @@ import { SlimClass } from "@/lib/crate-verify/helpers"
 import { SaveEntityChangesModal } from "@/components/modals/save-entity-changes-modal"
 import { DeleteEntityModal } from "@/components/modals/delete-entity-modal"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { GlobalSearch } from "@/components/global-search"
+import { GlobalSearch } from "@/components/modals/global-search"
 
 export interface AutoReference {
     entityId: string

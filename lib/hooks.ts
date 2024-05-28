@@ -29,7 +29,7 @@ export function useRecentCrates() {
         }
     }, [])
 
-    const addRecentCrate = useCallback((crateId: string) => {
+    const addRecentCrate = useCallback((crateId: string, name: string) => {
         const content = window.localStorage.getItem("recent-crates")
         if (content) {
             try {
@@ -41,7 +41,7 @@ export function useRecentCrates() {
                 window.localStorage.setItem("recent-crates", JSON.stringify(recentlyUsed))
                 window.localStorage.setItem(
                     crateDetailsKey(crateId),
-                    JSON.stringify({ lastOpened: new Date() })
+                    JSON.stringify({ lastOpened: new Date(), name })
                 )
             } catch (e) {
                 console.warn("Failed to add recently used crated", e)
