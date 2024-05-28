@@ -4,6 +4,7 @@ import React, { useCallback, useMemo } from "react"
 import { camelCaseReadable } from "@/lib/utils"
 import { CommandItem } from "@/components/ui/command"
 import { useTypeIcon } from "@/components/type-icon"
+import { MarkdownComment } from "@/components/markdown-comment"
 
 export function CreateEntityModalEntry({
     slimClass,
@@ -39,7 +40,7 @@ export function CreateEntityModalEntry({
                     <div>{readableName}</div>
                 </div>
                 <div className="truncate text-xs">
-                    <span>{slimClass.comment + ""}</span>
+                    <MarkdownComment comment={slimClass.comment} />
                 </div>
             </div>
         </CommandItem>
