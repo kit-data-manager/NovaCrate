@@ -276,6 +276,6 @@ export class RestProvider implements CrateServiceProvider {
 
     private getEntityRoute(crateId: string, entityData: IFlatEntity) {
         const part = this.getEntityRoutePart(entityData)
-        return `http://localhost:8080/crates/${encodeURIComponent(crateId)}/entities/${part}/${encodeURIComponent(entityData["@id"])}`
+        return `http://localhost:8080/crates/${encodeURIComponent(crateId)}/entities/${part}/${isRootEntity(entityData) ? "" : encodeURIComponent(entityData["@id"])}`
     }
 }
