@@ -208,7 +208,7 @@ export class RestProvider implements CrateServiceProvider {
         } else {
             const request = await fetch(this.getEntityRoute(crateId, entityData), {
                 body: JSON.stringify(entityData),
-                method: /*create ?*/ "PUT" /*: "PATCH"*/,
+                method: create ? "PUT" : "PATCH",
                 headers: { "Content-Type": "application/json" }
             })
             if (request.ok) {

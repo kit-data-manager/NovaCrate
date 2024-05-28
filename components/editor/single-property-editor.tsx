@@ -6,6 +6,7 @@ import { ReferenceField } from "@/components/editor/reference-field"
 import { TextField } from "@/components/editor/text-field"
 import { PropertyEditorProps, PropertyEditorTypes } from "@/components/editor/property-editor"
 import { SlimClass } from "@/lib/crate-verify/helpers"
+import { Error } from "@/components/error"
 
 export interface SinglePropertyEditorProps {
     entityId: string
@@ -74,13 +75,23 @@ export const SinglePropertyEditor = memo(function SinglePropertyEditor({
             />
         )
 
+    if (
+        typeof (value as unknown) === "number" ||
+        typeof (value as unknown) === "string" ||
+        typeof (value as unknown) === "bigint" ||
+        typeof (value as unknown) === "boolean"
+    )
+        return (
+            <TextField
+                value={value}
+                onChange={onTextChange}
+                onChangeType={onChangeType}
+                propertyRange={propertyRange}
+                onRemoveEntry={onRemoveEntry}
+            />
+        )
+
     return (
-        <TextField
-            value={value}
-            onChange={onTextChange}
-            onChangeType={onChangeType}
-            propertyRange={propertyRange}
-            onRemoveEntry={onRemoveEntry}
-        />
+        <Error title="Unknown entry type" error="Please try to fix the issue in the JSON Editor" />
     )
 })

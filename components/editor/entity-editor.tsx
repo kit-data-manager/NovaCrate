@@ -132,19 +132,24 @@ export function EntityEditor({
 
     const properties = useMemo(() => {
         if (!entity) return []
-        return mapEntityToProperties(entity)
-    }, [entity])
+        return mapEntityToProperties(entity, originalEntity)
+    }, [entity, originalEntity])
 
     const propertiesChangelist = useMemo(() => {
-        return properties.map((property) => {
-            if (!originalEntity) return Diff.New
+        const changeMap: Map<string, Diff> = new Map()
+        properties.map((property) => {
+            if (!originalEntity) return changeMap.set(property.propertyName, Diff.New)
             if (property.propertyName in originalEntity) {
                 const prop = originalEntity[property.propertyName]
-                return propertyHasChanged(property.values, prop) ? Diff.Changed : Diff.None
+                changeMap.set(
+                    property.propertyName,
+                    propertyHasChanged(property.values, prop) ? Diff.Changed : Diff.None
+                )
             } else {
-                return Diff.New
+                changeMap.set(property.propertyName, Diff.New)
             }
         })
+        return changeMap
     }, [originalEntity, properties])
 
     const displayName = useMemo(() => {
@@ -239,7 +244,7 @@ export function EntityEditor({
                 <Error className="mt-4" title="Error while saving" error={saveError} />
 
                 <div className="my-12 flex flex-col gap-4 mr-2">
-                    {properties.map((property, i) => {
+                    {properties.map((property) => {
                         return (
                             <div key={property.propertyName}>
                                 <PropertyEditor
@@ -247,8 +252,14 @@ export function EntityEditor({
                                     property={property}
                                     onModifyPropertyEntry={onModifyPropertyEntry}
                                     onAddPropertyEntry={onPropertyAddEntry}
-                                    hasChanges={propertiesChangelist[i] === Diff.Changed}
-                                    isNew={propertiesChangelist[i] === Diff.New}
+                                    hasChanges={
+                                        propertiesChangelist.get(property.propertyName) ===
+                                        Diff.Changed
+                                    }
+                                    isNew={
+                                        propertiesChangelist.get(property.propertyName) === Diff.New
+                                    }
+                                    isDeleted={property.deleted}
                                     onRemovePropertyEntry={onRemovePropertyEntry}
                                 />
                             </div>
