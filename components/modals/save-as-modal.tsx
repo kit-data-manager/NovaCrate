@@ -3,34 +3,35 @@ import { CreateEntity } from "@/components/modals/create-entity/create-entity"
 import { toArray } from "@/lib/utils"
 import { useCallback, useContext } from "react"
 import { useEditorState } from "@/lib/state/editor-state"
-import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
 
 export function SaveAsModal({
     open,
     onOpenChange,
-    entity
+    entityId
 }: {
     open: boolean
     onOpenChange: (open: boolean) => void
-    entity: IFlatEntity
+    entityId: string
 }) {
     const addEntity = useEditorState.useAddEntity()
-    const { focusTab } = useContext(EntityEditorTabsContext)
+    const entity = useEditorState((store) => store.entities.get(entityId))
+    const { saveEntity } = useContext(CrateDataContext)
 
     const onCreate = useCallback(
         (id: string, name: string) => {
-            if (
-                entity &&
-                addEntity(id, toArray(entity["@type"]), {
+            if (entity) {
+                const result = addEntity(id, toArray(entity["@type"]), {
                     ...entity,
                     name
                 })
-            ) {
-                onOpenChange(false)
-                focusTab(id)
+                if (result) {
+                    onOpenChange(false)
+                    saveEntity(result).then()
+                }
             }
         },
-        [addEntity, entity, focusTab, onOpenChange]
+        [addEntity, entity, onOpenChange, saveEntity]
     )
 
     return (
@@ -45,7 +46,7 @@ export function SaveAsModal({
                         onOpenChange(false)
                     }}
                     onCreateClick={onCreate}
-                    selectedType={entity["@type"][0]}
+                    selectedType={entity?.["@type"][0] || ""}
                     onUploadFolder={() => {}}
                     onUploadFile={() => {}}
                 />

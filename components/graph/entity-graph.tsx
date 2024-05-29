@@ -15,13 +15,22 @@ import ReactFlow, {
 } from "reactflow"
 import "reactflow/dist/style.css"
 import { Button } from "@/components/ui/button"
-import { EllipsisVertical, Fullscreen, GitCompare, Plus, Rows2, Rows4 } from "lucide-react"
+import {
+    ArrowBigUp,
+    EllipsisVertical,
+    Fullscreen,
+    GitCompare,
+    Plus,
+    Rows2,
+    Rows4,
+    Save
+} from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { EntityNodeHandle, NEW_PROP_HANDLE } from "@/components/graph/entity-node"
 import { useLayout } from "@/components/graph/layout"
 import { isReference, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
 import { useEditorState } from "@/lib/state/editor-state"
-import { AddPropertyModal } from "@/components/editor/add-property-modal"
+import { AddPropertyModal } from "@/components/modals/add-property-modal"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { nodeTypes } from "@/components/graph/nodes"
 import { useGraphStateNoSelector } from "@/components/providers/graph-state-provider"
@@ -33,7 +42,15 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@/components/ui/context-menu"
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuTrigger
+} from "@/components/ui/context-menu"
+import { useSaveAllEntities } from "@/lib/hooks"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { Error } from "@/components/error"
 
 const DEFAULT_POS = { x: 0, y: 0 }
 
@@ -142,7 +159,9 @@ const LayoutFlow = () => {
     const addProperty = useEditorState.useAddProperty()
     const addPropertyEntry = useEditorState.useAddPropertyEntry()
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
+    const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const { showCreateEntityModal, showDeleteEntityModal } = useContext(GlobalModalContext)
+    const { isSaving, saveError } = useContext(CrateDataContext)
 
     const {
         nodes,
@@ -306,6 +325,8 @@ const LayoutFlow = () => {
         }
     }, [backgroundContextMenuHandler])
 
+    const saveAllEntities = useSaveAllEntities()
+
     return (
         <>
             <AddPropertyModal
@@ -383,13 +404,34 @@ const LayoutFlow = () => {
                     </Tooltip>
                 </Panel>
 
+                <Panel position="top-right">
+                    <Button
+                        variant={hasUnsavedChanges ? "default" : "secondary"}
+                        onClick={saveAllEntities}
+                        disabled={isSaving}
+                    >
+                        <Save className="w-4 h-4 mr-2" /> Save All
+                        <div className="text-xs text-muted-foreground ml-2 flex items-center">
+                            <ArrowBigUp className="w-4 h-4" /> ⌘S
+                        </div>
+                    </Button>
+                </Panel>
+
+                <Panel position="bottom-left">
+                    <Error title="Error while saving" error={saveError} />
+                </Panel>
+
                 <Background />
 
                 <ContextMenu>
                     <ContextMenuTrigger>
                         <div ref={contextMenuTriggerRef} />
                     </ContextMenuTrigger>
-                    <ContextMenuContent>Hallo</ContextMenuContent>
+                    <ContextMenuContent>
+                        <ContextMenuItem onClick={() => showCreateEntityModal()}>
+                            <Plus className="w-4 h-4 mr-2" /> New
+                        </ContextMenuItem>
+                    </ContextMenuContent>
                 </ContextMenu>
             </ReactFlow>
         </>

@@ -1,5 +1,5 @@
 import { Handle, Position } from "reactflow"
-import React, { useContext, useMemo } from "react"
+import React, { useContext, useEffect, useMemo } from "react"
 import { camelCaseReadable, Diff, getEntityDisplayName, toArray } from "@/lib/utils"
 import { EntityIcon } from "@/components/entity-icon"
 import { Delete, Plus, Save, Trash, Undo2 } from "lucide-react"
@@ -16,6 +16,7 @@ import { useGoToEntity } from "@/lib/hooks"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { useGraphSettings } from "@/components/providers/graph-settings-provider"
+import { useGraphState } from "@/components/providers/graph-state-provider"
 
 export const NEW_PROP_HANDLE = "__special__newProp"
 
@@ -49,6 +50,7 @@ export default function EntityNode({
     const revertEntity = useEditorState.useRevertEntity()
     const { saveEntity } = useContext(CrateDataContext)
     const { showDeleteEntityModal } = useContext(GlobalModalContext)
+    const setSelectedEntityID = useGraphState((store) => store.setSelectedEntityID)
 
     const aggregateProperties = useGraphSettings((store) => store.aggregateProperties)
     const showTextProperties = useGraphSettings((store) => store.showTextProperties)
@@ -62,6 +64,14 @@ export default function EntityNode({
             return data.handles.filter((h) => !h.text)
         }
     }, [data.handles, showTextProperties])
+
+    useEffect(() => {
+        if (selected) {
+            setSelectedEntityID(() => data.entityId)
+        } else {
+            setSelectedEntityID((old) => (old === data.entityId ? undefined : old))
+        }
+    }, [data.entityId, selected, setSelectedEntityID])
 
     return (
         <ContextMenu>

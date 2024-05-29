@@ -8,6 +8,7 @@ import {
 } from "@/components/providers/entity-tabs-provider"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { isRootEntity } from "@/lib/utils"
+import { useGraphState } from "@/components/providers/graph-state-provider"
 
 const MAX_LIST_LENGTH = 100
 
@@ -186,6 +187,11 @@ export function useGoToPage(page: string) {
     }, [page, pathname, router])
 }
 
+export function useCurrentPageName() {
+    const pathname = usePathname()
+    return pathname.split("/")[3]
+}
+
 export function useGoToMainMenu() {
     const router = useRouter()
 
@@ -209,4 +215,21 @@ export function useCrateName() {
     return useMemo(() => {
         return (crate.crateData?.["@graph"].find(isRootEntity)?.name || crate.crateId) + ""
     }, [crate.crateData, crate.crateId])
+}
+
+/**
+ * This hook tries to find the currently active entity
+ * Works in Entities page and Graph page
+ */
+export function useCurrentEntity() {
+    const page = useCurrentPageName()
+    const { activeTabEntityID } = useContext(EntityEditorTabsContext)
+    const activeNodeEntityID = useGraphState((store) => store.selectedEntityID)
+    return useEditorState((store) => {
+        if (page === "entities") {
+            return store.entities.get(activeTabEntityID)
+        } else if (page === "graph" && activeNodeEntityID) {
+            return store.entities.get(activeNodeEntityID)
+        } else return undefined
+    })
 }

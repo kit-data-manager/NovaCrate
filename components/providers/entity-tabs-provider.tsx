@@ -147,6 +147,7 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
             }
             return remainingTabs
         })
+        setFocusedEntity("")
     }, [entitiesChangelist, focusTab])
 
     const focusProperty = useCallback(
