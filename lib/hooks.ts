@@ -9,6 +9,8 @@ import {
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { isRootEntity } from "@/lib/utils"
 import { useGraphState } from "@/components/providers/graph-state-provider"
+import { Action, ActionScope, notFoundAction } from "@/lib/actions"
+import { useActions } from "@/components/providers/actions-provider"
 
 const MAX_LIST_LENGTH = 100
 
@@ -232,4 +234,34 @@ export function useCurrentEntity() {
             return store.entities.get(activeNodeEntityID)
         } else return undefined
     })
+}
+
+export function useRegisterAction(
+    name: string,
+    fn: () => void,
+    options?: Partial<Omit<Action, "name" | "execute">>
+) {
+    const actions = useActions()
+    const constName = useRef(name)
+    const constOptions = useRef(options)
+
+    const action: Action = useMemo(
+        () => ({
+            name: constName.current,
+            execute: fn,
+            scope: ActionScope.CRATE,
+            ...constOptions.current
+        }),
+        [fn]
+    )
+
+    useEffect(() => {
+        console.log("Registering action", constName.current)
+        actions.registerAction(action)
+    }, [action, actions])
+}
+
+export function useAction(name: string) {
+    const actions = useActions()
+    return actions.getAction(name) || notFoundAction(name)
 }

@@ -12,6 +12,9 @@ import { useCrateName, useRecentCrates } from "@/lib/hooks"
 import { FileExplorerProvider } from "@/components/file-explorer/context"
 import { GraphStateProvider } from "@/components/providers/graph-state-provider"
 import { GraphSettingsProvider } from "@/components/providers/graph-settings-provider"
+import { ActionsProvider } from "@/components/providers/actions-provider"
+import DefaultActions from "@/components/default-actions"
+import { ActionKeyboardShortcuts } from "@/components/action-keyboard-shortcuts"
 
 const CRATE_ID_REGEX = /^\/editor\/([^\/]*)\/.*$/
 
@@ -39,8 +42,12 @@ export default function EditorLayout(props: PropsWithChildren) {
                         <GlobalModalProvider>
                             <GraphStateProvider>
                                 <GraphSettingsProvider>
-                                    <RecentlyUsed />
-                                    <Nav>{props.children}</Nav>
+                                    <ActionsProvider>
+                                        <DefaultActions />
+                                        <ActionKeyboardShortcuts />
+                                        <RecentlyUsed />
+                                        <Nav>{props.children}</Nav>
+                                    </ActionsProvider>
                                 </GraphSettingsProvider>
                             </GraphStateProvider>
                         </GlobalModalProvider>
