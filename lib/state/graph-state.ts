@@ -4,6 +4,8 @@ import { create } from "zustand"
 export interface GraphState {
     nodes: Node[]
     edges: Edge[]
+    selectedEntityID: string | undefined
+    setSelectedEntityID(fn: (currentID: string | undefined) => string | undefined): void
     updateNodes(nodes: Node[]): void
     applyLayout(nodes: Node[]): void
     handleNodesChange(changes: NodeChange[]): void
@@ -15,6 +17,11 @@ export const createGraphState = () =>
     create<GraphState>()((set, get) => ({
         edges: [],
         nodes: [],
+        selectedEntityID: undefined,
+        setSelectedEntityID(fn: (currentID: string | undefined) => string | undefined) {
+            const newValue = fn(get().selectedEntityID)
+            if (newValue !== get().selectedEntityID) set({ selectedEntityID: newValue })
+        },
         updateNodes(newNodes: Node[]) {
             const nodes: Node[] = []
             for (const newNode of newNodes) {

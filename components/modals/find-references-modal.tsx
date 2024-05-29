@@ -39,7 +39,7 @@ const FindReferencesModalEntry = memo(function AddPropertyModalEntry({
         <CommandItem
             className="text-md"
             key={entity["@id"]}
-            value={readableName}
+            value={readableName + entity["@propertyName"]}
             onSelect={() => onSelect(entity, entity["@propertyName"])}
         >
             <div className="flex flex-col max-w-full w-full py-1">
@@ -131,7 +131,10 @@ export function FindReferencesModal({
                                 referencingEntities.map((referencingEntity) => {
                                     return (
                                         <FindReferencesModalEntry
-                                            key={referencingEntity["@id"]}
+                                            key={
+                                                referencingEntity["@id"] +
+                                                referencingEntity["@propertyName"]
+                                            }
                                             entity={referencingEntity}
                                             onSelect={onSelect}
                                         />

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo } from "react"
 import {
     mapEntityToProperties,
     PropertyEditor,
@@ -20,13 +20,10 @@ import { Error } from "@/components/error"
 import { EntityEditorHeader } from "@/components/editor/entity-editor-header"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { AddPropertyModal } from "@/components/editor/add-property-modal"
 import { UnknownTypeWarning } from "@/components/editor/unknown-type-warning"
 import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
 import { useEditorState } from "@/lib/state/editor-state"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
-import { FindReferencesModal } from "@/components/editor/find-references-modal"
-import { SaveAsModal } from "@/components/editor/save-as-modal"
 import { Skeleton } from "@/components/ui/skeleton"
 import { RootEntityHint } from "@/components/editor/hints/root-entity-hint"
 import { InternalEntityHint } from "@/components/editor/hints/internal-entity-hint"
@@ -51,23 +48,12 @@ export function EntityEditor({
     const revertEntity = useEditorState.useRevertEntity()
 
     const { focusProperty } = useContext(EntityEditorTabsContext)
-    const { showDeleteEntityModal } = useContext(GlobalModalContext)
-
-    const [addPropertyModelOpen, setAddPropertyModelOpen] = useState(false)
-    const [findReferencesModalOpen, setFindReferencesModalOpen] = useState(false)
-    const [saveAsModalOpen, setSaveAsModalOpen] = useState(false)
-
-    const openAddPropertyModal = useCallback(() => {
-        setAddPropertyModelOpen(true)
-    }, [])
-
-    const openFindReferencesModal = useCallback(() => {
-        setFindReferencesModalOpen(true)
-    }, [])
-
-    const openSaveAsModal = useCallback(() => {
-        setSaveAsModalOpen(true)
-    }, [])
+    const {
+        showDeleteEntityModal,
+        showSaveAsModal,
+        showFindReferencesModal,
+        showAddPropertyModal
+    } = useContext(GlobalModalContext)
 
     const typeArray = useMemo(() => {
         if (!entity) return []
@@ -169,6 +155,18 @@ export function EntityEditor({
         return () => window.removeEventListener("keydown", handler)
     }, [hasUnsavedChanges, onSave])
 
+    const openAddPropertyModal = useCallback(() => {
+        showAddPropertyModal(typeArray, onPropertyAdd)
+    }, [showAddPropertyModal, onPropertyAdd, typeArray])
+
+    const openFindReferencesModal = useCallback(() => {
+        showFindReferencesModal(entityId)
+    }, [entityId, showFindReferencesModal])
+
+    const openSaveAsModal = useCallback(() => {
+        showSaveAsModal(entityId)
+    }, [entityId, showSaveAsModal])
+
     if (!entity) {
         return (
             <div>
@@ -197,19 +195,6 @@ export function EntityEditor({
 
     return (
         <div className="relative">
-            <AddPropertyModal
-                open={addPropertyModelOpen}
-                onPropertyAdd={onPropertyAdd}
-                onOpenChange={setAddPropertyModelOpen}
-                typeArray={typeArray}
-            />
-            <FindReferencesModal
-                open={findReferencesModalOpen}
-                onOpenChange={setFindReferencesModalOpen}
-                entityId={entityId}
-            />
-            <SaveAsModal open={saveAsModalOpen} onOpenChange={setSaveAsModalOpen} entity={entity} />
-
             <EntityEditorHeader
                 hasUnsavedChanges={hasUnsavedChanges}
                 isSaving={isSaving}
