@@ -1,5 +1,6 @@
 import { applyEdgeChanges, applyNodeChanges, Edge, EdgeChange, Node, NodeChange } from "reactflow"
 import { createStore } from "zustand/vanilla"
+import { computeGraphLayout } from "@/components/graph/layout"
 
 export interface GraphState {
     nodes: Node[]
@@ -7,7 +8,7 @@ export interface GraphState {
     selectedEntityID: string | undefined
     setSelectedEntityID(fn: (currentID: string | undefined) => string | undefined): void
     updateNodes(nodes: Node[]): void
-    applyLayout(nodes: Node[]): void
+    autoLayout(): void
     handleNodesChange(changes: NodeChange[]): void
     updateEdges(edges: Edge[]): void
     handleEdgesChange(changes: EdgeChange[]): void
@@ -37,8 +38,8 @@ export const createGraphState = () =>
             }
             set({ nodes })
         },
-        applyLayout(nodes: Node[]) {
-            set({ nodes })
+        autoLayout() {
+            set(computeGraphLayout(get().nodes, get().edges))
         },
         handleNodesChange(changes: NodeChange[]) {
             set({ nodes: applyNodeChanges(changes, get().nodes) })

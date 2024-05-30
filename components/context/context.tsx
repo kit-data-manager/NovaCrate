@@ -9,6 +9,7 @@ import { CustomPairs } from "@/components/context/custom-pairs"
 import { Error } from "@/components/error"
 import HelpTooltip from "@/components/help-tooltip"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function ContextPage() {
     const context = useEditorState.useCrateContext()
@@ -42,15 +43,11 @@ export function ContextPage() {
                         </HelpTooltip>
                     </Label>
                     <div className="mt-2 ml-2">
-                        {context.specification}
-                        {/*<Button
-                            size="icon"
-                            variant="secondary"
-                            className="ml-2"
-                            onClick={() => onSpecificationModalOpenChange(true)}
-                        >
-                            <Pencil className="w-4 h-4" />
-                        </Button>*/}
+                        {crateDataIsLoading ? (
+                            <Skeleton className="w-32 h-6" />
+                        ) : (
+                            context.specification
+                        )}
                     </div>
 
                     {!crateDataIsLoading && context.specification === "unknown" ? (
