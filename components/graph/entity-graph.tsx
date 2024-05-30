@@ -26,7 +26,6 @@ import {
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { EntityNodeHandle, NEW_PROP_HANDLE } from "@/components/graph/entity-node"
-import { useLayout } from "@/components/graph/layout"
 import { isReference, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
 import { useEditorState } from "@/lib/state/editor-state"
 import { AddPropertyModal } from "@/components/modals/add-property-modal"
@@ -50,6 +49,7 @@ import {
 import { useSaveAllEntities } from "@/lib/hooks"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Error } from "@/components/error"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export const DEFAULT_POS = { x: 0, y: 0 }
 
@@ -160,7 +160,7 @@ export function EntityGraph() {
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const { showCreateEntityModal, showDeleteEntityModal } = useContext(GlobalModalContext)
-    const { isSaving, saveError } = useContext(CrateDataContext)
+    const { isSaving, saveError, crateDataIsLoading } = useContext(CrateDataContext)
 
     const {
         nodes,
@@ -168,7 +168,7 @@ export function EntityGraph() {
         updateEdges,
         edges,
         handleNodesChange,
-        applyLayout,
+        autoLayout,
         handleEdgesChange
     } = useGraphStateNoSelector()
 
@@ -184,8 +184,6 @@ export function EntityGraph() {
     const [selectPropertyTypeArray, setSelectPropertyTypeArray] = useState<string[]>([])
 
     const pendingNewProperty = useRef<PendingNewProperty | undefined>(undefined)
-
-    const { layoutedNodes, layoutedEdges, doLayout } = useLayout(nodes, edges)
 
     const contextMenuTriggerRef = createRef<HTMLDivElement>()
 
@@ -251,19 +249,12 @@ export function EntityGraph() {
         [addProperty, addPropertyEntry]
     )
 
-    const centerView = useCallback(() => {
-        fitView({ duration: 200 })
-    }, [fitView])
-
-    useEffect(() => {
-        applyLayout([...layoutedNodes])
-        updateEdges([...layoutedEdges])
-
-        // Hacky but I see no way around
-        setTimeout(() => {
-            centerView()
-        }, 100)
-    }, [centerView, layoutedEdges, layoutedNodes, updateEdges, applyLayout])
+    const centerView = useCallback(
+        (fast?: boolean) => {
+            fitView({ duration: fast ? 0 : 200 })
+        },
+        [fitView]
+    )
 
     const updateNodesFromState = useCallback(() => {
         const [newNodes, newEdges] = entitiesToGraph(entities)
@@ -324,6 +315,28 @@ export function EntityGraph() {
         }
     }, [backgroundContextMenuHandler])
 
+    const reformat = useCallback(
+        (fast?: boolean) => {
+            autoLayout()
+
+            setTimeout(() => {
+                centerView(fast)
+            }, 100)
+        },
+        [autoLayout, centerView]
+    )
+
+    useEffect(() => {
+        if (
+            nodes.length > 0 &&
+            !nodes.find(
+                (node) => node.position.x !== DEFAULT_POS.x || node.position.y !== DEFAULT_POS.y
+            )
+        ) {
+            reformat(true)
+        }
+    }, [nodes, reformat])
+
     const saveAllEntities = useSaveAllEntities()
 
     return (
@@ -343,7 +356,10 @@ export function EntityGraph() {
                 connectionLineType={ConnectionLineType.Bezier}
                 nodeTypes={nodeTypes}
             >
-                <Panel position="top-left" className="gap-2 flex items-center">
+                <Panel
+                    position="top-left"
+                    className={`transition gap-2 items-center flex ${crateDataIsLoading ? "opacity-0" : "opacity-100"}`}
+                >
                     <div className="p-0.5 bg-accent rounded-lg">
                         <Button variant="secondary" size="sm" onClick={comfortableView}>
                             <Rows2 className="w-4 h-4 mr-2" /> Complete View
@@ -393,7 +409,7 @@ export function EntityGraph() {
 
                     <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => doLayout()}>
+                            <Button variant="outline" size="icon" onClick={() => reformat(false)}>
                                 <GitCompare className="w-4 h-4" />
                             </Button>
                         </TooltipTrigger>
@@ -403,7 +419,10 @@ export function EntityGraph() {
                     </Tooltip>
                 </Panel>
 
-                <Panel position="top-right">
+                <Panel
+                    position="top-right"
+                    className={`transition ${crateDataIsLoading ? "opacity-0" : "opacity-100"}`}
+                >
                     <Button
                         variant={hasUnsavedChanges ? "default" : "secondary"}
                         onClick={saveAllEntities}
@@ -419,6 +438,16 @@ export function EntityGraph() {
                 <Panel position="bottom-left">
                     <Error title="Error while saving" error={saveError} />
                 </Panel>
+
+                {crateDataIsLoading ? (
+                    <div className="w-full h-full flex justify-center items-center gap-8">
+                        <Skeleton className="w-[200px] h-[100px]" />
+                        <div className="space-y-8">
+                            <Skeleton className="w-[200px] h-[100px]" />
+                            <Skeleton className="w-[200px] h-[100px]" />
+                        </div>
+                    </div>
+                ) : null}
 
                 <Background />
 

@@ -1,12 +1,10 @@
 import dagre from "dagre"
-import { Edge, Node, Position, useNodesInitialized, XYPosition } from "reactflow"
-import { useCallback, useEffect, useState } from "react"
-import { DEFAULT_POS } from "@/components/graph/entity-graph"
+import { Edge, Node, Position } from "reactflow"
 
 const dagreGraph = new dagre.graphlib.Graph()
 dagreGraph.setDefaultEdgeLabel(() => ({}))
 
-export const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
+export const computeGraphLayout = (nodes: Node[], edges: Edge[]) => {
     dagreGraph.setGraph({ rankdir: "LR" })
 
     nodes.forEach((node) => {
@@ -35,34 +33,5 @@ export const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
         return node
     })
 
-    return { nodes, edges }
-}
-
-export function useLayout(nodes: Node[], edges: Edge[]) {
-    const nodesInitialized = useNodesInitialized()
-    const [layoutedNodes, setLayoutedNodes] = useState(nodes)
-    const [layoutedEdges, setLayoutedEdges] = useState(edges)
-
-    const doLayout = useCallback(() => {
-        const { nodes: layoutNodes, edges: layoutEdges } = getLayoutedElements(nodes, edges)
-        setLayoutedNodes(layoutNodes)
-        setLayoutedEdges(layoutEdges)
-    }, [edges, nodes])
-
-    useEffect(() => {
-        if (
-            nodesInitialized &&
-            nodes.length > 0 &&
-            nodes.filter((node) => positionEquals(node.position, DEFAULT_POS)).length ===
-                nodes.length
-        ) {
-            doLayout()
-        }
-    }, [doLayout, nodes, nodesInitialized])
-
-    return { layoutedNodes, layoutedEdges, doLayout }
-}
-
-function positionEquals(a: XYPosition, b: XYPosition) {
-    return a.x === b.x && a.y === b.y
+    return { nodes: [...nodes], edges: [...edges] }
 }
