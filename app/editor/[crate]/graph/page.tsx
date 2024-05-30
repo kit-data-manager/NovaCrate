@@ -1,12 +1,14 @@
-import LayoutFlow from "@/components/graph/entity-graph"
-import { metadata } from "@/lib/metadata"
+"use client"
 
-export const generateMetadata = metadata("Graph")
+import { ReactFlowProvider } from "reactflow"
+import { EntityGraph } from "@/components/graph/entity-graph"
 
 export default function Graph() {
     return (
         <div className="w-full h-full">
-            <LayoutFlow />
+            <ReactFlowProvider>
+                <EntityGraph />
+            </ReactFlowProvider>
         </div>
     )
 }

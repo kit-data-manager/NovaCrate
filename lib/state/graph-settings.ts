@@ -1,4 +1,4 @@
-import { create } from "zustand"
+import { createStore } from "zustand/vanilla"
 import { persist } from "zustand/middleware"
 
 export interface GraphSettings {
@@ -9,7 +9,7 @@ export interface GraphSettings {
 }
 
 export const createGraphSettings = () =>
-    create<GraphSettings>()(
+    createStore<GraphSettings>()(
         persist(
             (set) => ({
                 aggregateProperties: false,
