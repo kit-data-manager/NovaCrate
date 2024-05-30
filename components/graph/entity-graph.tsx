@@ -10,7 +10,6 @@ import ReactFlow, {
     Node,
     NodeChange,
     Panel,
-    ReactFlowProvider,
     useReactFlow
 } from "reactflow"
 import "reactflow/dist/style.css"
@@ -52,7 +51,7 @@ import { useSaveAllEntities } from "@/lib/hooks"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Error } from "@/components/error"
 
-const DEFAULT_POS = { x: 0, y: 0 }
+export const DEFAULT_POS = { x: 0, y: 0 }
 
 function sortByID(a: EntityNodeHandle, b: EntityNodeHandle) {
     if (a.id === b.id) return 0
@@ -154,7 +153,7 @@ interface PendingNewProperty {
     target: IFlatEntity
 }
 
-const LayoutFlow = () => {
+export function EntityGraph() {
     const entities = useEditorState.useEntities()
     const addProperty = useEditorState.useAddProperty()
     const addPropertyEntry = useEditorState.useAddPropertyEntry()
@@ -437,13 +436,3 @@ const LayoutFlow = () => {
         </>
     )
 }
-
-const FlowWithProvider = () => {
-    return (
-        <ReactFlowProvider>
-            <LayoutFlow />
-        </ReactFlowProvider>
-    )
-}
-
-export default FlowWithProvider

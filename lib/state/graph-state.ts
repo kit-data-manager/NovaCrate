@@ -1,5 +1,5 @@
 import { applyEdgeChanges, applyNodeChanges, Edge, EdgeChange, Node, NodeChange } from "reactflow"
-import { create } from "zustand"
+import { createStore } from "zustand/vanilla"
 
 export interface GraphState {
     nodes: Node[]
@@ -14,7 +14,7 @@ export interface GraphState {
 }
 
 export const createGraphState = () =>
-    create<GraphState>()((set, get) => ({
+    createStore<GraphState>()((set, get) => ({
         edges: [],
         nodes: [],
         selectedEntityID: undefined,
