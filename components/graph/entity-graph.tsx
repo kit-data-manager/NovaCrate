@@ -14,16 +14,7 @@ import ReactFlow, {
 } from "reactflow"
 import "reactflow/dist/style.css"
 import { Button } from "@/components/ui/button"
-import {
-    ArrowBigUp,
-    EllipsisVertical,
-    Fullscreen,
-    GitCompare,
-    Plus,
-    Rows2,
-    Rows4,
-    Save
-} from "lucide-react"
+import { EllipsisVertical, Fullscreen, GitCompare, Rows2, Rows4 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { EntityNodeHandle, NEW_PROP_HANDLE } from "@/components/graph/entity-node"
 import { isReference, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
@@ -40,16 +31,11 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import {
-    ContextMenu,
-    ContextMenuContent,
-    ContextMenuItem,
-    ContextMenuTrigger
-} from "@/components/ui/context-menu"
-import { useSaveAllEntities } from "@/lib/hooks"
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Error } from "@/components/error"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ActionButton, ActionContextMenuItem } from "@/components/actions/action-buttons"
 
 export const DEFAULT_POS = { x: 0, y: 0 }
 
@@ -159,8 +145,8 @@ export function EntityGraph() {
     const addPropertyEntry = useEditorState.useAddPropertyEntry()
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
-    const { showCreateEntityModal, showDeleteEntityModal } = useContext(GlobalModalContext)
-    const { isSaving, saveError, crateDataIsLoading } = useContext(CrateDataContext)
+    const { showDeleteEntityModal } = useContext(GlobalModalContext)
+    const { saveError, crateDataIsLoading } = useContext(CrateDataContext)
 
     const {
         nodes,
@@ -337,8 +323,6 @@ export function EntityGraph() {
         }
     }, [nodes, reformat])
 
-    const saveAllEntities = useSaveAllEntities()
-
     return (
         <>
             <AddPropertyModal
@@ -392,9 +376,7 @@ export function EntityGraph() {
                         </DropdownMenu>
                     </div>
 
-                    <Button variant="outline" onClick={() => showCreateEntityModal()}>
-                        <Plus className="w-4 h-4 shrink-0 mr-2" /> New
-                    </Button>
+                    <ActionButton actionId="crate.add-entity" noShortcut variant="outline" />
 
                     <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
@@ -423,16 +405,10 @@ export function EntityGraph() {
                     position="top-right"
                     className={`transition ${crateDataIsLoading ? "opacity-0" : "opacity-100"}`}
                 >
-                    <Button
+                    <ActionButton
                         variant={hasUnsavedChanges ? "default" : "secondary"}
-                        onClick={saveAllEntities}
-                        disabled={isSaving}
-                    >
-                        <Save className="w-4 h-4 mr-2" /> Save All
-                        <div className="text-xs text-muted-foreground ml-2 flex items-center">
-                            <ArrowBigUp className="w-4 h-4" /> ⌘S
-                        </div>
-                    </Button>
+                        actionId={"crate.save-all-entities"}
+                    />
                 </Panel>
 
                 <Panel position="bottom-left">
@@ -456,9 +432,7 @@ export function EntityGraph() {
                         <div ref={contextMenuTriggerRef} />
                     </ContextMenuTrigger>
                     <ContextMenuContent>
-                        <ContextMenuItem onClick={() => showCreateEntityModal()}>
-                            <Plus className="w-4 h-4 mr-2" /> New
-                        </ContextMenuItem>
+                        <ActionContextMenuItem actionId="crate.add-entity" />
                     </ContextMenuContent>
                 </ContextMenu>
             </ReactFlow>
