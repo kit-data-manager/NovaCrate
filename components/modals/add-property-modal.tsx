@@ -77,7 +77,7 @@ export function AddPropertyModal({
     typeArray
 }: {
     open: boolean
-    onPropertyAdd: (propertyName: string, values?: FlatEntitySinglePropertyTypes[]) => void
+    onPropertyAdd: (propertyName: string, values: FlatEntitySinglePropertyTypes[]) => void
     onOpenChange: (open: boolean) => void
     typeArray: string[]
 }) {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useContext, useEffect, useMemo } from "react"
+import { useCallback, useContext, useMemo } from "react"
 import {
     mapEntityToProperties,
     PropertyEditor,
@@ -141,19 +141,6 @@ export function EntityEditor({
     const displayName = useMemo(() => {
         return entity ? getEntityDisplayName(entity) : ""
     }, [entity])
-
-    useEffect(() => {
-        function handler(e: KeyboardEvent) {
-            if ((e.getModifierState("Control") || e.metaKey) && e.key === "s") {
-                e.preventDefault()
-                onSave()
-            }
-        }
-
-        window.addEventListener("keydown", handler)
-
-        return () => window.removeEventListener("keydown", handler)
-    }, [hasUnsavedChanges, onSave])
 
     const openAddPropertyModal = useCallback(() => {
         showAddPropertyModal(typeArray, onPropertyAdd)

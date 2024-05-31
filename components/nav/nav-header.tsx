@@ -105,7 +105,7 @@ export function NavHeader() {
                 {crateDataIsLoading ? (
                     <Skeleton className="h-8 w-32" />
                 ) : (
-                    <div className="mr-6 font-bold">{crateName}</div>
+                    <div className="mr-6 font-bold max-w-[300px] truncate">{crateName}</div>
                 )}
 
                 <Menubar>

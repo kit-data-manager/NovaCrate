@@ -256,8 +256,9 @@ export function useRegisterAction(
     )
 
     useEffect(() => {
-        console.log("Registering action", constName.current)
         actions.registerAction(action)
+
+        return () => actions.unregisterAction(action.name)
     }, [action, actions])
 }
 

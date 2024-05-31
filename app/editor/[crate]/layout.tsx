@@ -15,6 +15,7 @@ import { GraphSettingsProvider } from "@/components/providers/graph-settings-pro
 import { ActionsProvider } from "@/components/providers/actions-provider"
 import DefaultActions from "@/components/default-actions"
 import { ActionKeyboardShortcuts } from "@/components/action-keyboard-shortcuts"
+import EntityActions from "@/components/entity-actions"
 
 const CRATE_ID_REGEX = /^\/editor\/([^\/]*)\/.*$/
 
@@ -44,6 +45,7 @@ export default function EditorLayout(props: PropsWithChildren) {
                                 <GraphSettingsProvider>
                                     <ActionsProvider>
                                         <DefaultActions />
+                                        <EntityActions />
                                         <ActionKeyboardShortcuts />
                                         <RecentlyUsed />
                                         <Nav>{props.children}</Nav>
