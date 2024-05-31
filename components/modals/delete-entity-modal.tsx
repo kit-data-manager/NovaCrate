@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from "react"
+import React, { memo, useCallback, useContext, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Trash } from "lucide-react"
@@ -10,7 +10,7 @@ import { RO_CRATE_FILE } from "@/lib/constants"
 
 // TODO: How to handle data files?
 
-export function DeleteEntityModal({
+export const DeleteEntityModal = memo(function DeleteEntityModal({
     open,
     onOpenChange,
     entityId
@@ -114,4 +114,4 @@ export function DeleteEntityModal({
             </DialogContent>
         </Dialog>
     )
-}
+})

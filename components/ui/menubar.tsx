@@ -99,11 +99,13 @@ const MenubarContent = React.forwardRef<
 ))
 MenubarContent.displayName = MenubarPrimitive.Content.displayName
 
+export type MenubarItemProps = React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Item> & {
+    inset?: boolean
+}
+
 const MenubarItem = React.forwardRef<
     React.ElementRef<typeof MenubarPrimitive.Item>,
-    React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Item> & {
-        inset?: boolean
-    }
+    MenubarItemProps
 >(({ className, inset, ...props }, ref) => (
     <MenubarPrimitive.Item
         ref={ref}

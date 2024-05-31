@@ -1,11 +1,31 @@
-import React, { useCallback, useContext } from "react"
+import React, { memo, useCallback, useContext, useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Save } from "lucide-react"
 import { useEditorState } from "@/lib/state/editor-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 
-export function SaveEntityChangesModal({
+export const SaveEntityChangesModal = memo(function SaveEntityChangesModal(props: {
+    open: boolean
+    onOpenChange: (isOpen: boolean) => void
+    entityId: string
+}) {
+    const [render, setRender] = useState(props.open)
+
+    useEffect(() => {
+        if (props.open) {
+            setRender(true)
+        } else {
+            setTimeout(() => {
+                setRender(false)
+            }, 100)
+        }
+    }, [props.open])
+
+    return render ? <SaveEntityChangesModalInner {...props} /> : null
+})
+
+function SaveEntityChangesModalInner({
     open,
     onOpenChange,
     entityId

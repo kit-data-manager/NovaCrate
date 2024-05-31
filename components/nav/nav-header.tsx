@@ -1,7 +1,6 @@
 "use client"
 
 import {
-    ArrowBigUp,
     Check,
     ChevronDown,
     Cog,
@@ -13,14 +12,7 @@ import {
     Info,
     Package,
     Palette,
-    Plus,
-    RefreshCw,
-    Save,
-    SaveAll,
-    Search,
-    Trash,
-    Undo2,
-    XIcon
+    Search
 } from "lucide-react"
 import {
     Menubar,
@@ -30,7 +22,6 @@ import {
     MenubarLabel,
     MenubarMenu,
     MenubarSeparator,
-    MenubarShortcut,
     MenubarSub,
     MenubarSubContent,
     MenubarSubTrigger,
@@ -42,19 +33,45 @@ import React, { useCallback, useContext, useMemo } from "react"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { useCrateName, useCurrentEntity, useGoToMainMenu, useSaveAllEntities } from "@/lib/hooks"
+import { useCrateName, useCurrentEntity } from "@/lib/hooks"
 import { useEditorState } from "@/lib/state/editor-state"
 import { useCopyToClipboard } from "usehooks-ts"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getEntityDisplayName } from "@/lib/utils"
+import { ActionMenubarItem } from "@/components/actions/action-buttons"
+
+function EntityMenu() {
+    const currentEntity = useCurrentEntity()
+
+    const currentEntityName = useMemo(() => {
+        return currentEntity ? getEntityDisplayName(currentEntity) : "No Active Entity"
+    }, [currentEntity])
+
+    return currentEntity !== undefined ? (
+        <MenubarMenu>
+            <MenubarTrigger>
+                Entity
+                <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
+            </MenubarTrigger>
+            <MenubarContent>
+                <MenubarLabel className="max-w-[300px] truncate">{currentEntityName}</MenubarLabel>
+                <ActionMenubarItem actionId="entity.save" />
+                <ActionMenubarItem actionId="entity.revert" />
+                <MenubarSeparator />
+                <ActionMenubarItem actionId="entity.add-property" />
+                <ActionMenubarItem actionId="entity.find-references" />
+                <MenubarSeparator />
+                <ActionMenubarItem actionId="entity.delete" className="bg-destructive" />
+            </MenubarContent>
+        </MenubarMenu>
+    ) : null
+}
 
 export function NavHeader() {
     const theme = useTheme()
-    const revertAllEntities = useEditorState.useRevertAllEntities()
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const { showCreateEntityModal, showGlobalSearchModal } = useContext(GlobalModalContext)
-    const { reload, serviceProvider, crateId, isSaving, crateDataIsLoading } =
-        useContext(CrateDataContext)
+    const { serviceProvider, crateId, isSaving, crateDataIsLoading } = useContext(CrateDataContext)
     // const { undo, redo } = useEditorState.temporal.getState()
     const [_, copyFn] = useCopyToClipboard()
 
@@ -89,14 +106,7 @@ export function NavHeader() {
         }
     }, [crateId, serviceProvider])
 
-    const goToMainMenu = useGoToMainMenu()
-    const saveAllEntities = useSaveAllEntities()
     const crateName = useCrateName()
-    const currentEntity = useCurrentEntity()
-
-    const currentEntityName = useMemo(() => {
-        return currentEntity ? getEntityDisplayName(currentEntity) : "No Active Entity"
-    }, [currentEntity])
 
     return (
         <div className="p-4 py-3 w-full grid grid-cols-[1fr_auto_1fr]">
@@ -114,10 +124,7 @@ export function NavHeader() {
                             Editor <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
                         </MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem onClick={showGlobalSearchModal}>
-                                <Search className="w-4 h-4 mr-2" /> Search
-                                <MenubarShortcut>⌘K</MenubarShortcut>
-                            </MenubarItem>
+                            <ActionMenubarItem actionId="editor.global-search" />
                             <MenubarSeparator />
                             <MenubarSub>
                                 <MenubarSubTrigger>
@@ -145,10 +152,7 @@ export function NavHeader() {
                                 <Info className="w-4 h-4 mr-2" /> Info
                             </MenubarItem>
                             <MenubarSeparator />
-                            <MenubarItem onClick={goToMainMenu}>
-                                <XIcon className="w-4 h-4 mr-2" /> Close Editor{" "}
-                                <MenubarShortcut className="flex">⌘W</MenubarShortcut>
-                            </MenubarItem>
+                            <ActionMenubarItem actionId="editor.close" />
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
@@ -156,10 +160,7 @@ export function NavHeader() {
                             Crate <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
                         </MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem onClick={() => showCreateEntityModal()}>
-                                <Plus className="w-4 h-4 mr-2" /> Add new Entity
-                                <MenubarShortcut className="flex">⌘A</MenubarShortcut>
-                            </MenubarItem>
+                            <ActionMenubarItem actionId="crate.add-entity" />
                             <MenubarSeparator />
                             <MenubarItem onClick={() => showUploadFileModal()}>
                                 <FileUp className="w-4 h-4 mr-2" /> Upload File
@@ -168,30 +169,16 @@ export function NavHeader() {
                                 <FolderUp className="w-4 h-4 mr-2" /> Upload Folder
                             </MenubarItem>
                             <MenubarSeparator />
-                            <MenubarItem
-                                onClick={saveAllEntities}
+                            <ActionMenubarItem
                                 disabled={isSaving || !hasUnsavedChanges}
-                            >
-                                <SaveAll className={"w-4 h-4 mr-2"} /> Save All Entities
-                                <MenubarShortcut className="flex">
-                                    <ArrowBigUp className="w-4 h-4" /> ⌘S
-                                </MenubarShortcut>
-                            </MenubarItem>
-                            <MenubarItem
-                                onClick={revertAllEntities}
+                                actionId="crate.save-all-entities"
+                            />
+                            <ActionMenubarItem
                                 disabled={isSaving || !hasUnsavedChanges}
-                            >
-                                <Undo2 className={"w-4 h-4 mr-2"} /> Revert All Entities
-                                <MenubarShortcut className="flex ml-2">
-                                    <ArrowBigUp className="w-4 h-4" /> ⌘Z
-                                </MenubarShortcut>
-                            </MenubarItem>
+                                actionId="crate.revert-all-entities"
+                            />
                             <MenubarSeparator />
-                            <MenubarItem onClick={() => reload()}>
-                                <RefreshCw className="w-4 h-4 mr-2" /> Reload Entities
-                                <MenubarShortcut className="flex">⌘R</MenubarShortcut>
-                            </MenubarItem>
-
+                            <ActionMenubarItem actionId="crate.reload-entities" />
                             <MenubarSeparator />
                             <MenubarSub>
                                 <MenubarSubTrigger>
@@ -218,43 +205,7 @@ export function NavHeader() {
                             </MenubarSub>
                         </MenubarContent>
                     </MenubarMenu>
-                    {currentEntity !== undefined ? (
-                        <MenubarMenu>
-                            <MenubarTrigger>
-                                Entity{" "}
-                                <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
-                            </MenubarTrigger>
-                            <MenubarContent>
-                                <MenubarLabel className="max-w-[300px] truncate">
-                                    {currentEntityName}
-                                </MenubarLabel>
-                                <MenubarItem>
-                                    <Save className="w-4 h-4 mr-2" /> Save
-                                    <MenubarShortcut className="flex">⌘S</MenubarShortcut>
-                                </MenubarItem>
-                                <MenubarItem>
-                                    <Save className="w-4 h-4 mr-2" /> Save as...
-                                </MenubarItem>
-                                <MenubarItem>
-                                    <Undo2 className="w-4 h-4 mr-2" /> Revert
-                                    <MenubarShortcut className="flex">⌘Z</MenubarShortcut>
-                                </MenubarItem>
-                                <MenubarSeparator />
-                                <MenubarItem>
-                                    <Plus className="w-4 h-4 mr-2" /> Add Property
-                                    <MenubarShortcut className="flex">⌘E</MenubarShortcut>
-                                </MenubarItem>
-                                <MenubarItem>
-                                    <Search className="w-4 h-4 mr-2" /> Find References
-                                    <MenubarShortcut className="flex">⌘Q</MenubarShortcut>
-                                </MenubarItem>
-                                <MenubarSeparator />
-                                <MenubarItem className="bg-destructive">
-                                    <Trash className="w-4 h-4 mr-2" /> Delete
-                                </MenubarItem>
-                            </MenubarContent>
-                        </MenubarMenu>
-                    ) : null}
+                    <EntityMenu />
                 </Menubar>
                 {/* Disabled until a proper implementation is done */}
                 {/*<Button size="sm" variant="ghost" className="mx-2 text-sm" onClick={() => undo()}>*/}

@@ -9,8 +9,8 @@ import {
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { isRootEntity } from "@/lib/utils"
 import { useGraphState } from "@/components/providers/graph-state-provider"
-import { Action, ActionScope, notFoundAction } from "@/lib/actions"
-import { useActions } from "@/components/providers/actions-provider"
+import { Action, notFoundAction } from "@/lib/state/actions"
+import { useActionsStore } from "@/components/providers/actions-provider"
 
 const MAX_LIST_LENGTH = 100
 
@@ -237,32 +237,34 @@ export function useCurrentEntity() {
 }
 
 export function useRegisterAction(
+    id: string,
     name: string,
     fn: () => void,
-    options?: Partial<Omit<Action, "name" | "execute">>
+    options?: Partial<Omit<Action, "id" | "name" | "execute">>
 ) {
-    const actions = useActions()
+    const registerAction = useActionsStore((store) => store.registerAction)
+    const unregisterAction = useActionsStore((store) => store.unregisterAction)
+    const constId = useRef(id)
     const constName = useRef(name)
     const constOptions = useRef(options)
 
     const action: Action = useMemo(
         () => ({
+            id: constId.current,
             name: constName.current,
             execute: fn,
-            scope: ActionScope.CRATE,
             ...constOptions.current
         }),
         [fn]
     )
 
     useEffect(() => {
-        actions.registerAction(action)
+        registerAction(action)
 
-        return () => actions.unregisterAction(action.name)
-    }, [action, actions])
+        return () => unregisterAction(action.id)
+    }, [action, registerAction, unregisterAction])
 }
 
-export function useAction(name: string) {
-    const actions = useActions()
-    return actions.getAction(name) || notFoundAction(name)
+export function useAction(id: string) {
+    return useActionsStore((store) => store.actions.get(id) || notFoundAction(id))
 }
