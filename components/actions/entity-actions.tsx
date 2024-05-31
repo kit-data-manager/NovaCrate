@@ -67,7 +67,7 @@ function Handler({ entity }: { entity: IFlatEntity }) {
     const deleteEntity = useCallback(() => {
         showDeleteEntityModal(entity["@id"])
     }, [entity, showDeleteEntityModal])
-    useRegisterAction("entity.delete", "Delete", findReferences, {
+    useRegisterAction("entity.delete", "Delete", deleteEntity, {
         icon: Trash
     })
 

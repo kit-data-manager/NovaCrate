@@ -37,25 +37,25 @@ export default function EditorLayout(props: PropsWithChildren) {
 
     return (
         <CrateDataProvider serviceProvider={serviceProvider} crateId={crateId}>
-            <CrateVerifyProvider>
-                <EntityEditorTabsProvider>
-                    <FileExplorerProvider>
-                        <GlobalModalProvider>
-                            <GraphStateProvider>
-                                <GraphSettingsProvider>
-                                    <ActionsProvider>
+            <ActionsProvider>
+                <CrateVerifyProvider>
+                    <EntityEditorTabsProvider>
+                        <FileExplorerProvider>
+                            <GlobalModalProvider>
+                                <GraphStateProvider>
+                                    <GraphSettingsProvider>
                                         <DefaultActions />
                                         <EntityActions />
                                         <ActionKeyboardShortcuts />
                                         <RecentlyUsed />
                                         <Nav>{props.children}</Nav>
-                                    </ActionsProvider>
-                                </GraphSettingsProvider>
-                            </GraphStateProvider>
-                        </GlobalModalProvider>
-                    </FileExplorerProvider>
-                </EntityEditorTabsProvider>
-            </CrateVerifyProvider>
+                                    </GraphSettingsProvider>
+                                </GraphStateProvider>
+                            </GlobalModalProvider>
+                        </FileExplorerProvider>
+                    </EntityEditorTabsProvider>
+                </CrateVerifyProvider>
+            </ActionsProvider>
         </CrateDataProvider>
     )
 }
