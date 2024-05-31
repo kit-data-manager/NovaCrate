@@ -17,8 +17,7 @@ import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-prov
 import { useEditorState } from "@/lib/state/editor-state"
 import { handleSpringError } from "@/lib/spring-error-handling"
 import { useAsync } from "@/lib/hooks"
-import { ExternalLink, Trash } from "lucide-react"
-import Markdown from "react-markdown"
+import { Trash } from "lucide-react"
 import { MarkdownComment } from "@/components/markdown-comment"
 
 export interface EntityEditorProperty {
