@@ -37,7 +37,7 @@ export function EntityEditor({
     entityId: string
     toggleEntityBrowserPanel(): void
 }) {
-    const { saveEntity, isSaving, saveError } = useContext(CrateDataContext)
+    const { isSaving, saveError } = useContext(CrateDataContext)
     const entity = useEditorState((store) => store.entities.get(entityId))
     const originalEntity = useEditorState((store) => store.initialEntities.get(entityId))
     const entitiesChangelist = useEditorState((store) => store.getEntitiesChangelist())
@@ -45,15 +45,9 @@ export function EntityEditor({
     const addPropertyEntry = useEditorState.useAddPropertyEntry()
     const modifyPropertyEntry = useEditorState.useModifyPropertyEntry()
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
-    const revertEntity = useEditorState.useRevertEntity()
 
     const { focusProperty } = useContext(EntityEditorTabsContext)
-    const {
-        showDeleteEntityModal,
-        showSaveAsModal,
-        showFindReferencesModal,
-        showAddPropertyModal
-    } = useContext(GlobalModalContext)
+    const { showSaveAsModal, showAddPropertyModal } = useContext(GlobalModalContext)
 
     const typeArray = useMemo(() => {
         if (!entity) return []
@@ -104,18 +98,6 @@ export function EntityEditor({
         [entityId, removePropertyEntry]
     )
 
-    const onSave = useCallback(() => {
-        if (entity) saveEntity(entity).then()
-    }, [entity, saveEntity])
-
-    const onRevert = useCallback(() => {
-        revertEntity(entityId)
-    }, [entityId, revertEntity])
-
-    const onDelete = useCallback(() => {
-        showDeleteEntityModal(entityId)
-    }, [entityId, showDeleteEntityModal])
-
     const properties = useMemo(() => {
         if (!entity) return []
         return mapEntityToProperties(entity, originalEntity)
@@ -145,10 +127,6 @@ export function EntityEditor({
     const openAddPropertyModal = useCallback(() => {
         showAddPropertyModal(typeArray, onPropertyAdd)
     }, [showAddPropertyModal, onPropertyAdd, typeArray])
-
-    const openFindReferencesModal = useCallback(() => {
-        showFindReferencesModal(entityId)
-    }, [entityId, showFindReferencesModal])
 
     const openSaveAsModal = useCallback(() => {
         showSaveAsModal(entityId)
@@ -185,12 +163,7 @@ export function EntityEditor({
             <EntityEditorHeader
                 hasUnsavedChanges={hasUnsavedChanges}
                 isSaving={isSaving}
-                onSave={onSave}
-                onRevert={onRevert}
-                onDelete={onDelete}
-                openAddPropertyModal={openAddPropertyModal}
-                openFindReferencesModal={openFindReferencesModal}
-                openSaveAsModal={isDataEntity ? undefined : openSaveAsModal}
+                canSaveAs={!isDataEntity}
                 toggleEntityBrowserPanel={toggleEntityBrowserPanel}
             />
 

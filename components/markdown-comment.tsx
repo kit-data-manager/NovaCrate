@@ -1,10 +1,10 @@
 import { ExternalLink } from "lucide-react"
 import Markdown from "react-markdown"
-import React from "react"
+import React, { memo } from "react"
 
 type CommentType = string | { "@language": string; "@value": string }
 
-export function MarkdownComment({
+export const MarkdownComment = memo(function MarkdownComment({
     comment,
     allowLinks
 }: {
@@ -31,4 +31,4 @@ export function MarkdownComment({
             {(comment + "").replaceAll(/\[{2}(\w+)]{2}/g, "[$1](https://schema.org/$1)")}
         </Markdown>
     )
-}
+})

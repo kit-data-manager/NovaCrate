@@ -1,14 +1,14 @@
-import { Action } from "@/lib/actions"
-import React, { useCallback, useEffect } from "react"
-import { useActions } from "@/components/providers/actions-provider"
+import { Action } from "@/lib/state/actions"
+import React, { useCallback, useEffect, useMemo } from "react"
+import { useActionsStore } from "@/components/providers/actions-provider"
+import { ArrowBigUp } from "lucide-react"
 
 export function ActionKeyboardShortcuts() {
-    const actions = useActions()
-    const allActions = actions.getAllActions()
+    const actions = useActionsStore((store) => store.getAllActions())
 
     return (
         <>
-            {allActions
+            {actions
                 .filter((action) => action.keyboardShortcut && action.keyboardShortcut.length > 0)
                 .map((action) => (
                     <ShortcutHandler
@@ -49,4 +49,44 @@ export function ShortcutHandler({ action }: { action: Action & { keyboardShortcu
     }, [handler])
 
     return null
+}
+
+export function KeyboardShortcut({ action }: { action: Action }) {
+    const hasShift = useMemo(() => {
+        return (
+            !!action.keyboardShortcut &&
+            (action.keyboardShortcut.includes("shift") || action.keyboardShortcut.includes("⇧"))
+        )
+    }, [action.keyboardShortcut])
+
+    const hasCommand = useMemo(() => {
+        return (
+            !!action.keyboardShortcut &&
+            (action.keyboardShortcut.includes("command") || action.keyboardShortcut.includes("⌘"))
+        )
+    }, [action.keyboardShortcut])
+
+    const hasAlt = useMemo(() => {
+        return (
+            !!action.keyboardShortcut &&
+            (action.keyboardShortcut.includes("alt") || action.keyboardShortcut.includes("⌥"))
+        )
+    }, [action.keyboardShortcut])
+
+    const letter = useMemo(() => {
+        return action.keyboardShortcut
+            ? action.keyboardShortcut[action.keyboardShortcut.length - 1].toUpperCase()
+            : ""
+    }, [action.keyboardShortcut])
+
+    if (!action.keyboardShortcut) return null
+
+    return (
+        <span className="flex">
+            {hasShift ? <ArrowBigUp className="w-4 h-4" /> : null}
+            {hasAlt ? "⌥" : null}
+            {hasCommand ? "⌘" : null}
+            {letter}
+        </span>
+    )
 }

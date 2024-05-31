@@ -19,7 +19,7 @@ import {
     SaveAll,
     Undo2
 } from "lucide-react"
-import { useCallback, useContext } from "react"
+import { memo, useCallback, useContext, useEffect, useState } from "react"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { useEditorState } from "@/lib/state/editor-state"
 import { getEntityDisplayName } from "@/lib/utils"
@@ -28,7 +28,29 @@ import { useGoToEntity, useGoToPage, useSaveAllEntities } from "@/lib/hooks"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 
-export function GlobalSearch({
+export const GlobalSearch = memo(function GlobalSearch({
+    open,
+    onOpenChange
+}: {
+    open: boolean
+    onOpenChange(open: boolean): void
+}) {
+    const [render, setRender] = useState(open)
+
+    useEffect(() => {
+        if (open) {
+            setRender(true)
+        } else {
+            setTimeout(() => {
+                setRender(false)
+            }, 100)
+        }
+    }, [open])
+
+    return render ? <GlobalSearchInner open={open} onOpenChange={onOpenChange} /> : null
+})
+
+function GlobalSearchInner({
     open,
     onOpenChange
 }: {

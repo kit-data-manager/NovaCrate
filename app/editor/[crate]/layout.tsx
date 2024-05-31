@@ -13,9 +13,9 @@ import { FileExplorerProvider } from "@/components/file-explorer/context"
 import { GraphStateProvider } from "@/components/providers/graph-state-provider"
 import { GraphSettingsProvider } from "@/components/providers/graph-settings-provider"
 import { ActionsProvider } from "@/components/providers/actions-provider"
-import DefaultActions from "@/components/default-actions"
-import { ActionKeyboardShortcuts } from "@/components/action-keyboard-shortcuts"
-import EntityActions from "@/components/entity-actions"
+import DefaultActions from "@/components/actions/default-actions"
+import { ActionKeyboardShortcuts } from "@/components/actions/action-keyboard-shortcuts"
+import EntityActions from "@/components/actions/entity-actions"
 
 const CRATE_ID_REGEX = /^\/editor\/([^\/]*)\/.*$/
 

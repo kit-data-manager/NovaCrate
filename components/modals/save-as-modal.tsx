@@ -1,11 +1,31 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CreateEntity } from "@/components/modals/create-entity/create-entity"
 import { toArray } from "@/lib/utils"
-import { useCallback, useContext } from "react"
+import { memo, useCallback, useContext, useEffect, useState } from "react"
 import { useEditorState } from "@/lib/state/editor-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 
-export function SaveAsModal({
+export const SaveAsModal = memo(function SaveAsModal(props: {
+    open: boolean
+    onOpenChange: (open: boolean) => void
+    entityId: string
+}) {
+    const [render, setRender] = useState(props.open)
+
+    useEffect(() => {
+        if (props.open) {
+            setRender(true)
+        } else {
+            setTimeout(() => {
+                setRender(false)
+            }, 100)
+        }
+    }, [props.open])
+
+    return render ? <SaveAsModalInner {...props} /> : null
+})
+
+function SaveAsModalInner({
     open,
     onOpenChange,
     entityId
