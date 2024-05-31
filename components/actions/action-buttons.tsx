@@ -1,10 +1,11 @@
-import { MenubarItem, MenubarItemProps, MenubarShortcut } from "@/components/ui/menubar"
+import { MenubarItem, MenubarItemProps } from "@/components/ui/menubar"
 import { useAction } from "@/lib/hooks"
-import { Fragment, memo, useMemo } from "react"
+import { memo, useMemo } from "react"
 import { KeyboardShortcut } from "@/components/actions/action-keyboard-shortcuts"
 import { Button, ButtonProps } from "@/components/ui/button"
 import { ContextMenuItem, ContextMenuItemProps } from "@/components/ui/context-menu"
 import { DropdownMenuItem, DropdownMenuItemProps } from "@/components/ui/dropdown-menu"
+import { CommandItem, CommandItemProps } from "@/components/ui/command"
 
 export interface GenericActionContentProps {
     actionId: string
@@ -78,6 +79,22 @@ export const ActionContextMenuItem = memo(function ActionContextMenuItem(
     )
 })
 
+export const ActionCommandItem = memo(function ActionContextMenuItem(
+    props: CommandItemProps & GenericActionContentProps & { closeAnd?: (fn: () => void) => void }
+) {
+    const action = useAction(props.actionId)
+
+    return (
+        <CommandItem
+            value={action.name}
+            onSelect={() => (props.closeAnd ? props.closeAnd(action.execute) : action.execute())}
+            {...cleanProps(props)}
+        >
+            <GenericActionContent {...props} />
+        </CommandItem>
+    )
+})
+
 function cleanProps<T extends Record<string, any>>(props: T) {
     const newData = {
         ...props
@@ -85,6 +102,7 @@ function cleanProps<T extends Record<string, any>>(props: T) {
 
     delete newData.noShortcut
     delete newData.actionId
+    delete newData.closeAnd
 
     return newData
 }

@@ -3,7 +3,7 @@ import { GlobalModalContext } from "@/components/providers/global-modals-provide
 import { useGoToMainMenu, useRegisterAction, useSaveAllEntities } from "@/lib/hooks"
 import { useEditorState } from "@/lib/state/editor-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { Plus, RefreshCw, Save, SaveAll, Search, Undo2, XIcon } from "lucide-react"
+import { Plus, RefreshCw, SaveAll, Search, Undo2, XIcon } from "lucide-react"
 
 export default function DefaultActions() {
     const { showCreateEntityModal, showGlobalSearchModal } = useContext(GlobalModalContext)

@@ -5,28 +5,14 @@ import {
     CommandItem,
     CommandList
 } from "@/components/ui/command"
-import {
-    CurlyBraces,
-    FileUp,
-    Folder,
-    FolderArchive,
-    FolderUp,
-    GitFork,
-    Library,
-    PackageSearch,
-    Plus,
-    RefreshCcw,
-    SaveAll,
-    Undo2
-} from "lucide-react"
-import { memo, useCallback, useContext, useEffect, useState } from "react"
-import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { CurlyBraces, Folder, GitFork, Library, PackageSearch } from "lucide-react"
+import { memo, useCallback, useEffect, useState } from "react"
 import { useEditorState } from "@/lib/state/editor-state"
 import { getEntityDisplayName } from "@/lib/utils"
 import { EntityIcon } from "@/components/entity-icon"
-import { useGoToEntity, useGoToPage, useSaveAllEntities } from "@/lib/hooks"
-import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useGoToEntity, useGoToPage } from "@/lib/hooks"
+import { useActionsStore } from "@/components/providers/actions-provider"
+import { ActionCommandItem } from "@/components/actions/action-buttons"
 
 export const GlobalSearch = memo(function GlobalSearch({
     open,
@@ -57,26 +43,8 @@ function GlobalSearchInner({
     open: boolean
     onOpenChange(open: boolean): void
 }) {
-    const { showCreateEntityModal } = useContext(GlobalModalContext)
     const entities = useEditorState.useEntities()
-    const revertAllEntities = useEditorState.useRevertAllEntities()
-    const { serviceProvider, crateId, reload } = useContext(CrateDataContext)
-
-    const uploadFile = useCallback(() => {
-        showCreateEntityModal([{ "@id": RO_CRATE_FILE, comment: "" }])
-    }, [showCreateEntityModal])
-
-    const uploadFolder = useCallback(() => {
-        showCreateEntityModal([{ "@id": RO_CRATE_DATASET, comment: "" }])
-    }, [showCreateEntityModal])
-
-    const downloadCrateAsZip = useCallback(() => {
-        if (serviceProvider) {
-            serviceProvider.downloadCrateZip(crateId).then()
-        }
-    }, [crateId, serviceProvider])
-
-    const saveAllEntities = useSaveAllEntities()
+    const actions = useActionsStore((store) => store.getAllActions())
 
     const goToEntity = useGoToEntity()
 
@@ -99,39 +67,15 @@ function GlobalSearchInner({
             <CommandInput placeholder="Search for anything..." />
             <CommandList>
                 <CommandGroup heading="Actions">
-                    <CommandItem
-                        value="add new entity"
-                        onSelect={() => closeAnd(showCreateEntityModal)}
-                    >
-                        <Plus className="w-4 h-4 mr-2" /> Add new Entity
-                    </CommandItem>
-                    <CommandItem value="upload a file" onSelect={() => closeAnd(uploadFile)}>
-                        <FileUp className="w-4 h-4 mr-2" /> Upload a File
-                    </CommandItem>
-                    <CommandItem value="upload a folder" onSelect={() => closeAnd(uploadFolder)}>
-                        <FolderUp className="w-4 h-4 mr-2" /> Upload a Folder
-                    </CommandItem>
-                    <CommandItem
-                        value="save all entities"
-                        onSelect={() => closeAnd(saveAllEntities)}
-                    >
-                        <SaveAll className="w-4 h-4 mr-2" /> Save all Entities
-                    </CommandItem>
-                    <CommandItem
-                        value="revert all entities"
-                        onSelect={() => closeAnd(revertAllEntities)}
-                    >
-                        <Undo2 className="w-4 h-4 mr-2" /> Revert all Entities
-                    </CommandItem>
-                    <CommandItem
-                        value="download crate as zip"
-                        onSelect={() => closeAnd(downloadCrateAsZip)}
-                    >
-                        <FolderArchive className="w-4 h-4 mr-2" /> Download Crate as .zip
-                    </CommandItem>
-                    <CommandItem value="reload entities" onSelect={() => closeAnd(reload)}>
-                        <RefreshCcw className="w-4 h-4 mr-2" /> Reload Entities
-                    </CommandItem>
+                    {actions
+                        .filter((action) => action.id !== "editor.global-search")
+                        .map((action) => (
+                            <ActionCommandItem
+                                key={action.id}
+                                actionId={action.id}
+                                closeAnd={closeAnd}
+                            />
+                        ))}
                 </CommandGroup>
                 <CommandGroup heading="Views">
                     <CommandItem value="show entity editor" onSelect={() => closeAnd(goToEntities)}>

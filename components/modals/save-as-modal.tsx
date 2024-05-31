@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { CreateEntity } from "@/components/modals/create-entity/create-entity"
 import { toArray } from "@/lib/utils"
 import { memo, useCallback, useContext, useEffect, useState } from "react"
@@ -57,16 +57,12 @@ function SaveAsModalInner({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Save as...</DialogTitle>
-                </DialogHeader>
-
                 <CreateEntity
                     onBackClick={() => {
                         onOpenChange(false)
                     }}
                     onCreateClick={onCreate}
-                    selectedType={entity?.["@type"][0] || ""}
+                    selectedType={toArray(entity?.["@type"])[0] || ""}
                     onUploadFolder={() => {}}
                     onUploadFile={() => {}}
                 />

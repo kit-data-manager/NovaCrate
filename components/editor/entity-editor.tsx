@@ -11,24 +11,20 @@ import {
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
     isRootEntity as isRootEntityUtil,
-    propertyHasChanged,
-    toArray
+    propertyHasChanged
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Error } from "@/components/error"
 import { EntityEditorHeader } from "@/components/editor/entity-editor-header"
-import { Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { UnknownTypeWarning } from "@/components/editor/unknown-type-warning"
-import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
 import { useEditorState } from "@/lib/state/editor-state"
-import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { RootEntityHint } from "@/components/editor/hints/root-entity-hint"
 import { InternalEntityHint } from "@/components/editor/hints/internal-entity-hint"
 import { DataEntityHint } from "@/components/editor/hints/data-entity-hint"
 import { ContextualEntityHint } from "@/components/editor/hints/contextual-entity-hint"
+import { ActionButton } from "@/components/actions/action-buttons"
 
 export function EntityEditor({
     entityId,
@@ -41,18 +37,9 @@ export function EntityEditor({
     const entity = useEditorState((store) => store.entities.get(entityId))
     const originalEntity = useEditorState((store) => store.initialEntities.get(entityId))
     const entitiesChangelist = useEditorState((store) => store.getEntitiesChangelist())
-    const addProperty = useEditorState.useAddProperty()
     const addPropertyEntry = useEditorState.useAddPropertyEntry()
     const modifyPropertyEntry = useEditorState.useModifyPropertyEntry()
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
-
-    const { focusProperty } = useContext(EntityEditorTabsContext)
-    const { showSaveAsModal, showAddPropertyModal } = useContext(GlobalModalContext)
-
-    const typeArray = useMemo(() => {
-        if (!entity) return []
-        return toArray(entity["@type"])
-    }, [entity])
 
     const isRootEntity = useMemo(() => {
         if (!entity) return false
@@ -68,14 +55,6 @@ export function EntityEditor({
         const diff = entitiesChangelist.get(entityId)
         return !!diff
     }, [entitiesChangelist, entityId])
-
-    const onPropertyAdd = useCallback(
-        (propertyName: string, value?: FlatEntityPropertyTypes) => {
-            addProperty(entityId, propertyName, value)
-            focusProperty(entityId, propertyName)
-        },
-        [addProperty, entityId, focusProperty]
-    )
 
     const onPropertyAddEntry = useCallback(
         (propertyName: string, type: PropertyEditorTypes) => {
@@ -123,14 +102,6 @@ export function EntityEditor({
     const displayName = useMemo(() => {
         return entity ? getEntityDisplayName(entity) : ""
     }, [entity])
-
-    const openAddPropertyModal = useCallback(() => {
-        showAddPropertyModal(typeArray, onPropertyAdd)
-    }, [showAddPropertyModal, onPropertyAdd, typeArray])
-
-    const openSaveAsModal = useCallback(() => {
-        showSaveAsModal(entityId)
-    }, [entityId, showSaveAsModal])
 
     if (!entity) {
         return (
@@ -210,14 +181,13 @@ export function EntityEditor({
                             </div>
                         )
                     })}
-                    <Button
+                    <ActionButton
+                        actionId={"entity.add-property"}
                         size="sm"
                         variant="outline"
                         className="text-xs"
-                        onClick={openAddPropertyModal}
-                    >
-                        <Plus className={"w-4 h-4 mr-1"} /> Add Property
-                    </Button>
+                        noShortcut
+                    />
                 </div>
             </div>
         </div>
