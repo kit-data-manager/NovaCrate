@@ -28,8 +28,11 @@ export class Actions {
     }
 
     registerAction(action: Action) {
-        console.log("Registering action", action)
         this.actions.set(action.name, action)
+    }
+
+    unregisterAction(name: string) {
+        this.actions.delete(name)
     }
 }
 

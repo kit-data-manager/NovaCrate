@@ -34,7 +34,7 @@ export interface IGlobalModalContext {
 
 export type AddPropertyModalCallback = (
     propertyName: string,
-    values?: FlatEntitySinglePropertyTypes[] | undefined
+    values: FlatEntitySinglePropertyTypes[]
 ) => void
 
 export const GlobalModalContext = createContext<IGlobalModalContext>({
