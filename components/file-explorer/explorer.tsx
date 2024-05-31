@@ -31,6 +31,7 @@ import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { useAsync } from "@/lib/hooks"
 import { Button } from "@/components/ui/button"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { ActionButton } from "@/components/actions/action-buttons"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -100,9 +101,7 @@ export function FileExplorer() {
                     </div>
                 </HelpTooltip>
                 <div className="grow" />
-                <Button variant="header" onClick={() => showCreateEntityModal()}>
-                    <Plus className="w-4 h-4 mr-1" /> New
-                </Button>
+                <ActionButton variant="header" noShortcut actionId={"crate.add-entity"} />
                 <DropdownMenu>
                     <DropdownMenuTrigger className="px-1">
                         <EllipsisVertical className="w-4 h-4 shrink-0" />
