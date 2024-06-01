@@ -10,6 +10,7 @@ import ReactFlow, {
     Node,
     NodeChange,
     Panel,
+    useOnSelectionChange,
     useReactFlow
 } from "reactflow"
 import "reactflow/dist/style.css"
@@ -155,7 +156,8 @@ export function EntityGraph() {
         edges,
         handleNodesChange,
         autoLayout,
-        handleEdgesChange
+        handleEdgesChange,
+        setSelectedEntityID
     } = useGraphStateNoSelector()
 
     const {
@@ -322,6 +324,16 @@ export function EntityGraph() {
             reformat(true)
         }
     }, [nodes, reformat])
+
+    useOnSelectionChange({
+        onChange: ({ nodes }) => {
+            if (nodes.length === 1 && nodes[0].type === "entityNode") {
+                setSelectedEntityID(nodes[0].id)
+            } else {
+                setSelectedEntityID("")
+            }
+        }
+    })
 
     return (
         <>
