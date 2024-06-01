@@ -141,6 +141,7 @@ export function useAutoId(name: string) {
     const entities = useEditorState.useEntities()
 
     return useMemo(() => {
+        if (name == "") return ""
         let generated = "#" + encodeURIComponent(name.toLowerCase().trim().replaceAll(" ", "-"))
         let maxIterations = 10
         while (entities.has(generated)) {

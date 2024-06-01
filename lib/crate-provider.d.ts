@@ -78,6 +78,22 @@ declare interface CrateServiceProvider {
      */
     createEntity(crateId: string, entityData: IFlatEntity): Promise<boolean>
 
+    /**
+     * Import an entity from orcid.org.
+     * @param crateId ID of the target crate
+     * @param url URL to orcid person
+     * @returns ID of the imported entity
+     */
+    importEntityFromOrcid(crateId: string, url: string): Promise<string>
+
+    /**
+     * Import an organization from ror.org.
+     * @param crateId ID of the target crate
+     * @param url URL to orcid person
+     * @returns ID of the imported entity
+     */
+    importOrganizationFromRor(crateId: string, url: string): Promise<string>
+
     createFileEntity(crateId: string, entityData: IFlatEntity, file: File): Promise<boolean>
 
     /**

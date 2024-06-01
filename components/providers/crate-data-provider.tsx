@@ -23,6 +23,8 @@ export interface ICrateDataProvider {
     addCustomContextPair(key: string, value: string): Promise<void>
     removeCustomContextPair(key: string): Promise<void>
     saveRoCrateMetadataJSON(json: string): Promise<void>
+    importEntityFromOrcid(url: string): Promise<string>
+    importOrganizationFromRor(url: string): Promise<string>
     reload(): void
     isSaving: boolean
     saveError: unknown
@@ -54,6 +56,12 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     saveRoCrateMetadataJSON() {
+        return Promise.reject("Crate Data Provider not mounted yet")
+    },
+    importEntityFromOrcid(): Promise<string> {
+        return Promise.reject("Crate Data Provider not mounted yet")
+    },
+    importOrganizationFromRor(): Promise<string> {
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     reload: () => {
@@ -299,10 +307,33 @@ export function CrateDataProvider(
     const saveRoCrateMetadataJSON = useCallback(
         async (json: string) => {
             if (props.crateId) {
-                console.log(json)
                 await props.serviceProvider.saveRoCrateMetadataJSON(props.crateId, json)
                 await mutate()
             }
+        },
+        [mutate, props.crateId, props.serviceProvider]
+    )
+
+    const importEntityFromOrcid = useCallback(
+        async (url: string) => {
+            if (props.crateId) {
+                const id = await props.serviceProvider.importEntityFromOrcid(props.crateId, url)
+                await mutate()
+                return id
+            }
+            throw "crateId is undefined"
+        },
+        [mutate, props.crateId, props.serviceProvider]
+    )
+
+    const importOrganizationFromRor = useCallback(
+        async (url: string) => {
+            if (props.crateId) {
+                const id = await props.serviceProvider.importOrganizationFromRor(props.crateId, url)
+                await mutate()
+                return id
+            }
+            throw "crateId is undefined"
         },
         [mutate, props.crateId, props.serviceProvider]
     )
@@ -321,6 +352,8 @@ export function CrateDataProvider(
                 deleteEntity,
                 isSaving,
                 reload: mutate,
+                importEntityFromOrcid,
+                importOrganizationFromRor,
                 saveError,
                 error,
                 addCustomContextPair,

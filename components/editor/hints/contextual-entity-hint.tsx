@@ -6,7 +6,7 @@ import { Hint } from "@/components/hint"
 export function ContextualEntityHint({ entity }: { entity: IFlatEntity }) {
     if (isContextualEntity(entity)) {
         return (
-            <Hint name="contextual-entity">
+            <Hint name="contextual-entity" className="mt-8">
                 <InfoIcon className="w-4 h-4" />
                 <AlertTitle>Hint: Contextual Entities</AlertTitle>
                 <AlertDescription>

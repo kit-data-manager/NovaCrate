@@ -6,7 +6,7 @@ import { Hint } from "@/components/hint"
 export function DataEntityHint({ entity }: { entity: IFlatEntity }) {
     if (isDataEntity(entity) && !isRootEntity(entity)) {
         return (
-            <Hint name="data-entity">
+            <Hint name="data-entity" className="mt-8">
                 <InfoIcon className="w-4 h-4" />
                 <AlertTitle>Hint: Data Entities</AlertTitle>
                 <AlertDescription>
