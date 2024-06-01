@@ -155,9 +155,12 @@ export function CreateEntity({
                 <DialogDescription>
                     {!hasFileUpload && !hasFolderUpload ? (
                         <>
-                            Enter a name for the entity. A valid ID will automatically be generated.
-                            You can also manually change the ID. Press the Create button to start
-                            adding Properties.
+                            Enter a name for the entity.{" "}
+                            {forceId
+                                ? ""
+                                : `A valid ID will automatically be generated.
+                            You can also manually change the ID.`}{" "}
+                            Press the Create button to start adding Properties.
                         </>
                     ) : null}
 

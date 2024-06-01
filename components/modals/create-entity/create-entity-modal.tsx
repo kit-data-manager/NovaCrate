@@ -34,7 +34,7 @@ export function CreateEntityModal({
     const { createFileEntity, createFolderEntity } = useContext(CrateDataContext)
     const context = useEditorState.useCrateContext()
 
-    const [fullTypeBrowser, setFullTypeBrowser] = useState(!!forceId || !!restrictToClasses)
+    const [fullTypeBrowser, setFullTypeBrowser] = useState(!!restrictToClasses)
     const [selectedType, setSelectedType] = useState("")
 
     const [uploading, setUploading] = useState(false)
@@ -57,7 +57,7 @@ export function CreateEntityModal({
                 resetUploadState()
             }, 100)
         } else {
-            setFullTypeBrowser(!!forceId || !!restrictToClasses)
+            setFullTypeBrowser(!!restrictToClasses)
         }
     }, [forceId, open, resetUploadState, restrictToClasses])
 

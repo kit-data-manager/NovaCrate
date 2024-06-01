@@ -6,7 +6,7 @@ export interface GraphState {
     nodes: Node[]
     edges: Edge[]
     selectedEntityID: string | undefined
-    setSelectedEntityID(fn: (currentID: string | undefined) => string | undefined): void
+    setSelectedEntityID(id: string): void
     updateNodes(nodes: Node[]): void
     autoLayout(): void
     handleNodesChange(changes: NodeChange[]): void
@@ -19,9 +19,8 @@ export const createGraphState = () =>
         edges: [],
         nodes: [],
         selectedEntityID: undefined,
-        setSelectedEntityID(fn: (currentID: string | undefined) => string | undefined) {
-            const newValue = fn(get().selectedEntityID)
-            if (newValue !== get().selectedEntityID) set({ selectedEntityID: newValue })
+        setSelectedEntityID(id: string) {
+            set({ selectedEntityID: id })
         },
         updateNodes(newNodes: Node[]) {
             const nodes: Node[] = []
