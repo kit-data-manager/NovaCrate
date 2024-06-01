@@ -42,6 +42,12 @@ export interface ICrateEditorContext {
         propertyName: string,
         typeOrValue: PropertyEditorTypes | FlatEntityPropertyTypes
     ): void
+    setPropertyValue(
+        entityId: string,
+        propertyName: string,
+        value: FlatEntitySinglePropertyTypes,
+        valueIdx?: number
+    ): void
     modifyPropertyEntry(
         entityId: string,
         propertyName: string,
@@ -222,6 +228,24 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                                     ? { "@id": "" }
                                     : ""
                                 : typeOrValue
+                        )
+                    })
+                }
+            },
+
+            setPropertyValue(
+                entityId: string,
+                propertyName: string,
+                value: FlatEntitySinglePropertyTypes,
+                valueIdx?: number
+            ) {
+                if (getState().entities.get(entityId)) {
+                    setState((state) => {
+                        setPropertyValue(
+                            state.entities.get(entityId)!,
+                            propertyName,
+                            value,
+                            valueIdx
                         )
                     })
                 }

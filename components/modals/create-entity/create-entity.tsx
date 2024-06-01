@@ -2,7 +2,7 @@ import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from "r
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, File, Folder, Plus } from "lucide-react"
+import { ArrowLeft, ExternalLink, File, Folder, Plus } from "lucide-react"
 import { useFilePicker } from "use-file-picker"
 import { camelCaseReadable, encodeFilePath, fileNameWithoutEnding } from "@/lib/utils"
 import { Error } from "@/components/error"
@@ -12,6 +12,7 @@ import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { useEditorState } from "@/lib/state/editor-state"
 import HelpTooltip from "@/components/help-tooltip"
 import { useAutoId } from "@/lib/hooks"
+import { CreateEntityHint } from "@/components/modals/create-entity/create-entity-hint"
 
 export function CreateEntity({
     selectedType,
@@ -183,6 +184,8 @@ export function CreateEntity({
                 </DialogDescription>
             </DialogHeader>
 
+            <CreateEntityHint selectedType={selectedType} />
+
             {hasFileUpload ? (
                 <div>
                     <Label>File</Label>
@@ -248,11 +251,18 @@ export function CreateEntity({
                 <div>
                     <Label>Identifier</Label>
                     <Input
-                        placeholder={"#localname"}
+                        placeholder={"#localname or https://..."}
                         value={autoId}
                         onChange={onIdentifierChange}
                         disabled={!!forceId}
                     />
+                    <a
+                        href="https://www.researchobject.org/ro-crate/1.1/contextual-entities.html#identifiers-for-contextual-entities"
+                        target="_blank"
+                        className="text-sm inline-flex pt-1 text-muted-foreground hover:underline"
+                    >
+                        How to find a good identifier <ExternalLink className="w-3 h-3 ml-1" />
+                    </a>
                 </div>
             ) : null}
 

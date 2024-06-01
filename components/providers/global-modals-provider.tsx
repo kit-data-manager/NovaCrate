@@ -189,11 +189,11 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     }, [])
 
     const onEntityCreated = useCallback(
-        (entity: IFlatEntity) => {
+        (entity?: IFlatEntity) => {
             setCreateEntityModalState({
                 open: false
             })
-            saveEntity(entity).catch(console.error)
+            if (entity) saveEntity(entity).catch(console.error)
         },
         [saveEntity]
     )

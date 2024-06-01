@@ -77,6 +77,38 @@ export class RestProvider implements CrateServiceProvider {
         return this.updateEntity(crateId, entityData, true)
     }
 
+    async importEntityFromOrcid(crateId: string, url: string): Promise<string> {
+        const request = await fetch(
+            `http://localhost:8080/crates/${crateId}/entities/contextual/persons/orcid`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url })
+            }
+        )
+        if (request.ok) {
+            return await request.text()
+        } else {
+            throw handleSpringError(await request.json())
+        }
+    }
+
+    async importOrganizationFromRor(crateId: string, url: string): Promise<string> {
+        const request = await fetch(
+            `http://localhost:8080/crates/${crateId}/entities/contextual/organizations/ror`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url })
+            }
+        )
+        if (request.ok) {
+            return await request.text()
+        } else {
+            throw handleSpringError(await request.json())
+        }
+    }
+
     async createFileEntity(crateId: string, entityData: IFlatEntity, file: File) {
         const body = new FormData()
 

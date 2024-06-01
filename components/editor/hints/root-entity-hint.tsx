@@ -6,7 +6,7 @@ import { Hint } from "@/components/hint"
 export function RootEntityHint({ entity }: { entity: IFlatEntity }) {
     if (isRootEntity(entity)) {
         return (
-            <Hint name="root-entity">
+            <Hint name="root-entity" className="mt-8">
                 <InfoIcon className="w-4 h-4" />
                 <AlertTitle>Hint: Crate Root</AlertTitle>
                 <AlertDescription>
