@@ -19,6 +19,7 @@ import { handleSpringError } from "@/lib/spring-error-handling"
 import { useAsync } from "@/lib/hooks"
 import { Trash } from "lucide-react"
 import { MarkdownComment } from "@/components/markdown-comment"
+import { getDefaultDate } from "@/components/editor/text-fields/date-field"
 
 export interface EntityEditorProperty {
     propertyName: string
@@ -91,6 +92,19 @@ export enum PropertyEditorTypes {
     Text,
     Date,
     Reference
+}
+
+export function getPropertyTypeDefaultValue(
+    type: PropertyEditorTypes
+): FlatEntitySinglePropertyTypes {
+    if (type === PropertyEditorTypes.Text) return ""
+    if (type === PropertyEditorTypes.Reference) return { "@id": "" }
+    if (type === PropertyEditorTypes.Date) return getDefaultDate()
+    if (type === PropertyEditorTypes.Number) return "0"
+    if (type === PropertyEditorTypes.Boolean) return "true"
+    if (type === PropertyEditorTypes.DateTime) return "no default"
+    if (type === PropertyEditorTypes.Time) return "no default"
+    return ""
 }
 
 export interface PropertyEditorProps {

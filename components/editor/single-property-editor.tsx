@@ -3,7 +3,7 @@ import { TypeField } from "@/components/editor/type-field"
 import { IDField } from "@/components/editor/id-field"
 import { isReference } from "@/lib/utils"
 import { ReferenceField } from "@/components/editor/reference-field"
-import { TextField } from "@/components/editor/text-field"
+import { TextBaseField } from "@/components/editor/text-base-field"
 import { PropertyEditorProps, PropertyEditorTypes } from "@/components/editor/property-editor"
 import { SlimClass } from "@/lib/crate-verify/helpers"
 import { Error } from "@/components/error"
@@ -82,7 +82,7 @@ export const SinglePropertyEditor = memo(function SinglePropertyEditor({
         typeof (value as unknown) === "boolean"
     )
         return (
-            <TextField
+            <TextBaseField
                 value={value}
                 onChange={onTextChange}
                 onChangeType={onChangeType}
