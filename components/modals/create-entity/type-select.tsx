@@ -1,6 +1,6 @@
 import { SlimClass } from "@/lib/crate-verify/helpers"
 import { useEditorState } from "@/lib/state/editor-state"
-import React, { useCallback, useContext, useEffect, useState } from "react"
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import {
     Command,
     CommandEmpty,
@@ -64,6 +64,14 @@ export function TypeSelect({
         }
     }, [onTypeSelect, types, crateContext])
 
+    const commonTypes = useMemo(() => {
+        return types?.filter((e) => COMMON_PROPERTIES.includes(e["@id"]))
+    }, [types])
+
+    const allTypes = useMemo(() => {
+        return types?.filter((e) => !COMMON_PROPERTIES.includes(e["@id"]))
+    }, [types])
+
     return (
         <>
             <DialogHeader>
@@ -80,11 +88,10 @@ export function TypeSelect({
                 <CommandInput placeholder="Search for a type..." />
                 <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
-                    <CommandGroup heading="Common Types">
-                        {open && !isPending && types ? (
-                            types
-                                .filter((e) => COMMON_PROPERTIES.includes(e["@id"]))
-                                .map((e) => (
+                    {!commonTypes || commonTypes.length > 0 ? (
+                        <CommandGroup heading="Common Types">
+                            {open && !isPending && commonTypes ? (
+                                commonTypes.map((e) => (
                                     <CreateEntityModalEntry
                                         key={e["@id"]}
                                         slimClass={e}
@@ -92,24 +99,23 @@ export function TypeSelect({
                                         common
                                     />
                                 ))
-                        ) : (
-                            <CommandItem className="flex flex-col gap-2">
-                                <Skeleton className={"w-full h-8"} />
-                                <Skeleton className={"w-full h-8"} />
-                            </CommandItem>
-                        )}
-                    </CommandGroup>
+                            ) : (
+                                <CommandItem className="flex flex-col gap-2">
+                                    <Skeleton className={"w-full h-8"} />
+                                    <Skeleton className={"w-full h-8"} />
+                                </CommandItem>
+                            )}
+                        </CommandGroup>
+                    ) : null}
                     <CommandGroup heading="All Types">
-                        {open && !isPending && types ? (
-                            types
-                                .filter((e) => !COMMON_PROPERTIES.includes(e["@id"]))
-                                .map((e) => (
-                                    <CreateEntityModalEntry
-                                        key={e["@id"]}
-                                        slimClass={e}
-                                        onSelect={onTypeSelect}
-                                    />
-                                ))
+                        {open && !isPending && allTypes ? (
+                            allTypes.map((e) => (
+                                <CreateEntityModalEntry
+                                    key={e["@id"]}
+                                    slimClass={e}
+                                    onSelect={onTypeSelect}
+                                />
+                            ))
                         ) : (
                             <CommandItem className="flex flex-col gap-2">
                                 <Skeleton className={"w-full h-8"} />

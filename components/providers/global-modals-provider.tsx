@@ -7,7 +7,7 @@ import { SaveEntityChangesModal } from "@/components/modals/save-entity-changes-
 import { DeleteEntityModal } from "@/components/modals/delete-entity-modal"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { GlobalSearch } from "@/components/modals/global-search"
-import { AddPropertyModal } from "@/components/modals/add-property-modal"
+import { AddPropertyModal } from "@/components/modals/add-property/add-property-modal"
 import { FindReferencesModal } from "@/components/modals/find-references-modal"
 import { SaveAsModal } from "@/components/modals/save-as-modal"
 
