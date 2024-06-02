@@ -199,6 +199,7 @@ export function CreateEntityModal({
                         selectedType={selectedType}
                         backToTypeSelect={backToTypeSelect}
                         onProviderCreate={onProviderCreate}
+                        autoReference={autoReference}
                         fallback={
                             <CreateEntity
                                 onBackClick={backToTypeSelect}

@@ -33,6 +33,7 @@ export function PersonImport({
             setCreating(true)
             const id = await importEntityFromOrcid(value)
             if (autoReference) {
+                console.log("referencing")
                 setPropertyValue(
                     autoReference.entityId,
                     autoReference.propertyName,
