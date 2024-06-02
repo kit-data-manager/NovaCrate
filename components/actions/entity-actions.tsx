@@ -5,6 +5,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { toArray } from "@/lib/utils"
 import { Copy, Plus, Save, Search, Trash, Undo2 } from "lucide-react"
+import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
 
 export default function EntityActions() {
     const entity = useCurrentEntity()
@@ -22,6 +23,7 @@ function Handler({ entity }: { entity: IFlatEntity }) {
         showDeleteEntityModal,
         showSaveAsModal
     } = useContext(GlobalModalContext)
+    const { focusProperty } = useContext(EntityEditorTabsContext)
 
     const saveCurrentEntity = useCallback(() => {
         saveEntity(entity).then()
@@ -47,10 +49,11 @@ function Handler({ entity }: { entity: IFlatEntity }) {
     })
 
     const addProperty = useCallback(() => {
-        showAddPropertyModal(toArray(entity["@type"]), (type, value) => {
-            addPropertyEntry(entity["@id"], type, value)
+        showAddPropertyModal(toArray(entity["@type"]), (propertyName, value) => {
+            addPropertyEntry(entity["@id"], propertyName, value)
+            focusProperty(entity["@id"], propertyName)
         })
-    }, [addPropertyEntry, entity, showAddPropertyModal])
+    }, [addPropertyEntry, entity, focusProperty, showAddPropertyModal])
     useRegisterAction("entity.add-property", "Add Property", addProperty, {
         keyboardShortcut: ["command", "e"],
         icon: Plus

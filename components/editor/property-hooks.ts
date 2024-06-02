@@ -10,6 +10,7 @@ import {
     SCHEMA_ORG_TIME
 } from "@/lib/constants"
 import { SlimClass } from "@/lib/crate-verify/helpers"
+import { PropertyEditorTypes } from "@/components/editor/property-editor"
 
 function isNoneOf(value: string, of: string[]) {
     return of.find((s) => s === value) === undefined
@@ -83,6 +84,18 @@ export function usePropertyCanBe(
             : undefined
     }, [propertyRange])
 
+    const possiblePropertyTypes = useMemo(() => {
+        const types: PropertyEditorTypes[] = []
+        if (canBeTime) types.push(PropertyEditorTypes.Time)
+        if (canBeNumber) types.push(PropertyEditorTypes.Number)
+        if (canBeDate) types.push(PropertyEditorTypes.Date)
+        if (canBeDateTime) types.push(PropertyEditorTypes.DateTime)
+        if (canBeText) types.push(PropertyEditorTypes.Text)
+        if (canBeBoolean) types.push(PropertyEditorTypes.Boolean)
+        if (canBeReference) types.push(PropertyEditorTypes.Reference)
+        return types
+    }, [canBeBoolean, canBeDate, canBeDateTime, canBeNumber, canBeReference, canBeText, canBeTime])
+
     return useMemo(
         () => ({
             canBeTime,
@@ -91,9 +104,19 @@ export function usePropertyCanBe(
             canBeNumber,
             canBeDate,
             canBeText,
-            canBeReference
+            canBeReference,
+            possiblePropertyTypes
         }),
-        [canBeBoolean, canBeDate, canBeDateTime, canBeNumber, canBeReference, canBeText, canBeTime]
+        [
+            canBeBoolean,
+            canBeDate,
+            canBeDateTime,
+            canBeNumber,
+            canBeReference,
+            canBeText,
+            canBeTime,
+            possiblePropertyTypes
+        ]
     )
 }
 
