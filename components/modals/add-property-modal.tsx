@@ -31,6 +31,24 @@ export interface PossibleProperty {
     comment: SchemaNode["comment"]
 }
 
+function propertyCanBeToInputType({
+    canBeDate,
+    canBeDateTime,
+    canBeNumber,
+    canBeTime,
+    canBeBoolean,
+    canBeText
+}: ReturnType<typeof usePropertyCanBe>) {
+    if (canBeDate) return PropertyEditorTypes.Date
+    if (canBeDateTime) return PropertyEditorTypes.DateTime
+    if (canBeNumber) return PropertyEditorTypes.Number
+    if (canBeTime) return PropertyEditorTypes.Time
+    if (canBeBoolean) return PropertyEditorTypes.Boolean
+    if (canBeText) return PropertyEditorTypes.Text
+
+    return PropertyEditorTypes.Reference
+}
+
 const AddPropertyModalEntry = memo(function AddPropertyModalEntry({
     property,
     onSelect
@@ -38,7 +56,7 @@ const AddPropertyModalEntry = memo(function AddPropertyModalEntry({
     property: PossibleProperty
     onSelect: (propertyName: string, propertyType: PropertyEditorTypes) => void
 }) {
-    const { canBeText } = usePropertyCanBe(property.range)
+    const canBe = usePropertyCanBe(property.range)
 
     const readableName = useMemo(() => {
         return camelCaseReadable(property.propertyName)
@@ -49,12 +67,7 @@ const AddPropertyModalEntry = memo(function AddPropertyModalEntry({
             className="text-md"
             key={property.propertyName}
             value={readableName}
-            onSelect={() =>
-                onSelect(
-                    property.propertyName,
-                    canBeText ? PropertyEditorTypes.Text : PropertyEditorTypes.Reference
-                )
-            }
+            onSelect={() => onSelect(property.propertyName, propertyCanBeToInputType(canBe))}
         >
             <div className="flex flex-col max-w-full w-full py-1">
                 <div className="flex justify-between">
