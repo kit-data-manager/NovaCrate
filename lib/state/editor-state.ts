@@ -2,7 +2,10 @@ import { AutoReference } from "@/components/providers/global-modals-provider"
 import { immer } from "zustand/middleware/immer"
 import { Draft, enableMapSet } from "immer"
 import { createSelectorHooks, ZustandHookSelectors } from "auto-zustand-selectors-hook"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
+import {
+    getPropertyTypeDefaultValue,
+    PropertyEditorTypes
+} from "@/components/editor/property-editor"
 import { Diff, isEntityEqual } from "@/lib/utils"
 import { temporal } from "zundo"
 import { CrateContext } from "@/lib/crate-context"
@@ -224,9 +227,7 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                             state.entities.get(entityId)!,
                             propertyName,
                             typeof typeOrValue === "number"
-                                ? typeOrValue === PropertyEditorTypes.Reference
-                                    ? { "@id": "" }
-                                    : ""
+                                ? getPropertyTypeDefaultValue(typeOrValue)
                                 : typeOrValue
                         )
                     })

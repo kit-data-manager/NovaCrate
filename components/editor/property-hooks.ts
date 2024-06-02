@@ -15,7 +15,10 @@ function isNoneOf(value: string, of: string[]) {
     return of.find((s) => s === value) === undefined
 }
 
-export function usePropertyCanBe(_propertyRange?: SlimClass[] | string[]) {
+export function usePropertyCanBe(
+    _propertyRange?: SlimClass[] | string[],
+    value?: FlatEntitySinglePropertyTypes
+) {
     const propertyRange = useMemo(() => {
         return _propertyRange?.map((p) => (typeof p === "object" ? p["@id"] : p))
     }, [_propertyRange])
@@ -40,8 +43,11 @@ export function usePropertyCanBe(_propertyRange?: SlimClass[] | string[]) {
     }, [propertyRange])
 
     const canBeDate = useMemo(() => {
-        return propertyRange?.includes(SCHEMA_ORG_DATE)
-    }, [propertyRange])
+        return (
+            propertyRange?.includes(SCHEMA_ORG_DATE) &&
+            textValueGuard(value, (v) => /^\d{4}-\d{2}-\d{2}$/.test(v), true)
+        )
+    }, [propertyRange, value])
 
     const canBeText = useMemo(() => {
         return propertyRange
@@ -77,13 +83,26 @@ export function usePropertyCanBe(_propertyRange?: SlimClass[] | string[]) {
             : undefined
     }, [propertyRange])
 
-    return {
-        canBeTime,
-        canBeBoolean,
-        canBeDateTime,
-        canBeNumber,
-        canBeDate,
-        canBeText,
-        canBeReference
-    }
+    return useMemo(
+        () => ({
+            canBeTime,
+            canBeBoolean,
+            canBeDateTime,
+            canBeNumber,
+            canBeDate,
+            canBeText,
+            canBeReference
+        }),
+        [canBeBoolean, canBeDate, canBeDateTime, canBeNumber, canBeReference, canBeText, canBeTime]
+    )
+}
+
+function textValueGuard(
+    value: FlatEntitySinglePropertyTypes | undefined,
+    guardedFn: (value: string) => boolean,
+    fallback: boolean
+) {
+    if (typeof value === "undefined") return fallback
+    else if (typeof value === "string") return guardedFn(value)
+    else return fallback
 }
