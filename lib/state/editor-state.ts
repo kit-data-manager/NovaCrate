@@ -43,7 +43,7 @@ export interface ICrateEditorContext {
     addPropertyEntry(
         entityId: string,
         propertyName: string,
-        typeOrValue: PropertyEditorTypes | FlatEntityPropertyTypes
+        typeOrValue: PropertyEditorTypes | FlatEntitySinglePropertyTypes
     ): void
     setPropertyValue(
         entityId: string,

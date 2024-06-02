@@ -11,7 +11,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SchemaNode } from "@/lib/crate-verify/SchemaGraph"
 import { memo, useCallback, useContext, useMemo, useState } from "react"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
+import {
+    getPropertyTypeDefaultValue,
+    PropertyEditorTypes
+} from "@/components/editor/property-editor"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
 import { camelCaseReadable } from "@/lib/utils"
 import { Error } from "@/components/error"
@@ -77,7 +80,7 @@ export function AddPropertyModal({
     typeArray
 }: {
     open: boolean
-    onPropertyAdd: (propertyName: string, values: FlatEntitySinglePropertyTypes[]) => void
+    onPropertyAdd: (propertyName: string, values: FlatEntitySinglePropertyTypes) => void
     onOpenChange: (open: boolean) => void
     typeArray: string[]
 }) {
@@ -92,10 +95,7 @@ export function AddPropertyModal({
     const onSelect = useCallback(
         (propertyName: string, propertyType: PropertyEditorTypes) => {
             onOpenChange(false)
-            onPropertyAdd(
-                propertyName,
-                propertyType === PropertyEditorTypes.Reference ? [{ "@id": "" }] : [""]
-            )
+            onPropertyAdd(propertyName, getPropertyTypeDefaultValue(propertyType))
         },
         [onOpenChange, onPropertyAdd]
     )

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createRef, useCallback, useContext, useEffect, useRef, useState } from "react"
+import React, { createRef, useCallback, useContext, useEffect } from "react"
 import ReactFlow, {
     Background,
     Connection,
@@ -20,7 +20,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { EntityNodeHandle, NEW_PROP_HANDLE } from "@/components/graph/entity-node"
 import { isReference, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
 import { useEditorState } from "@/lib/state/editor-state"
-import { AddPropertyModal } from "@/components/modals/add-property-modal"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { nodeTypes } from "@/components/graph/nodes"
 import { useGraphStateNoSelector } from "@/components/providers/graph-state-provider"
@@ -135,18 +134,13 @@ function propertyEntryExists(entity: IFlatEntity, propertyName: string, targetId
     return false
 }
 
-interface PendingNewProperty {
-    source: IFlatEntity
-    target: IFlatEntity
-}
-
 export function EntityGraph() {
     const entities = useEditorState.useEntities()
     const addProperty = useEditorState.useAddProperty()
     const addPropertyEntry = useEditorState.useAddPropertyEntry()
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
-    const { showDeleteEntityModal } = useContext(GlobalModalContext)
+    const { showDeleteEntityModal, showAddPropertyModal } = useContext(GlobalModalContext)
     const { saveError, crateDataIsLoading } = useContext(CrateDataContext)
 
     const {
@@ -168,10 +162,6 @@ export function EntityGraph() {
     } = useGraphSettingsNoSelector()
 
     const { fitView } = useReactFlow()
-    const [selectPropertyModalOpen, setSelectPropertyModalOpen] = useState(false)
-    const [selectPropertyTypeArray, setSelectPropertyTypeArray] = useState<string[]>([])
-
-    const pendingNewProperty = useRef<PendingNewProperty | undefined>(undefined)
 
     const contextMenuTriggerRef = createRef<HTMLDivElement>()
 
@@ -193,6 +183,23 @@ export function EntityGraph() {
         setAggregateProperties(true)
     }, [setAggregateProperties, setShowTextProperties])
 
+    const handleAddPropertySelect = useCallback(
+        (source: IFlatEntity, target: IFlatEntity) => {
+            return (propertyName: string) => {
+                if (propertyName in source) {
+                    addPropertyEntry(source["@id"], propertyName, {
+                        "@id": target["@id"]
+                    })
+                } else {
+                    addProperty(source["@id"], propertyName, {
+                        "@id": target["@id"]
+                    })
+                }
+            }
+        },
+        [addProperty, addPropertyEntry]
+    )
+
     const onConnect = useCallback(
         (params: Edge | Connection) => {
             if (!params.source || !params.target || !params.sourceHandle) return
@@ -201,10 +208,10 @@ export function EntityGraph() {
             if (!source || !target) return
 
             if (params.sourceHandle === NEW_PROP_HANDLE) {
-                setSelectPropertyModalOpen(true)
-                setSelectPropertyTypeArray(toArray(source["@type"]))
-                pendingNewProperty.current = { source, target }
-                // addProperty(params.source, params.sourceHandle, { "@id": params.target })
+                showAddPropertyModal(
+                    toArray(source["@type"]),
+                    handleAddPropertySelect(source, target)
+                )
             } else {
                 if (!propertyEntryExists(source, params.sourceHandle, params.target)) {
                     addPropertyEntry(params.source, params.sourceHandle, {
@@ -213,28 +220,7 @@ export function EntityGraph() {
                 }
             }
         },
-        [addPropertyEntry, entities]
-    )
-
-    const onPropertySelectOpenChange = useCallback((isOpen: boolean) => {
-        setSelectPropertyModalOpen(isOpen)
-    }, [])
-
-    const handlePropertySelect = useCallback(
-        (propertyName: string) => {
-            if (pendingNewProperty.current) {
-                if (propertyName in pendingNewProperty.current.source) {
-                    addPropertyEntry(pendingNewProperty.current.source["@id"], propertyName, {
-                        "@id": pendingNewProperty.current.target["@id"]
-                    })
-                } else {
-                    addProperty(pendingNewProperty.current.source["@id"], propertyName, {
-                        "@id": pendingNewProperty.current.target["@id"]
-                    })
-                }
-            } else console.warn("Failed to add property, no pending property select")
-        },
-        [addProperty, addPropertyEntry]
+        [addPropertyEntry, entities, handleAddPropertySelect, showAddPropertyModal]
     )
 
     const centerView = useCallback(
@@ -337,12 +323,6 @@ export function EntityGraph() {
 
     return (
         <>
-            <AddPropertyModal
-                open={selectPropertyModalOpen}
-                onPropertyAdd={handlePropertySelect}
-                onOpenChange={onPropertySelectOpenChange}
-                typeArray={selectPropertyTypeArray}
-            />
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
