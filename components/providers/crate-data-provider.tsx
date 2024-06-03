@@ -89,7 +89,6 @@ export function CrateDataProvider(
 
     useEffect(() => {
         if (data) {
-            console.log("Updating initialCrateContext and initialEntities", data)
             // Initial crate context is currently useless as the context is always updated to the server state
             // Might be used in the future if the context becomes more complex
             setInitialCrateContext(data["@context"])

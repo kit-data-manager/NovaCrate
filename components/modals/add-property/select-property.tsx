@@ -139,7 +139,7 @@ export function SelectProperty({
                 error={possiblePropertiesError}
             />
             <Command className="py-2">
-                <CommandInput placeholder="Search..." />
+                <CommandInput placeholder="Search..." autoFocus />
                 <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
                     <CommandGroup>

@@ -1,9 +1,10 @@
-import { ChangeEvent, memo, useCallback } from "react"
+import { ChangeEvent, memo, useCallback, useMemo } from "react"
 import { Input } from "@/components/ui/input"
-import { Clock9, TypeIcon } from "lucide-react"
+import { Clock9 } from "lucide-react"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { SlimClass } from "@/lib/crate-verify/helpers"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
+import { DateTime } from "luxon"
 
 export const TimeField = memo(function TimeField({
     value,
@@ -20,16 +21,25 @@ export const TimeField = memo(function TimeField({
 }) {
     const onInputChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>) => {
-            onChange(e.target.value)
+            onChange(
+                DateTime.fromISO(e.target.value).toISOTime({ suppressMilliseconds: true }) ||
+                    e.target.value
+            )
         },
         [onChange]
     )
+
+    const parsedValue = useMemo(() => {
+        return DateTime.fromISO(value)
+            .toLocal()
+            .toISOTime({ suppressMilliseconds: true, includeOffset: false })
+    }, [value])
 
     return (
         <div className="flex w-full relative">
             <Clock9 className="w-4 h-4 absolute left-2.5 top-3 pointer-events-none text-muted-foreground" />
             <Input
-                value={value}
+                value={parsedValue || value}
                 onChange={onInputChange}
                 className="self-center rounded-r-none pl-9"
                 type="time"
@@ -39,7 +49,7 @@ export const TimeField = memo(function TimeField({
                 onModifyTextLikeProperty={onChange}
                 onRemoveEntry={onRemoveEntry}
                 onChangeType={onChangeType}
-                propertyType={PropertyEditorTypes.Text}
+                propertyType={PropertyEditorTypes.Time}
             />
         </div>
     )

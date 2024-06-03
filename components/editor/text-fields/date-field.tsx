@@ -1,9 +1,10 @@
-import { ChangeEvent, memo, useCallback } from "react"
+import { ChangeEvent, memo, useCallback, useMemo } from "react"
 import { Input } from "@/components/ui/input"
 import { Calendar } from "lucide-react"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { SlimClass } from "@/lib/crate-verify/helpers"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
+import { DateTime } from "luxon"
 
 export function getDefaultDate() {
     const today = new Date()
@@ -29,16 +30,20 @@ export const DateField = memo(function DateField({
 }) {
     const onInputChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>) => {
-            onChange(e.target.value || getDefaultDate())
+            onChange(DateTime.fromISO(e.target.value).toISODate() || getDefaultDate())
         },
         [onChange]
     )
+
+    const parsedValue = useMemo(() => {
+        return DateTime.fromISO(value).toLocal().toISODate()
+    }, [value])
 
     return (
         <div className="flex w-full relative">
             <Calendar className="w-4 h-4 absolute left-2.5 top-3 pointer-events-none text-muted-foreground" />
             <Input
-                value={value}
+                value={parsedValue || value}
                 type="date"
                 onChange={onInputChange}
                 className="self-center rounded-r-none pl-9"

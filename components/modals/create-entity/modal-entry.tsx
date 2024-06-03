@@ -39,7 +39,7 @@ export function CreateEntityModalEntry({
                 <div className="flex justify-between">
                     <div>{readableName}</div>
                 </div>
-                <div className="truncate text-xs">
+                <div className="line-clamp-1 text-xs">
                     <MarkdownComment comment={slimClass.comment} />
                 </div>
             </div>

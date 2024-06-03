@@ -1,6 +1,6 @@
 import { ChangeEvent, memo, useCallback, useMemo } from "react"
 import { Input } from "@/components/ui/input"
-import { CalendarClock, Clock9, TypeIcon } from "lucide-react"
+import { CalendarClock } from "lucide-react"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { SlimClass } from "@/lib/crate-verify/helpers"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
@@ -21,16 +21,20 @@ export const DateTimeField = memo(function DateTimeField({
 }) {
     const onInputChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>) => {
-            onChange(DateTime.fromISO(e.target.value).toISO() || e.target.value)
+            onChange(
+                DateTime.fromISO(e.target.value).toISO({ suppressMilliseconds: true }) ||
+                    e.target.value
+            )
         },
         [onChange]
     )
 
     const parsedValue = useMemo(() => {
-        const txt = DateTime.fromISO(value).toLocal().toISO()
-        console.log(txt)
-        return txt
-    }, [])
+        return DateTime.fromISO(value)
+            .toLocal()
+            .startOf("minute")
+            .toISO({ includeOffset: false, suppressSeconds: true, suppressMilliseconds: true })
+    }, [value])
 
     return (
         <div className="flex w-full relative">
@@ -46,7 +50,7 @@ export const DateTimeField = memo(function DateTimeField({
                 onModifyTextLikeProperty={onChange}
                 onRemoveEntry={onRemoveEntry}
                 onChangeType={onChangeType}
-                propertyType={PropertyEditorTypes.Text}
+                propertyType={PropertyEditorTypes.DateTime}
             />
         </div>
     )

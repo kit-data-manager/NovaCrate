@@ -85,7 +85,7 @@ export function TypeSelect({
 
             <Error title="Error while getting list of possible types" error={error} />
             <Command className="py-2">
-                <CommandInput placeholder="Search for a type..." />
+                <CommandInput placeholder="Search for a type..." autoFocus />
                 <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
                     {!commonTypes || commonTypes.length > 0 ? (
