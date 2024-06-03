@@ -16,6 +16,9 @@ function isNoneOf(value: string, of: string[]) {
     return of.find((s) => s === value) === undefined
 }
 
+const TIME_REGEX = /^\d\d:\d\d(:\d\d.?\d?\d?\d?)?$/
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
+
 export function usePropertyCanBe(
     _propertyRange?: SlimClass[] | string[],
     value?: FlatEntitySinglePropertyTypes
@@ -25,16 +28,33 @@ export function usePropertyCanBe(
     }, [_propertyRange])
 
     const canBeTime = useMemo(() => {
-        return propertyRange?.includes(SCHEMA_ORG_TIME)
-    }, [propertyRange])
+        return (
+            propertyRange?.includes(SCHEMA_ORG_TIME) &&
+            textValueGuard(value, (v) => TIME_REGEX.test(v), true)
+        )
+    }, [propertyRange, value])
 
     const canBeBoolean = useMemo(() => {
-        return propertyRange?.includes(SCHEMA_ORG_BOOLEAN)
-    }, [propertyRange])
+        return (
+            propertyRange?.includes(SCHEMA_ORG_BOOLEAN) &&
+            textValueGuard(value, (v) => v === "true" || v === "false", true)
+        )
+    }, [propertyRange, value])
 
     const canBeDateTime = useMemo(() => {
-        return propertyRange?.includes(SCHEMA_ORG_DATE_TIME)
-    }, [propertyRange])
+        return (
+            propertyRange?.includes(SCHEMA_ORG_DATE_TIME) &&
+            textValueGuard(
+                value,
+                (v) => {
+                    const split = v.includes("T") ? v.split("T") : v.split(" ")
+                    if (split.length === 0) return false
+                    else return DATE_REGEX.test(split[0]) && TIME_REGEX.test(split[1])
+                },
+                true
+            )
+        )
+    }, [propertyRange, value])
 
     const canBeNumber = useMemo(() => {
         return propertyRange
@@ -46,7 +66,7 @@ export function usePropertyCanBe(
     const canBeDate = useMemo(() => {
         return (
             propertyRange?.includes(SCHEMA_ORG_DATE) &&
-            textValueGuard(value, (v) => /^\d{4}-\d{2}-\d{2}$/.test(v), true)
+            textValueGuard(value, (v) => DATE_REGEX.test(v), true)
         )
     }, [propertyRange, value])
 
@@ -54,14 +74,14 @@ export function usePropertyCanBe(
         return propertyRange
             ? propertyRange.length === 0 ||
                   propertyRange.includes(SCHEMA_ORG_TEXT) ||
-                  SCHEMA_ORG_TEXTLIKE.find((s) => propertyRange.includes(s)) !== undefined ||
-                  canBeTime ||
-                  canBeBoolean ||
-                  canBeDate ||
-                  canBeDateTime ||
-                  canBeNumber
-            : undefined
-    }, [canBeBoolean, canBeDate, canBeDateTime, canBeNumber, canBeTime, propertyRange])
+                  SCHEMA_ORG_TEXTLIKE.find((s) => propertyRange.includes(s)) !== undefined // ||
+            : // canBeTime ||
+              // canBeBoolean ||
+              // canBeDate ||
+              // canBeDateTime ||
+              // canBeNumber
+              undefined
+    }, [propertyRange])
 
     const canBeReference = useMemo(() => {
         return propertyRange

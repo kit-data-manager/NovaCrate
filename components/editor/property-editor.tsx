@@ -102,8 +102,8 @@ export function getPropertyTypeDefaultValue(
     if (type === PropertyEditorTypes.Date) return getDefaultDate()
     if (type === PropertyEditorTypes.Number) return "0"
     if (type === PropertyEditorTypes.Boolean) return "true"
-    if (type === PropertyEditorTypes.DateTime) return "no default"
-    if (type === PropertyEditorTypes.Time) return "no default"
+    if (type === PropertyEditorTypes.DateTime) return getDefaultDate() + "T08:00"
+    if (type === PropertyEditorTypes.Time) return "08:00"
     return ""
 }
 
