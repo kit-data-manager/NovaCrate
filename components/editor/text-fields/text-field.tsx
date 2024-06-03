@@ -38,6 +38,7 @@ export const TextField = memo(function TextField({
                 onModifyTextLikeProperty={onChange}
                 onRemoveEntry={onRemoveEntry}
                 onChangeType={onChangeType}
+                propertyType={PropertyEditorTypes.Text}
             />
         </div>
     )

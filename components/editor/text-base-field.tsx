@@ -1,9 +1,16 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react"
 import { SlimClass } from "@/lib/crate-verify/helpers"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
+import {
+    getPropertyTypeDefaultValue,
+    PropertyEditorTypes
+} from "@/components/editor/property-editor"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
 import { DateField, getDefaultDate } from "@/components/editor/text-fields/date-field"
 import { TextField } from "@/components/editor/text-fields/text-field"
+import { BooleanField } from "@/components/editor/text-fields/boolean-field"
+import { NumberField } from "@/components/editor/text-fields/number-field"
+import { TimeField } from "@/components/editor/text-fields/time-field"
+import { DateTimeField } from "@/components/editor/text-fields/datetime-field"
 
 function propertyCanBeToInputType({
     canBeDate,
@@ -83,17 +90,81 @@ export const TextBaseField = memo(function TextBaseField({
             } else if (type === PropertyEditorTypes.Date) {
                 if (!canBe.canBeDate) onChange(getDefaultDate())
                 setInputType(PropertyEditorTypes.Date)
+            } else if (type === PropertyEditorTypes.Boolean) {
+                if (!canBe.canBeBoolean)
+                    onChange(getPropertyTypeDefaultValue(PropertyEditorTypes.Boolean) as string)
+                setInputType(PropertyEditorTypes.Boolean)
+            } else if (type === PropertyEditorTypes.Number) {
+                if (!canBe.canBeNumber)
+                    onChange(getPropertyTypeDefaultValue(PropertyEditorTypes.Number) as string)
+                setInputType(PropertyEditorTypes.Number)
+            } else if (type === PropertyEditorTypes.Time) {
+                if (!canBe.canBeTime)
+                    onChange(getPropertyTypeDefaultValue(PropertyEditorTypes.Time) as string)
+                setInputType(PropertyEditorTypes.Time)
+            } else if (type === PropertyEditorTypes.DateTime) {
+                if (!canBe.canBeDateTime)
+                    onChange(getPropertyTypeDefaultValue(PropertyEditorTypes.DateTime) as string)
+                setInputType(PropertyEditorTypes.DateTime)
             } else {
                 onChangeType(type)
             }
         },
-        [onChange, onChangeType]
+        [
+            canBe.canBeBoolean,
+            canBe.canBeDate,
+            canBe.canBeDateTime,
+            canBe.canBeNumber,
+            canBe.canBeTime,
+            onChange,
+            onChangeType
+        ]
     )
 
     switch (inputType) {
         case PropertyEditorTypes.Date:
             return (
                 <DateField
+                    value={value}
+                    onChange={onChange}
+                    onChangeType={onLocalChangeType}
+                    onRemoveEntry={onRemoveEntry}
+                    propertyRange={propertyRange}
+                />
+            )
+        case PropertyEditorTypes.Boolean:
+            return (
+                <BooleanField
+                    value={value}
+                    onChange={onChange}
+                    onChangeType={onLocalChangeType}
+                    onRemoveEntry={onRemoveEntry}
+                    propertyRange={propertyRange}
+                />
+            )
+        case PropertyEditorTypes.Number:
+            return (
+                <NumberField
+                    value={value}
+                    onChange={onChange}
+                    onChangeType={onLocalChangeType}
+                    onRemoveEntry={onRemoveEntry}
+                    propertyRange={propertyRange}
+                />
+            )
+        case PropertyEditorTypes.Time:
+            return (
+                <TimeField
+                    value={value}
+                    onChange={onChange}
+                    onChangeType={onLocalChangeType}
+                    onRemoveEntry={onRemoveEntry}
+                    propertyRange={propertyRange}
+                />
+            )
+        case PropertyEditorTypes.DateTime:
+            return (
+                <DateTimeField
                     value={value}
                     onChange={onChange}
                     onChangeType={onLocalChangeType}
