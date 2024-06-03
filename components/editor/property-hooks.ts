@@ -11,13 +11,11 @@ import {
 } from "@/lib/constants"
 import { SlimClass } from "@/lib/crate-verify/helpers"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
+import { DateTime } from "luxon"
 
 function isNoneOf(value: string, of: string[]) {
     return of.find((s) => s === value) === undefined
 }
-
-const TIME_REGEX = /^\d\d:\d\d(:\d\d.?\d?\d?\d?)?$/
-const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
 
 export function usePropertyCanBe(
     _propertyRange?: SlimClass[] | string[],
@@ -30,7 +28,7 @@ export function usePropertyCanBe(
     const canBeTime = useMemo(() => {
         return (
             propertyRange?.includes(SCHEMA_ORG_TIME) &&
-            textValueGuard(value, (v) => TIME_REGEX.test(v), true)
+            textValueGuard(value, (v) => DateTime.fromISO(v) != null && v[2] === ":", true)
         )
     }, [propertyRange, value])
 
@@ -46,11 +44,7 @@ export function usePropertyCanBe(
             propertyRange?.includes(SCHEMA_ORG_DATE_TIME) &&
             textValueGuard(
                 value,
-                (v) => {
-                    const split = v.includes("T") ? v.split("T") : v.split(" ")
-                    if (split.length === 0) return false
-                    else return DATE_REGEX.test(split[0]) && TIME_REGEX.test(split[1])
-                },
+                (v) => DateTime.fromISO(v) != null && v[4] === "-" && v.includes("T"),
                 true
             )
         )
@@ -66,7 +60,11 @@ export function usePropertyCanBe(
     const canBeDate = useMemo(() => {
         return (
             propertyRange?.includes(SCHEMA_ORG_DATE) &&
-            textValueGuard(value, (v) => DATE_REGEX.test(v), true)
+            textValueGuard(
+                value,
+                (v) => DateTime.fromISO(v) != null && v[4] === "-" && !v.includes("T"),
+                true
+            )
         )
     }, [propertyRange, value])
 
