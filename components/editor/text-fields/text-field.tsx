@@ -2,7 +2,7 @@ import { ChangeEvent, memo, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { TypeIcon } from "lucide-react"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
 
 export const TextField = memo(function TextField({

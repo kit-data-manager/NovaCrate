@@ -1,4 +1,4 @@
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useEditorState } from "@/lib/state/editor-state"
 import React, { useCallback, useMemo } from "react"
 import { camelCaseReadable } from "@/lib/utils"

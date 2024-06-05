@@ -5,7 +5,7 @@ import { isReference } from "@/lib/utils"
 import { ReferenceField } from "@/components/editor/reference-field"
 import { TextBaseField } from "@/components/editor/text-base-field"
 import { PropertyEditorProps, PropertyEditorTypes } from "@/components/editor/property-editor"
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import { Error } from "@/components/error"
 
 export interface SinglePropertyEditorProps {

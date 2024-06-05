@@ -1,5 +1,5 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { SchemaNode } from "@/lib/crate-verify/SchemaGraph"
+import { SchemaNode } from "@/lib/schema-worker/SchemaGraph"
 import { useCallback, useEffect, useState } from "react"
 import {
     getPropertyTypeDefaultValue,
