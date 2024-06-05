@@ -132,11 +132,7 @@ export const PropertyEditor = memo(function PropertyEditor({
     isDeleted,
     onRemovePropertyEntry
 }: PropertyEditorProps) {
-    const {
-        isReady: crateVerifyReady,
-        getPropertyComment,
-        getPropertyRange
-    } = useContext(CrateVerifyContext)
+    const { isReady: crateVerifyReady, worker } = useContext(CrateVerifyContext)
     const { focusedProperty, unFocusProperty } = useContext(EntityEditorTabsContext)
     const crateContext = useEditorState.useCrateContext()
     const container = createRef<HTMLDivElement>()
@@ -174,10 +170,10 @@ export const PropertyEditor = memo(function PropertyEditor({
             if (crateVerifyReady) {
                 const resolved = crateContext.resolve(propertyName)
                 if (!resolved) throw "Property not defined in context"
-                return await getPropertyRange(resolved)
+                return await worker.execute("getPropertyRange", resolved)
             }
         },
-        [crateContext, crateVerifyReady, getPropertyRange]
+        [crateContext, crateVerifyReady, worker]
     )
 
     const { data: propertyRange, error: propertyRangeError } = useAsync(
@@ -192,11 +188,11 @@ export const PropertyEditor = memo(function PropertyEditor({
                 return "The type defines which properties can occur on the entity"
             const resolved = crateContext.resolve(propertyId)
             if (!resolved) throw "Property not defined in context"
-            const comment = await getPropertyComment(resolved)
+            const comment = await worker.execute("getPropertyComment", resolved)
             if (!comment) throw "Could not find comment"
             return comment
         },
-        [crateContext, getPropertyComment]
+        [crateContext, worker]
     )
 
     const {

@@ -5,7 +5,7 @@ import { Eye, LinkIcon, Plus } from "lucide-react"
 import { getEntityDisplayName } from "@/lib/utils"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import {
     createEntityEditorTab,
     EntityEditorTabsContext

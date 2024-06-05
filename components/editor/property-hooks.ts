@@ -9,7 +9,7 @@ import {
     SCHEMA_ORG_TEXTLIKE,
     SCHEMA_ORG_TIME
 } from "@/lib/constants"
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { DateTime } from "luxon"
 

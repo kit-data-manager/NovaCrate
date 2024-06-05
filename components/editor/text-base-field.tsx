@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react"
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import {
     getPropertyTypeDefaultValue,
     PropertyEditorTypes

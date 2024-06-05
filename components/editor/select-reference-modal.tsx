@@ -13,7 +13,7 @@ import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { getEntityDisplayName, isRoCrateMetadataEntity, isRootEntity, toArray } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EntityIcon } from "@/components/entity-icon"
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useEditorState } from "@/lib/state/editor-state"
 import { CheckedState } from "@radix-ui/react-checkbox"
 

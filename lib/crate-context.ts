@@ -1,4 +1,4 @@
-import Context_1_1 from "./crate-verify/assets/context-1.1.json"
+import Context_1_1 from "./schema-worker/assets/context-1.1.json"
 
 const KNOWN_CONTEXTS = [Context_1_1]
 

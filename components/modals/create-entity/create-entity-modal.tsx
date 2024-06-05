@@ -1,5 +1,5 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import React, { useCallback, useContext, useEffect, useState } from "react"
 import { AutoReference } from "@/components/providers/global-modals-provider"
 import { useEditorState } from "@/lib/state/editor-state"

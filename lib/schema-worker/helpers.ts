@@ -122,3 +122,13 @@ export function getAllComments(types: string[]): SlimClass[] {
     }
     return result
 }
+
+export const schemaWorkerFunctions = {
+    getAllClasses,
+    getPropertyRange,
+    getPropertyDomain,
+    getPropertyComment,
+    getAllComments,
+    getAllProperties,
+    getPossibleEntityProperties
+}

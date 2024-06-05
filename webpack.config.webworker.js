@@ -2,10 +2,10 @@ const webpack = require("webpack")
 const path = require("path")
 
 const config = {
-    entry: "./lib/crate-verify/index.ts",
+    entry: "./lib/schema-worker/index.ts",
     output: {
         path: path.resolve(__dirname, "public"),
-        filename: "crate-verify-worker.js"
+        filename: "schema-worker.js"
     },
     module: {
         rules: [

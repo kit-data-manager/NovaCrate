@@ -68,11 +68,7 @@ export function SelectProperty({
 }) {
     const [open, setOpen] = useState(_open)
     const crateContext = useEditorState.useCrateContext()
-    const {
-        isReady: crateVerifyReady,
-        getClassProperties,
-        getAllProperties
-    } = useContext(CrateVerifyContext)
+    const { isReady: crateVerifyReady, worker } = useContext(CrateVerifyContext)
     const [bypassRestrictions, setBypassRestrictions] = useState(false)
 
     useEffect(() => {
@@ -89,8 +85,9 @@ export function SelectProperty({
         async (types: string[]) => {
             if (crateVerifyReady) {
                 const data = bypassRestrictions
-                    ? await getAllProperties()
-                    : await getClassProperties(
+                    ? await worker.execute("getAllProperties")
+                    : await worker.execute(
+                          "getPossibleEntityProperties",
                           types
                               .map((type) => crateContext.resolve(type))
                               .filter((s) => typeof s === "string") as string[]
@@ -110,7 +107,7 @@ export function SelectProperty({
                     .filter((s) => typeof s.propertyName === "string") as PossibleProperty[]
             }
         },
-        [bypassRestrictions, crateContext, crateVerifyReady, getAllProperties, getClassProperties]
+        [bypassRestrictions, crateContext, crateVerifyReady, worker]
     )
 
     const handleBypassCheckedChange = useCallback((s: CheckedState) => {

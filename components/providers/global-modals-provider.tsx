@@ -2,7 +2,7 @@
 
 import { createContext, PropsWithChildren, useCallback, useContext, useState } from "react"
 import { CreateEntityModal } from "@/components/modals/create-entity/create-entity-modal"
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import { SaveEntityChangesModal } from "@/components/modals/save-entity-changes-modal"
 import { DeleteEntityModal } from "@/components/modals/delete-entity-modal"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
