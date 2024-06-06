@@ -1,44 +1,28 @@
 import { Button } from "@/components/ui/button"
-import {
-    EllipsisVertical,
-    PanelLeftClose,
-    Plus,
-    RefreshCw,
-    Save,
-    Search,
-    Trash,
-    Undo2
-} from "lucide-react"
+import { EllipsisVertical, PanelLeftClose, RefreshCw, Save } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { memo } from "react"
+import { ActionButton, ActionDropdownMenuItem } from "@/components/actions/action-buttons"
+import { useAction } from "@/lib/hooks"
 
 export const EntityEditorHeader = memo(function EntityEditorHeader({
     isSaving,
-    onSave,
     hasUnsavedChanges,
-    onRevert,
-    onDelete,
-    openAddPropertyModal,
-    openFindReferencesModal,
-    openSaveAsModal,
+    canSaveAs,
     toggleEntityBrowserPanel
 }: {
     hasUnsavedChanges: boolean
     isSaving: boolean
-    onSave(): void
-    onRevert(): void
-    onDelete(): void
-    openAddPropertyModal(): void
-    openFindReferencesModal(): void
-    openSaveAsModal?: () => void
+    canSaveAs: boolean
     toggleEntityBrowserPanel(): void
 }) {
+    const saveAction = useAction("entity.save")
+
     return (
         <div className="flex mb-2 gap-2 sticky top-0 z-10 p-2 bg-accent">
             <Button
@@ -49,19 +33,23 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
             >
                 <PanelLeftClose className="w-4 h-4" />
             </Button>
-            <Button size="sm" variant="outline" className="text-xs" onClick={openAddPropertyModal}>
-                <Plus className={"w-4 h-4 mr-1"} /> Add Property
-            </Button>
-            <Button
+            <ActionButton
+                actionId="entity.add-property"
                 size="sm"
                 variant="outline"
                 className="text-xs"
-                onClick={openFindReferencesModal}
-            >
-                <Search className="w-4 h-4 mr-1" /> Find References
-            </Button>
+                noShortcut
+            />
+            <ActionButton
+                actionId="entity.find-references"
+                size="sm"
+                variant="outline"
+                className="text-xs"
+                noShortcut
+            />
 
             <div className="grow"></div>
+
             <div className="flex gap-2 items-center text-sm">
                 {hasUnsavedChanges ? (
                     <div className="text-muted-foreground">There are unsaved changes</div>
@@ -70,16 +58,15 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                     size="sm"
                     variant={hasUnsavedChanges ? undefined : "outline"}
                     className="text-xs"
-                    onClick={() => onSave()}
+                    onClick={() => saveAction.execute()}
                     disabled={isSaving}
                 >
                     {isSaving ? (
                         <RefreshCw className={"w-4 h-4 mr-2 animate-spin"} />
                     ) : (
                         <Save className={"w-4 h-4 mr-2"} />
-                    )}{" "}
-                    Save
-                    <div className="text-xs text-muted-foreground ml-2">⌘S</div>
+                    )}
+                    {saveAction.name}
                 </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -88,18 +75,13 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        {openSaveAsModal ? (
-                            <DropdownMenuItem onClick={openSaveAsModal}>
-                                <Save className="w-4 h-4 mr-2" /> Save as...
-                            </DropdownMenuItem>
-                        ) : null}
-                        <DropdownMenuItem onClick={() => onRevert()}>
-                            <Undo2 className="w-4 h-4 mr-2" /> Revert Changes
-                        </DropdownMenuItem>
+                        {canSaveAs ? <ActionDropdownMenuItem actionId={"entity.save-as"} /> : null}
+                        <ActionDropdownMenuItem actionId={"entity.revert"} />
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="bg-destructive" onClick={onDelete}>
-                            <Trash className="w-4 h-4 mr-2" /> Delete
-                        </DropdownMenuItem>
+                        <ActionDropdownMenuItem
+                            actionId={"entity.delete"}
+                            className="bg-destructive"
+                        />
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

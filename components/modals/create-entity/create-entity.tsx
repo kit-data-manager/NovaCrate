@@ -2,7 +2,7 @@ import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from "r
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, File, Folder, Plus } from "lucide-react"
+import { ArrowLeft, ExternalLink, File, Folder, Plus } from "lucide-react"
 import { useFilePicker } from "use-file-picker"
 import { camelCaseReadable, encodeFilePath, fileNameWithoutEnding } from "@/lib/utils"
 import { Error } from "@/components/error"
@@ -12,6 +12,7 @@ import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { useEditorState } from "@/lib/state/editor-state"
 import HelpTooltip from "@/components/help-tooltip"
 import { useAutoId } from "@/lib/hooks"
+import { CreateEntityHint } from "@/components/modals/create-entity/create-entity-hint"
 
 export function CreateEntity({
     selectedType,
@@ -32,6 +33,8 @@ export function CreateEntity({
 }) {
     const context = useEditorState.useCrateContext()
 
+    const [websiteFile, setWebsiteFile] = useState(false)
+    const [websiteFileURL, setWebsiteFileURL] = useState("")
     const fileUpload = useMemo(() => {
         return context.resolve(selectedType) === RO_CRATE_FILE
     }, [context, selectedType])
@@ -97,7 +100,11 @@ export function CreateEntity({
     const localOnCreateClick = useCallback(() => {
         if (!forceId && (hasFileUpload || hasFolderUpload)) {
             if (hasFileUpload) {
-                onUploadFile(path, name, plainFiles[0])
+                if (websiteFile) {
+                    onCreateClick(websiteFileURL, name)
+                } else {
+                    onUploadFile(path, name, plainFiles[0])
+                }
             } else {
                 onUploadFolder(path, name, emptyFolder ? [] : folderFiles)
             }
@@ -114,7 +121,9 @@ export function CreateEntity({
         onUploadFile,
         onUploadFolder,
         path,
-        plainFiles
+        plainFiles,
+        websiteFile,
+        websiteFileURL
     ])
 
     const onNameInputKeyDown = useCallback(
@@ -142,6 +151,24 @@ export function CreateEntity({
         }
     }, [folderFiles])
 
+    const createDisabled = useMemo(() => {
+        if (
+            hasFileUpload &&
+            (websiteFile ? /^\w+:\/\//.test(websiteFileURL) : plainFiles.length > 0)
+        )
+            return false
+        if (hasFolderUpload && folderFiles.length > 0) return false
+        return autoId.length <= 0
+    }, [
+        autoId.length,
+        folderFiles.length,
+        hasFileUpload,
+        hasFolderUpload,
+        plainFiles.length,
+        websiteFile,
+        websiteFileURL
+    ])
+
     if (hasFileUpload && hasFolderUpload)
         return (
             <Error error="Cannot determine whether this is a file upload or a folder upload. Make sure your context is not ambiguous." />
@@ -155,9 +182,12 @@ export function CreateEntity({
                 <DialogDescription>
                     {!hasFileUpload && !hasFolderUpload ? (
                         <>
-                            Enter a name for the entity. A valid ID will automatically be generated.
-                            You can also manually change the ID. Press the Create Button to start
-                            adding Properties.
+                            Enter a name for the entity.{" "}
+                            {forceId
+                                ? ""
+                                : `A valid ID will automatically be generated.
+                            You can also manually change the ID.`}{" "}
+                            Press the Create button to start adding Properties.
                         </>
                     ) : null}
 
@@ -180,18 +210,57 @@ export function CreateEntity({
                 </DialogDescription>
             </DialogHeader>
 
+            <CreateEntityHint selectedType={selectedType} />
+
             {hasFileUpload ? (
                 <div>
-                    <Label>File</Label>
-                    <div>
-                        <Button variant="outline" onClick={openFilePicker}>
-                            <File className="w-4 h-4 mr-2" />
-                            {plainFiles.length == 0 ? "Select File" : plainFiles[0].name}
-                        </Button>
-                        <span className="ml-2 text-muted-foreground">
-                            {plainFiles.length == 0 ? "" : prettyBytes(plainFiles[0].size)}
-                        </span>
-                    </div>
+                    {/* Currently broken in ro-crate-javaA */}
+                    {/*<div className="mb-4 flex justify-center gap-2 items-center">*/}
+                    {/*    <Button*/}
+                    {/*        variant={websiteFile ? "secondary" : "default"}*/}
+                    {/*        onClick={() => setWebsiteFile(false)}*/}
+                    {/*    >*/}
+                    {/*        <HardDrive className="w-4 h-4 mr-2" /> Local File*/}
+                    {/*    </Button>*/}
+                    {/*    or*/}
+                    {/*    <Button*/}
+                    {/*        variant={!websiteFile ? "secondary" : "default"}*/}
+                    {/*        onClick={() => setWebsiteFile(true)}*/}
+                    {/*    >*/}
+                    {/*        <Globe className="w-4 h-4 mr-2" />*/}
+                    {/*        Remote File*/}
+                    {/*    </Button>*/}
+                    {/*</div>*/}
+                    {websiteFile ? (
+                        <>
+                            <Label>
+                                File URL{" "}
+                                <HelpTooltip>
+                                    The file will not be downloaded. Make sure the URL points
+                                    directly to the file that you want to reference.
+                                </HelpTooltip>
+                            </Label>
+                            <Input
+                                value={websiteFileURL}
+                                onChange={(e) => setWebsiteFileURL(e.target.value)}
+                                placeholder={"https://..."}
+                                type="url"
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <Label>File</Label>
+                            <div>
+                                <Button variant="outline" onClick={openFilePicker}>
+                                    <File className="w-4 h-4 mr-2" />
+                                    {plainFiles.length == 0 ? "Select File" : plainFiles[0].name}
+                                </Button>
+                                <span className="ml-2 text-muted-foreground">
+                                    {plainFiles.length == 0 ? "" : prettyBytes(plainFiles[0].size)}
+                                </span>
+                            </div>
+                        </>
+                    )}
                 </div>
             ) : null}
 
@@ -245,11 +314,18 @@ export function CreateEntity({
                 <div>
                     <Label>Identifier</Label>
                     <Input
-                        placeholder={"#localname"}
+                        placeholder={"#localname or https://..."}
                         value={autoId}
                         onChange={onIdentifierChange}
                         disabled={!!forceId}
                     />
+                    <a
+                        href="https://www.researchobject.org/ro-crate/1.1/contextual-entities.html#identifiers-for-contextual-entities"
+                        target="_blank"
+                        className="text-sm inline-flex pt-1 text-muted-foreground hover:underline"
+                    >
+                        How to find a good identifier <ExternalLink className="w-3 h-3 ml-1" />
+                    </a>
                 </div>
             ) : null}
 
@@ -268,7 +344,7 @@ export function CreateEntity({
                 <Button variant="secondary" onClick={() => onBackClick()}>
                     <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Button>
-                <Button onClick={() => localOnCreateClick()}>
+                <Button onClick={() => localOnCreateClick()} disabled={createDisabled}>
                     <Plus className="w-4 h-4 mr-2" />
                     Create
                 </Button>

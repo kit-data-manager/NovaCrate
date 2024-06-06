@@ -12,8 +12,12 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeftRight, EllipsisVertical, Eraser, Trash, Unlink } from "lucide-react"
 import TypeSelectDropdown from "@/components/editor/type-select-dropdown"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
-import { SlimClass } from "@/lib/crate-verify/helpers"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
+import { SlimClass } from "@/lib/schema-worker/helpers"
+import {
+    getPropertyTypeDefaultValue,
+    PropertyEditorTypes
+} from "@/components/editor/property-editor"
+import { cn } from "@/lib/utils"
 
 export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
     propertyRange,
@@ -21,7 +25,9 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
     onModifyTextLikeProperty,
     onModifyReferenceProperty,
     onChangeType,
-    onRemoveEntry
+    onRemoveEntry,
+    triggerClassName,
+    propertyType
 }: {
     propertyRange?: SlimClass[]
     isReference?: boolean
@@ -29,6 +35,8 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
     onModifyReferenceProperty?: (value: IReference) => void
     onChangeType: (type: PropertyEditorTypes) => void
     onRemoveEntry: () => void
+    triggerClassName?: string
+    propertyType: PropertyEditorTypes
 }) {
     const canClear = useMemo(() => {
         return onModifyReferenceProperty || onModifyTextLikeProperty
@@ -36,18 +44,21 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
 
     const onClear = useCallback(() => {
         if (onModifyTextLikeProperty) {
-            onModifyTextLikeProperty("")
+            onModifyTextLikeProperty(getPropertyTypeDefaultValue(propertyType) as string)
         } else if (onModifyReferenceProperty) {
             onModifyReferenceProperty({ "@id": "" })
         }
-    }, [onModifyReferenceProperty, onModifyTextLikeProperty])
+    }, [onModifyReferenceProperty, onModifyTextLikeProperty, propertyType])
 
     const propertyCanBe = usePropertyCanBe(propertyRange)
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="border-l-0 rounded-l-none px-2">
+                <Button
+                    variant="outline"
+                    className={cn("border-l-0 rounded-l-none px-2", triggerClassName)}
+                >
                     <EllipsisVertical className="w-4 h-4" />
                 </Button>
             </DropdownMenuTrigger>

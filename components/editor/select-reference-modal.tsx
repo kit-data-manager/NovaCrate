@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo } from "react"
+import { useCallback, useContext, useMemo, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
     Command,
@@ -13,8 +13,9 @@ import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { getEntityDisplayName, isRoCrateMetadataEntity, isRootEntity, toArray } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EntityIcon } from "@/components/entity-icon"
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useEditorState } from "@/lib/state/editor-state"
+import { CheckedState } from "@radix-ui/react-checkbox"
 
 function SelectReferenceModalEntry({
     entity,
@@ -66,26 +67,37 @@ export function SelectReferenceModal({
     const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
     const crateContext = useEditorState.useCrateContext()
 
+    const [onlyShowAllowed, setOnlyShowAllowed] = useState(true)
+
+    const onCheckOnlyShowAllowed = useCallback((state: CheckedState) => {
+        setOnlyShowAllowed(typeof state === "string" ? true : state)
+    }, [])
+
     const propertyRangeIds = useMemo(() => {
         return propertyRange?.map((p) => p["@id"])
     }, [propertyRange])
 
     const possibleEntities = useMemo(() => {
-        if (!open || crateDataIsLoading || !crateData || !propertyRangeIds) return []
+        if (!open || crateDataIsLoading || !crateData) return []
 
-        return crateData["@graph"]
-            .filter((e) => !isRootEntity(e))
-            .filter((e) => !isRoCrateMetadataEntity(e))
-            .filter((entity) => {
-                for (const type of toArray(entity["@type"])) {
-                    const resolved = crateContext.resolve(type)
-                    if (!resolved) continue
-                    if (propertyRangeIds.includes(resolved)) return true
-                }
+        if (onlyShowAllowed) {
+            if (!propertyRangeIds) return []
+            return crateData["@graph"]
+                .filter((e) => !isRootEntity(e))
+                .filter((e) => !isRoCrateMetadataEntity(e))
+                .filter((entity) => {
+                    for (const type of toArray(entity["@type"])) {
+                        const resolved = crateContext.resolve(type)
+                        if (!resolved) continue
+                        if (propertyRangeIds.includes(resolved)) return true
+                    }
 
-                return false
-            })
-    }, [crateContext, crateData, crateDataIsLoading, open, propertyRangeIds])
+                    return false
+                })
+        } else {
+            return crateData["@graph"]
+        }
+    }, [crateContext, crateData, crateDataIsLoading, onlyShowAllowed, open, propertyRangeIds])
 
     const onSelectAndClose = useCallback(
         (ref: IReference) => {
@@ -129,8 +141,14 @@ export function SelectReferenceModal({
                 </Command>
 
                 <div className="flex gap-2 items-center">
-                    <Checkbox checked id="onlyShowMatching-reference" />
-                    <label htmlFor="onlyShowMatching">Only show Entities of matching type</label>
+                    <Checkbox
+                        checked={onlyShowAllowed}
+                        onCheckedChange={onCheckOnlyShowAllowed}
+                        id="onlyShowMatching-reference"
+                    />
+                    <label htmlFor="onlyShowMatching-reference">
+                        Only show Entities of matching type
+                    </label>
                 </div>
             </DialogContent>
         </Dialog>

@@ -600,7 +600,6 @@
           "MayTreatHealthAspect": "https://schema.org/MayTreatHealthAspect",
           "MediaGallery": "https://schema.org/MediaGallery",
           "MediaManipulationRatingEnumeration": "https://schema.org/MediaManipulationRatingEnumeration",
-          "MediaObject": "https://schema.org/MediaObject",
           "MediaReview": "https://schema.org/MediaReview",
           "MediaSubscription": "https://schema.org/MediaSubscription",
           "MedicalAudience": "https://schema.org/MedicalAudience",

@@ -111,9 +111,11 @@ const CommandSeparator = React.forwardRef<
 ))
 CommandSeparator.displayName = CommandPrimitive.Separator.displayName
 
+export type CommandItemProps = React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
+
 const CommandItem = React.forwardRef<
     React.ElementRef<typeof CommandPrimitive.Item>,
-    React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
+    CommandItemProps
 >(({ className, ...props }, ref) => (
     <CommandPrimitive.Item
         ref={ref}

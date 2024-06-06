@@ -1,9 +1,10 @@
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useEditorState } from "@/lib/state/editor-state"
 import React, { useCallback, useMemo } from "react"
 import { camelCaseReadable } from "@/lib/utils"
 import { CommandItem } from "@/components/ui/command"
 import { useTypeIcon } from "@/components/type-icon"
+import { MarkdownComment } from "@/components/markdown-comment"
 
 export function CreateEntityModalEntry({
     slimClass,
@@ -38,8 +39,8 @@ export function CreateEntityModalEntry({
                 <div className="flex justify-between">
                     <div>{readableName}</div>
                 </div>
-                <div className="truncate text-xs">
-                    <span>{slimClass.comment + ""}</span>
+                <div className="line-clamp-1 text-xs">
+                    <MarkdownComment comment={slimClass.comment} />
                 </div>
             </div>
         </CommandItem>

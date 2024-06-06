@@ -1,6 +1,6 @@
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useEditorState } from "@/lib/state/editor-state"
-import React, { useCallback, useContext, useEffect, useState } from "react"
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import {
     Command,
     CommandEmpty,
@@ -32,7 +32,7 @@ export function TypeSelect({
     setFullTypeBrowser(open: boolean): void
 }) {
     const crateContext = useEditorState.useCrateContext()
-    const { getAllClasses } = useContext(CrateVerifyContext)
+    const { worker } = useContext(CrateVerifyContext)
     const [bypassRestrictions, setBypassRestrictions] = useState(false)
 
     const toggleRestrictions = useCallback((state: boolean | "indeterminate") => {
@@ -42,7 +42,7 @@ export function TypeSelect({
     const typesResolver = useCallback(async () => {
         if (bypassRestrictions || !restrictToClasses) {
             const classUrls = crateContext.getAllClasses()
-            return (await getAllClasses()).filter((slimClass) => {
+            return (await worker.execute("getAllClasses")).filter((slimClass) => {
                 return classUrls.includes(slimClass["@id"])
             })
         } else {
@@ -50,7 +50,7 @@ export function TypeSelect({
                 return restrictToClasses.filter((c) => crateContext.reverse(c["@id"])) // Reversible classes are known via specification
             } else return []
         }
-    }, [bypassRestrictions, crateContext, getAllClasses, restrictToClasses])
+    }, [bypassRestrictions, crateContext, restrictToClasses, worker])
 
     const {
         data: types,
@@ -63,6 +63,14 @@ export function TypeSelect({
             onTypeSelect(crateContext.reverse(types[0]["@id"]) || types[0]["@id"])
         }
     }, [onTypeSelect, types, crateContext])
+
+    const commonTypes = useMemo(() => {
+        return types?.filter((e) => COMMON_PROPERTIES.includes(e["@id"]))
+    }, [types])
+
+    const allTypes = useMemo(() => {
+        return types?.filter((e) => !COMMON_PROPERTIES.includes(e["@id"]))
+    }, [types])
 
     return (
         <>
@@ -77,14 +85,13 @@ export function TypeSelect({
 
             <Error title="Error while getting list of possible types" error={error} />
             <Command className="py-2">
-                <CommandInput placeholder="Search for a type..." />
+                <CommandInput placeholder="Search for a type..." autoFocus />
                 <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
-                    <CommandGroup heading="Common Types">
-                        {open && !isPending && types ? (
-                            types
-                                .filter((e) => COMMON_PROPERTIES.includes(e["@id"]))
-                                .map((e) => (
+                    {!commonTypes || commonTypes.length > 0 ? (
+                        <CommandGroup heading="Common Types">
+                            {open && !isPending && commonTypes ? (
+                                commonTypes.map((e) => (
                                     <CreateEntityModalEntry
                                         key={e["@id"]}
                                         slimClass={e}
@@ -92,24 +99,23 @@ export function TypeSelect({
                                         common
                                     />
                                 ))
-                        ) : (
-                            <CommandItem className="flex flex-col gap-2">
-                                <Skeleton className={"w-full h-8"} />
-                                <Skeleton className={"w-full h-8"} />
-                            </CommandItem>
-                        )}
-                    </CommandGroup>
+                            ) : (
+                                <CommandItem className="flex flex-col gap-2">
+                                    <Skeleton className={"w-full h-8"} />
+                                    <Skeleton className={"w-full h-8"} />
+                                </CommandItem>
+                            )}
+                        </CommandGroup>
+                    ) : null}
                     <CommandGroup heading="All Types">
-                        {open && !isPending && types ? (
-                            types
-                                .filter((e) => !COMMON_PROPERTIES.includes(e["@id"]))
-                                .map((e) => (
-                                    <CreateEntityModalEntry
-                                        key={e["@id"]}
-                                        slimClass={e}
-                                        onSelect={onTypeSelect}
-                                    />
-                                ))
+                        {open && !isPending && allTypes ? (
+                            allTypes.map((e) => (
+                                <CreateEntityModalEntry
+                                    key={e["@id"]}
+                                    slimClass={e}
+                                    onSelect={onTypeSelect}
+                                />
+                            ))
                         ) : (
                             <CommandItem className="flex flex-col gap-2">
                                 <Skeleton className={"w-full h-8"} />

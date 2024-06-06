@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { useCallback, useContext, useMemo } from "react"
 import {
     mapEntityToProperties,
     PropertyEditor,
@@ -11,27 +11,20 @@ import {
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
     isRootEntity as isRootEntityUtil,
-    propertyHasChanged,
-    toArray
+    propertyHasChanged
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Error } from "@/components/error"
 import { EntityEditorHeader } from "@/components/editor/entity-editor-header"
-import { Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { AddPropertyModal } from "@/components/editor/add-property-modal"
 import { UnknownTypeWarning } from "@/components/editor/unknown-type-warning"
-import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
 import { useEditorState } from "@/lib/state/editor-state"
-import { GlobalModalContext } from "@/components/providers/global-modals-provider"
-import { FindReferencesModal } from "@/components/editor/find-references-modal"
-import { SaveAsModal } from "@/components/editor/save-as-modal"
 import { Skeleton } from "@/components/ui/skeleton"
 import { RootEntityHint } from "@/components/editor/hints/root-entity-hint"
 import { InternalEntityHint } from "@/components/editor/hints/internal-entity-hint"
 import { DataEntityHint } from "@/components/editor/hints/data-entity-hint"
 import { ContextualEntityHint } from "@/components/editor/hints/contextual-entity-hint"
+import { ActionButton } from "@/components/actions/action-buttons"
 
 export function EntityEditor({
     entityId,
@@ -40,39 +33,13 @@ export function EntityEditor({
     entityId: string
     toggleEntityBrowserPanel(): void
 }) {
-    const { saveEntity, isSaving, saveError } = useContext(CrateDataContext)
+    const { isSaving, saveError } = useContext(CrateDataContext)
     const entity = useEditorState((store) => store.entities.get(entityId))
     const originalEntity = useEditorState((store) => store.initialEntities.get(entityId))
     const entitiesChangelist = useEditorState((store) => store.getEntitiesChangelist())
-    const addProperty = useEditorState.useAddProperty()
     const addPropertyEntry = useEditorState.useAddPropertyEntry()
     const modifyPropertyEntry = useEditorState.useModifyPropertyEntry()
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
-    const revertEntity = useEditorState.useRevertEntity()
-
-    const { focusProperty } = useContext(EntityEditorTabsContext)
-    const { showDeleteEntityModal } = useContext(GlobalModalContext)
-
-    const [addPropertyModelOpen, setAddPropertyModelOpen] = useState(false)
-    const [findReferencesModalOpen, setFindReferencesModalOpen] = useState(false)
-    const [saveAsModalOpen, setSaveAsModalOpen] = useState(false)
-
-    const openAddPropertyModal = useCallback(() => {
-        setAddPropertyModelOpen(true)
-    }, [])
-
-    const openFindReferencesModal = useCallback(() => {
-        setFindReferencesModalOpen(true)
-    }, [])
-
-    const openSaveAsModal = useCallback(() => {
-        setSaveAsModalOpen(true)
-    }, [])
-
-    const typeArray = useMemo(() => {
-        if (!entity) return []
-        return toArray(entity["@type"])
-    }, [entity])
 
     const isRootEntity = useMemo(() => {
         if (!entity) return false
@@ -88,14 +55,6 @@ export function EntityEditor({
         const diff = entitiesChangelist.get(entityId)
         return !!diff
     }, [entitiesChangelist, entityId])
-
-    const onPropertyAdd = useCallback(
-        (propertyName: string, value?: FlatEntityPropertyTypes) => {
-            addProperty(entityId, propertyName, value)
-            focusProperty(entityId, propertyName)
-        },
-        [addProperty, entityId, focusProperty]
-    )
 
     const onPropertyAddEntry = useCallback(
         (propertyName: string, type: PropertyEditorTypes) => {
@@ -118,51 +77,31 @@ export function EntityEditor({
         [entityId, removePropertyEntry]
     )
 
-    const onSave = useCallback(() => {
-        if (entity) saveEntity(entity).then()
-    }, [entity, saveEntity])
-
-    const onRevert = useCallback(() => {
-        revertEntity(entityId)
-    }, [entityId, revertEntity])
-
-    const onDelete = useCallback(() => {
-        showDeleteEntityModal(entityId)
-    }, [entityId, showDeleteEntityModal])
-
     const properties = useMemo(() => {
         if (!entity) return []
-        return mapEntityToProperties(entity)
-    }, [entity])
+        return mapEntityToProperties(entity, originalEntity)
+    }, [entity, originalEntity])
 
     const propertiesChangelist = useMemo(() => {
-        return properties.map((property) => {
-            if (!originalEntity) return Diff.New
+        const changeMap: Map<string, Diff> = new Map()
+        properties.map((property) => {
+            if (!originalEntity) return changeMap.set(property.propertyName, Diff.New)
             if (property.propertyName in originalEntity) {
                 const prop = originalEntity[property.propertyName]
-                return propertyHasChanged(property.values, prop) ? Diff.Changed : Diff.None
+                changeMap.set(
+                    property.propertyName,
+                    propertyHasChanged(property.values, prop) ? Diff.Changed : Diff.None
+                )
             } else {
-                return Diff.New
+                changeMap.set(property.propertyName, Diff.New)
             }
         })
+        return changeMap
     }, [originalEntity, properties])
 
     const displayName = useMemo(() => {
         return entity ? getEntityDisplayName(entity) : ""
     }, [entity])
-
-    useEffect(() => {
-        function handler(e: KeyboardEvent) {
-            if ((e.getModifierState("Control") || e.metaKey) && e.key === "s") {
-                e.preventDefault()
-                onSave()
-            }
-        }
-
-        window.addEventListener("keydown", handler)
-
-        return () => window.removeEventListener("keydown", handler)
-    }, [hasUnsavedChanges, onSave])
 
     if (!entity) {
         return (
@@ -192,28 +131,10 @@ export function EntityEditor({
 
     return (
         <div className="relative">
-            <AddPropertyModal
-                open={addPropertyModelOpen}
-                onPropertyAdd={onPropertyAdd}
-                onOpenChange={setAddPropertyModelOpen}
-                typeArray={typeArray}
-            />
-            <FindReferencesModal
-                open={findReferencesModalOpen}
-                onOpenChange={setFindReferencesModalOpen}
-                entityId={entityId}
-            />
-            <SaveAsModal open={saveAsModalOpen} onOpenChange={setSaveAsModalOpen} entity={entity} />
-
             <EntityEditorHeader
                 hasUnsavedChanges={hasUnsavedChanges}
                 isSaving={isSaving}
-                onSave={onSave}
-                onRevert={onRevert}
-                onDelete={onDelete}
-                openAddPropertyModal={openAddPropertyModal}
-                openFindReferencesModal={openFindReferencesModal}
-                openSaveAsModal={isDataEntity ? undefined : openSaveAsModal}
+                canSaveAs={!isDataEntity}
                 toggleEntityBrowserPanel={toggleEntityBrowserPanel}
             />
 
@@ -239,7 +160,7 @@ export function EntityEditor({
                 <Error className="mt-4" title="Error while saving" error={saveError} />
 
                 <div className="my-12 flex flex-col gap-4 mr-2">
-                    {properties.map((property, i) => {
+                    {properties.map((property) => {
                         return (
                             <div key={property.propertyName}>
                                 <PropertyEditor
@@ -247,21 +168,26 @@ export function EntityEditor({
                                     property={property}
                                     onModifyPropertyEntry={onModifyPropertyEntry}
                                     onAddPropertyEntry={onPropertyAddEntry}
-                                    hasChanges={propertiesChangelist[i] === Diff.Changed}
-                                    isNew={propertiesChangelist[i] === Diff.New}
+                                    hasChanges={
+                                        propertiesChangelist.get(property.propertyName) ===
+                                        Diff.Changed
+                                    }
+                                    isNew={
+                                        propertiesChangelist.get(property.propertyName) === Diff.New
+                                    }
+                                    isDeleted={property.deleted}
                                     onRemovePropertyEntry={onRemovePropertyEntry}
                                 />
                             </div>
                         )
                     })}
-                    <Button
+                    <ActionButton
+                        actionId={"entity.add-property"}
                         size="sm"
                         variant="outline"
                         className="text-xs"
-                        onClick={openAddPropertyModal}
-                    >
-                        <Plus className={"w-4 h-4 mr-1"} /> Add Property
-                    </Button>
+                        noShortcut
+                    />
                 </div>
             </div>
         </div>

@@ -41,14 +41,6 @@ export class RestProvider implements CrateServiceProvider {
         return `http://localhost:8080/crates/${encodeURIComponent(crateId)}/files/${encodeURIComponent(filePath)}`
     }
 
-    getCrateFileWithData(crateId: string, filePath: string): Promise<File> {
-        throw "Not implemented"
-    }
-
-    renameEntity(crateId: string, oldEntityId: string, newEntityId: string): Promise<boolean> {
-        throw "Not implemented"
-    }
-
     async createCrate(name: string, description: string) {
         const request = await fetch("http://localhost:8080/crates", {
             method: "PUT",
@@ -83,6 +75,38 @@ export class RestProvider implements CrateServiceProvider {
 
     createEntity(crateId: string, entityData: IFlatEntity): Promise<boolean> {
         return this.updateEntity(crateId, entityData, true)
+    }
+
+    async importEntityFromOrcid(crateId: string, url: string): Promise<string> {
+        const request = await fetch(
+            `http://localhost:8080/crates/${crateId}/entities/contextual/persons/orcid`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url })
+            }
+        )
+        if (request.ok) {
+            return await request.text()
+        } else {
+            throw handleSpringError(await request.json())
+        }
+    }
+
+    async importOrganizationFromRor(crateId: string, url: string): Promise<string> {
+        const request = await fetch(
+            `http://localhost:8080/crates/${crateId}/entities/contextual/organizations/ror`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url })
+            }
+        )
+        if (request.ok) {
+            return await request.text()
+        } else {
+            throw handleSpringError(await request.json())
+        }
     }
 
     async createFileEntity(crateId: string, entityData: IFlatEntity, file: File) {
@@ -181,10 +205,6 @@ export class RestProvider implements CrateServiceProvider {
         }
     }
 
-    getEntity(crateId: string, entityId: string): Promise<IFlatEntity> {
-        throw "Not implemented"
-    }
-
     async updateEntity(
         crateId: string,
         entityData: IFlatEntity,
@@ -208,7 +228,7 @@ export class RestProvider implements CrateServiceProvider {
         } else {
             const request = await fetch(this.getEntityRoute(crateId, entityData), {
                 body: JSON.stringify(entityData),
-                method: /*create ?*/ "PUT" /*: "PATCH"*/,
+                method: create ? "PUT" : "PATCH",
                 headers: { "Content-Type": "application/json" }
             })
             if (request.ok) {
@@ -288,6 +308,6 @@ export class RestProvider implements CrateServiceProvider {
 
     private getEntityRoute(crateId: string, entityData: IFlatEntity) {
         const part = this.getEntityRoutePart(entityData)
-        return `http://localhost:8080/crates/${encodeURIComponent(crateId)}/entities/${part}/${encodeURIComponent(entityData["@id"])}`
+        return `http://localhost:8080/crates/${encodeURIComponent(crateId)}/entities/${part}/${isRootEntity(entityData) ? "" : encodeURIComponent(entityData["@id"])}`
     }
 }

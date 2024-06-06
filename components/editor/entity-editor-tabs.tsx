@@ -7,7 +7,7 @@ import {
 } from "@/components/providers/entity-tabs-provider"
 import { Diff, getEntityDisplayName } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Package, Plus, XIcon } from "lucide-react"
+import { Package, XIcon } from "lucide-react"
 import { EntityIcon } from "@/components/entity-icon"
 import { EntityEditor } from "@/components/editor/entity-editor"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/context-menu"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ActionButton } from "@/components/actions/action-buttons"
 
 function Tab({
     tab,
@@ -171,7 +172,6 @@ export function EntityEditorTabs({
     toggleEntityBrowserPanel(): void
 }) {
     const { tabs, activeTabEntityID } = useContext(EntityEditorTabsContext)
-    const { showCreateEntityModal } = useContext(GlobalModalContext)
 
     const currentTab = useMemo(() => {
         return tabs.find((tab) => tab.entityId === activeTabEntityID)
@@ -184,9 +184,7 @@ export function EntityEditorTabs({
                 <div>Select an Entity on the left</div>
                 <div className="mt-2 text-muted-foreground">or</div>
                 <div>
-                    <Button variant="link" onClick={() => showCreateEntityModal()}>
-                        <Plus className="w-4 h-4 mr-2" /> Create a new Entity
-                    </Button>
+                    <ActionButton variant="link" actionId={"crate.add-entity"} />
                 </div>
             </div>
         )

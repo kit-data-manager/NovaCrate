@@ -62,15 +62,6 @@ declare interface CrateServiceProvider {
     deleteCrate(id: string): Promise<boolean>
 
     /**
-     * Return the metadata of an entity
-     * @param crateId ID of the target crate
-     * @param entityId ID of the target entity
-     * @throws Error when no entity is found
-     * @returns Promise - resolves on success
-     */
-    getEntity(crateId: string, entityId: string): Promise<IFlatEntity>
-
-    /**
      * Update the data of an entity. Can't be used to update the @id property
      * @param crateId ID of the target crate
      * @param entityData Changed data of the entity. Unchanged keys can be omitted. @id must be present. Keys that must be removed will be set to null
@@ -87,6 +78,22 @@ declare interface CrateServiceProvider {
      */
     createEntity(crateId: string, entityData: IFlatEntity): Promise<boolean>
 
+    /**
+     * Import an entity from orcid.org.
+     * @param crateId ID of the target crate
+     * @param url URL to orcid person
+     * @returns ID of the imported entity
+     */
+    importEntityFromOrcid(crateId: string, url: string): Promise<string>
+
+    /**
+     * Import an organization from ror.org.
+     * @param crateId ID of the target crate
+     * @param url URL to orcid person
+     * @returns ID of the imported entity
+     */
+    importOrganizationFromRor(crateId: string, url: string): Promise<string>
+
     createFileEntity(crateId: string, entityData: IFlatEntity, file: File): Promise<boolean>
 
     /**
@@ -98,27 +105,11 @@ declare interface CrateServiceProvider {
     deleteEntity(crateId: string, entityData: IFlatEntity): Promise<boolean>
 
     /**
-     * Rename an entity (change the @id) and also rename all references
-     * @param crateId ID of the target crate
-     * @param oldEntityId Current (old) ID of the entity
-     * @param newEntityId New ID of the entity
-     * @returns Promise - resolves on success
-     */
-    renameEntity?: (crateId: string, oldEntityId: string, newEntityId: string) => Promise<boolean>
-
-    /**
      * Get a complete list of file names in the crate archive
      * @param crateId ID of the target crate
      * @returns Promise - resolves on success
      */
     getCrateFilesList(crateId: string): Promise<string[]>
-
-    /**
-     * Get a file in the crate archive
-     * @param crateId ID of the target crate
-     * @param filePath Path to the desired file, including file name and extension
-     */
-    getCrateFileWithData?: (crateId: string, filePath: string) => Promise<File>
 
     /**
      * Get a URL to a file from the crate archive, for preview or download purposes
