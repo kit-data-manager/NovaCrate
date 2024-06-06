@@ -40,7 +40,7 @@ export default function EditorLandingPage() {
     const { recentCrates, removeFromRecentCrates } = useRecentCrates()
     const [showStoredCratesAmount, setShowStoredCratesAmount] = useState(5)
     const [showRecentCratesAmount, setShowRecentCratesAmount] = useState(5)
-    const { serviceProvider } = useContext(CrateDataContext)
+    const { serviceProvider, setCrateId } = useContext(CrateDataContext)
     const { openFilePicker: openZipFilePicker, plainFiles: zipFiles } = useFilePicker({
         accept: ".zip"
     })
@@ -124,9 +124,12 @@ export default function EditorLandingPage() {
 
     const openEditor = useCallback(
         (id: string) => {
-            if (id !== "undefined") router.push(`/editor/${id}/entities`)
+            if (id !== "undefined") {
+                setCrateId(id)
+                router.push(`/editor/static/entities`)
+            }
         },
-        [router]
+        [router, setCrateId]
     )
 
     const storedCratesResolver = useCallback(async () => {

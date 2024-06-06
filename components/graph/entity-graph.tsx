@@ -10,6 +10,7 @@ import ReactFlow, {
     Node,
     NodeChange,
     Panel,
+    ReactFlowProvider,
     useOnSelectionChange,
     useReactFlow
 } from "reactflow"
@@ -429,5 +430,13 @@ export function EntityGraph() {
                 </ContextMenu>
             </ReactFlow>
         </>
+    )
+}
+
+export function EntityGraphWithContext() {
+    return (
+        <ReactFlowProvider>
+            <EntityGraph />
+        </ReactFlowProvider>
     )
 }

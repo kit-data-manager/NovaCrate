@@ -184,6 +184,11 @@ export class RestProvider implements CrateServiceProvider {
     }
 
     async getCrate(id: string): Promise<ICrate> {
+        if (decodeURIComponent(id) === "@static") {
+            console.trace("Who is getting??")
+            return { "@context": [], "@graph": [] }
+        }
+
         const request = await fetch(
             `http://localhost:8080/crates/${encodeURIComponent(id)}/files/ro-crate-metadata.json`
         )

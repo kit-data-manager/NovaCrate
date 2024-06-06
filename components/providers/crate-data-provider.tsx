@@ -1,6 +1,14 @@
 "use client"
 
-import { createContext, PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
+import {
+    createContext,
+    PropsWithChildren,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState
+} from "react"
 import useSWR from "swr"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Draft, produce } from "immer"
@@ -29,6 +37,13 @@ export interface ICrateDataProvider {
     isSaving: boolean
     saveError: unknown
     error: unknown
+
+    /**
+     * Caution: Only for use in static mode (e.g. Desktop mode)
+     * If using in browser, specify crate id via URL
+     * @param crateId
+     */
+    setCrateId(crateId: string): void
 }
 
 export const CrateDataContext = createContext<ICrateDataProvider>({
@@ -70,21 +85,26 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
     crateDataIsLoading: false,
     isSaving: false,
     saveError: undefined,
-    error: undefined
+    error: undefined,
+    setCrateId() {
+        throw "Crate Data Provider not mounted yet"
+    }
 })
 
-export function CrateDataProvider(
-    props: PropsWithChildren<{ serviceProvider: CrateServiceProvider; crateId?: string }>
-) {
+export function CrateDataProvider({
+    serviceProvider,
+    crateId: _crateId,
+    children
+}: PropsWithChildren<{ serviceProvider: CrateServiceProvider; crateId?: string }>) {
+    const [crateId, _setCrateId] = useState(
+        decodeURIComponent(_crateId || "") === "static" ? undefined : _crateId
+    )
     const getEntities = useEditorState.useGetEntities()
     const setEntities = useEditorState.useSetEntities()
     const setCrateContext = useEditorState.useSetCrateContext()
     const setInitialCrateContext = useEditorState.useSetInitialCrateContext()
     const setInitialEntities = useEditorState.useSetInitialEntities()
-    const { data, error, isLoading, mutate } = useSWR<ICrate>(
-        props.crateId,
-        props.serviceProvider.getCrate
-    )
+    const { data, error, isLoading, mutate } = useSWR<ICrate>(crateId, serviceProvider.getCrate)
     const lastCrateData = useRef<ICrate | undefined>(undefined)
 
     useEffect(() => {
@@ -125,16 +145,16 @@ export function CrateDataProvider(
 
     const saveEntity = useCallback(
         async (entityData: IFlatEntity, mutateNow: boolean = true) => {
-            if (props.crateId) {
+            if (crateId) {
                 setIsSaving(true)
                 try {
                     const fn = lastCrateData.current?.["@graph"].find(
                         (e) => e["@id"] === entityData["@id"]
                     )
-                        ? props.serviceProvider.updateEntity.bind(props.serviceProvider)
-                        : props.serviceProvider.createEntity.bind(props.serviceProvider)
+                        ? serviceProvider.updateEntity.bind(serviceProvider)
+                        : serviceProvider.createEntity.bind(serviceProvider)
 
-                    const updateResult = await fn(props.crateId, entityData)
+                    const updateResult = await fn(crateId, entityData)
                     setIsSaving(false)
                     setSaveError(undefined)
 
@@ -162,7 +182,7 @@ export function CrateDataProvider(
                 }
             } else return false
         },
-        [data, mutate, props.crateId, props.serviceProvider]
+        [data, mutate, crateId, serviceProvider]
     )
 
     const saveAllEntities = useCallback(
@@ -178,14 +198,10 @@ export function CrateDataProvider(
 
     const createFileEntity = useCallback(
         async (entity: IFlatEntity, file: File) => {
-            if (props.crateId) {
+            if (crateId) {
                 setIsSaving(true)
                 try {
-                    const result = await props.serviceProvider.createFileEntity(
-                        props.crateId,
-                        entity,
-                        file
-                    )
+                    const result = await serviceProvider.createFileEntity(crateId, entity, file)
                     setIsSaving(false)
                     setSaveError(undefined)
                     mutate().then()
@@ -199,7 +215,7 @@ export function CrateDataProvider(
                 }
             } else return false
         },
-        [mutate, props.crateId, props.serviceProvider]
+        [mutate, crateId, serviceProvider]
     )
 
     const createFolderEntity = useCallback(
@@ -208,13 +224,10 @@ export function CrateDataProvider(
             files: IFlatEntityWithFile[],
             progressCallback?: (current: number, max: number, errors: unknown[]) => void
         ) => {
-            if (props.crateId) {
+            if (crateId) {
                 setIsSaving(true)
                 try {
-                    const folderResult = await props.serviceProvider.createEntity(
-                        props.crateId,
-                        entity
-                    )
+                    const folderResult = await serviceProvider.createEntity(crateId, entity)
 
                     if (!folderResult) return false
 
@@ -223,8 +236,8 @@ export function CrateDataProvider(
 
                     for (const file of files) {
                         try {
-                            const result = await props.serviceProvider.createFileEntity(
-                                props.crateId,
+                            const result = await serviceProvider.createFileEntity(
+                                crateId,
                                 file.entity,
                                 file.file
                             )
@@ -249,17 +262,14 @@ export function CrateDataProvider(
                 }
             } else return false
         },
-        [mutate, props.crateId, props.serviceProvider]
+        [mutate, crateId, serviceProvider]
     )
 
     const deleteEntity = useCallback(
         async (entityData: IFlatEntity) => {
-            if (props.crateId) {
+            if (crateId) {
                 try {
-                    const deleteResult = await props.serviceProvider.deleteEntity(
-                        props.crateId,
-                        entityData
-                    )
+                    const deleteResult = await serviceProvider.deleteEntity(crateId, entityData)
 
                     if (data) {
                         const newData = produce<ICrate>(data, (newData: Draft<ICrate>) => {
@@ -280,68 +290,72 @@ export function CrateDataProvider(
                 }
             } else return false
         },
-        [data, mutate, props.crateId, props.serviceProvider]
+        [data, mutate, crateId, serviceProvider]
     )
 
     const addCustomContextPair = useCallback(
         async (key: string, value: string) => {
-            if (props.crateId) {
-                await props.serviceProvider.addCustomContextPair(props.crateId, key, value)
+            if (crateId) {
+                await serviceProvider.addCustomContextPair(crateId, key, value)
                 await mutate()
             }
         },
-        [mutate, props.crateId, props.serviceProvider]
+        [mutate, crateId, serviceProvider]
     )
 
     const removeCustomContextPair = useCallback(
         async (key: string) => {
-            if (props.crateId) {
-                await props.serviceProvider.removeCustomContextPair(props.crateId, key)
+            if (crateId) {
+                await serviceProvider.removeCustomContextPair(crateId, key)
                 await mutate()
             }
         },
-        [mutate, props.crateId, props.serviceProvider]
+        [mutate, crateId, serviceProvider]
     )
 
     const saveRoCrateMetadataJSON = useCallback(
         async (json: string) => {
-            if (props.crateId) {
-                await props.serviceProvider.saveRoCrateMetadataJSON(props.crateId, json)
+            if (crateId) {
+                await serviceProvider.saveRoCrateMetadataJSON(crateId, json)
                 await mutate()
             }
         },
-        [mutate, props.crateId, props.serviceProvider]
+        [mutate, crateId, serviceProvider]
     )
 
     const importEntityFromOrcid = useCallback(
         async (url: string) => {
-            if (props.crateId) {
-                const id = await props.serviceProvider.importEntityFromOrcid(props.crateId, url)
+            if (crateId) {
+                const id = await serviceProvider.importEntityFromOrcid(crateId, url)
                 await mutate()
                 return id
             }
             throw "crateId is undefined"
         },
-        [mutate, props.crateId, props.serviceProvider]
+        [mutate, crateId, serviceProvider]
     )
 
     const importOrganizationFromRor = useCallback(
         async (url: string) => {
-            if (props.crateId) {
-                const id = await props.serviceProvider.importOrganizationFromRor(props.crateId, url)
+            if (crateId) {
+                const id = await serviceProvider.importOrganizationFromRor(crateId, url)
                 await mutate()
                 return id
             }
             throw "crateId is undefined"
         },
-        [mutate, props.crateId, props.serviceProvider]
+        [mutate, crateId, serviceProvider]
     )
+
+    const setCrateId = useCallback((crateId: string) => {
+        _setCrateId(crateId)
+    }, [])
 
     return (
         <CrateDataContext.Provider
             value={{
-                serviceProvider: props.serviceProvider,
-                crateId: props.crateId || "",
+                serviceProvider: serviceProvider,
+                crateId: crateId || "",
                 crateData: data,
                 crateDataIsLoading: isLoading,
                 saveEntity,
@@ -357,10 +371,11 @@ export function CrateDataProvider(
                 error,
                 addCustomContextPair,
                 removeCustomContextPair,
-                saveRoCrateMetadataJSON
+                saveRoCrateMetadataJSON,
+                setCrateId
             }}
         >
-            {props.children}
+            {children}
         </CrateDataContext.Provider>
     )
 }
