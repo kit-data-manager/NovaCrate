@@ -12,7 +12,11 @@ export function showHint(showBehaviour: HintShowBehaviour) {
     } else return false
 }
 
-export function Hint({ children, name }: PropsWithChildren<{ name: string }>) {
+export function Hint({
+    children,
+    name,
+    className
+}: PropsWithChildren<{ name: string; className?: string }>) {
     const [showBehaviour, setShowBehaviour] = useLocalStorage<HintShowBehaviour>(
         "hint-behaviour-" + name,
         0
@@ -29,7 +33,7 @@ export function Hint({ children, name }: PropsWithChildren<{ name: string }>) {
 
     if (children && showHint(showBehaviour)) {
         return (
-            <Alert className="mt-8">
+            <Alert className={className}>
                 {children}
                 <div className="flex justify-end items-center space-x-4 mt-2">
                     <div className="flex items-center space-x-2">
@@ -38,7 +42,9 @@ export function Hint({ children, name }: PropsWithChildren<{ name: string }>) {
                             checked={hideForever}
                             onCheckedChange={(e) => setHideForever(!!e)}
                         />
-                        <label htmlFor="hideForever">Don&apos;t show again</label>
+                        <label htmlFor="hideForever" className="text-sm">
+                            Don&apos;t show again
+                        </label>
                     </div>
                     <Button variant="secondary" size="sm" onClick={onHideClick}>
                         Close Hint

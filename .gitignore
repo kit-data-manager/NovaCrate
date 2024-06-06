@@ -35,5 +35,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# legacy
 public/crate-verify
 public/crate-verify-worker.js
+
+public/schema-worker
+public/schema-worker.js

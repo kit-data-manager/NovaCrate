@@ -18,7 +18,6 @@ import {
     ChevronsUpDown,
     EllipsisVertical,
     PackageSearch,
-    Plus,
     RefreshCw
 } from "lucide-react"
 import {
@@ -26,7 +25,6 @@ import {
     EntityEditorTabsContext
 } from "@/components/providers/entity-tabs-provider"
 import { EntityIcon } from "./entity-icon"
-import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { useEditorState } from "@/lib/state/editor-state"
 import {
     DropdownMenu,
@@ -38,6 +36,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useEntityBrowserState } from "@/lib/state/entity-browser-state"
+import { ActionButton, ActionDropdownMenuItem } from "@/components/actions/action-buttons"
 
 type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -187,7 +186,6 @@ export function EntityBrowserContent({
 export function EntityBrowser() {
     const state = useEntityBrowserState()
     const crate = useContext(CrateDataContext)
-    const { showCreateEntityModal } = useContext(GlobalModalContext)
     const [defaultSectionOpen, setDefaultSectionOpen] = useState<DefaultSectionOpen>(true)
 
     const collapseAllSections = useCallback(() => {
@@ -208,14 +206,13 @@ export function EntityBrowser() {
                 <PackageSearch className="w-4 h-4 shrink-0 mr-2" /> Entity Explorer
             </div>
             <div className="flex gap-2 top-0 z-10 p-2 bg-accent shrink-0">
-                <Button
+                <ActionButton
+                    actionId="crate.add-entity"
                     size="sm"
                     variant="outline"
                     className="text-xs"
-                    onClick={() => showCreateEntityModal()}
-                >
-                    <Plus className={"w-4 h-4 mr-2"} /> New
-                </Button>
+                    noShortcut
+                />
                 <div className="grow"></div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -251,15 +248,7 @@ export function EntityBrowser() {
                             <ChevronsUpDown className={"w-4 h-4 mr-2"} /> Expand All
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            disabled={crate.crateDataIsLoading}
-                            onClick={() => crate.reload()}
-                        >
-                            <RefreshCw
-                                className={`w-4 h-4 mr-2 ${crate.crateDataIsLoading ? "animate-spin" : ""}`}
-                            />{" "}
-                            Reload Entities
-                        </DropdownMenuItem>
+                        <ActionDropdownMenuItem actionId={"crate.reload-entities"} />
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

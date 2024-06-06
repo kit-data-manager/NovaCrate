@@ -1,11 +1,11 @@
 import { memo, useCallback, useContext, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { SelectReferenceModal } from "@/components/editor/select-reference-modal"
-import { ExternalLink, LinkIcon, Plus } from "lucide-react"
+import { Eye, LinkIcon, Plus } from "lucide-react"
 import { getEntityDisplayName } from "@/lib/utils"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import {
     createEntityEditorTab,
     EntityEditorTabsContext
@@ -124,7 +124,7 @@ export const ReferenceField = memo(function ReferenceField({
                                 {value["@id"]}
                             </span>
                             <div className="flex items-center self-center grow justify-end">
-                                <ExternalLink className="w-4 h-4" />
+                                <Eye className="w-4 h-4" />
                             </div>
                         </div>
                     </Button>
@@ -147,6 +147,7 @@ export const ReferenceField = memo(function ReferenceField({
                 onModifyReferenceProperty={onChange}
                 onRemoveEntry={onRemoveEntry}
                 onChangeType={onChangeType}
+                propertyType={PropertyEditorTypes.Reference}
             />
         </div>
     )

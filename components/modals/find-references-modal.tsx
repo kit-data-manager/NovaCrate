@@ -8,7 +8,7 @@ import {
     CommandList
 } from "@/components/ui/command"
 import { Skeleton } from "@/components/ui/skeleton"
-import { memo, useCallback, useContext, useMemo } from "react"
+import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { camelCaseReadable, getEntityDisplayName } from "@/lib/utils"
 import { Error } from "@/components/error"
 import { useEditorState } from "@/lib/state/editor-state"
@@ -39,7 +39,7 @@ const FindReferencesModalEntry = memo(function AddPropertyModalEntry({
         <CommandItem
             className="text-md"
             key={entity["@id"]}
-            value={readableName}
+            value={readableName + entity["@propertyName"]}
             onSelect={() => onSelect(entity, entity["@propertyName"])}
         >
             <div className="flex flex-col max-w-full w-full py-1">
@@ -55,7 +55,27 @@ const FindReferencesModalEntry = memo(function AddPropertyModalEntry({
     )
 })
 
-export function FindReferencesModal({
+export const FindReferencesModal = memo(function FindReferencesModal(props: {
+    open: boolean
+    onOpenChange: (open: boolean) => void
+    entityId: string
+}) {
+    const [render, setRender] = useState(props.open)
+
+    useEffect(() => {
+        if (props.open) {
+            setRender(true)
+        } else {
+            setTimeout(() => {
+                setRender(false)
+            }, 100)
+        }
+    }, [props.open])
+
+    return render ? <FindReferencesModalInner {...props} /> : null
+})
+
+export function FindReferencesModalInner({
     open,
     onOpenChange,
     entityId
@@ -131,7 +151,10 @@ export function FindReferencesModal({
                                 referencingEntities.map((referencingEntity) => {
                                     return (
                                         <FindReferencesModalEntry
-                                            key={referencingEntity["@id"]}
+                                            key={
+                                                referencingEntity["@id"] +
+                                                referencingEntity["@propertyName"]
+                                            }
                                             entity={referencingEntity}
                                             onSelect={onSelect}
                                         />

@@ -2,7 +2,10 @@ import { AutoReference } from "@/components/providers/global-modals-provider"
 import { immer } from "zustand/middleware/immer"
 import { Draft, enableMapSet } from "immer"
 import { createSelectorHooks, ZustandHookSelectors } from "auto-zustand-selectors-hook"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
+import {
+    getPropertyTypeDefaultValue,
+    PropertyEditorTypes
+} from "@/components/editor/property-editor"
 import { Diff, isEntityEqual } from "@/lib/utils"
 import { temporal } from "zundo"
 import { CrateContext } from "@/lib/crate-context"
@@ -37,14 +40,28 @@ export interface ICrateEditorContext {
     ): IFlatEntity | undefined
     removeEntity(entityId: string): void
     addProperty(entityId: string, propertyName: string, value?: FlatEntityPropertyTypes): void
-    addPropertyEntry(entityId: string, propertyName: string, type: PropertyEditorTypes): void
+    addPropertyEntry(
+        entityId: string,
+        propertyName: string,
+        typeOrValue: PropertyEditorTypes | FlatEntitySinglePropertyTypes
+    ): void
+    setPropertyValue(
+        entityId: string,
+        propertyName: string,
+        value: FlatEntitySinglePropertyTypes,
+        valueIdx?: number
+    ): void
     modifyPropertyEntry(
         entityId: string,
         propertyName: string,
         valueIdx: number,
         value: FlatEntitySinglePropertyTypes
     ): void
-    removePropertyEntry(entityId: string, propertyName: string, valueIdx: number): void
+    removePropertyEntry(
+        entityId: string,
+        propertyName: string,
+        valueOrValueIdx: number | FlatEntitySinglePropertyTypes
+    ): void
     revertEntity(entityId: string): void
     revertAllEntities(): void
 }
@@ -199,13 +216,37 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                 }
             },
 
-            addPropertyEntry(entityId: string, propertyName: string, type: PropertyEditorTypes) {
+            addPropertyEntry(
+                entityId: string,
+                propertyName: string,
+                typeOrValue: PropertyEditorTypes | FlatEntitySinglePropertyTypes
+            ) {
                 if (getState().entities.get(entityId)) {
                     setState((state) => {
                         setPropertyValue(
                             state.entities.get(entityId)!,
                             propertyName,
-                            type === PropertyEditorTypes.Reference ? { "@id": "" } : ""
+                            typeof typeOrValue === "number"
+                                ? getPropertyTypeDefaultValue(typeOrValue)
+                                : typeOrValue
+                        )
+                    })
+                }
+            },
+
+            setPropertyValue(
+                entityId: string,
+                propertyName: string,
+                value: FlatEntitySinglePropertyTypes,
+                valueIdx?: number
+            ) {
+                if (getState().entities.get(entityId)) {
+                    setState((state) => {
+                        setPropertyValue(
+                            state.entities.get(entityId)!,
+                            propertyName,
+                            value,
+                            valueIdx
                         )
                     })
                 }
@@ -229,7 +270,11 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                 }
             },
 
-            removePropertyEntry(entityId: string, propertyName: string, valueIdx: number) {
+            removePropertyEntry(
+                entityId: string,
+                propertyName: string,
+                valueOrValueIdx: number | FlatEntitySinglePropertyTypes
+            ) {
                 if (
                     getState().entities.get(entityId) &&
                     propertyName in getState().entities.get(entityId)!
@@ -241,7 +286,25 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                             if (prop.length === 1) {
                                 delete target[propertyName]
                             } else {
-                                prop.splice(valueIdx, 1)
+                                if (typeof valueOrValueIdx === "number") {
+                                    prop.splice(valueOrValueIdx, 1)
+                                } else {
+                                    if (typeof valueOrValueIdx === "object") {
+                                        const i = prop.findIndex((val) =>
+                                            typeof val === "object"
+                                                ? val["@id"] === valueOrValueIdx["@id"]
+                                                : false
+                                        )
+                                        if (i >= 0) prop.splice(i, 1)
+                                    } else {
+                                        const i = prop.findIndex((val) =>
+                                            typeof val === "string"
+                                                ? val === valueOrValueIdx
+                                                : false
+                                        )
+                                        if (i >= 0) prop.splice(i, 1)
+                                    }
+                                }
                             }
                         } else {
                             delete target[propertyName]

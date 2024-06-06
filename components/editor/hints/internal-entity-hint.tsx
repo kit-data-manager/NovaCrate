@@ -6,7 +6,7 @@ import { Hint } from "@/components/hint"
 export function InternalEntityHint({ entity }: { entity: IFlatEntity }) {
     if (isRoCrateMetadataEntity(entity)) {
         return (
-            <Hint name="internal-entity">
+            <Hint name="internal-entity" className="mt-8">
                 <Wrench className="w-4 h-4" />
                 <AlertTitle>Hint: Internal Entity</AlertTitle>
                 <AlertDescription>

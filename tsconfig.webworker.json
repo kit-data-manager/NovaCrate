@@ -12,8 +12,8 @@
       "@/*": ["./*"]
     },
     "target": "ES2015",
-    "outDir": "public/crate-verify"
+    "outDir": "public/schema-worker"
   },
-  "include": ["lib/crate-verify/**/*.ts", "lib/data-types.d.ts", "lib/utils.ts"],
+  "include": ["lib/schema-worker/**/*.ts", "lib/data-types.d.ts", "lib/utils.ts", "lib/function-worker.ts"],
   "exclude": ["node_modules"]
 }

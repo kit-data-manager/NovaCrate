@@ -23,6 +23,10 @@ export function getEntityDisplayName(entity: IFlatEntity, fallback: boolean = tr
             .map((s) => (typeof s === "string" ? s.trim() : s))
             .filter((p) => p)
             .join(", ")
+    } else if (entity.givenName || entity.familyName) {
+        if (entity.givenName && entity.familyName) {
+            return `${toArray(entity.givenName).join(" ")} ${toArray(entity.familyName).join(" ")}`
+        } else return toArray(entity.familyName || entity.givenName).join(" ")
     } else if (fallback) {
         return entity["@id"]
     }

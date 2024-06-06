@@ -1,4 +1,12 @@
-import { createRef, memo, useCallback, useContext, useEffect, useMemo } from "react"
+import React, {
+    createRef,
+    memo,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState
+} from "react"
 import { CrateVerifyContext } from "@/components/providers/crate-verify-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Error } from "@/components/error"
@@ -9,10 +17,14 @@ import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-prov
 import { useEditorState } from "@/lib/state/editor-state"
 import { handleSpringError } from "@/lib/spring-error-handling"
 import { useAsync } from "@/lib/hooks"
+import { Trash } from "lucide-react"
+import { MarkdownComment } from "@/components/markdown-comment"
+import { getDefaultDate } from "@/components/editor/text-fields/date-field"
 
 export interface EntityEditorProperty {
     propertyName: string
     values: FlatEntitySinglePropertyTypes[]
+    deleted: boolean
 }
 
 function sortByPropertyName(a: EntityEditorProperty, b: EntityEditorProperty) {
@@ -24,7 +36,14 @@ function sortByPropertyName(a: EntityEditorProperty, b: EntityEditorProperty) {
 }
 
 // TODO maybe get rid of this, causes problems with re-rendering
-export function mapEntityToProperties(data: IFlatEntity): EntityEditorProperty[] {
+export function mapEntityToProperties(
+    data: IFlatEntity,
+    initialData?: IFlatEntity
+): EntityEditorProperty[] {
+    const deletedProperties: EntityEditorProperty[] = Object.keys(initialData || {})
+        .filter((key) => !(key in data))
+        .map((key) => ({ propertyName: key, values: [], deleted: true }))
+
     return Object.keys(data)
         .map((key) => {
             let value = data[key]
@@ -37,10 +56,12 @@ export function mapEntityToProperties(data: IFlatEntity): EntityEditorProperty[]
 
             return {
                 propertyName: key,
-                values: arrValue
+                values: arrValue,
+                deleted: false
             }
         })
         .flat()
+        .concat(deletedProperties)
         .sort(sortByPropertyName)
 }
 
@@ -73,6 +94,19 @@ export enum PropertyEditorTypes {
     Reference
 }
 
+export function getPropertyTypeDefaultValue(
+    type: PropertyEditorTypes
+): FlatEntitySinglePropertyTypes {
+    if (type === PropertyEditorTypes.Text) return ""
+    if (type === PropertyEditorTypes.Reference) return { "@id": "" }
+    if (type === PropertyEditorTypes.Date) return getDefaultDate()
+    if (type === PropertyEditorTypes.Number) return "0"
+    if (type === PropertyEditorTypes.Boolean) return "true"
+    if (type === PropertyEditorTypes.DateTime) return getDefaultDate() + "T08:00"
+    if (type === PropertyEditorTypes.Time) return "08:00"
+    return ""
+}
+
 export interface PropertyEditorProps {
     entityId: string
     property: EntityEditorProperty
@@ -85,6 +119,7 @@ export interface PropertyEditorProps {
     onRemovePropertyEntry: (propertyName: string, index: number) => void
     isNew?: boolean
     hasChanges?: boolean
+    isDeleted?: boolean
 }
 
 export const PropertyEditor = memo(function PropertyEditor({
@@ -94,13 +129,10 @@ export const PropertyEditor = memo(function PropertyEditor({
     onAddPropertyEntry,
     isNew,
     hasChanges,
+    isDeleted,
     onRemovePropertyEntry
 }: PropertyEditorProps) {
-    const {
-        isReady: crateVerifyReady,
-        getPropertyComment,
-        getPropertyRange
-    } = useContext(CrateVerifyContext)
+    const { isReady: crateVerifyReady, worker } = useContext(CrateVerifyContext)
     const { focusedProperty, unFocusProperty } = useContext(EntityEditorTabsContext)
     const crateContext = useEditorState.useCrateContext()
     const container = createRef<HTMLDivElement>()
@@ -138,10 +170,10 @@ export const PropertyEditor = memo(function PropertyEditor({
             if (crateVerifyReady) {
                 const resolved = crateContext.resolve(propertyName)
                 if (!resolved) throw "Property not defined in context"
-                return await getPropertyRange(resolved)
+                return await worker.execute("getPropertyRange", resolved)
             }
         },
-        [crateContext, crateVerifyReady, getPropertyRange]
+        [crateContext, crateVerifyReady, worker]
     )
 
     const { data: propertyRange, error: propertyRangeError } = useAsync(
@@ -156,11 +188,11 @@ export const PropertyEditor = memo(function PropertyEditor({
                 return "The type defines which properties can occur on the entity"
             const resolved = crateContext.resolve(propertyId)
             if (!resolved) throw "Property not defined in context"
-            const comment = await getPropertyComment(resolved)
+            const comment = await worker.execute("getPropertyComment", resolved)
             if (!comment) throw "Could not find comment"
             return comment
         },
-        [crateContext, getPropertyComment]
+        [crateContext, worker]
     )
 
     const {
@@ -169,15 +201,25 @@ export const PropertyEditor = memo(function PropertyEditor({
         isPending: commentIsPending
     } = useAsync(crateVerifyReady ? property.propertyName : null, propertyCommentResolver)
 
+    const [expandComment, setExpandComment] = useState(false)
+
+    const toggleExpandComment = useCallback(() => {
+        setExpandComment((v) => !v)
+    }, [])
+
     const Comment = useCallback(() => {
         if (commentIsPending) {
             return <Skeleton className="h-3 w-4/12 mt-1" />
         } else if (commentError) {
             return <span className="text-destructive">{handleSpringError(commentError)}</span>
         } else if (comment !== undefined) {
-            return <span>{comment + ""}</span>
+            return (
+                <span className={expandComment ? "" : "line-clamp-3"} onClick={toggleExpandComment}>
+                    <MarkdownComment comment={comment} allowLinks />
+                </span>
+            )
         } else return null
-    }, [comment, commentError, commentIsPending])
+    }, [comment, commentError, commentIsPending, expandComment, toggleExpandComment])
 
     return (
         <div
@@ -185,7 +227,7 @@ export const PropertyEditor = memo(function PropertyEditor({
             ref={container}
         >
             <div
-                className={`${isNew ? "bg-success" : hasChanges ? "bg-info" : ""} max-w-1 rounded-full transition`}
+                className={`${isDeleted ? "bg-destructive" : isNew ? "bg-success" : hasChanges ? "bg-info" : ""} max-w-1 rounded-full transition`}
             ></div>
 
             <div className="pr-8">
@@ -203,6 +245,11 @@ export const PropertyEditor = memo(function PropertyEditor({
                     error={propertyRangeError}
                     title="Error while determining type range"
                 />
+                {isDeleted ? (
+                    <div className="flex items-center text-muted-foreground">
+                        <Trash className="w-4 h-4 mr-2" /> Empty Property will be deleted on save
+                    </div>
+                ) : null}
                 <div className="flex flex-col gap-4">
                     {property.values.map((v, i) => {
                         return (

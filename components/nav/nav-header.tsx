@@ -4,44 +4,83 @@ import {
     Check,
     ChevronDown,
     Cog,
+    Copy,
+    Download,
     FileUp,
     FolderArchive,
     FolderUp,
-    Moon,
+    Info,
     Package,
-    Plus,
-    RefreshCcw,
-    SaveAll,
-    Search,
-    Sun,
-    Undo2,
-    XIcon
+    Palette,
+    Search
 } from "lucide-react"
 import {
     Menubar,
+    MenubarCheckboxItem,
     MenubarContent,
     MenubarItem,
+    MenubarLabel,
     MenubarMenu,
     MenubarSeparator,
-    MenubarShortcut,
+    MenubarSub,
+    MenubarSubContent,
+    MenubarSubTrigger,
     MenubarTrigger
 } from "@/components/ui/menubar"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
-import { useCallback, useContext } from "react"
+import React, { useCallback, useContext, useMemo } from "react"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { useGoToMainMenu, useSaveAllEntities } from "@/lib/hooks"
+import { useCrateName, useCurrentEntity } from "@/lib/hooks"
 import { useEditorState } from "@/lib/state/editor-state"
+import { useCopyToClipboard } from "usehooks-ts"
+import { Skeleton } from "@/components/ui/skeleton"
+import { getEntityDisplayName } from "@/lib/utils"
+import { ActionMenubarItem } from "@/components/actions/action-buttons"
+
+function EntityMenu() {
+    const currentEntity = useCurrentEntity()
+
+    const currentEntityName = useMemo(() => {
+        return currentEntity ? getEntityDisplayName(currentEntity) : "No Active Entity"
+    }, [currentEntity])
+
+    return currentEntity !== undefined ? (
+        <MenubarMenu>
+            <MenubarTrigger>
+                Entity
+                <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
+            </MenubarTrigger>
+            <MenubarContent>
+                <MenubarLabel className="max-w-[300px] truncate">{currentEntityName}</MenubarLabel>
+                <ActionMenubarItem actionId="entity.save" />
+                <ActionMenubarItem actionId="entity.revert" />
+                <MenubarSeparator />
+                <ActionMenubarItem actionId="entity.add-property" />
+                <ActionMenubarItem actionId="entity.find-references" />
+                <MenubarSeparator />
+                <ActionMenubarItem actionId="entity.delete" className="bg-destructive" />
+            </MenubarContent>
+        </MenubarMenu>
+    ) : null
+}
 
 export function NavHeader() {
     const theme = useTheme()
-    const revertAllEntities = useEditorState.useRevertAllEntities()
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const { showCreateEntityModal, showGlobalSearchModal } = useContext(GlobalModalContext)
-    const { reload, serviceProvider, crateId, isSaving } = useContext(CrateDataContext)
+    const { serviceProvider, crateId, isSaving, crateDataIsLoading } = useContext(CrateDataContext)
     // const { undo, redo } = useEditorState.temporal.getState()
+    const [_, copyFn] = useCopyToClipboard()
+
+    const copy = useCallback(
+        (text: string) => {
+            copyFn(text).catch((e) => console.error("Failed to copy to clipboard", e))
+        },
+        [copyFn]
+    )
 
     const showUploadFolderModal = useCallback(() => {
         showCreateEntityModal([
@@ -61,66 +100,67 @@ export function NavHeader() {
         ])
     }, [showCreateEntityModal])
 
-    const toggleTheme = useCallback(() => {
-        if (theme.theme === "light") {
-            theme.setTheme("dark")
-        } else {
-            theme.setTheme("light")
-        }
-    }, [theme])
-
     const downloadCrateZip = useCallback(() => {
         if (serviceProvider) {
             serviceProvider.downloadCrateZip(crateId).then()
         }
     }, [crateId, serviceProvider])
 
-    const goToMainMenu = useGoToMainMenu()
-
-    const saveAllEntities = useSaveAllEntities()
+    const crateName = useCrateName()
 
     return (
-        <div className="p-4 w-full grid grid-cols-[1fr_auto_1fr] border-b">
+        <div className="p-4 py-3 w-full grid grid-cols-[1fr_auto_1fr]">
             <div className="flex items-center">
                 <Package className="w-7 h-7 mr-2" />
-                <div className="mr-6 font-bold">Editor Name</div>
+                {crateDataIsLoading ? (
+                    <Skeleton className="h-8 w-32" />
+                ) : (
+                    <div className="mr-6 font-bold max-w-[300px] truncate">{crateName}</div>
+                )}
 
                 <Menubar>
+                    <MenubarMenu>
+                        <MenubarTrigger>
+                            Editor <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
+                        </MenubarTrigger>
+                        <MenubarContent>
+                            <ActionMenubarItem actionId="editor.global-search" />
+                            <MenubarSeparator />
+                            <MenubarSub>
+                                <MenubarSubTrigger>
+                                    <Palette className="w-4 h-4 mr-2" /> Theme
+                                </MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarCheckboxItem
+                                        checked={theme.theme === "dark"}
+                                        onClick={() => theme.setTheme("dark")}
+                                    >
+                                        Dark Theme
+                                    </MenubarCheckboxItem>
+                                    <MenubarCheckboxItem
+                                        checked={theme.theme === "light"}
+                                        onClick={() => theme.setTheme("light")}
+                                    >
+                                        Light Theme
+                                    </MenubarCheckboxItem>
+                                </MenubarSubContent>
+                            </MenubarSub>
+                            <MenubarItem disabled>
+                                <Cog className="w-4 h-4 mr-2" /> Settings
+                            </MenubarItem>
+                            <MenubarItem disabled>
+                                <Info className="w-4 h-4 mr-2" /> Info
+                            </MenubarItem>
+                            <MenubarSeparator />
+                            <ActionMenubarItem actionId="editor.close" />
+                        </MenubarContent>
+                    </MenubarMenu>
                     <MenubarMenu>
                         <MenubarTrigger>
                             Crate <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
                         </MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem onClick={goToMainMenu}>
-                                <XIcon className="w-4 h-4 mr-2" /> Close Editor
-                            </MenubarItem>
-                            <MenubarSeparator />
-                            <MenubarItem
-                                onClick={saveAllEntities}
-                                disabled={isSaving || !hasUnsavedChanges}
-                            >
-                                <SaveAll className={"w-4 h-4 mr-2"} /> Save All Entities
-                            </MenubarItem>
-                            <MenubarItem
-                                onClick={revertAllEntities}
-                                disabled={isSaving || !hasUnsavedChanges}
-                            >
-                                <Undo2 className={"w-4 h-4 mr-2"} /> Revert All Entities
-                            </MenubarItem>
-                            <MenubarSeparator />
-                            <MenubarItem onClick={downloadCrateZip}>
-                                <FolderArchive className="w-4 h-4 mr-2" /> Download Crate as .zip
-                            </MenubarItem>
-                        </MenubarContent>
-                    </MenubarMenu>
-                    <MenubarMenu>
-                        <MenubarTrigger>
-                            Entities <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
-                        </MenubarTrigger>
-                        <MenubarContent>
-                            <MenubarItem onClick={() => showCreateEntityModal()}>
-                                <Plus className="w-4 h-4 mr-2" /> Add new Entity
-                            </MenubarItem>
+                            <ActionMenubarItem actionId="crate.add-entity" />
                             <MenubarSeparator />
                             <MenubarItem onClick={() => showUploadFileModal()}>
                                 <FileUp className="w-4 h-4 mr-2" /> Upload File
@@ -129,15 +169,43 @@ export function NavHeader() {
                                 <FolderUp className="w-4 h-4 mr-2" /> Upload Folder
                             </MenubarItem>
                             <MenubarSeparator />
-                            <MenubarItem onClick={() => reload()}>
-                                <RefreshCcw className="w-4 h-4 mr-2" /> Reload Entities
-                            </MenubarItem>
-                            <MenubarItem onClick={showGlobalSearchModal}>
-                                <Search className="w-4 h-4 mr-2" /> Search
-                                <MenubarShortcut>⌘K</MenubarShortcut>
-                            </MenubarItem>
+                            <ActionMenubarItem
+                                disabled={isSaving || !hasUnsavedChanges}
+                                actionId="crate.save-all-entities"
+                            />
+                            <ActionMenubarItem
+                                disabled={isSaving || !hasUnsavedChanges}
+                                actionId="crate.revert-all-entities"
+                            />
+                            <MenubarSeparator />
+                            <ActionMenubarItem actionId="crate.reload-entities" />
+                            <MenubarSeparator />
+                            <MenubarSub>
+                                <MenubarSubTrigger>
+                                    <Copy className="w-4 h-4 mr-2" /> Copy Crate...
+                                </MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarItem onClick={() => copy(crateId)}>
+                                        <Copy className="w-4 h-4 mr-2" /> Copy Crate ID
+                                    </MenubarItem>
+                                    <MenubarItem onClick={() => copy(crateName)}>
+                                        <Copy className="w-4 h-4 mr-2" /> Copy Crate Name
+                                    </MenubarItem>
+                                </MenubarSubContent>
+                            </MenubarSub>
+                            <MenubarSub>
+                                <MenubarSubTrigger>
+                                    <Download className="w-4 h-4 mr-2" /> Export
+                                </MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarItem onClick={downloadCrateZip}>
+                                        <FolderArchive className="w-4 h-4 mr-2" /> As .zip Archive
+                                    </MenubarItem>
+                                </MenubarSubContent>
+                            </MenubarSub>
                         </MenubarContent>
                     </MenubarMenu>
+                    <EntityMenu />
                 </Menubar>
                 {/* Disabled until a proper implementation is done */}
                 {/*<Button size="sm" variant="ghost" className="mx-2 text-sm" onClick={() => undo()}>*/}
@@ -150,34 +218,21 @@ export function NavHeader() {
                 {/*</Button>*/}
             </div>
 
-            <div className="relative flex items-center">
-                <Search className="w-4 h-4 absolute left-2 text-muted-foreground" />
-                <button
-                    className="w-96 p-2 pl-8 text-left text-muted-foreground border rounded-lg flex items-center justify-between cursor-text"
-                    onClick={() => showGlobalSearchModal()}
-                >
-                    <span>Search for anything...</span>
-                    <span className="text-muted-foreground/60 text-sm">⌘K</span>
-                </button>
-            </div>
+            <div />
 
             <div className="flex justify-end items-center gap-2">
-                <div className="flex items-center mr-6 text-green-500">
+                <div className="flex items-center mr-2 text-green-500">
                     <Check className="w-4 h-4 mr-2" /> No Issues detected
                 </div>
-
-                <Button onClick={toggleTheme} variant="secondary" className="justify-start">
-                    {theme.theme === "light" ? (
-                        <Sun className="h-4 w-4" />
-                    ) : (
-                        <Moon className="h-4 w-4" />
-                    )}
+                <Button
+                    variant="secondary"
+                    className="text-muted-foreground text-xs"
+                    onClick={showGlobalSearchModal}
+                >
+                    <Search className="w-4 h-4 mr-2 text-foreground" /> ⌘K
                 </Button>
-                {/*<Button variant="secondary">*/}
-                {/*    <User className="h-4 w-4" />*/}
-                {/*</Button>*/}
-                <Button variant="secondary">
-                    <Cog className="h-4 w-4" />
+                <Button variant="secondary" size="icon">
+                    <Cog className="w-4 h-4" />
                 </Button>
             </div>
         </div>

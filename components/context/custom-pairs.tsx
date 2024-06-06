@@ -28,6 +28,7 @@ import { Error } from "@/components/error"
 export function CustomPairs() {
     const context = useEditorState.useCrateContext()
     const [addPairModalOpen, setAddPairModalOpen] = useState(false)
+    const { crateDataIsLoading } = useContext(CrateDataContext)
 
     const [addPairKey, setAddPairKey] = useState("")
     const [addPairValue, setAddPairValue] = useState("")
@@ -177,9 +178,19 @@ export function CustomPairs() {
                         </TableRow>
                     ))}
                     {customPairs.length === 0 ? (
-                        <div className="p-4 text-muted-foreground">
-                            No Custom Context pairs have been configured
-                        </div>
+                        crateDataIsLoading ? (
+                            <TableRow>
+                                <TableCell className="p-4 text-muted-foreground">
+                                    Loading...
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            <TableRow>
+                                <TableCell className="p-4 text-muted-foreground">
+                                    No Custom Context pairs have been configured
+                                </TableCell>
+                            </TableRow>
+                        )
                     ) : null}
                 </TableBody>
             </Table>

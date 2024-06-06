@@ -2,11 +2,14 @@
 
 import { createContext, PropsWithChildren, useCallback, useContext, useState } from "react"
 import { CreateEntityModal } from "@/components/modals/create-entity/create-entity-modal"
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import { SaveEntityChangesModal } from "@/components/modals/save-entity-changes-modal"
 import { DeleteEntityModal } from "@/components/modals/delete-entity-modal"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { GlobalSearch } from "@/components/global-search"
+import { GlobalSearch } from "@/components/modals/global-search"
+import { AddPropertyModal } from "@/components/modals/add-property/add-property-modal"
+import { FindReferencesModal } from "@/components/modals/find-references-modal"
+import { SaveAsModal } from "@/components/modals/save-as-modal"
 
 export interface AutoReference {
     entityId: string
@@ -24,13 +27,24 @@ export interface IGlobalModalContext {
     showSaveEntityChangesModal(entityId: string): void
     showDeleteEntityModal(entityId: string): void
     showGlobalSearchModal(): void
+    showAddPropertyModal(typeArray: string[], callback: AddPropertyModalCallback): void
+    showFindReferencesModal(entityId: string): void
+    showSaveAsModal(entityId: string): void
 }
+
+export type AddPropertyModalCallback = (
+    propertyName: string,
+    values: FlatEntitySinglePropertyTypes
+) => void
 
 export const GlobalModalContext = createContext<IGlobalModalContext>({
     showCreateEntityModal() {},
     showSaveEntityChangesModal() {},
     showDeleteEntityModal() {},
-    showGlobalSearchModal() {}
+    showGlobalSearchModal() {},
+    showAddPropertyModal() {},
+    showFindReferencesModal() {},
+    showSaveAsModal() {}
 })
 
 export function GlobalModalProvider(props: PropsWithChildren) {
@@ -55,6 +69,23 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     })
     const [globalSearchState, setGlobalSearchState] = useState({
         open: false
+    })
+    const [addPropertyModalState, setAddPropertyModalState] = useState<{
+        open: boolean
+        onPropertyAdd: AddPropertyModalCallback
+        typeArray: string[]
+    }>({
+        open: false,
+        onPropertyAdd: () => {},
+        typeArray: []
+    })
+    const [findReferencesModalState, setFindReferencesModalState] = useState({
+        open: false,
+        entityId: ""
+    })
+    const [saveAsModalState, setSaveAsModalState] = useState({
+        open: false,
+        entityId: ""
     })
 
     const showCreateEntityModal = useCallback(
@@ -93,6 +124,31 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         setGlobalSearchState({ open: true })
     }, [])
 
+    const showAddPropertyModal = useCallback(
+        (typeArray: string[], callback: AddPropertyModalCallback) => {
+            setAddPropertyModalState({
+                open: true,
+                typeArray,
+                onPropertyAdd: callback
+            })
+        },
+        []
+    )
+
+    const showFindReferencesModal = useCallback((entityId: string) => {
+        setFindReferencesModalState({
+            open: true,
+            entityId
+        })
+    }, [])
+
+    const showSaveAsModal = useCallback((entityId: string) => {
+        setSaveAsModalState({
+            open: true,
+            entityId
+        })
+    }, [])
+
     const onCreateEntityModalOpenChange = useCallback((isOpen: boolean) => {
         setCreateEntityModalState({
             autoReference: undefined,
@@ -120,12 +176,24 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         setGlobalSearchState({ open: isOpen })
     }, [])
 
+    const onAddPropertyModalOpenChange = useCallback(() => {
+        setAddPropertyModalState((old) => ({ ...old, open: false }))
+    }, [])
+
+    const onFindReferencesModalOpenChange = useCallback(() => {
+        setFindReferencesModalState({ open: false, entityId: "" })
+    }, [])
+
+    const onSaveAsModalOpenChange = useCallback(() => {
+        setSaveAsModalState({ open: false, entityId: "" })
+    }, [])
+
     const onEntityCreated = useCallback(
-        (entity: IFlatEntity) => {
+        (entity?: IFlatEntity) => {
             setCreateEntityModalState({
                 open: false
             })
-            saveEntity(entity).catch(console.error)
+            if (entity) saveEntity(entity).catch(console.error)
         },
         [saveEntity]
     )
@@ -136,7 +204,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 showCreateEntityModal,
                 showSaveEntityChangesModal,
                 showDeleteEntityModal,
-                showGlobalSearchModal
+                showGlobalSearchModal,
+                showFindReferencesModal,
+                showAddPropertyModal,
+                showSaveAsModal
             }}
         >
             <CreateEntityModal
@@ -161,6 +232,22 @@ export function GlobalModalProvider(props: PropsWithChildren) {
             <GlobalSearch
                 open={globalSearchState.open}
                 onOpenChange={onGlobalSearchModalOpenChange}
+            />
+            <AddPropertyModal
+                open={addPropertyModalState.open}
+                onPropertyAdd={addPropertyModalState.onPropertyAdd}
+                onOpenChange={onAddPropertyModalOpenChange}
+                typeArray={addPropertyModalState.typeArray}
+            />
+            <FindReferencesModal
+                open={findReferencesModalState.open}
+                onOpenChange={onFindReferencesModalOpenChange}
+                entityId={findReferencesModalState.entityId}
+            />
+            <SaveAsModal
+                open={saveAsModalState.open}
+                onOpenChange={onSaveAsModalOpenChange}
+                entityId={saveAsModalState.entityId}
             />
 
             {props.children}

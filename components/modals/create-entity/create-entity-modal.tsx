@@ -1,5 +1,5 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { SlimClass } from "@/lib/crate-verify/helpers"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import React, { useCallback, useContext, useEffect, useState } from "react"
 import { AutoReference } from "@/components/providers/global-modals-provider"
 import { useEditorState } from "@/lib/state/editor-state"
@@ -11,6 +11,7 @@ import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { UploadProgress } from "@/components/modals/create-entity/upload-progress"
 import { RO_CRATE_FILE } from "@/lib/constants"
 import { asValidPath, getFolderPath } from "@/lib/utils"
+import { CreateProviders } from "@/components/modals/create-entity/create-providers"
 
 export function CreateEntityModal({
     open,
@@ -22,7 +23,7 @@ export function CreateEntityModal({
     basePath
 }: {
     open: boolean
-    onEntityCreated: (entity: IFlatEntity) => void
+    onEntityCreated: (entity?: IFlatEntity) => void
     onOpenChange: (open: boolean) => void
     restrictToClasses?: SlimClass[]
     autoReference?: AutoReference
@@ -30,11 +31,11 @@ export function CreateEntityModal({
     basePath?: string
 }) {
     const addEntity = useEditorState.useAddEntity()
-    const { focusTab } = useContext(EntityEditorTabsContext)
+    const { focusTab, openTab } = useContext(EntityEditorTabsContext)
     const { createFileEntity, createFolderEntity } = useContext(CrateDataContext)
     const context = useEditorState.useCrateContext()
 
-    const [fullTypeBrowser, setFullTypeBrowser] = useState(!!forceId || !!restrictToClasses)
+    const [fullTypeBrowser, setFullTypeBrowser] = useState(!!restrictToClasses)
     const [selectedType, setSelectedType] = useState("")
 
     const [uploading, setUploading] = useState(false)
@@ -57,7 +58,7 @@ export function CreateEntityModal({
                 resetUploadState()
             }, 100)
         } else {
-            setFullTypeBrowser(!!forceId || !!restrictToClasses)
+            setFullTypeBrowser(!!restrictToClasses)
         }
     }, [forceId, open, resetUploadState, restrictToClasses])
 
@@ -81,6 +82,18 @@ export function CreateEntityModal({
             }
         },
         [addEntity, autoReference, focusTab, onEntityCreated, selectedType]
+    )
+
+    const onProviderCreate = useCallback(
+        (entityOrId: IFlatEntity | string) => {
+            onEntityCreated(typeof entityOrId === "object" ? entityOrId : undefined)
+            if (typeof entityOrId === "string") {
+                openTab({ entityId: entityOrId }, true)
+            } else {
+                focusTab(entityOrId["@id"])
+            }
+        },
+        [focusTab, onEntityCreated, openTab]
     )
 
     const onUploadFile = useCallback(
@@ -182,14 +195,22 @@ export function CreateEntityModal({
                         />
                     )
                 ) : (
-                    <CreateEntity
-                        onBackClick={backToTypeSelect}
-                        onCreateClick={onCreate}
-                        forceId={forceId}
+                    <CreateProviders
                         selectedType={selectedType}
-                        basePath={basePath}
-                        onUploadFile={onUploadFile}
-                        onUploadFolder={onUploadFolder}
+                        backToTypeSelect={backToTypeSelect}
+                        onProviderCreate={onProviderCreate}
+                        autoReference={autoReference}
+                        fallback={
+                            <CreateEntity
+                                onBackClick={backToTypeSelect}
+                                onCreateClick={onCreate}
+                                forceId={forceId}
+                                selectedType={selectedType}
+                                basePath={basePath}
+                                onUploadFile={onUploadFile}
+                                onUploadFolder={onUploadFolder}
+                            />
+                        }
                     />
                 )}
             </DialogContent>

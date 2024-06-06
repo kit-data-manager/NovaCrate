@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from "react"
+import React, { memo, useCallback, useContext, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Trash } from "lucide-react"
@@ -10,7 +10,7 @@ import { RO_CRATE_FILE } from "@/lib/constants"
 
 // TODO: How to handle data files?
 
-export function DeleteEntityModal({
+export const DeleteEntityModal = memo(function DeleteEntityModal({
     open,
     onOpenChange,
     entityId
@@ -96,7 +96,8 @@ export function DeleteEntityModal({
                 <div>
                     Are you sure that you want to delete{" "}
                     {entity ? getEntityDisplayName(entity) : <i>Unresolved Entity</i>}? The
-                    associated data will be <b>permanently deleted</b>.
+                    associated data will be <b>permanently deleted</b>. This action is not
+                    reversible.
                 </div>
                 <div className="flex justify-between">
                     <Button variant="outline" onClick={onCloseClick} disabled={isDeleting}>
@@ -113,4 +114,4 @@ export function DeleteEntityModal({
             </DialogContent>
         </Dialog>
     )
-}
+})

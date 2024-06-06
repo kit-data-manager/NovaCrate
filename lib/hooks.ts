@@ -7,6 +7,10 @@ import {
     EntityEditorTabsContext
 } from "@/components/providers/entity-tabs-provider"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { isRootEntity } from "@/lib/utils"
+import { useGraphState } from "@/components/providers/graph-state-provider"
+import { Action, notFoundAction } from "@/lib/state/actions"
+import { useActionsStore } from "@/components/providers/actions-provider"
 
 const MAX_LIST_LENGTH = 100
 
@@ -28,7 +32,7 @@ export function useRecentCrates() {
         }
     }, [])
 
-    const addRecentCrate = useCallback((crateId: string) => {
+    const addRecentCrate = useCallback((crateId: string, name: string) => {
         const content = window.localStorage.getItem("recent-crates")
         if (content) {
             try {
@@ -40,7 +44,7 @@ export function useRecentCrates() {
                 window.localStorage.setItem("recent-crates", JSON.stringify(recentlyUsed))
                 window.localStorage.setItem(
                     crateDetailsKey(crateId),
-                    JSON.stringify({ lastOpened: new Date() })
+                    JSON.stringify({ lastOpened: new Date(), name })
                 )
             } catch (e) {
                 console.warn("Failed to add recently used crated", e)
@@ -137,6 +141,7 @@ export function useAutoId(name: string) {
     const entities = useEditorState.useEntities()
 
     return useMemo(() => {
+        if (name == "") return ""
         let generated = "#" + encodeURIComponent(name.toLowerCase().trim().replaceAll(" ", "-"))
         let maxIterations = 10
         while (entities.has(generated)) {
@@ -185,6 +190,11 @@ export function useGoToPage(page: string) {
     }, [page, pathname, router])
 }
 
+export function useCurrentPageName() {
+    const pathname = usePathname()
+    return pathname.split("/")[3]
+}
+
 export function useGoToMainMenu() {
     const router = useRouter()
 
@@ -200,4 +210,62 @@ export function useSaveAllEntities() {
     return useCallback(() => {
         return saveAllEntities(getChangedEntities())
     }, [getChangedEntities, saveAllEntities])
+}
+
+export function useCrateName() {
+    const crate = useContext(CrateDataContext)
+
+    return useMemo(() => {
+        return (crate.crateData?.["@graph"].find(isRootEntity)?.name || crate.crateId) + ""
+    }, [crate.crateData, crate.crateId])
+}
+
+/**
+ * This hook tries to find the currently active entity
+ * Works in Entities page and Graph page
+ */
+export function useCurrentEntity() {
+    const page = useCurrentPageName()
+    const { activeTabEntityID } = useContext(EntityEditorTabsContext)
+    const activeNodeEntityID = useGraphState((store) => store.selectedEntityID)
+    return useEditorState((store) => {
+        if (page === "entities") {
+            return store.entities.get(activeTabEntityID)
+        } else if (page === "graph" && activeNodeEntityID) {
+            return store.entities.get(activeNodeEntityID)
+        } else return undefined
+    })
+}
+
+export function useRegisterAction(
+    id: string,
+    name: string,
+    fn: () => void,
+    options?: Partial<Omit<Action, "id" | "name" | "execute">>
+) {
+    const registerAction = useActionsStore((store) => store.registerAction)
+    const unregisterAction = useActionsStore((store) => store.unregisterAction)
+    const constId = useRef(id)
+    const constName = useRef(name)
+    const constOptions = useRef(options)
+
+    const action: Action = useMemo(
+        () => ({
+            id: constId.current,
+            name: constName.current,
+            execute: fn,
+            ...constOptions.current
+        }),
+        [fn]
+    )
+
+    useEffect(() => {
+        registerAction(action)
+
+        return () => unregisterAction(action.id)
+    }, [action, registerAction, unregisterAction])
+}
+
+export function useAction(id: string) {
+    return useActionsStore((store) => store.actions.get(id) || notFoundAction(id))
 }
