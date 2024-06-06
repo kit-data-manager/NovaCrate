@@ -28,7 +28,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "edu.kit.scc.ro-crate-editor",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -55,10 +55,11 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 800,
         "resizable": true,
         "title": "RO-Crate Editor",
-        "width": 800
+        "width": 1400,
+        "center": true
       }
     ]
   }

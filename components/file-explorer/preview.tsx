@@ -1,3 +1,5 @@
+"use client"
+
 import { Download, Eye, XIcon } from "lucide-react"
 import HelpTooltip from "@/components/help-tooltip"
 import { Button } from "@/components/ui/button"
