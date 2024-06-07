@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import TauriAutoShow from "@/components/tauri"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -18,6 +19,7 @@ export default function RootLayout({
     return (
         <html lang="en" className="w-full h-full" suppressHydrationWarning>
             <body className={"w-full h-full " + inter.className}>
+                <TauriAutoShow />
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="dark"

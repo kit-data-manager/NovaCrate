@@ -18,13 +18,13 @@ export function FilePreview() {
     const [previewError, setPreviewError] = useState<unknown>()
 
     const downloadFile = useCallback(() => {
-        if (serviceProvider) {
+        if (serviceProvider && crateId) {
             serviceProvider.downloadFile(crateId, previewingFilePath).catch(setDownloadError)
         }
     }, [crateId, previewingFilePath, serviceProvider, setDownloadError])
 
     const resourceUrl = useMemo(() => {
-        if (serviceProvider && serviceProvider.getCrateFileURL) {
+        if (serviceProvider && serviceProvider.getCrateFileURL && crateId) {
             return serviceProvider.getCrateFileURL(crateId, previewingFilePath)
         } else return undefined
     }, [crateId, previewingFilePath, serviceProvider])

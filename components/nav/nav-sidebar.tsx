@@ -40,7 +40,7 @@ function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>)
 export function NavSidebar({ children }: PropsWithChildren<{}>) {
     return (
         <ResizablePanelGroup direction="horizontal" autoSaveId="globalSidebarLayout">
-            <ResizablePanel minSize={10} defaultSize={10}>
+            <ResizablePanel minSize={10} defaultSize={15}>
                 <div className="relative h-full flex flex-col">
                     <div className="flex flex-col gap-2 p-2 pt-0 min-w-40 pb-4 grow">
                         <NavSidebarLink page="entities">

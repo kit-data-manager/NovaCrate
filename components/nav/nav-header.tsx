@@ -39,6 +39,7 @@ import { useCopyToClipboard } from "usehooks-ts"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getEntityDisplayName } from "@/lib/utils"
 import { ActionMenubarItem } from "@/components/actions/action-buttons"
+import { EntityIcon } from "@/components/entity-icon"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -54,7 +55,10 @@ function EntityMenu() {
                 <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
             </MenubarTrigger>
             <MenubarContent>
-                <MenubarLabel className="max-w-[300px] truncate">{currentEntityName}</MenubarLabel>
+                <MenubarLabel className="max-w-[300px] truncate flex">
+                    <EntityIcon entity={currentEntity} /> {currentEntityName}
+                </MenubarLabel>
+                <MenubarSeparator />
                 <ActionMenubarItem actionId="entity.save" />
                 <ActionMenubarItem actionId="entity.revert" />
                 <MenubarSeparator />
@@ -101,7 +105,7 @@ export function NavHeader() {
     }, [showCreateEntityModal])
 
     const downloadCrateZip = useCallback(() => {
-        if (serviceProvider) {
+        if (serviceProvider && crateId) {
             serviceProvider.downloadCrateZip(crateId).then()
         }
     }, [crateId, serviceProvider])
@@ -112,10 +116,12 @@ export function NavHeader() {
         <div className="p-4 py-3 w-full grid grid-cols-[1fr_auto_1fr]">
             <div className="flex items-center">
                 <Package className="w-7 h-7 mr-2" />
-                {crateDataIsLoading ? (
+                {crateDataIsLoading || !crateName ? (
                     <Skeleton className="h-8 w-32" />
                 ) : (
-                    <div className="mr-6 font-bold max-w-[300px] truncate">{crateName}</div>
+                    <div className="mr-6 font-bold max-w-[300px] truncate animate-in">
+                        {crateName}
+                    </div>
                 )}
 
                 <Menubar>
@@ -185,7 +191,7 @@ export function NavHeader() {
                                     <Copy className="w-4 h-4 mr-2" /> Copy Crate...
                                 </MenubarSubTrigger>
                                 <MenubarSubContent>
-                                    <MenubarItem onClick={() => copy(crateId)}>
+                                    <MenubarItem onClick={() => copy(crateId || "")}>
                                         <Copy className="w-4 h-4 mr-2" /> Copy Crate ID
                                     </MenubarItem>
                                     <MenubarItem onClick={() => copy(crateName)}>

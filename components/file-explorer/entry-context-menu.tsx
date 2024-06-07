@@ -46,7 +46,7 @@ export function EntryContextMenu({
     )
 
     const downloadFile = useCallback(() => {
-        if (serviceProvider && filePath) {
+        if (serviceProvider && filePath && crateId) {
             serviceProvider.downloadFile(crateId, filePath).catch(setDownloadError)
         }
     }, [crateId, filePath, serviceProvider, setDownloadError])

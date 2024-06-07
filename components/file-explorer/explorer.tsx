@@ -9,7 +9,6 @@ import {
     FileX,
     Folder,
     FolderX,
-    Plus,
     RefreshCw
 } from "lucide-react"
 import { Error } from "@/components/error"
@@ -29,8 +28,6 @@ import {
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { useAsync } from "@/lib/hooks"
-import { Button } from "@/components/ui/button"
-import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { ActionButton } from "@/components/actions/action-buttons"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
@@ -39,7 +36,6 @@ export function FileExplorer() {
     const crateData = useContext(CrateDataContext)
     const entities = useEditorState.useEntities()
     const { downloadError } = useContext(FileExplorerContext)
-    const { showCreateEntityModal } = useContext(GlobalModalContext)
 
     const filesListResolver = useCallback(
         async (crateId: string) => {
@@ -50,7 +46,10 @@ export function FileExplorer() {
         [crateData.serviceProvider]
     )
 
-    const { data, error, isPending, revalidate } = useAsync(crateData.crateId, filesListResolver)
+    const { data, error, isPending, revalidate } = useAsync(
+        crateData.crateId || null,
+        filesListResolver
+    )
 
     const revalidateRef = useRef(revalidate)
     useEffect(() => {

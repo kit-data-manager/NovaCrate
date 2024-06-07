@@ -22,7 +22,7 @@ export default function Entities() {
     return (
         <ResizablePanelGroup direction={"horizontal"}>
             <ResizablePanel
-                defaultSize={20}
+                defaultSize={30}
                 minSize={10}
                 ref={entityBrowserPanel}
                 collapsible
