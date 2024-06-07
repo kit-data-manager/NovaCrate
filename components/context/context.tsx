@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export function ContextPage() {
     const context = useEditorState.useCrateContext()
-    const { crateDataIsLoading } = useContext(CrateDataContext)
+    const { crateDataIsLoading, crateId } = useContext(CrateDataContext)
 
     const [specificationModalOpen, setSpecificationModalOpen] = useState(false)
 
@@ -43,14 +43,14 @@ export function ContextPage() {
                         </HelpTooltip>
                     </Label>
                     <div className="mt-2 ml-2">
-                        {crateDataIsLoading ? (
+                        {crateDataIsLoading || !crateId ? (
                             <Skeleton className="w-32 h-6" />
                         ) : (
                             context.specification
                         )}
                     </div>
 
-                    {!crateDataIsLoading && context.specification === "unknown" ? (
+                    {!crateDataIsLoading && crateId && context.specification === "unknown" ? (
                         <Error
                             title="Invalid Context"
                             error="The RO-Crate Specification used in this crate could not be identified. Most Types and Properties will not be resolved. Please fix the issue in the JSON Editor by specifying a valid RO-Crate Specification"

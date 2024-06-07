@@ -142,7 +142,7 @@ export function EntityGraph() {
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const { showDeleteEntityModal, showAddPropertyModal } = useContext(GlobalModalContext)
-    const { saveError, crateDataIsLoading } = useContext(CrateDataContext)
+    const { saveError, crateDataIsLoading, crateId } = useContext(CrateDataContext)
 
     const {
         nodes,
@@ -335,7 +335,7 @@ export function EntityGraph() {
             >
                 <Panel
                     position="top-left"
-                    className={`transition gap-2 items-center flex ${crateDataIsLoading ? "opacity-0" : "opacity-100"}`}
+                    className={`transition gap-2 items-center flex ${crateDataIsLoading || !crateId ? "opacity-0" : "opacity-100"}`}
                 >
                     <div className="p-0.5 bg-accent rounded-lg">
                         <Button variant="secondary" size="sm" onClick={comfortableView}>
@@ -396,7 +396,7 @@ export function EntityGraph() {
 
                 <Panel
                     position="top-right"
-                    className={`transition ${crateDataIsLoading ? "opacity-0" : "opacity-100"}`}
+                    className={`transition ${crateDataIsLoading || !crateId ? "opacity-0" : "opacity-100"}`}
                 >
                     <ActionButton
                         variant={hasUnsavedChanges ? "default" : "secondary"}
@@ -408,7 +408,7 @@ export function EntityGraph() {
                     <Error title="Error while saving" error={saveError} />
                 </Panel>
 
-                {crateDataIsLoading ? (
+                {crateDataIsLoading || !crateId ? (
                     <div className="w-full h-full flex justify-center items-center gap-8">
                         <Skeleton className="w-[200px] h-[100px]" />
                         <div className="space-y-8">

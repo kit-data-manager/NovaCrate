@@ -17,8 +17,7 @@ import {
     ChevronsDownUp,
     ChevronsUpDown,
     EllipsisVertical,
-    PackageSearch,
-    RefreshCw
+    PackageSearch
 } from "lucide-react"
 import {
     createEntityEditorTab,
@@ -185,7 +184,6 @@ export function EntityBrowserContent({
 
 export function EntityBrowser() {
     const state = useEntityBrowserState()
-    const crate = useContext(CrateDataContext)
     const [defaultSectionOpen, setDefaultSectionOpen] = useState<DefaultSectionOpen>(true)
 
     const collapseAllSections = useCallback(() => {
@@ -203,7 +201,7 @@ export function EntityBrowser() {
     return (
         <div className="flex flex-col h-full">
             <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
-                <PackageSearch className="w-4 h-4 shrink-0 mr-2" /> Entity Explorer
+                <PackageSearch className="w-4 h-4 shrink-0 mr-2" /> Entities
             </div>
             <div className="flex gap-2 top-0 z-10 p-2 bg-accent shrink-0">
                 <ActionButton

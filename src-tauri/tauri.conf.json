@@ -11,7 +11,10 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false
+      "all": false,
+      "window": {
+        "show": true
+      }
     },
     "bundle": {
       "active": true,
@@ -59,7 +62,9 @@
         "resizable": true,
         "title": "RO-Crate Editor",
         "width": 1400,
-        "center": true
+        "center": true,
+        "url": "editor",
+        "visible": false
       }
     ]
   }

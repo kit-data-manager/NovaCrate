@@ -1,6 +1,6 @@
 "use client"
 
-import { Editor, Monaco } from "@monaco-editor/react"
+import { Editor } from "@monaco-editor/react"
 import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useTheme } from "next-themes"
@@ -10,6 +10,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { Error } from "@/components/error"
 import { Button } from "@/components/ui/button"
 import { useSaveAllEntities } from "@/lib/hooks"
+import { useHandleMonacoMount } from "@/lib/monaco"
 
 export default function JSONEditorPage() {
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
@@ -29,25 +30,7 @@ export default function JSONEditorPage() {
         }
     }, [crateData, crateDataProxy])
 
-    const handleMount = useCallback(
-        (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-            setTimeout(() => {
-                editor.getAction("editor.action.formatDocument")?.run()
-            }, 100)
-
-            monaco.editor.defineTheme("ro-crate-editor", {
-                base: "vs-dark",
-                colors: {
-                    "editor.background": "#000000"
-                },
-                inherit: true,
-                rules: [],
-                encodedTokensColors: []
-            })
-            if (theme.theme === "dark") monaco.editor.setTheme("ro-crate-editor")
-        },
-        [theme.theme]
-    )
+    const handleMount = useHandleMonacoMount()
 
     const handleChange = useCallback((value: string | undefined) => {
         if (value) {
@@ -166,7 +149,7 @@ export default function JSONEditorPage() {
                     <Editor
                         value={JSON.stringify(crateDataProxy)}
                         defaultLanguage="json"
-                        theme={theme.theme === "dark" ? "ro-crate-editor" : "light"}
+                        theme={theme.theme === "dark" ? "crate-dark" : "light"}
                         onMount={handleMount}
                         onChange={handleChange}
                         onValidate={handleValidate}

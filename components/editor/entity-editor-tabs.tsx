@@ -182,9 +182,9 @@ export function EntityEditorTabs({
             <div className="flex flex-col justify-center items-center h-full">
                 <Package className="w-52 h-52 mb-20 text-muted" />
                 <div>Select an Entity on the left</div>
-                <div className="mt-2 text-muted-foreground">or</div>
+                <div className="my-2 text-muted-foreground">or</div>
                 <div>
-                    <ActionButton variant="link" actionId={"crate.add-entity"} />
+                    <ActionButton variant="secondary" actionId={"crate.add-entity"} />
                 </div>
             </div>
         )

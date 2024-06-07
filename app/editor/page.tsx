@@ -40,10 +40,15 @@ export default function EditorLandingPage() {
     const { recentCrates, removeFromRecentCrates } = useRecentCrates()
     const [showStoredCratesAmount, setShowStoredCratesAmount] = useState(5)
     const [showRecentCratesAmount, setShowRecentCratesAmount] = useState(5)
-    const { serviceProvider, setCrateId } = useContext(CrateDataContext)
+    const { serviceProvider, setCrateId, unsetCrateId } = useContext(CrateDataContext)
     const { openFilePicker: openZipFilePicker, plainFiles: zipFiles } = useFilePicker({
         accept: ".zip"
     })
+
+    useEffect(() => {
+        console.debug("Unsetting crate ID")
+        unsetCrateId()
+    }, [unsetCrateId])
 
     const [deleteCrateModalState, setDeleteCrateModalState] = useState({
         open: false,
@@ -126,7 +131,7 @@ export default function EditorLandingPage() {
         (id: string) => {
             if (id !== "undefined") {
                 setCrateId(id)
-                router.push(`/editor/static/entities`)
+                router.push(`/editor/full/entities`)
             }
         },
         [router, setCrateId]

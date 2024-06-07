@@ -1,22 +1,18 @@
 "use client"
 
-import {
-    createContext,
-    PropsWithChildren,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState
-} from "react"
+import { createContext, PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
 import useSWR from "swr"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Draft, produce } from "immer"
 import { applyServerDifferences } from "@/lib/ensure-sync"
 
+const CRATE_ID_STORAGE_KEY = "crate-id"
+
 export interface ICrateDataProvider {
     readonly serviceProvider?: CrateServiceProvider
-    crateId: string
+    crateId?: string
+    setCrateId(crateId: string): void
+    unsetCrateId(): void
     crateData?: ICrate
     crateDataIsLoading: boolean
     saveEntity(entity: IFlatEntity): Promise<boolean>
@@ -37,18 +33,11 @@ export interface ICrateDataProvider {
     isSaving: boolean
     saveError: unknown
     error: unknown
-
-    /**
-     * Caution: Only for use in static mode (e.g. Desktop mode)
-     * If using in browser, specify crate id via URL
-     * @param crateId
-     */
-    setCrateId(crateId: string): void
 }
 
 export const CrateDataContext = createContext<ICrateDataProvider>({
     serviceProvider: undefined,
-    crateId: "",
+    crateId: undefined,
     saveEntity: () => {
         return Promise.reject("Crate Data Provider not mounted yet")
     },
@@ -88,17 +77,17 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
     error: undefined,
     setCrateId() {
         throw "Crate Data Provider not mounted yet"
+    },
+    unsetCrateId() {
+        console.warn("Crate Data Provider not mounted yet")
     }
 })
 
 export function CrateDataProvider({
     serviceProvider,
-    crateId: _crateId,
     children
-}: PropsWithChildren<{ serviceProvider: CrateServiceProvider; crateId?: string }>) {
-    const [crateId, _setCrateId] = useState(
-        decodeURIComponent(_crateId || "") === "static" ? undefined : _crateId
-    )
+}: PropsWithChildren<{ serviceProvider: CrateServiceProvider }>) {
+    const [crateId, setCrateId] = useState<string | undefined>(undefined)
     const getEntities = useEditorState.useGetEntities()
     const setEntities = useEditorState.useSetEntities()
     const setCrateContext = useEditorState.useSetCrateContext()
@@ -347,8 +336,18 @@ export function CrateDataProvider({
         [mutate, crateId, serviceProvider]
     )
 
-    const setCrateId = useCallback((crateId: string) => {
-        _setCrateId(crateId)
+    useEffect(() => {
+        if (crateId) {
+            localStorage.setItem(CRATE_ID_STORAGE_KEY, crateId)
+        } else {
+            const saved = localStorage.getItem(CRATE_ID_STORAGE_KEY)
+            if (saved) setCrateId(saved)
+        }
+    }, [crateId])
+
+    const unsetCrateId = useCallback(() => {
+        setCrateId(undefined)
+        localStorage.removeItem(CRATE_ID_STORAGE_KEY)
     }, [])
 
     return (
@@ -372,7 +371,8 @@ export function CrateDataProvider({
                 addCustomContextPair,
                 removeCustomContextPair,
                 saveRoCrateMetadataJSON,
-                setCrateId
+                setCrateId,
+                unsetCrateId
             }}
         >
             {children}
