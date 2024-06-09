@@ -141,10 +141,14 @@ export function CreateCrateModal({
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Create a new Crate</DialogTitle>
+                    {fromExample ? (
+                        <DialogDescription>Using Example: {fromExample}</DialogDescription>
+                    ) : (
+                        <DialogDescription>
+                            You can always change the name and description later.
+                        </DialogDescription>
+                    )}
                 </DialogHeader>
-                {fromExample ? (
-                    <DialogDescription>Using Example: {fromExample}</DialogDescription>
-                ) : null}
 
                 {uploading ? (
                     <UploadProgressBar

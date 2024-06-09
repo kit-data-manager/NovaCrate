@@ -6,6 +6,7 @@ import { Braces, Bug, Folder, GitFork, Library, PackageSearch } from "lucide-rea
 import { PropsWithChildren, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import packageJson from "@/package.json"
 
 function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>) {
     const pathname = usePathname()
@@ -70,6 +71,10 @@ export function NavSidebar({ children }: PropsWithChildren<{}>) {
                             <Bug className="h-4 w-4 mr-2" />
                             Validation
                         </Button>
+
+                        <div className="text-center text-sm text-muted-foreground">
+                            {packageJson.name} v{packageJson.version}
+                        </div>
 
                         {/*<Button variant="link" className={`justify-start w-full`}>*/}
                         {/*    <BookOpenText className="h-4 w-4 mr-2" />*/}
