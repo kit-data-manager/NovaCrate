@@ -5,13 +5,23 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from "rea
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useTheme } from "next-themes"
 import type { editor } from "monaco-editor"
-import { Braces, CircleAlert, Dot, Info, Save, SaveAll, Undo2 } from "lucide-react"
+import {
+    Braces,
+    CircleAlert,
+    Dot,
+    Download,
+    Save,
+    SaveAll,
+    TriangleAlert,
+    Undo2
+} from "lucide-react"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Error } from "@/components/error"
 import { Button } from "@/components/ui/button"
 import { useSaveAllEntities } from "@/lib/hooks"
 import { useHandleMonacoMount } from "@/lib/monaco"
 import { Metadata } from "@/components/Metadata"
+import fileDownload from "js-file-download"
 
 export default function JSONEditorPage() {
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
@@ -65,6 +75,11 @@ export default function JSONEditorPage() {
         }
     }, [saveRoCrateMetadataJSON])
 
+    const download = useCallback(() => {
+        if (editorValue.current)
+            fileDownload(editorValue.current, "ro-crate-metadata.json", "application/json")
+    }, [])
+
     const shortcutHandler = useCallback(
         (event: KeyboardEvent) => {
             if (event.key == "s" && (event.ctrlKey || event.metaKey)) {
@@ -113,6 +128,27 @@ export default function JSONEditorPage() {
                     <Dot className="w-4 h-4" />
                     ro-crate-metadata.json
                 </span>
+                <div className="grow" />
+                <div>
+                    {editorHasChanges ? (
+                        <div className="flex text-warn items-center mr-2">
+                            <TriangleAlert className="absolute w-4 h-4 mr-2 animate-ping" />
+                            <TriangleAlert className="w-4 h-4 mr-2" /> Unsaved Changes
+                        </div>
+                    ) : null}
+                </div>
+                <Button
+                    variant="header"
+                    onClick={saveChanges}
+                    disabled={saving || editorHasErrors || !editorHasChanges}
+                >
+                    <Save className="w-4 h-4 mr-2" />
+                    <span className="text-sm">Save</span>
+                    <div className="ml-1 text-xs text-muted-foreground">⌘S</div>
+                </Button>
+                <Button variant="header" onClick={download}>
+                    <Download className="w-4 h-4 mr-2" /> Download
+                </Button>
             </div>
             {hasUnsavedChanges ? (
                 <div className="flex justify-center items-center grow">
@@ -141,12 +177,7 @@ export default function JSONEditorPage() {
                 <>
                     <Error error={saveError} title="Failed to save changes" />
                     <div className="flex gap-2 absolute top-12 right-[140px] z-10 bg-accent/60 items-center rounded-lg">
-                        <Noticer
-                            hasErrors={editorHasErrors}
-                            hasChanges={editorHasChanges}
-                            saveChanges={saveChanges}
-                            saving={saving}
-                        />
+                        <Noticer hasErrors={editorHasErrors} hasChanges={editorHasChanges} />
                     </div>
                     <Editor
                         value={JSON.stringify(crateDataProxy)}
@@ -162,42 +193,23 @@ export default function JSONEditorPage() {
     )
 }
 
-function Noticer({
-    hasErrors,
-    hasChanges,
-    saveChanges,
-    saving
-}: {
-    hasErrors: boolean
-    hasChanges: boolean
-    saveChanges(): void
-    saving: boolean
-}) {
+function Noticer({ hasErrors, hasChanges }: { hasErrors: boolean; hasChanges: boolean }) {
     if (hasErrors) {
         return (
-            <div className="flex items-center p-2 px-4 gap-2">
-                <CircleAlert className="w-4 h-4 text-root" />
-                <span className="text-root text-sm">
+            <div className="flex items-center p-2 px-4 gap-2 animate-w-grow bg-destructive rounded-lg">
+                <CircleAlert className="w-4 h-4" />
+                <span className="text-sm">
                     There are errors in the JSON file. Fix them before saving.
                 </span>
             </div>
         )
-    } else if (hasChanges || saving) {
-        return (
-            <button
-                className="flex items-center p-2 px-4 gap-2 disabled:text-muted-foreground disabled:cursor-not-allowed"
-                onClick={saveChanges}
-                disabled={saving}
-            >
-                <Save className="w-4 h-4" />
-                <span className="text-sm">Save</span>
-                <div className="text-xs text-muted-foreground">⌘S</div>
-            </button>
-        )
+    } else if (hasChanges) {
+        return null
     } else {
         return (
-            <div className="flex items-center p-2 px-4 gap-2">
-                <Info className="w-4 h-4" />
+            <div className="flex items-center p-2 px-4 gap-2 text-warn">
+                <TriangleAlert className="w-4 h-4" />
+                <TriangleAlert className="absolute w-4 h-4 animate-ping" />
                 <span>This is an expert feature. Be cautious while editing your data.</span>
             </div>
         )

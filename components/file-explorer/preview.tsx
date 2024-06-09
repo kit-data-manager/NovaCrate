@@ -57,7 +57,7 @@ export function FilePreview() {
                 </HelpTooltip>
                 <div className="grow" />
                 <Button variant="header" size="sm" onClick={downloadFile}>
-                    <Download className="w-4 h-4" />
+                    <Download className="w-4 h-4 mr-2" /> Download
                 </Button>
                 <Button variant="header" size="sm" onClick={() => setPreviewingFilePath("")}>
                     <XIcon className="w-4 h-4" />
