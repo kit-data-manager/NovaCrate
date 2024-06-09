@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# NovaCrate
 
-## Getting Started
+New easily usable research object crate editor.
 
-First, run the development server:
+## Web App
+
+### Prerequisites
+
+- Make sure [ro-crate-rest](https://gitlab.kit.edu/kit/scc/dem/dem-students/ChristopherR/implementation/ro-crate-rest) is running
+- Node.js >= 20
+
+### Updating dependencies
+
+```bash
+npm install
+```
+
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Building
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
+npm run build
+```
 
-## Learn More
+The website can then be found in the `out` folder. Use any web server for viewing. Local viewing:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npx serve@latest out
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Desktop App
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+A simple [tauri](https://tauri.app/) wrapper is used to produce a desktop version. **Optional**, not required for the web app.
 
-## Deploy on Vercel
+### Prerequisites
+ 
+- All Prerequisites of the Web App
+- Rust Toolchain
+- `tauri-cli` installed via cargo
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Development
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```bash
+cd src-tauri && cargo tauri dev
+```
+
+### Build
+
+```bash
+cd src-tauri && cargo tauri build
+```
