@@ -5,6 +5,7 @@ import useSWR from "swr"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Draft, produce } from "immer"
 import { applyServerDifferences } from "@/lib/ensure-sync"
+import { useRouter } from "next/navigation"
 
 const CRATE_ID_STORAGE_KEY = "crate-id"
 
@@ -95,6 +96,7 @@ export function CrateDataProvider({
     const setInitialEntities = useEditorState.useSetInitialEntities()
     const { data, error, isLoading, mutate } = useSWR<ICrate>(crateId, serviceProvider.getCrate)
     const lastCrateData = useRef<ICrate | undefined>(undefined)
+    const router = useRouter()
 
     useEffect(() => {
         if (data) {
@@ -342,8 +344,9 @@ export function CrateDataProvider({
         } else {
             const saved = localStorage.getItem(CRATE_ID_STORAGE_KEY)
             if (saved) setCrateId(saved)
+            else router.push("/editor")
         }
-    }, [crateId])
+    }, [crateId, router])
 
     const unsetCrateId = useCallback(() => {
         setCrateId(undefined)
