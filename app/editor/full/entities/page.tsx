@@ -5,6 +5,8 @@ import { EntityBrowser } from "@/components/entity-browser"
 import { EntityEditorTabs } from "@/components/editor/entity-editor-tabs"
 import { createRef, useCallback } from "react"
 import { ImperativePanelHandle } from "react-resizable-panels"
+import { useCrateName } from "@/lib/hooks"
+import { Metadata } from "@/components/Metadata"
 
 export default function Entities() {
     const entityBrowserPanel = createRef<ImperativePanelHandle>()
@@ -20,24 +22,27 @@ export default function Entities() {
     }, [entityBrowserPanel])
 
     return (
-        <ResizablePanelGroup direction={"horizontal"}>
-            <ResizablePanel
-                defaultSize={30}
-                minSize={10}
-                ref={entityBrowserPanel}
-                collapsible
-                collapsedSize={0}
-            >
-                <div className="h-full w-full overflow-auto">
-                    <EntityBrowser />
-                </div>
-            </ResizablePanel>
-            <ResizableHandle />
-            <ResizablePanel defaultSize={80} minSize={40}>
-                <div className="h-full w-full overflow-auto">
-                    <EntityEditorTabs toggleEntityBrowserPanel={toggleEntityBrowserPanel} />
-                </div>
-            </ResizablePanel>
-        </ResizablePanelGroup>
+        <>
+            <Metadata page={"Entities"} />
+            <ResizablePanelGroup direction={"horizontal"}>
+                <ResizablePanel
+                    defaultSize={30}
+                    minSize={10}
+                    ref={entityBrowserPanel}
+                    collapsible
+                    collapsedSize={0}
+                >
+                    <div className="h-full w-full overflow-auto">
+                        <EntityBrowser />
+                    </div>
+                </ResizablePanel>
+                <ResizableHandle />
+                <ResizablePanel defaultSize={70} minSize={30}>
+                    <div className="h-full w-full overflow-auto">
+                        <EntityEditorTabs toggleEntityBrowserPanel={toggleEntityBrowserPanel} />
+                    </div>
+                </ResizablePanel>
+            </ResizablePanelGroup>
+        </>
     )
 }

@@ -11,6 +11,7 @@ import { Error } from "@/components/error"
 import { Button } from "@/components/ui/button"
 import { useSaveAllEntities } from "@/lib/hooks"
 import { useHandleMonacoMount } from "@/lib/monaco"
+import { Metadata } from "@/components/Metadata"
 
 export default function JSONEditorPage() {
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
@@ -104,6 +105,7 @@ export default function JSONEditorPage() {
 
     return (
         <div className="w-full h-full flex flex-col relative">
+            <Metadata page={"JSON Editor"} />
             <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
                 <Braces className="w-4 h-4 shrink-0 mr-2" />
                 JSON Editor

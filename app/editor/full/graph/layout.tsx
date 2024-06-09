@@ -1,7 +1,7 @@
-import { metadata } from "@/lib/metadata"
+import { makeStaticMetadata } from "@/lib/makeStaticMetadata"
 import { PropsWithChildren } from "react"
 
-export const generateMetadata = metadata("Graph")
+export const metadata = makeStaticMetadata("Graph")
 
 export default function Layout(props: PropsWithChildren) {
     return props.children

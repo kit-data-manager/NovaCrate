@@ -5,6 +5,7 @@ import { FileExplorer } from "@/components/file-explorer/explorer"
 import { useContext } from "react"
 import { FilePreview } from "@/components/file-explorer/preview"
 import { FileExplorerContext } from "@/components/file-explorer/context"
+import { Metadata } from "@/components/Metadata"
 
 function Content() {
     const { previewingFilePath } = useContext(FileExplorerContext)
@@ -25,6 +26,7 @@ function Content() {
 export default function FileExplorerPage() {
     return (
         <div className="h-full">
+            <Metadata page={"File Explorer"} />
             <Content />
         </div>
     )

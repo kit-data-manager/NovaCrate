@@ -8,7 +8,7 @@ import TauriAutoShow from "@/components/tauri"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-    title: "RO-Crate Editor"
+    title: "NovaCrate - RO-Crate Editor"
 }
 
 export default function RootLayout({

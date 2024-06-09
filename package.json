@@ -1,6 +1,6 @@
 {
-  "name": "editor",
-  "version": "0.1.0",
+  "name": "novacrate",
+  "version": "1.0.0-SNAPSHOT",
   "private": true,
   "scripts": {
     "dev": "npm-run-all --parallel dev-next dev-webworker",

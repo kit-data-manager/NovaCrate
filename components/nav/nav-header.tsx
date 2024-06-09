@@ -120,6 +120,7 @@ export function NavHeader() {
                     <Skeleton className="h-8 w-32" />
                 ) : (
                     <div className="mr-6 font-bold max-w-[300px] truncate animate-in">
+                        <div className="text-xs font-normal">NovaCrate</div>
                         {crateName}
                     </div>
                 )}
