@@ -23,6 +23,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { Error } from "@/components/error"
+import { DateTime } from "luxon"
 
 interface CrateDetails {
     name?: string
@@ -101,26 +102,27 @@ export function CrateEntry({
     }, [crateDetails, crateId])
 
     return (
-        <tr>
-            <td>
+        <>
+            <div className="flex flex-col items-center justify-center">
                 <Package className="w-4 h-4" />
-            </td>
-            <td>
+            </div>
+            <div>
                 {title}
                 <Error
                     title="Could not fetch details for this crate"
                     error={error}
                     warn={!!(crateDetails && crateDetails.name)}
                 />
-            </td>
-            <td>
+            </div>
+            <div className="flex flex-col items-center justify-center text-muted-foreground text-sm">
                 {crateDetails && crateDetails.lastOpened
-                    ? new Date(crateDetails.lastOpened).toLocaleDateString() +
-                      ", " +
-                      new Date(crateDetails.lastOpened).toLocaleTimeString()
+                    ? DateTime.fromISO(crateDetails.lastOpened).toLocaleString({
+                          timeStyle: "medium",
+                          dateStyle: "long"
+                      })
                     : null}
-            </td>
-            <td className="flex gap-2">
+            </div>
+            <div className="flex gap-2">
                 <Button
                     onClick={() => {
                         openEditor(crateId)
@@ -180,7 +182,7 @@ export function CrateEntry({
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-            </td>
-        </tr>
+            </div>
+        </>
     )
 }
