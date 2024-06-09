@@ -11,6 +11,7 @@ import ReactFlow, {
     NodeChange,
     Panel,
     ReactFlowProvider,
+    useNodesInitialized,
     useOnSelectionChange,
     useReactFlow
 } from "reactflow"
@@ -143,6 +144,7 @@ export function EntityGraph() {
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const { showDeleteEntityModal, showAddPropertyModal } = useContext(GlobalModalContext)
     const { saveError, crateDataIsLoading, crateId } = useContext(CrateDataContext)
+    const nodesInitialized = useNodesInitialized()
 
     const {
         nodes,
@@ -312,6 +314,12 @@ export function EntityGraph() {
         }
     }, [nodes, reformat])
 
+    useEffect(() => {
+        if (nodesInitialized) {
+            centerView(true)
+        }
+    }, [centerView, nodesInitialized])
+
     useOnSelectionChange({
         onChange: ({ nodes }) => {
             if (nodes.length === 1 && nodes[0].type === "entityNode") {
@@ -332,6 +340,7 @@ export function EntityGraph() {
                 onEdgesChange={beforeEdgesChange}
                 connectionLineType={ConnectionLineType.Bezier}
                 nodeTypes={nodeTypes}
+                deleteKeyCode={["Delete", "Backspace"]}
             >
                 <Panel
                     position="top-left"
