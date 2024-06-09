@@ -88,12 +88,32 @@ const config = {
                 "w-grow": {
                     from: { opacity: "0" },
                     to: { opacity: "1" }
+                },
+                "slide-left": {
+                    from: { transform: "translateX(0)" },
+                    to: { transform: "translateX(-100%)" }
+                },
+                "slide-left-reverse": {
+                    from: { transform: "translateX(-100%)" },
+                    to: { transform: "translateX(0)" }
+                },
+                "fade-out": {
+                    from: { opacity: "1" },
+                    to: { opacity: "0" }
+                },
+                "fade-in": {
+                    from: { opacity: "0" },
+                    to: { opacity: "1" }
                 }
             },
             animation: {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
-                "w-grow": "w-grow 0.1s ease"
+                "w-grow": "w-grow 0.1s ease",
+                "slide-left": "slide-left .5s ease",
+                "slide-left-reverse": "slide-left-reverse .5s ease",
+                "fade-out": "fade-out .5s ease",
+                "fade-in": "fade-in .5s ease"
             }
         }
     },

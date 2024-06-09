@@ -8,7 +8,7 @@ export function Nav({ children }: PropsWithChildren<{}>) {
     const { error } = useContext(CrateDataContext)
 
     return (
-        <div className="flex flex-col w-full h-full">
+        <div className="flex flex-col w-full h-full animate-fade-in">
             <NavHeader />
             <Error title="An Error occured while loading the crate" error={error} />
             <NavSidebar>{children}</NavSidebar>
