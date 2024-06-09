@@ -10,7 +10,7 @@ export function DataEntityHint({ entity }: { entity: IFlatEntity }) {
                 <InfoIcon className="w-4 h-4" />
                 <AlertTitle>Hint: Data Entities</AlertTitle>
                 <AlertDescription>
-                    This is a data entity. In this editor they are identified by the letter{" "}
+                    This is a data entity. In NovaCrate they are identified by the letter{" "}
                     <b className="text-data">D</b> (for Datasets, which represent Folders) or the
                     letter <b className="text-data">F</b> (for files) and the color{" "}
                     <span className="text-data">purple</span>. A Data Entity directly corresponds to

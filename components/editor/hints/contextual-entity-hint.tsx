@@ -1,16 +1,16 @@
-import { isContextualEntity } from "@/lib/utils"
+import { isContextualEntity, isRoCrateMetadataEntity } from "@/lib/utils"
 import { AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { InfoIcon } from "lucide-react"
 import { Hint } from "@/components/hint"
 
 export function ContextualEntityHint({ entity }: { entity: IFlatEntity }) {
-    if (isContextualEntity(entity)) {
+    if (isContextualEntity(entity) && !isRoCrateMetadataEntity(entity)) {
         return (
             <Hint name="contextual-entity" className="mt-8">
                 <InfoIcon className="w-4 h-4" />
                 <AlertTitle>Hint: Contextual Entities</AlertTitle>
                 <AlertDescription>
-                    This is a contextual entity. In this editor they are identified by the letter{" "}
+                    This is a contextual entity. In NovaCrate they are identified by the letter{" "}
                     <b className="text-contextual">C</b> and the color{" "}
                     <span className="text-contextual">green</span>. A Contextual Entity describes
                     something that is not directly a file or directory. Its main purpose is to give

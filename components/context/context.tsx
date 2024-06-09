@@ -10,6 +10,7 @@ import { Error } from "@/components/error"
 import HelpTooltip from "@/components/help-tooltip"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Metadata } from "@/components/Metadata"
 
 export function ContextPage() {
     const context = useEditorState.useCrateContext()
@@ -23,6 +24,8 @@ export function ContextPage() {
 
     return (
         <div>
+            <Metadata page={"Context"} />
+
             <SpecificationModal
                 open={specificationModalOpen}
                 onOpenChange={onSpecificationModalOpenChange}

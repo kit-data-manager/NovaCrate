@@ -10,7 +10,7 @@ export function RootEntityHint({ entity }: { entity: IFlatEntity }) {
                 <InfoIcon className="w-4 h-4" />
                 <AlertTitle>Hint: Crate Root</AlertTitle>
                 <AlertDescription>
-                    This is the root entity of your crate. In this editor they are identified by the
+                    This is the root entity of your crate. In NovaCrate they are identified by the
                     letter <b className="text-root">R</b> and the color{" "}
                     <span className="text-root">orange</span>. It defines the name of the crate and
                     some contextual information. It is recommended to not edit the <i>Has Part</i>{" "}
