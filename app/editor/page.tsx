@@ -24,7 +24,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useFilePicker } from "use-file-picker"
-import { useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { CrateEntry } from "@/components/landing/crate-entry"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
@@ -40,6 +40,7 @@ export default function EditorLandingPage() {
     const { recentCrates, removeFromRecentCrates } = useRecentCrates()
     const [showStoredCratesAmount, setShowStoredCratesAmount] = useState(5)
     const [showRecentCratesAmount, setShowRecentCratesAmount] = useState(5)
+    const [fadeOutAnimation, setFadeOutAnimation] = useState(false)
     const { serviceProvider, setCrateId, unsetCrateId } = useContext(CrateDataContext)
     const { openFilePicker: openZipFilePicker, plainFiles: zipFiles } = useFilePicker({
         accept: ".zip"
@@ -129,12 +130,17 @@ export default function EditorLandingPage() {
 
     const openEditor = useCallback(
         (id: string) => {
-            if (id !== "undefined") {
-                setCrateId(id)
-                router.push(`/editor/full/entities`)
-            }
+            if (fadeOutAnimation) return
+            setFadeOutAnimation(true)
+            router.prefetch(`/editor/full/entities`)
+            setTimeout(() => {
+                if (id !== "undefined") {
+                    setCrateId(id)
+                    router.push(`/editor/full/entities`)
+                }
+            }, 500)
         },
-        [router, setCrateId]
+        [fadeOutAnimation, router, setCrateId]
     )
 
     const storedCratesResolver = useCallback(async () => {
@@ -159,23 +165,25 @@ export default function EditorLandingPage() {
 
     return (
         <div className="w-full h-full grid grid-cols-[1fr_2fr]">
-            <div className="bg-accent h-full flex flex-col">
-                <DeleteCrateModal
-                    open={deleteCrateModalState.open}
-                    onOpenChange={onDeleteCrateModalOpenChange}
-                    crateId={deleteCrateModalState.crateId}
-                    onDeleted={(crateId) => {
-                        revalidate()
-                        onDeleteCrateModalOpenChange(false)
-                        removeFromRecentCrates(crateId)
-                    }}
-                />
-                <CreateCrateModal
-                    {...createCrateModalState}
-                    onOpenChange={onCreateCrateModalOpenChange}
-                    openEditor={openEditor}
-                />
+            <DeleteCrateModal
+                open={deleteCrateModalState.open}
+                onOpenChange={onDeleteCrateModalOpenChange}
+                crateId={deleteCrateModalState.crateId}
+                onDeleted={(crateId) => {
+                    revalidate()
+                    onDeleteCrateModalOpenChange(false)
+                    removeFromRecentCrates(crateId)
+                }}
+            />
+            <CreateCrateModal
+                {...createCrateModalState}
+                onOpenChange={onCreateCrateModalOpenChange}
+                openEditor={openEditor}
+            />
 
+            <div
+                className={`bg-accent h-full flex flex-col ${fadeOutAnimation ? "animate-slide-left translate-x-[-100%]" : "animate-slide-left-reverse"}`}
+            >
                 <div className="flex flex-col items-center justify-center h-[max(45vh,200px)] p-10">
                     <Package className="w-32 h-32 mb-10" />
                     <h2 className="text-5xl font-bold">NovaCrate</h2>
@@ -257,7 +265,9 @@ export default function EditorLandingPage() {
                 </div>
             </div>
 
-            <div className="h-full overflow-y-auto">
+            <div
+                className={`h-full overflow-y-auto ${fadeOutAnimation ? "animate-fade-out opacity-0" : "animate-fade-in"}`}
+            >
                 <div className="grid grid-cols-2 p-20 pb-0 gap-8 max-w-[1000px] ml-auto mr-auto">
                     <button
                         className="h-40 flex justify-center gap-4 border rounded-lg items-center p-4 hover:bg-accent transition"
@@ -294,15 +304,12 @@ export default function EditorLandingPage() {
                             {!recentCrates ? (
                                 [0, 0, 0].map((_, i) => {
                                     return (
-                                        <>
-                                            <Skeleton key={i + "a"} className="w-4 h-4" />
-
-                                            <Skeleton key={i + "b"} className="w-full h-8" />
-
-                                            <Skeleton key={i + "c"} className="w-full h-8" />
-
-                                            <Skeleton key={i + "d"} className="w-full h-8" />
-                                        </>
+                                        <Fragment key={i}>
+                                            <Skeleton className="w-4 h-4" />
+                                            <Skeleton className="w-full h-8" />
+                                            <Skeleton className="w-full h-8" />
+                                            <Skeleton className="w-full h-8" />
+                                        </Fragment>
                                     )
                                 })
                             ) : recentCrates.length === 0 ? (
@@ -353,15 +360,12 @@ export default function EditorLandingPage() {
                             {!storedCrates ? (
                                 [0, 0, 0].map((_, i) => {
                                     return (
-                                        <>
-                                            <Skeleton key={i + "a"} className="w-4 h-4" />
-
-                                            <Skeleton key={i + "b"} className="w-full h-8" />
-
-                                            <Skeleton key={i + "c"} className="w-full h-8" />
-
-                                            <Skeleton key={i + "d"} className="w-full h-8" />
-                                        </>
+                                        <Fragment key={i}>
+                                            <Skeleton className="w-4 h-4" />
+                                            <Skeleton className="w-full h-8" />
+                                            <Skeleton className="w-full h-8" />
+                                            <Skeleton className="w-full h-8" />
+                                        </Fragment>
                                     )
                                 })
                             ) : storedCrates.length === 0 ? (
