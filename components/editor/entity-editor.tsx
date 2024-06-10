@@ -10,7 +10,6 @@ import {
     Diff,
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
-    isRootEntity as isRootEntityUtil,
     propertyHasChanged
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
@@ -25,6 +24,7 @@ import { InternalEntityHint } from "@/components/editor/hints/internal-entity-hi
 import { DataEntityHint } from "@/components/editor/hints/data-entity-hint"
 import { ContextualEntityHint } from "@/components/editor/hints/contextual-entity-hint"
 import { ActionButton } from "@/components/actions/action-buttons"
+import { EntityIcon } from "@/components/entity-icon"
 
 export function EntityEditor({
     entityId,
@@ -40,11 +40,6 @@ export function EntityEditor({
     const addPropertyEntry = useEditorState.useAddPropertyEntry()
     const modifyPropertyEntry = useEditorState.useModifyPropertyEntry()
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
-
-    const isRootEntity = useMemo(() => {
-        if (!entity) return false
-        return isRootEntityUtil(entity)
-    }, [entity])
 
     const isDataEntity = useMemo(() => {
         if (!entity) return false
@@ -140,14 +135,8 @@ export function EntityEditor({
 
             <div className="p-4 mr-10">
                 <div className="flex justify-between items-center">
-                    <h2 className="text-3xl font-bold flex items-center">
-                        {displayName}
-
-                        <div
-                            className={`${isRootEntity ? "border-root text-root" : isDataEntity ? "border-data text-data" : "border-contextual text-contextual"}  border px-1.5 rounded ml-6 text-sm`}
-                        >
-                            {isRootEntity ? "Root" : isDataEntity ? "Data" : "Contextual"}
-                        </div>
+                    <h2 className="text-3xl font-bold flex items-center gap-2">
+                        <EntityIcon entity={entity} /> {displayName}
                     </h2>
                 </div>
 
