@@ -39,7 +39,9 @@ export function EntityIcon(props: {
         return (
             <div
                 className={
-                    entityBrowserItemIconBaseCN + " relative border-root text-root" + sizeMod
+                    entityBrowserItemIconBaseCN +
+                    " relative text-background bg-root border-transparent dark:border-root dark:text-root dark:bg-transparent" +
+                    sizeMod
                 }
             >
                 <div
@@ -54,7 +56,9 @@ export function EntityIcon(props: {
         return (
             <div
                 className={
-                    entityBrowserItemIconBaseCN + " relative border-data text-data" + sizeMod
+                    entityBrowserItemIconBaseCN +
+                    " relative text-background bg-data border-transparent dark:border-data dark:text-data dark:bg-transparent" +
+                    sizeMod
                 }
             >
                 <div
@@ -70,7 +74,7 @@ export function EntityIcon(props: {
             <div
                 className={
                     entityBrowserItemIconBaseCN +
-                    " relative border-contextual text-contextual" +
+                    " relative text-background bg-contextual border-transparent dark:border-contextual dark:text-contextual dark:bg-transparent" +
                     sizeMod
                 }
             >
