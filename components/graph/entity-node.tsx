@@ -162,13 +162,13 @@ export default function EntityNode({
                         </ContextMenuItem>
                         <ContextMenuSeparator />
                         <ContextMenuItem
-                            className="bg-destructive"
+                            className="bg-destructive text-destructive-foreground"
                             onClick={() => showDeleteEntityModal(data.entityId)}
                         >
                             <Trash className="w-4 h-4 mr-2" />
                             Delete
                             <ContextMenuShortcut>
-                                <Delete className="w-4 h-4" />
+                                <Delete className="w-4 h-4 text-destructive-foreground/80" />
                             </ContextMenuShortcut>
                         </ContextMenuItem>
                     </>

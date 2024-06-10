@@ -65,7 +65,10 @@ function EntityMenu() {
                 <ActionMenubarItem actionId="entity.add-property" />
                 <ActionMenubarItem actionId="entity.find-references" />
                 <MenubarSeparator />
-                <ActionMenubarItem actionId="entity.delete" className="bg-destructive" />
+                <ActionMenubarItem
+                    actionId="entity.delete"
+                    className="bg-destructive text-destructive-foreground"
+                />
             </MenubarContent>
         </MenubarMenu>
     ) : null

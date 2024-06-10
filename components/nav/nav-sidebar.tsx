@@ -84,7 +84,7 @@ export function NavSidebar({ children }: PropsWithChildren<{}>) {
                 </div>
             </ResizablePanel>
             <ResizableHandle className="bg-transparent" />
-            <ResizablePanel minSize={50} defaultSize={90}>
+            <ResizablePanel minSize={50} defaultSize={85}>
                 <div className="relative w-full h-full rounded-tl-lg overflow-hidden border-l border-t">
                     {children}
                 </div>

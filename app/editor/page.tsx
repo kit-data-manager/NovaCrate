@@ -132,6 +132,7 @@ export default function EditorLandingPage() {
         (id: string) => {
             if (fadeOutAnimation) return
             setFadeOutAnimation(true)
+            onCreateCrateModalOpenChange(false)
             router.prefetch(`/editor/full/entities`)
             setTimeout(() => {
                 if (id !== "undefined") {
@@ -140,7 +141,7 @@ export default function EditorLandingPage() {
                 }
             }, 500)
         },
-        [fadeOutAnimation, router, setCrateId]
+        [fadeOutAnimation, onCreateCrateModalOpenChange, router, setCrateId]
     )
 
     const storedCratesResolver = useCallback(async () => {
@@ -275,7 +276,7 @@ export default function EditorLandingPage() {
                     >
                         <FolderOpen className="text-muted-foreground w-12 h-12 m-4 shrink-0" />
                         <div className="flex flex-col gap-4 grow">
-                            <div className="text-lg font-bold">Start describing</div>
+                            <div className="text-lg font-bold">Start with data</div>
                             <div className="text-muted-foreground">
                                 Open a local folder and start adding metadata to your files.
                             </div>

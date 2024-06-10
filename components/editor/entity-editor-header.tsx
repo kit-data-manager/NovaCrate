@@ -80,7 +80,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                         <DropdownMenuSeparator />
                         <ActionDropdownMenuItem
                             actionId={"entity.delete"}
-                            className="bg-destructive"
+                            className="bg-destructive text-destructive-foreground"
                         />
                     </DropdownMenuContent>
                 </DropdownMenu>

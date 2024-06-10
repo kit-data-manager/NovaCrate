@@ -160,7 +160,7 @@ export function EntryContextMenu({
 
             {entity || filePath ? (
                 <ContextMenuItem
-                    className="bg-destructive"
+                    className="bg-destructive text-destructive-foreground"
                     onClick={() => showDeleteEntityModal(entity?.["@id"] || filePath!)}
                 >
                     <Trash className="w-4 h-4 mr-2" /> Delete
