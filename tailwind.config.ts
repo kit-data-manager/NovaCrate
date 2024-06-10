@@ -53,22 +53,22 @@ const config = {
                     foreground: "hsl(var(--card-foreground))"
                 },
                 success: {
-                    DEFAULT: "rgb(34 197 94)"
+                    DEFAULT: "var(--success)"
                 },
                 info: {
-                    DEFAULT: "rgb(58, 83, 196)"
+                    DEFAULT: "var(--info)"
                 },
                 warn: {
-                    DEFAULT: "rgb(245,167,66)"
+                    DEFAULT: "var(--warn)"
                 },
                 root: {
-                    DEFAULT: "rgb(236,121,57)"
+                    DEFAULT: "var(--root)"
                 },
                 data: {
-                    DEFAULT: "rgb(186,34,236)"
+                    DEFAULT: "var(--data)"
                 },
                 contextual: {
-                    DEFAULT: "rgb(29,165,77)"
+                    DEFAULT: "var(--contextual)"
                 }
             },
             borderRadius: {

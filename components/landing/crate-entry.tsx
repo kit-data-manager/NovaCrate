@@ -173,7 +173,7 @@ export function CrateEntry({
                         </DropdownMenuSub>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            className="bg-destructive"
+                            className="bg-destructive text-destructive-foreground"
                             onClick={() => {
                                 deleteCrate(crateId)
                             }}

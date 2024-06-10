@@ -33,6 +33,13 @@
     --ring: 240 10% 3.9%;
 
     --radius: 0.5rem;
+
+    --success: rgb(34 197 94);
+    --info: rgb(58, 83, 196);
+    --warn: rgb(237, 123, 9);
+    --root: rgb(229, 142, 94);
+    --data: rgb(166, 67, 221);
+    --contextual: rgb(79, 182, 112);
   }
 
   .dark {
@@ -63,6 +70,13 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+
+    --success: rgb(34 197 94);
+    --info: rgb(58, 83, 196);
+    --warn: rgb(245,167,66);
+    --root: rgb(236,121,57);
+    --data: rgb(186,34,236);
+    --contextual: rgb(29,165,77);
   }
 }
 
