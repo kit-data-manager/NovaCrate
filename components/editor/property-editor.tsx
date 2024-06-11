@@ -20,6 +20,7 @@ import { useAsync } from "@/lib/hooks"
 import { Trash } from "lucide-react"
 import { MarkdownComment } from "@/components/markdown-comment"
 import { getDefaultDate } from "@/components/editor/text-fields/date-field"
+import { PropertyPagination } from "@/components/editor/property-pagination"
 
 export interface EntityEditorProperty {
     propertyName: string
@@ -251,27 +252,32 @@ export const PropertyEditor = memo(function PropertyEditor({
                     </div>
                 ) : null}
                 <div className="flex flex-col gap-4">
-                    {property.values.map((v, i) => {
-                        return (
-                            <SinglePropertyEditor
-                                key={i}
-                                entityId={entityId}
-                                valueIndex={i}
+                    <PropertyPagination
+                        addEntryDropdown={
+                            <AddEntryDropdown
                                 propertyName={property.propertyName}
-                                value={v}
-                                onModifyProperty={onModifyPropertyEntry}
                                 propertyRange={propertyRange}
-                                onRemovePropertyEntry={onRemovePropertyEntry}
+                                onAddEntry={onAddEntry}
+                                another={property.values.length > 0}
                             />
-                        )
-                    })}
+                        }
+                    >
+                        {property.values.map((v, i) => {
+                            return (
+                                <SinglePropertyEditor
+                                    key={i}
+                                    entityId={entityId}
+                                    valueIndex={i}
+                                    propertyName={property.propertyName}
+                                    value={v}
+                                    onModifyProperty={onModifyPropertyEntry}
+                                    propertyRange={propertyRange}
+                                    onRemovePropertyEntry={onRemovePropertyEntry}
+                                />
+                            )
+                        })}
+                    </PropertyPagination>
                 </div>
-                <AddEntryDropdown
-                    propertyName={property.propertyName}
-                    propertyRange={propertyRange}
-                    onAddEntry={onAddEntry}
-                    another={property.values.length > 0}
-                />
             </div>
         </div>
     )

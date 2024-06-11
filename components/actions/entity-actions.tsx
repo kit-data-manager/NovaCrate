@@ -44,7 +44,7 @@ function Handler({ entity }: { entity: IFlatEntity }) {
         revertEntity(entity["@id"])
     }, [entity, revertEntity])
     useRegisterAction("entity.revert", "Revert Changes", revertCurrentEntity, {
-        keyboardShortcut: ["command", "z"],
+        keyboardShortcut: ["command", "u"],
         icon: Undo2
     })
 
