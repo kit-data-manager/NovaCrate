@@ -3,10 +3,11 @@ import { GlobalModalContext } from "@/components/providers/global-modals-provide
 import { useGoToMainMenu, useRegisterAction, useSaveAllEntities } from "@/lib/hooks"
 import { useEditorState } from "@/lib/state/editor-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { Plus, RefreshCw, SaveAll, Search, Undo2, XIcon } from "lucide-react"
+import { Cog, Plus, RefreshCw, SaveAll, Search, Undo2, XIcon } from "lucide-react"
 
 export default function DefaultActions() {
-    const { showCreateEntityModal, showGlobalSearchModal } = useContext(GlobalModalContext)
+    const { showCreateEntityModal, showGlobalSearchModal, showSettingsModal } =
+        useContext(GlobalModalContext)
     const revertAllEntities = useEditorState.useRevertAllEntities()
     const saveAllEntities = useSaveAllEntities()
     const { reload } = useContext(CrateDataContext)
@@ -39,6 +40,11 @@ export default function DefaultActions() {
     useRegisterAction("editor.close", "Close Editor", gotToMainMenu, {
         keyboardShortcut: ["command", "w"],
         icon: XIcon
+    })
+
+    useRegisterAction("editor.settings", "Settings", showSettingsModal, {
+        icon: Cog,
+        keyboardShortcut: ["command", "alt", "s"]
     })
 
     return null

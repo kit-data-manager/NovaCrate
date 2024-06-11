@@ -10,6 +10,7 @@ import { GlobalSearch } from "@/components/modals/global-search"
 import { AddPropertyModal } from "@/components/modals/add-property/add-property-modal"
 import { FindReferencesModal } from "@/components/modals/find-references-modal"
 import { SaveAsModal } from "@/components/modals/save-as-modal"
+import { SettingsModal } from "@/components/modals/settings-modal"
 
 export interface AutoReference {
     entityId: string
@@ -30,6 +31,7 @@ export interface IGlobalModalContext {
     showAddPropertyModal(typeArray: string[], callback: AddPropertyModalCallback): void
     showFindReferencesModal(entityId: string): void
     showSaveAsModal(entityId: string): void
+    showSettingsModal(): void
 }
 
 export type AddPropertyModalCallback = (
@@ -44,7 +46,8 @@ export const GlobalModalContext = createContext<IGlobalModalContext>({
     showGlobalSearchModal() {},
     showAddPropertyModal() {},
     showFindReferencesModal() {},
-    showSaveAsModal() {}
+    showSaveAsModal() {},
+    showSettingsModal() {}
 })
 
 export function GlobalModalProvider(props: PropsWithChildren) {
@@ -87,6 +90,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         open: false,
         entityId: ""
     })
+    const [settingsModalState, setSettingsModalState] = useState({ open: false })
 
     const showCreateEntityModal = useCallback(
         (
@@ -149,6 +153,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         })
     }, [])
 
+    const showSettingsModal = useCallback(() => {
+        setSettingsModalState({ open: true })
+    }, [])
+
     const onCreateEntityModalOpenChange = useCallback((isOpen: boolean) => {
         setCreateEntityModalState({
             autoReference: undefined,
@@ -188,6 +196,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         setSaveAsModalState({ open: false, entityId: "" })
     }, [])
 
+    const onSettingsModalOpenChange = useCallback((open: boolean) => {
+        setSettingsModalState({ open })
+    }, [])
+
     const onEntityCreated = useCallback(
         (entity?: IFlatEntity) => {
             setCreateEntityModalState({
@@ -207,7 +219,8 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 showGlobalSearchModal,
                 showFindReferencesModal,
                 showAddPropertyModal,
-                showSaveAsModal
+                showSaveAsModal,
+                showSettingsModal
             }}
         >
             <CreateEntityModal
@@ -248,6 +261,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 open={saveAsModalState.open}
                 onOpenChange={onSaveAsModalOpenChange}
                 entityId={saveAsModalState.entityId}
+            />
+            <SettingsModal
+                open={settingsModalState.open}
+                onOpenChange={onSettingsModalOpenChange}
             />
 
             {props.children}

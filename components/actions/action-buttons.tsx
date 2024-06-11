@@ -1,28 +1,37 @@
 import { MenubarItem, MenubarItemProps } from "@/components/ui/menubar"
-import { useAction } from "@/lib/hooks"
+import { useAction, useActionsReady } from "@/lib/hooks"
 import { memo, useMemo } from "react"
 import { KeyboardShortcut } from "@/components/actions/action-keyboard-shortcuts"
 import { Button, ButtonProps } from "@/components/ui/button"
 import { ContextMenuItem, ContextMenuItemProps } from "@/components/ui/context-menu"
 import { DropdownMenuItem, DropdownMenuItemProps } from "@/components/ui/dropdown-menu"
 import { CommandItem, CommandItemProps } from "@/components/ui/command"
+import { Loader2 } from "lucide-react"
 
 export interface GenericActionContentProps {
     actionId: string
     noShortcut?: boolean
+    iconOnly?: boolean
+    hideName?: boolean
 }
 
 function GenericActionContent(props: GenericActionContentProps) {
     const action = useAction(props.actionId)
+    const ready = useActionsReady()
 
     const Icon = useMemo(() => {
         return action.icon
     }, [action.icon])
 
+    if (!ready) return <Loader2 className="w-4 h-4 animate-spin" />
+
     return (
         <>
-            {Icon && <Icon className="w-4 h-4 mr-2" />} {action.name}
-            {!props.noShortcut ? (
+            {Icon && (
+                <Icon className={`w-4 h-4 ${props.iconOnly || props.hideName ? "" : "mr-2"}`} />
+            )}{" "}
+            {props.iconOnly || props.hideName ? null : action.name}
+            {!props.iconOnly && !props.noShortcut && action.keyboardShortcut ? (
                 <span className="flex ml-auto pl-2 text-xs tracking-widest text-muted-foreground">
                     <KeyboardShortcut action={action} />
                 </span>
@@ -49,7 +58,11 @@ export const ActionButton = memo(function ActionButton(
     const action = useAction(props.actionId)
 
     return (
-        <Button onClick={() => action.execute()} {...cleanProps(props)}>
+        <Button
+            onClick={() => action.execute()}
+            size={props.iconOnly ? "icon" : "default"}
+            {...cleanProps(props)}
+        >
             <GenericActionContent {...props} />
         </Button>
     )
@@ -103,6 +116,8 @@ function cleanProps<T extends Record<string, any>>(props: T) {
     delete newData.noShortcut
     delete newData.actionId
     delete newData.closeAnd
+    delete newData.iconOnly
+    delete newData.hideName
 
     return newData
 }
