@@ -125,7 +125,7 @@ export function EntityEditor({
     }
 
     return (
-        <div className="relative">
+        <div className="w-full h-full flex flex-col">
             <EntityEditorHeader
                 hasUnsavedChanges={hasUnsavedChanges}
                 isSaving={isSaving}
@@ -133,7 +133,7 @@ export function EntityEditor({
                 toggleEntityBrowserPanel={toggleEntityBrowserPanel}
             />
 
-            <div className="p-4 mr-10">
+            <div className="p-4 pr-10 overflow-y-auto">
                 <div className="flex justify-between items-center">
                     <h2 className="text-3xl font-bold flex items-center gap-2">
                         <EntityIcon entity={entity} /> {displayName}

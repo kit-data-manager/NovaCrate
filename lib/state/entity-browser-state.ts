@@ -5,10 +5,12 @@ export interface EntityBrowserState {
     showFolderStructure: boolean
     showEntityType: boolean
     showIdInsteadOfName: boolean
+    showPropertyOverview: boolean
 
     setShowFolderStructure(val: boolean): void
     setShowEntityType(val: boolean): void
     setShowIdInsteadOfName(val: boolean): void
+    setShowPropertyOverview(val: boolean): void
 }
 
 export const useEntityBrowserState = create<EntityBrowserState>()(
@@ -17,6 +19,7 @@ export const useEntityBrowserState = create<EntityBrowserState>()(
             showFolderStructure: true,
             showEntityType: true,
             showIdInsteadOfName: false,
+            showPropertyOverview: true,
             setShowEntityType(val: boolean) {
                 set({ showEntityType: val })
             },
@@ -25,6 +28,9 @@ export const useEntityBrowserState = create<EntityBrowserState>()(
             },
             setShowIdInsteadOfName(val: boolean) {
                 set({ showIdInsteadOfName: val })
+            },
+            setShowPropertyOverview(val: boolean) {
+                set({ showPropertyOverview: val })
             }
         }),
         {

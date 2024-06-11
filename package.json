@@ -1,6 +1,6 @@
 {
   "name": "novacrate",
-  "version": "1.0.0-SNAPSHOT",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "npm-run-all --parallel dev-next dev-webworker",

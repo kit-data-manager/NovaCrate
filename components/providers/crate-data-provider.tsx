@@ -106,14 +106,18 @@ export function CrateDataProvider({
             setCrateContext(data["@context"])
             setInitialEntities(new Map(data["@graph"].map((entity) => [entity["@id"], entity])))
 
-            if (!lastCrateData.current) {
+            const entities = getEntities()
+
+            if (!lastCrateData.current || entities.size === 0) {
+                if (entities.size === 0)
+                    console.warn(
+                        "Editor state was reset. If this happens in production please report!"
+                    )
                 setEntities(new Map(data["@graph"].map((entity) => [entity["@id"], entity])))
 
                 lastCrateData.current = data
                 return
             }
-
-            const entities = getEntities()
 
             const updatedEntities = produce(entities, (newEntities) => {
                 applyServerDifferences(data, lastCrateData.current, newEntities)
@@ -340,11 +344,18 @@ export function CrateDataProvider({
 
     useEffect(() => {
         if (crateId) {
+            console.log("CrateID known, saving")
             localStorage.setItem(CRATE_ID_STORAGE_KEY, crateId)
         } else {
+            console.log("CrateID unknown, looking in local storage...")
             const saved = localStorage.getItem(CRATE_ID_STORAGE_KEY)
-            if (saved) setCrateId(saved)
-            else router.push("/editor")
+            if (saved) {
+                setCrateId(saved)
+                console.log("CrateID found in local storage", saved)
+            } else {
+                router.push("/editor")
+                console.log("Nothing found in local storage, navigating to landing page")
+            }
         }
     }, [crateId, router])
 

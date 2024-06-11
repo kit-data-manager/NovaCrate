@@ -13,10 +13,12 @@ import {
     toArray
 } from "@/lib/utils"
 import {
+    Blocks,
     ChevronDown,
     ChevronsDownUp,
     ChevronsUpDown,
     EllipsisVertical,
+    LayoutGrid,
     PackageSearch
 } from "lucide-react"
 import {
@@ -36,6 +38,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useEntityBrowserState } from "@/lib/state/entity-browser-state"
 import { ActionButton, ActionDropdownMenuItem } from "@/components/actions/action-buttons"
+import { PropertyOverview } from "@/components/editor/property-overview"
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -185,6 +190,8 @@ export function EntityBrowserContent({
 export function EntityBrowser() {
     const state = useEntityBrowserState()
     const [defaultSectionOpen, setDefaultSectionOpen] = useState<DefaultSectionOpen>(true)
+    const showPropertyOverview = useEntityBrowserState((store) => store.showPropertyOverview)
+    const setShowPropertyOverview = useEntityBrowserState((store) => store.setShowPropertyOverview)
 
     const collapseAllSections = useCallback(() => {
         setDefaultSectionOpen(false)
@@ -198,62 +205,93 @@ export function EntityBrowser() {
         setDefaultSectionOpen("indeterminate")
     }, [])
 
-    return (
-        <div className="flex flex-col h-full">
-            <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
-                <PackageSearch className="w-4 h-4 shrink-0 mr-2" /> Entities
-            </div>
-            <div className="flex gap-2 top-0 z-10 p-2 bg-accent shrink-0">
-                <ActionButton
-                    actionId="crate.add-entity"
-                    size="sm"
-                    variant="outline"
-                    className="text-xs"
-                    noShortcut
+    const togglePropertyOverview = useCallback(() => {
+        setShowPropertyOverview(!showPropertyOverview)
+    }, [setShowPropertyOverview, showPropertyOverview])
+
+    const EntityBrowserPanel = useCallback(() => {
+        return (
+            <div className="h-full w-full flex flex-col">
+                <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
+                    <PackageSearch className="w-4 h-4 shrink-0 mr-2" /> Entities
+                </div>
+                <div className="flex gap-2 top-0 z-10 p-2 bg-accent shrink-0">
+                    <ActionButton
+                        actionId="crate.add-entity"
+                        size="sm"
+                        variant="outline"
+                        className="text-xs"
+                        noShortcut
+                    />
+                    <div className="grow"></div>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="outline" size="sm" onClick={togglePropertyOverview}>
+                                <LayoutGrid className="w-4 h-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Toggle Property Overview</TooltipContent>
+                    </Tooltip>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button size="sm" variant="outline" className={`text-xs`}>
+                                <EllipsisVertical className={`w-4 h-4`} />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuLabel>Entity Explorer Settings</DropdownMenuLabel>
+                            {/*<DropdownMenuCheckboxItem*/}
+                            {/*    checked={state.showFolderStructure}*/}
+                            {/*    onClick={() => state.setShowFolderStructure(!state.showFolderStructure)}*/}
+                            {/*>*/}
+                            {/*    Show Folder Structure*/}
+                            {/*</DropdownMenuCheckboxItem>*/}
+                            <DropdownMenuCheckboxItem
+                                checked={state.showEntityType}
+                                onClick={() => state.setShowEntityType(!state.showEntityType)}
+                            >
+                                Show Entity Type
+                            </DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem
+                                checked={state.showIdInsteadOfName}
+                                onClick={() =>
+                                    state.setShowIdInsteadOfName(!state.showIdInsteadOfName)
+                                }
+                            >
+                                Show ID instead of Name
+                            </DropdownMenuCheckboxItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={collapseAllSections}>
+                                <ChevronsDownUp className={"w-4 h-4 mr-2"} /> Collapse All
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={expandAllSections}>
+                                <ChevronsUpDown className={"w-4 h-4 mr-2"} /> Expand All
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <ActionDropdownMenuItem actionId={"crate.reload-entities"} />
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+                <EntityBrowserContent
+                    defaultSectionOpen={defaultSectionOpen}
+                    onSectionOpenChange={onSectionOpenChange}
                 />
-                <div className="grow"></div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button size="sm" variant="outline" className={`text-xs`}>
-                            <EllipsisVertical className={`w-4 h-4`} />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuLabel>Entity Explorer Settings</DropdownMenuLabel>
-                        {/*<DropdownMenuCheckboxItem*/}
-                        {/*    checked={state.showFolderStructure}*/}
-                        {/*    onClick={() => state.setShowFolderStructure(!state.showFolderStructure)}*/}
-                        {/*>*/}
-                        {/*    Show Folder Structure*/}
-                        {/*</DropdownMenuCheckboxItem>*/}
-                        <DropdownMenuCheckboxItem
-                            checked={state.showEntityType}
-                            onClick={() => state.setShowEntityType(!state.showEntityType)}
-                        >
-                            Show Entity Type
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                            checked={state.showIdInsteadOfName}
-                            onClick={() => state.setShowIdInsteadOfName(!state.showIdInsteadOfName)}
-                        >
-                            Show ID instead of Name
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={collapseAllSections}>
-                            <ChevronsDownUp className={"w-4 h-4 mr-2"} /> Collapse All
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={expandAllSections}>
-                            <ChevronsUpDown className={"w-4 h-4 mr-2"} /> Expand All
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <ActionDropdownMenuItem actionId={"crate.reload-entities"} />
-                    </DropdownMenuContent>
-                </DropdownMenu>
             </div>
-            <EntityBrowserContent
-                defaultSectionOpen={defaultSectionOpen}
-                onSectionOpenChange={onSectionOpenChange}
-            />
-        </div>
+        )
+    }, [collapseAllSections, defaultSectionOpen, expandAllSections, onSectionOpenChange, state])
+
+    if (!showPropertyOverview) return <EntityBrowserPanel />
+
+    return (
+        <ResizablePanelGroup direction={"vertical"}>
+            <ResizablePanel defaultSize={60} minSize={10}>
+                <EntityBrowserPanel />
+            </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel defaultSize={40} minSize={5}>
+                <PropertyOverview />
+            </ResizablePanel>
+        </ResizablePanelGroup>
     )
 }
