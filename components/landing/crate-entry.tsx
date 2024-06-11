@@ -25,7 +25,7 @@ import {
 import { Error } from "@/components/error"
 import { DateTime } from "luxon"
 
-interface CrateDetails {
+export interface CrateDetails {
     name?: string
     lastOpened?: string
 }

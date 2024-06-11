@@ -64,6 +64,7 @@ export function useRecentCrates() {
                 while (recentlyUsed.length > MAX_LIST_LENGTH) recentlyUsed.pop()
                 setRecentCrates(recentlyUsed)
                 window.localStorage.setItem("recent-crates", JSON.stringify(recentlyUsed))
+                window.localStorage.removeItem(crateDetailsKey(crateId))
             } catch (e) {
                 console.warn("Failed to add recently used crated", e)
             }
