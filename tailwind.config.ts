@@ -69,6 +69,9 @@ const config = {
                 },
                 contextual: {
                     DEFAULT: "var(--contextual)"
+                },
+                error: {
+                    DEFAULT: "var(--error)"
                 }
             },
             borderRadius: {

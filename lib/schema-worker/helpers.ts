@@ -123,6 +123,14 @@ export async function getAllComments(types: string[]): Promise<SlimClass[]> {
     return result
 }
 
+export function getProvisioningStatus() {
+    const workerActive =
+        typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope
+    const provisionStatus = schemaGraph.provisioningManager.status
+
+    return { workerActive, provisionStatus }
+}
+
 export const schemaWorkerFunctions = {
     getAllClasses,
     getPropertyRange,
@@ -130,5 +138,6 @@ export const schemaWorkerFunctions = {
     getPropertyComment,
     getAllComments,
     getAllProperties,
-    getPossibleEntityProperties
+    getPossibleEntityProperties,
+    getProvisioningStatus
 }
