@@ -108,7 +108,7 @@ export function EntryContextMenu({
     return (
         <ContextMenuContent className="min-w-52">
             {entity ? (
-                <ContextMenuItem onClick={goToEntity}>
+                <ContextMenuItem onClick={() => (goToEntity ? goToEntity() : "")}>
                     <EntityIcon entity={entity} size="sm" /> Go to Entity
                 </ContextMenuItem>
             ) : (
