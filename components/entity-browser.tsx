@@ -13,7 +13,6 @@ import {
     toArray
 } from "@/lib/utils"
 import {
-    Blocks,
     ChevronDown,
     ChevronsDownUp,
     ChevronsUpDown,
@@ -279,7 +278,14 @@ export function EntityBrowser() {
                 />
             </div>
         )
-    }, [collapseAllSections, defaultSectionOpen, expandAllSections, onSectionOpenChange, state])
+    }, [
+        collapseAllSections,
+        defaultSectionOpen,
+        expandAllSections,
+        onSectionOpenChange,
+        state,
+        togglePropertyOverview
+    ])
 
     if (!showPropertyOverview) return <EntityBrowserPanel />
 
