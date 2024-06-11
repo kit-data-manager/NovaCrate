@@ -90,11 +90,59 @@ export class SchemaNode {
     }
 }
 
+class SchemaProvisionManager {
+    private schemaGraph: SchemaGraph
+    private schemaOrgLoaded = false
+    private schemaOrgError: unknown
+    private bioschemasLoaded = false
+    private purlLoaded = false
+    private w3Loaded = false
+
+    constructor(schemaGraph: SchemaGraph) {
+        this.schemaGraph = schemaGraph
+    }
+
+    async provision(id: string) {
+        if (id.startsWith("schema:") && !this.schemaOrgLoaded) {
+            await this.provisionSchemaOrg()
+        }
+    }
+
+    private provisionSchemaOrgPromise: Promise<void> | undefined = undefined
+    private async provisionSchemaOrg() {
+        const fn = async () => {
+            const response = await fetch("/schema/schemaorg-adapted.json")
+            if (!response.ok)
+                throw "Provisioning of Schema.org failed. Cannot continue with resolving."
+
+            try {
+                const data = await response.json()
+                this.schemaGraph.addSchemaFromFile(data)
+                this.schemaOrgLoaded = true
+                this.provisionSchemaOrgPromise = undefined
+            } catch (e) {
+                console.error("Failed to parse Schema.org schema", e)
+                this.schemaOrgError = e
+                this.provisionSchemaOrgPromise = undefined
+                throw "Failed to parse Schema.org schema"
+            }
+        }
+
+        if (this.provisionSchemaOrgPromise) {
+            return this.provisionSchemaOrgPromise
+        } else {
+            this.provisionSchemaOrgPromise = fn()
+            return this.provisionSchemaOrgPromise
+        }
+    }
+}
+
 export class SchemaGraph {
     private context: Map<string, string> = new Map<string, string>()
     private graph: Map<string, SchemaNode> = new Map<string, SchemaNode>()
+    private provisioningManager = new SchemaProvisionManager(this)
 
-    getNode(id: string) {
+    async getNode(id: string) {
         // Should in the future be replaced with a more robust implementation that actually
         // takes the @context of schema.org (or any other) into account
 
@@ -102,7 +150,7 @@ export class SchemaGraph {
             id = id.replace("https://schema.org/", "schema:")
         }
         if (id.startsWith("https://bioschemas.org/")) {
-            console.warn("SchemsGraph: Missing schema for bioschemas.org")
+            console.warn("SchemaGraph: Missing schema for bioschemas.org")
             return undefined
         }
         if (id.startsWith("http://purl.org/")) {
@@ -118,6 +166,8 @@ export class SchemaGraph {
             return undefined
         }
 
+        await this.provisioningManager.provision(id)
+
         return this.graph.get(id)
     }
 
@@ -125,8 +175,8 @@ export class SchemaGraph {
         return Array.from(this.graph.values())
     }
 
-    getClassSpecificProperties(classId: string) {
-        const self = this.getNode(classId)
+    async getClassSpecificProperties(classId: string) {
+        const self = await this.getNode(classId)
         if (!self) throw new ReferenceError("classId not specified or invalid")
 
         const nodes: SchemaNode[] = []
@@ -138,13 +188,13 @@ export class SchemaGraph {
         return nodes
     }
 
-    getClassProperties(classId: string) {
-        const self = this.getNode(classId)
+    async getClassProperties(classId: string) {
+        const self = await this.getNode(classId)
         if (!self) throw new ReferenceError("classId not specified or invalid")
-        const parents = this.getClassParents(self["@id"])
+        const parents = await this.getClassParents(self["@id"])
         let properties: Set<SchemaNode> = new Set<SchemaNode>()
         for (const nodeId of [...parents, self["@id"]]) {
-            const props = this.getClassSpecificProperties(nodeId)
+            const props = await this.getClassSpecificProperties(nodeId)
             for (const prop of props) {
                 properties.add(prop)
             }
@@ -152,9 +202,9 @@ export class SchemaGraph {
         return Array.from(properties)
     }
 
-    getClassParents(classId: string) {
+    async getClassParents(classId: string) {
         let parentIds: string[] = []
-        const self = this.getNode(classId)
+        const self = await this.getNode(classId)
         if (!self) throw new ReferenceError("classId not specified or invalid")
         if (!self.isClass()) throw new Error("Node is not a class")
 
@@ -162,20 +212,20 @@ export class SchemaGraph {
             if (Array.isArray(self.parentClass)) {
                 for (const entry of self.parentClass) {
                     parentIds.push(entry["@id"])
-                    parentIds = parentIds.concat(this.getClassParents(entry["@id"]))
+                    parentIds = parentIds.concat(await this.getClassParents(entry["@id"]))
                 }
             } else {
                 parentIds.push(self.parentClass["@id"])
-                parentIds = parentIds.concat(this.getClassParents(self.parentClass["@id"]))
+                parentIds = parentIds.concat(await this.getClassParents(self.parentClass["@id"]))
             }
         }
 
         return parentIds
     }
 
-    getPropertyParents(propertyId: string) {
+    async getPropertyParents(propertyId: string) {
         let parentIds: string[] = []
-        const self = this.getNode(propertyId)
+        const self = await this.getNode(propertyId)
         if (!self) throw new ReferenceError("propertyId not specified or invalid")
         if (!self.isProperty()) throw new Error("Node is not a property")
 
@@ -183,27 +233,29 @@ export class SchemaGraph {
             if (Array.isArray(self.parentProperty)) {
                 for (const entry of self.parentProperty) {
                     parentIds.push(entry["@id"])
-                    parentIds = parentIds.concat(this.getPropertyParents(entry["@id"]))
+                    parentIds = parentIds.concat(await this.getPropertyParents(entry["@id"]))
                 }
             } else {
                 parentIds.push(self.parentProperty["@id"])
-                parentIds = parentIds.concat(this.getPropertyParents(self.parentProperty["@id"]))
+                parentIds = parentIds.concat(
+                    await this.getPropertyParents(self.parentProperty["@id"])
+                )
             }
         }
 
         return parentIds
     }
 
-    getSubClasses(classId: string) {
+    async getSubClasses(classId: string) {
         let childrenIds: Set<string> = new Set<string>()
-        const self = this.getNode(classId)
+        const self = await this.getNode(classId)
         if (!self) throw new ReferenceError("classId not specified or invalid")
         if (!self.isClass()) throw new Error(`Node ${self["@id"]} is not a class`)
 
         for (const [_, node] of this.graph.entries()) {
             if (node.isClass() && node.isDirectSubClassOf(self["@id"])) {
                 childrenIds.add(node["@id"])
-                const subChildren = this.getSubClasses(node["@id"])
+                const subChildren = await this.getSubClasses(node["@id"])
                 for (const child of subChildren) {
                     childrenIds.add(child)
                 }
@@ -213,16 +265,16 @@ export class SchemaGraph {
         return Array.from(childrenIds)
     }
 
-    getSubProperties(propertyId: string) {
+    async getSubProperties(propertyId: string) {
         let childrenIds: Set<string> = new Set<string>()
-        const self = this.getNode(propertyId)
+        const self = await this.getNode(propertyId)
         if (!self) throw new ReferenceError("propertyId not specified or invalid")
         if (!self.isProperty()) throw new Error("Node is not a property")
 
         for (const [_, node] of this.graph.entries()) {
             if (node.isProperty() && node.isDirectSubPropertyOf(self["@id"])) {
                 childrenIds.add(node["@id"])
-                const subChildren = this.getSubProperties(node["@id"])
+                const subChildren = await this.getSubProperties(node["@id"])
                 for (const child of subChildren) {
                     childrenIds.add(child)
                 }
@@ -232,11 +284,11 @@ export class SchemaGraph {
         return Array.from(childrenIds)
     }
 
-    isPropertyOfClass(propertyId: string, classId: string) {
-        const property = this.getNode(propertyId)
+    async isPropertyOfClass(propertyId: string, classId: string) {
+        const property = await this.getNode(propertyId)
         if (!property) throw new ReferenceError("propertyId is not specified or invalid")
-        const classProperties = this.getClassProperties(classId)
-        const propertyParents = this.getPropertyParents(propertyId)
+        const classProperties = await this.getClassProperties(classId)
+        const propertyParents = await this.getPropertyParents(propertyId)
         propertyParents.push(property["@id"])
 
         for (const property of classProperties) {
@@ -261,10 +313,6 @@ export class SchemaGraph {
         }
     }
 
-    addSchemaOrgSchema() {
-        return this.addSchemaFromFile(SchemaOrg)
-    }
-
     addNode(entry: SchemaNode) {
         this.graph.set(entry["@id"], entry)
     }
@@ -279,4 +327,3 @@ export class SchemaGraph {
 }
 
 export const schemaGraph = new SchemaGraph()
-schemaGraph.addSchemaOrgSchema() // TODO properly implement

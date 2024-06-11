@@ -114,12 +114,12 @@ interface FunctionWorkerMessage {
 export function workAsFunctionWorker<T extends Record<string, (...args: any[]) => any>>(
     functions: T
 ) {
-    addEventListener("message", (event) => {
+    addEventListener("message", async (event) => {
         const { name, args, nonce } = event.data as FunctionWorkerMessage
 
         if (name in functions) {
             try {
-                const data = functions[name](...args)
+                const data = await functions[name](...args)
                 postMessage({ nonce, data })
             } catch (error) {
                 postMessage({ nonce, error })

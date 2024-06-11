@@ -1,12 +1,12 @@
 import { schemaGraph, SchemaNode } from "./SchemaGraph"
 import { toArray } from "../utils"
 
-export function getPropertyComment(propertyId: string) {
-    return schemaGraph.getNode(propertyId)?.comment
+export async function getPropertyComment(propertyId: string) {
+    return (await schemaGraph.getNode(propertyId))?.comment
 }
 
-export function getPropertyDomain(propertyId: string) {
-    const refs = schemaGraph.getNode(propertyId)?.domain
+export async function getPropertyDomain(propertyId: string) {
+    const refs = (await schemaGraph.getNode(propertyId))?.domain
     if (!refs) return []
 
     if (Array.isArray(refs)) {
@@ -21,8 +21,8 @@ export interface SlimClass {
     comment: SchemaNode["comment"]
 }
 
-export function getPropertyRange(propertyId: string) {
-    let refs = schemaGraph.getNode(propertyId)?.range
+export async function getPropertyRange(propertyId: string) {
+    let refs = (await schemaGraph.getNode(propertyId))?.range
     if (!refs) return []
 
     const range = new Set<SlimClass>()
@@ -31,14 +31,14 @@ export function getPropertyRange(propertyId: string) {
     for (const ref of refs) {
         range.add({
             "@id": schemaGraph.expandCompactIRI(ref["@id"]),
-            comment: getPropertyComment(ref["@id"])
+            comment: await getPropertyComment(ref["@id"])
         })
 
-        const subClasses = schemaGraph
-            .getSubClasses(ref["@id"])
-            .map((s) => schemaGraph.expandCompactIRI(s))
+        const subClasses = (await schemaGraph.getSubClasses(ref["@id"])).map((s) =>
+            schemaGraph.expandCompactIRI(s)
+        )
         for (const subClass of subClasses) {
-            range.add({ "@id": subClass, comment: getPropertyComment(subClass) })
+            range.add({ "@id": subClass, comment: await getPropertyComment(subClass) })
         }
     }
 
@@ -51,11 +51,11 @@ export interface SlimProperty {
     comment: SchemaNode["comment"]
 }
 
-export function getPossibleEntityProperties(types: string[]) {
+export async function getPossibleEntityProperties(types: string[]) {
     const result: SlimProperty[] = []
 
     for (const type of types) {
-        const properties = schemaGraph.getClassProperties(type).map((node) => {
+        const properties = (await schemaGraph.getClassProperties(type)).map((node) => {
             return {
                 "@id": schemaGraph.expandCompactIRI(node["@id"]),
                 range: node.range
@@ -109,10 +109,10 @@ export function getAllProperties(): SlimProperty[] {
         })
 }
 
-export function getAllComments(types: string[]): SlimClass[] {
+export async function getAllComments(types: string[]): Promise<SlimClass[]> {
     const result: SlimClass[] = []
     for (const id of types) {
-        const node = schemaGraph.getNode(id)
+        const node = await schemaGraph.getNode(id)
         if (node) {
             result.push({
                 "@id": schemaGraph.expandCompactIRI(node["@id"]),
