@@ -109,10 +109,7 @@ export function CrateDataProvider({
             const entities = getEntities()
 
             if (!lastCrateData.current || entities.size === 0) {
-                if (entities.size === 0)
-                    console.warn(
-                        "Editor state was reset. If this happens in production please report!"
-                    )
+                if (entities.size === 0) console.warn("Editor state was reset.")
                 setEntities(new Map(data["@graph"].map((entity) => [entity["@id"], entity])))
 
                 lastCrateData.current = data

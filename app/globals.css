@@ -40,6 +40,7 @@
     --root: rgb(229, 142, 94);
     --data: rgb(166, 67, 221);
     --contextual: rgb(79, 182, 112);
+    --error: rgb(255, 35, 35);
   }
 
   .dark {
@@ -77,6 +78,7 @@
     --root: rgb(236,121,57);
     --data: rgb(186,34,236);
     --contextual: rgb(29,165,77);
+    --error: rgb(255, 35, 35);
   }
 }
 

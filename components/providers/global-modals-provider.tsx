@@ -10,7 +10,7 @@ import { GlobalSearch } from "@/components/modals/global-search"
 import { AddPropertyModal } from "@/components/modals/add-property/add-property-modal"
 import { FindReferencesModal } from "@/components/modals/find-references-modal"
 import { SaveAsModal } from "@/components/modals/save-as-modal"
-import { SettingsModal } from "@/components/modals/settings-modal"
+import { SettingsModal } from "@/components/modals/settings/settings-modal"
 
 export interface AutoReference {
     entityId: string

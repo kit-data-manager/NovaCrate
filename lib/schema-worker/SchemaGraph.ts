@@ -94,9 +94,12 @@ class SchemaProvisionManager {
     private schemaGraph: SchemaGraph
     private schemaOrgLoaded = false
     private schemaOrgError: unknown
-    private bioschemasLoaded = false
+    private bioSchemaLoaded = false
+    private bioSchemaError: unknown = "Not supported yet"
     private purlLoaded = false
+    private purlError: unknown = "Not supported yet"
     private w3Loaded = false
+    private w3Error: unknown = "Not supported yet"
 
     constructor(schemaGraph: SchemaGraph) {
         this.schemaGraph = schemaGraph
@@ -135,12 +138,27 @@ class SchemaProvisionManager {
             return this.provisionSchemaOrgPromise
         }
     }
+
+    get status() {
+        return {
+            schemaOrgLoaded: this.schemaOrgLoaded,
+            schemaOrgError: this.schemaOrgError,
+            bioSchemaLoaded: this.bioSchemaLoaded,
+            bioSchemaError: this.bioSchemaError,
+            purlLoaded: this.purlLoaded,
+            purlError: this.purlError,
+            w3Loaded: this.w3Loaded,
+            w3Error: this.w3Error
+        }
+    }
 }
+
+export type ProvisioningStatus = typeof SchemaProvisionManager.prototype.status
 
 export class SchemaGraph {
     private context: Map<string, string> = new Map<string, string>()
     private graph: Map<string, SchemaNode> = new Map<string, SchemaNode>()
-    private provisioningManager = new SchemaProvisionManager(this)
+    readonly provisioningManager = new SchemaProvisionManager(this)
 
     async getNode(id: string) {
         // Should in the future be replaced with a more robust implementation that actually

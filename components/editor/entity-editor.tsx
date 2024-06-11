@@ -25,6 +25,7 @@ import { DataEntityHint } from "@/components/editor/hints/data-entity-hint"
 import { ContextualEntityHint } from "@/components/editor/hints/contextual-entity-hint"
 import { ActionButton } from "@/components/actions/action-buttons"
 import { EntityIcon } from "@/components/entity-icon"
+import { SettingsModal } from "@/components/modals/settings/settings-modal"
 
 export function EntityEditor({
     entityId,
