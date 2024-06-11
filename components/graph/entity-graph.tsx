@@ -10,7 +10,6 @@ import ReactFlow, {
     Node,
     NodeChange,
     Panel,
-    ReactFlowProvider,
     useNodesInitialized,
     useOnSelectionChange,
     useReactFlow
@@ -305,7 +304,7 @@ export function EntityGraph() {
 
     useEffect(() => {
         if (
-            nodes.length > 0 &&
+            nodes.length > 1 &&
             !nodes.find(
                 (node) => node.position.x !== DEFAULT_POS.x || node.position.y !== DEFAULT_POS.y
             )
@@ -439,13 +438,5 @@ export function EntityGraph() {
                 </ContextMenu>
             </ReactFlow>
         </>
-    )
-}
-
-export function EntityGraphWithContext() {
-    return (
-        <ReactFlowProvider>
-            <EntityGraph />
-        </ReactFlowProvider>
     )
 }
