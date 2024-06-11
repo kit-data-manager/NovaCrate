@@ -1,32 +1,29 @@
 import { useCurrentEntity } from "@/lib/hooks"
-import { useCallback, useContext, useMemo } from "react"
+import { useCallback, useContext, useMemo, useState } from "react"
 import { sortByPropertyName } from "@/components/editor/property-editor"
-import {
-    Asterisk,
-    AtSign,
-    Circle,
-    Component,
-    Dot,
-    LayoutGrid,
-    Minus,
-    PackageSearch,
-    SearchIcon,
-    XIcon
-} from "lucide-react"
+import { AtSign, LayoutGrid, Minus, SearchIcon, XIcon } from "lucide-react"
 import { camelCaseReadable } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
 import { useEntityBrowserState } from "@/lib/state/entity-browser-state"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Input } from "@/components/ui/input"
 
 export function PropertyOverview() {
     const currentEntity = useCurrentEntity()
     const { focusProperty } = useContext(EntityEditorTabsContext)
     const setShowPropertyOverview = useEntityBrowserState((store) => store.setShowPropertyOverview)
+    const [search, setSearch] = useState("")
 
     const properties = useMemo(() => {
         if (!currentEntity) return []
-        return Object.keys(currentEntity).sort((a, b) => sortByPropertyName(a, b))
-    }, [currentEntity])
+        const all = Object.keys(currentEntity).sort((a, b) => sortByPropertyName(a, b))
+        if (!search) return all
+        else
+            return all.filter((property) =>
+                property.toLowerCase().includes(search.replaceAll(" ", "").toLowerCase())
+            )
+    }, [currentEntity, search])
 
     const getKey = useCallback(
         (propertyName: string) => {
@@ -49,14 +46,39 @@ export function PropertyOverview() {
             <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
                 <LayoutGrid className="w-4 h-4 shrink-0 mr-2" /> Property Overview
                 <div className="grow" />
-                <Button variant="header" size="sm">
-                    <SearchIcon className="w-4 h-4" />
-                </Button>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="header" size="sm">
+                            <SearchIcon className="w-4 h-4" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="grid grid-cols-1 gap-2">
+                        <h4 className="font-medium leading-none">Search for Properties</h4>
+                        <Input
+                            placeholder="Search..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </PopoverContent>
+                </Popover>
                 <Button variant="header" size="sm" onClick={() => setShowPropertyOverview(false)}>
                     <XIcon className="w-4 h-4" />
                 </Button>
             </div>
             <div className="p-2 overflow-y-auto">
+                {search ? (
+                    <div className="text-muted-foreground text-sm pl-2 flex justify-between items-center">
+                        <div>Showing search results for &quot;{search}&quot;</div>
+                        <Button
+                            variant="link"
+                            size="sm"
+                            className="text-muted-foreground"
+                            onClick={() => setSearch("")}
+                        >
+                            Clear
+                        </Button>
+                    </div>
+                ) : null}
                 {properties.map((propertyName) => (
                     <Button
                         key={getKey(propertyName)}
