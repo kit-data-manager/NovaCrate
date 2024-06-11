@@ -9,6 +9,7 @@ import {
 import { memo } from "react"
 import { ActionButton, ActionDropdownMenuItem } from "@/components/actions/action-buttons"
 import { useAction } from "@/lib/hooks"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export const EntityEditorHeader = memo(function EntityEditorHeader({
     isSaving,
@@ -24,15 +25,21 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
     const saveAction = useAction("entity.save")
 
     return (
-        <div className="flex mb-2 gap-2 sticky top-0 z-20 p-2 bg-accent">
-            <Button
-                size="sm"
-                variant="outline"
-                className="text-xs"
-                onClick={toggleEntityBrowserPanel}
-            >
-                <PanelLeftClose className="w-4 h-4" />
-            </Button>
+        <div className="flex mb-2 gap-2 top-0 p-2 bg-accent">
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs"
+                        onClick={toggleEntityBrowserPanel}
+                    >
+                        <PanelLeftClose className="w-4 h-4" />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>Toggle Entity Browser</TooltipContent>
+            </Tooltip>
+
             <ActionButton
                 actionId="entity.add-property"
                 size="sm"

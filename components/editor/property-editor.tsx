@@ -28,12 +28,12 @@ export interface EntityEditorProperty {
     deleted: boolean
 }
 
-function sortByPropertyName(a: EntityEditorProperty, b: EntityEditorProperty) {
-    if (a.propertyName === "name" && b.propertyName === "name") return 0
-    if (a.propertyName === "name" && !b.propertyName.startsWith("@")) return -1
-    if (b.propertyName === "name" && !a.propertyName.startsWith("@")) return 1
-    if (a.propertyName === b.propertyName) return 0
-    return a.propertyName > b.propertyName ? 1 : -1
+export function sortByPropertyName(a: string, b: string) {
+    if (a === "name" && b === "name") return 0
+    if (a === "name" && !b.startsWith("@")) return -1
+    if (b === "name" && !a.startsWith("@")) return 1
+    if (a === b) return 0
+    return a > b ? 1 : -1
 }
 
 // TODO maybe get rid of this, causes problems with re-rendering
@@ -63,7 +63,7 @@ export function mapEntityToProperties(
         })
         .flat()
         .concat(deletedProperties)
-        .sort(sortByPropertyName)
+        .sort((a, b) => sortByPropertyName(a.propertyName, b.propertyName))
 }
 
 export function mapPropertiesToEntity(data: EntityEditorProperty[]): IFlatEntity {

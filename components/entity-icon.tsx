@@ -32,7 +32,7 @@ export function EntityIcon(props: {
                 >
                     <Asterisk className="w-4 h-4" />
                 </div>
-                <span className="z-10">?</span>
+                <span>?</span>
             </div>
         )
     } else if (isRootEntity(props.entity)) {
@@ -49,7 +49,7 @@ export function EntityIcon(props: {
                 >
                     <Asterisk className="w-4 h-4" />
                 </div>
-                <span className="z-10">R</span>
+                <span>R</span>
             </div>
         )
     } else if (isDataEntity(props.entity)) {
@@ -66,7 +66,7 @@ export function EntityIcon(props: {
                 >
                     <Asterisk className="w-4 h-4" />
                 </div>
-                <span className="z-10">{isFileDataEntity(props.entity) ? "F" : "D"}</span>
+                <span>{isFileDataEntity(props.entity) ? "F" : "D"}</span>
             </div>
         )
     } else {
@@ -83,7 +83,7 @@ export function EntityIcon(props: {
                 >
                     <Asterisk className="w-4 h-4" />
                 </div>
-                <span className="z-10">C</span>
+                <span>C</span>
             </div>
         )
     }
