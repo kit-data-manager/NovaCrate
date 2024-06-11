@@ -25,7 +25,7 @@ export default function DefaultActions() {
         icon: SaveAll
     })
     useRegisterAction("crate.revert-all-entities", "Revert all Entities", revertAllEntities, {
-        keyboardShortcut: ["shift", "command", "z"],
+        keyboardShortcut: ["shift", "command", "u"],
         icon: Undo2
     })
     useRegisterAction("crate.reload-entities", "Reload Entities", reload, {
