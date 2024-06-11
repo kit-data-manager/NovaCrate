@@ -270,3 +270,7 @@ export function useRegisterAction(
 export function useAction(id: string) {
     return useActionsStore((store) => store.actions.get(id) || notFoundAction(id))
 }
+
+export function useActionsReady() {
+    return useActionsStore((store) => store.isReady())
+}

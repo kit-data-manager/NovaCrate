@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react"
+import { CircleHelp, LucideIcon } from "lucide-react"
 import { createStore } from "zustand/vanilla"
 import { immer } from "zustand/middleware/immer"
 
@@ -17,6 +17,7 @@ export interface ActionStore {
     getAllActions(): Action[]
     registerAction(action: Action): void
     unregisterAction(name: string): void
+    isReady(): boolean
 }
 
 export const createActionStore = () =>
@@ -35,6 +36,10 @@ export const createActionStore = () =>
                 set((store) => {
                     store.actions.delete(id)
                 })
+            },
+            isReady(): boolean {
+                // Assuming that the action store is not ready as long as there are no actions
+                return get().actions.size > 0
             }
         }))
     )
@@ -46,6 +51,7 @@ export function notFoundAction(id: string): Action {
         execute() {
             console.warn("Trying to execute action that was not found", { id })
         },
-        notFound: true
+        notFound: true,
+        icon: CircleHelp
     }
 }

@@ -38,7 +38,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { useCopyToClipboard } from "usehooks-ts"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getEntityDisplayName } from "@/lib/utils"
-import { ActionMenubarItem } from "@/components/actions/action-buttons"
+import { ActionButton, ActionMenubarItem } from "@/components/actions/action-buttons"
 import { EntityIcon } from "@/components/entity-icon"
 
 function EntityMenu() {
@@ -155,9 +155,7 @@ export function NavHeader() {
                                     </MenubarCheckboxItem>
                                 </MenubarSubContent>
                             </MenubarSub>
-                            <MenubarItem disabled>
-                                <Cog className="w-4 h-4 mr-2" /> Settings
-                            </MenubarItem>
+                            <ActionMenubarItem actionId="editor.settings" />
                             <MenubarItem disabled>
                                 <Info className="w-4 h-4 mr-2" /> Info
                             </MenubarItem>
@@ -231,19 +229,11 @@ export function NavHeader() {
             <div />
 
             <div className="flex justify-end items-center gap-2">
-                <div className="flex items-center mr-2 text-green-500">
-                    <Check className="w-4 h-4 mr-2" /> No Issues detected
-                </div>
-                <Button
-                    variant="secondary"
-                    className="text-muted-foreground text-xs"
-                    onClick={showGlobalSearchModal}
-                >
-                    <Search className="w-4 h-4 mr-2 text-foreground" /> ⌘K
-                </Button>
-                <Button variant="secondary" size="icon">
-                    <Cog className="w-4 h-4" />
-                </Button>
+                {/*<div className="flex items-center mr-2 text-green-500">*/}
+                {/*    <Check className="w-4 h-4 mr-2" /> No Issues detected*/}
+                {/*</div>*/}
+                <ActionButton variant="secondary" actionId={"editor.global-search"} hideName />
+                <ActionButton variant="secondary" actionId={"editor.settings"} iconOnly />
             </div>
         </div>
     )
