@@ -212,7 +212,8 @@ export function EntityGraph() {
             if (params.sourceHandle === NEW_PROP_HANDLE) {
                 showAddPropertyModal(
                     toArray(source["@type"]),
-                    handleAddPropertySelect(source, target)
+                    handleAddPropertySelect(source, target),
+                    true
                 )
             } else {
                 if (!propertyEntryExists(source, params.sourceHandle, params.target)) {
