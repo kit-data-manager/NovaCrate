@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { EllipsisVertical, PanelLeftClose, RefreshCw, Save } from "lucide-react"
+import { EllipsisVertical, Eye, PanelLeftClose, RefreshCw, Save } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -15,12 +15,18 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
     isSaving,
     hasUnsavedChanges,
     canSaveAs,
-    toggleEntityBrowserPanel
+    toggleEntityBrowserPanel,
+    canHavePreview,
+    togglePreview,
+    isBeingPreviewed
 }: {
     hasUnsavedChanges: boolean
     isSaving: boolean
     canSaveAs: boolean
     toggleEntityBrowserPanel(): void
+    canHavePreview: boolean
+    togglePreview: () => void
+    isBeingPreviewed: boolean
 }) {
     const saveAction = useAction("entity.save")
 
@@ -75,6 +81,16 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                     )}
                     {saveAction.name}
                 </Button>
+                {canHavePreview ? (
+                    <Button
+                        variant={"outline"}
+                        size={"sm"}
+                        className={`text-xs transition-colors ${isBeingPreviewed ? "bg-primary text-primary-foreground hover:bg-primary/70 hover:text-primary-foreground" : ""}`}
+                        onClick={togglePreview}
+                    >
+                        <Eye className="w-4 h-4 mr-2" /> Preview File
+                    </Button>
+                ) : null}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm">
