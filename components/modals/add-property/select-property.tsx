@@ -60,11 +60,13 @@ const AddPropertyModalEntry = memo(function AddPropertyModalEntry({
 export function SelectProperty({
     open: _open,
     onPropertySelect,
-    typeArray
+    typeArray,
+    onlyReferences
 }: {
     open: boolean
     onPropertySelect: (propertyName: string, canBe: ReturnType<typeof usePropertyCanBe>) => void
     typeArray: string[]
+    onlyReferences: boolean
 }) {
     const [open, setOpen] = useState(_open)
     const crateContext = useEditorState.useCrateContext()
@@ -85,12 +87,13 @@ export function SelectProperty({
         async (types: string[]) => {
             if (crateVerifyReady) {
                 const data = bypassRestrictions
-                    ? await worker.execute("getAllProperties")
+                    ? await worker.execute("getAllProperties", { onlyReferences })
                     : await worker.execute(
                           "getPossibleEntityProperties",
                           types
                               .map((type) => crateContext.resolve(type))
-                              .filter((s) => typeof s === "string") as string[]
+                              .filter((s) => typeof s === "string") as string[],
+                          { onlyReferences }
                       )
                 return data
                     .map((s) => {
@@ -107,7 +110,7 @@ export function SelectProperty({
                     .filter((s) => typeof s.propertyName === "string") as PossibleProperty[]
             }
         },
-        [bypassRestrictions, crateContext, crateVerifyReady, worker]
+        [bypassRestrictions, crateContext, crateVerifyReady, onlyReferences, worker]
     )
 
     const handleBypassCheckedChange = useCallback((s: CheckedState) => {

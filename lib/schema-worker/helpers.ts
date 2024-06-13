@@ -1,5 +1,5 @@
 import { schemaGraph, SchemaNode } from "./SchemaGraph"
-import { toArray } from "../utils"
+import { referenceCheck, toArray } from "../utils"
 
 export async function getPropertyComment(propertyId: string) {
     return (await schemaGraph.getNode(propertyId))?.comment
@@ -51,7 +51,11 @@ export interface SlimProperty {
     comment: SchemaNode["comment"]
 }
 
-export async function getPossibleEntityProperties(types: string[]) {
+interface PropertyOptions {
+    onlyReferences: boolean
+}
+
+export async function getPossibleEntityProperties(types: string[], opt?: PropertyOptions) {
     const result: SlimProperty[] = []
 
     for (const type of types) {
@@ -75,7 +79,9 @@ export async function getPossibleEntityProperties(types: string[]) {
         }
     }
 
-    return Array.from(result)
+    return Array.from(result).filter((p) =>
+        opt?.onlyReferences ? referenceCheck(p.range.map((r) => r["@id"])) : true
+    )
 }
 
 export function getAllClasses(): SlimClass[] {
@@ -90,7 +96,7 @@ export function getAllClasses(): SlimClass[] {
         })
 }
 
-export function getAllProperties(): SlimProperty[] {
+export function getAllProperties(opt?: Partial<PropertyOptions>): SlimProperty[] {
     return schemaGraph
         .getAllNodes()
         .filter((n) => n.isProperty())
@@ -107,6 +113,7 @@ export function getAllProperties(): SlimProperty[] {
                     : []
             }
         })
+        .filter((p) => (opt?.onlyReferences ? referenceCheck(p.range.map((r) => r["@id"])) : true))
 }
 
 export async function getAllComments(types: string[]): Promise<SlimClass[]> {

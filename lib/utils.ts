@@ -1,5 +1,15 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import {
+    SCHEMA_ORG_BOOLEAN,
+    SCHEMA_ORG_DATE,
+    SCHEMA_ORG_DATE_TIME,
+    SCHEMA_ORG_NUMBER,
+    SCHEMA_ORG_NUMBERLIKE,
+    SCHEMA_ORG_TEXT,
+    SCHEMA_ORG_TEXTLIKE,
+    SCHEMA_ORG_TIME
+} from "@/lib/constants"
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
@@ -141,6 +151,31 @@ export function asValidPath(path: string, endWithSlash?: boolean) {
         .filter((part) => part.length > 0)
         .join("/")
     return endWithSlash ? filtered + "/" : filtered
+}
+
+export function isNoneOf(value: string, of: string[]) {
+    return of.find((s) => s === value) === undefined
+}
+
+export function referenceCheck(propertyRange?: string[]) {
+    return propertyRange
+        ? propertyRange.length === 0 ||
+              propertyRange.filter((s) =>
+                  isNoneOf(
+                      s,
+                      [
+                          SCHEMA_ORG_TIME,
+                          SCHEMA_ORG_BOOLEAN,
+                          SCHEMA_ORG_DATE_TIME,
+                          SCHEMA_ORG_NUMBER,
+                          SCHEMA_ORG_DATE,
+                          SCHEMA_ORG_TEXT,
+                          SCHEMA_ORG_NUMBERLIKE,
+                          SCHEMA_ORG_TEXTLIKE
+                      ].flat()
+                  )
+              ).length > 0
+        : undefined
 }
 
 export enum Diff {

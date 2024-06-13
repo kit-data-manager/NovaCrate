@@ -20,12 +20,14 @@ export function AddPropertyModal({
     open,
     onPropertyAdd,
     onOpenChange,
-    typeArray
+    typeArray,
+    onlyReferences = false
 }: {
     open: boolean
     onPropertyAdd: (propertyName: string, values: FlatEntitySinglePropertyTypes) => void
     onOpenChange: (open: boolean) => void
     typeArray: string[]
+    onlyReferences?: boolean
 }) {
     const [typeSelectOptions, setTypeSelectOptions] = useState<
         ReturnType<typeof usePropertyCanBe> | undefined
@@ -81,6 +83,7 @@ export function AddPropertyModal({
                         open={open}
                         onPropertySelect={onPropertySelect}
                         typeArray={typeArray}
+                        onlyReferences={onlyReferences}
                     />
                 ) : (
                     <SelectType
