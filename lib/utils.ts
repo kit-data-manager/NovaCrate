@@ -9,7 +9,7 @@ import {
     SCHEMA_ORG_TEXT,
     SCHEMA_ORG_TEXTLIKE,
     SCHEMA_ORG_TIME
-} from "@/lib/constants"
+} from "./constants"
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
