@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createRef, useCallback, useContext, useEffect } from "react"
+import React, { createRef, useCallback, useContext, useEffect, useRef } from "react"
 import ReactFlow, {
     Background,
     Connection,
@@ -313,11 +313,13 @@ export function EntityGraph() {
         }
     }, [nodes, reformat])
 
+    const initialReformatDone = useRef(false)
     useEffect(() => {
-        if (nodesInitialized) {
-            centerView(true)
+        if (nodesInitialized && !initialReformatDone.current) {
+            reformat(true)
+            initialReformatDone.current = true
         }
-    }, [centerView, nodesInitialized])
+    }, [nodesInitialized, reformat])
 
     useOnSelectionChange({
         onChange: ({ nodes }) => {

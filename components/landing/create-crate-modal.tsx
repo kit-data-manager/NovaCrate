@@ -159,6 +159,25 @@ export function CreateCrateModal({
                 ) : (
                     <>
                         <Error title="Could not create a new Crate" error={error} />
+                        {fromFolder ? (
+                            <div>
+                                <Label>Folder</Label>
+                                <div>
+                                    <Button variant="outline" onClick={openFolderPicker}>
+                                        <Folder className="w-4 h-4 mr-2" />{" "}
+                                        {files.length == 0
+                                            ? "Select Folder"
+                                            : files[0].webkitRelativePath.split("/")[0]}
+                                    </Button>
+                                    <span className="ml-2 text-muted-foreground">
+                                        {files.length > 0
+                                            ? `${files.length} file${files.length === 1 ? "" : "s"} selected (${prettyBytes(files.map((f) => f.size).reduce(sum))} total)`
+                                            : "No files selected"}
+                                    </span>
+                                </div>
+                            </div>
+                        ) : null}
+
                         {!fromZip ? (
                             <>
                                 <div>
@@ -179,25 +198,6 @@ export function CreateCrateModal({
                                     />
                                 </div>
                             </>
-                        ) : null}
-
-                        {fromFolder ? (
-                            <div>
-                                <Label>Folder</Label>
-                                <div>
-                                    <Button variant="outline" onClick={openFolderPicker}>
-                                        <Folder className="w-4 h-4 mr-2" />{" "}
-                                        {files.length == 0
-                                            ? "Select Folder"
-                                            : files[0].webkitRelativePath.split("/")[0]}
-                                    </Button>
-                                    <span className="ml-2 text-muted-foreground">
-                                        {files.length > 0
-                                            ? `${files.length} file${files.length === 1 ? "" : "s"} selected (${prettyBytes(files.map((f) => f.size).reduce(sum))} total)`
-                                            : "No files selected"}
-                                    </span>
-                                </div>
-                            </div>
                         ) : null}
 
                         <div className="mt-4 flex justify-between">
