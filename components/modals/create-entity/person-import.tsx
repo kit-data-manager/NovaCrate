@@ -61,23 +61,7 @@ export function PersonImport({
 
     return (
         <>
-            <DialogHeader>
-                <DialogTitle>Create a Person</DialogTitle>
-                <DialogDescription>
-                    It is recommended to import a Person from orcid.org whenever possible. This will
-                    use the ORCID Identifier as the Identifier for this entity.
-                </DialogDescription>
-            </DialogHeader>
-
-            <div className="flex justify-center gap-2 items-center">
-                <Button
-                    variant={createManually ? "secondary" : "default"}
-                    onClick={() => setCreateManually(false)}
-                    disabled={creating}
-                >
-                    <Import className="w-4 h-4 mr-2" /> Import from ORCID
-                </Button>
-                or
+            <div className="flex justify-center gap-2 items-center mb-6">
                 <Button
                     variant={createManually ? "default" : "secondary"}
                     onClick={() => setCreateManually(true)}
@@ -85,19 +69,32 @@ export function PersonImport({
                 >
                     <TextCursor className="w-4 h-4 mr-2" /> Create Manually
                 </Button>
+                or
+                <Button
+                    variant={createManually ? "secondary" : "default"}
+                    onClick={() => setCreateManually(false)}
+                    disabled={creating}
+                >
+                    <Import className="w-4 h-4 mr-2" /> Import from ORCID
+                </Button>
             </div>
 
             {createManually ? null : (
                 <>
-                    <div className="flex justify-center">
-                        <a
-                            href="https://orcid.org/orcid-search/search"
-                            target="_blank"
-                            className="flex hover:underline"
-                        >
-                            Find a Person on ORCID.org <ExternalLink className="w-4 h-4 ml-1" />
-                        </a>
-                    </div>
+                    <DialogHeader>
+                        <DialogTitle>Import Person from ORCID</DialogTitle>
+                        <DialogDescription>
+                            Search at{" "}
+                            <a
+                                href="https://orcid.org/orcid-search/search"
+                                target="_blank"
+                                className="inline-flex hover:underline"
+                            >
+                                ORCID.org <ExternalLink className="w-4 h-4 ml-1" />
+                            </a>
+                            . Enter either ORCID ID or URL.
+                        </DialogDescription>
+                    </DialogHeader>
                     <Error error={error} title="Import failed" />
                     <div>
                         <Label>ORCID URL or Identifier</Label>
