@@ -142,7 +142,7 @@ export function EntityGraph() {
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const { showDeleteEntityModal, showAddPropertyModal } = useContext(GlobalModalContext)
-    const { saveError, crateDataIsLoading, crateId } = useContext(CrateDataContext)
+    const { saveError, crateDataIsLoading, crateId, isSaving } = useContext(CrateDataContext)
     const nodesInitialized = useNodesInitialized()
 
     const {
@@ -411,6 +411,7 @@ export function EntityGraph() {
                 >
                     <ActionButton
                         variant={hasUnsavedChanges ? "default" : "secondary"}
+                        disabled={isSaving}
                         actionId={"crate.save-all-entities"}
                     />
                 </Panel>

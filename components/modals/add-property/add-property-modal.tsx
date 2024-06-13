@@ -36,7 +36,13 @@ export function AddPropertyModal({
 
     const onPropertySelect = useCallback(
         (propertyName: string, canBe: ReturnType<typeof usePropertyCanBe>) => {
-            if (canBe.possiblePropertyTypes.length === 1) {
+            if (onlyReferences) {
+                onPropertyAdd(
+                    propertyName,
+                    getPropertyTypeDefaultValue(PropertyEditorTypes.Reference)
+                )
+                onOpenChange(false)
+            } else if (canBe.possiblePropertyTypes.length === 1) {
                 onPropertyAdd(
                     propertyName,
                     getPropertyTypeDefaultValue(canBe.possiblePropertyTypes[0])
@@ -51,7 +57,7 @@ export function AddPropertyModal({
                 setSelectedPropertyName(propertyName)
             }
         },
-        [onOpenChange, onPropertyAdd]
+        [onOpenChange, onPropertyAdd, onlyReferences]
     )
 
     const onTypeSelect = useCallback(
