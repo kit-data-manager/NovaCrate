@@ -19,7 +19,7 @@ export function CreateProviders({
     fallback: React.ReactNode
 }) {
     const context = useEditorState.useCrateContext()
-    const [manualCreation, setManualCreation] = useState(false)
+    const [manualCreation, setManualCreation] = useState(true)
 
     const canUsePersonProvider = useMemo(() => {
         return context.resolve(selectedType) === SCHEMA_ORG_PERSON

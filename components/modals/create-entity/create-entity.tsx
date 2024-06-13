@@ -185,9 +185,9 @@ export function CreateEntity({
                             Enter a name for the entity.{" "}
                             {forceId
                                 ? ""
-                                : `A valid ID will automatically be generated.
-                            You can also manually change the ID.`}{" "}
-                            Press the Create button to start adding Properties.
+                                : `An ID will be generated.
+                            You can also change the ID.`}{" "}
+                            Press Create to start adding Properties.
                         </>
                     ) : null}
 

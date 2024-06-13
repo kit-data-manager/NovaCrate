@@ -60,23 +60,7 @@ export function OrganizationImport({
 
     return (
         <>
-            <DialogHeader>
-                <DialogTitle>Create an Organization</DialogTitle>
-                <DialogDescription>
-                    It is recommended to import Organizations from ror.org whenever possible. This
-                    will use the ROR Identifier as the Identifier for this entity.
-                </DialogDescription>
-            </DialogHeader>
-
-            <div className="flex justify-center gap-2 items-center">
-                <Button
-                    variant={createManually ? "secondary" : "default"}
-                    onClick={() => setCreateManually(false)}
-                    disabled={creating}
-                >
-                    <Import className="w-4 h-4 mr-2" /> Import from ROR
-                </Button>
-                or
+            <div className="flex justify-center gap-2 pb-6 items-center">
                 <Button
                     variant={createManually ? "default" : "secondary"}
                     onClick={() => setCreateManually(true)}
@@ -84,20 +68,32 @@ export function OrganizationImport({
                 >
                     <TextCursor className="w-4 h-4 mr-2" /> Create Manually
                 </Button>
+                or
+                <Button
+                    variant={createManually ? "secondary" : "default"}
+                    onClick={() => setCreateManually(false)}
+                    disabled={creating}
+                >
+                    <Import className="w-4 h-4 mr-2" /> Import from ROR
+                </Button>
             </div>
 
             {createManually ? null : (
                 <>
-                    <div className="flex justify-center">
-                        <a
-                            href="https://ror.org/search"
-                            target="_blank"
-                            className="flex hover:underline"
-                        >
-                            Find an Organization on ROR.org{" "}
-                            <ExternalLink className="w-4 h-4 ml-1" />
-                        </a>
-                    </div>
+                    <DialogHeader>
+                        <DialogTitle>Import Organization from ROR</DialogTitle>
+                        <DialogDescription>
+                            Search at{" "}
+                            <a
+                                href="https://ror.org/search"
+                                target="_blank"
+                                className="inline-flex hover:underline"
+                            >
+                                ROR.org <ExternalLink className="w-4 h-4 ml-1" />
+                            </a>
+                            . Enter either ROR ID or URL.
+                        </DialogDescription>
+                    </DialogHeader>
                     <Error error={error} title="Import failed" />
                     <div>
                         <Label>ROR URL or Identifier</Label>
