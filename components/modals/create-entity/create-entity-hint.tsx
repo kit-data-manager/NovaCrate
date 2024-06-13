@@ -5,9 +5,9 @@ import {
     SCHEMA_ORG_PLACE,
     SCHEMA_ORG_SCHOLARLY_ARTICLE
 } from "@/lib/constants"
-import { AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { ExternalLink, Pin } from "lucide-react"
-import { Hint } from "@/components/hint"
+import { AlertDescription } from "@/components/ui/alert"
+import { ExternalLink } from "lucide-react"
+import { CollapsibleHint } from "@/components/collapsible-hint"
 
 export function CreateEntityHint({ selectedType }: { selectedType: string }) {
     const context = useEditorState.useCrateContext()
@@ -27,9 +27,7 @@ export function CreateEntityHint({ selectedType }: { selectedType: string }) {
     return useMemo(() => {
         if (showPlaceHint) {
             return (
-                <Hint name={"place-create-hint"}>
-                    <Pin className="w-4 h-4" />
-                    <AlertTitle>Identifiers for Places</AlertTitle>
+                <CollapsibleHint title={"Identifiers for Places"}>
                     <AlertDescription>
                         To uniquely identify a physical location, it is recommended to use the
                         unique location identifier from{" "}
@@ -55,15 +53,13 @@ export function CreateEntityHint({ selectedType }: { selectedType: string }) {
                             Please remove {"/<something>.html"} from the end of the URL
                         </div>
                     </AlertDescription>
-                </Hint>
+                </CollapsibleHint>
             )
         }
 
         if (showScholarlyArticleHint) {
             return (
-                <Hint name={"scholarly-article-create-hint"}>
-                    <Pin className="w-4 h-4" />
-                    <AlertTitle>Identifiers for Scholarly Articles</AlertTitle>
+                <CollapsibleHint title={"Identifiers for Scholarly Articles"}>
                     <AlertDescription>
                         To uniquely identify scholarly articles, it is recommended to use their DOI.
                         They will typically be provided with the article.
@@ -79,15 +75,13 @@ export function CreateEntityHint({ selectedType }: { selectedType: string }) {
                             </a>
                         </div>
                     </AlertDescription>
-                </Hint>
+                </CollapsibleHint>
             )
         }
 
         if (showContactPointHint)
             return (
-                <Hint name={"contact-point-create-hint"}>
-                    <Pin className="w-4 h-4" />
-                    <AlertTitle>Identifiers for Contact Information</AlertTitle>
+                <CollapsibleHint title={"Identifiers for Contact Information"}>
                     <AlertDescription>
                         Use the Email address as the identifier when possible, as seen in the
                         example.
@@ -105,7 +99,7 @@ export function CreateEntityHint({ selectedType }: { selectedType: string }) {
                             Adding the mailto: prefix makes it clear that this is an Email
                         </div>
                     </AlertDescription>
-                </Hint>
+                </CollapsibleHint>
             )
 
         return null
