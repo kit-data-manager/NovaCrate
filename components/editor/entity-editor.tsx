@@ -10,6 +10,7 @@ import {
     Diff,
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
+    isFileDataEntity as isFileDataEntityUtil,
     propertyHasChanged
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
@@ -25,7 +26,7 @@ import { DataEntityHint } from "@/components/editor/hints/data-entity-hint"
 import { ContextualEntityHint } from "@/components/editor/hints/contextual-entity-hint"
 import { ActionButton } from "@/components/actions/action-buttons"
 import { EntityIcon } from "@/components/entity-icon"
-import { SettingsModal } from "@/components/modals/settings/settings-modal"
+import { FileExplorerContext } from "@/components/file-explorer/context"
 
 export function EntityEditor({
     entityId,
@@ -41,11 +42,31 @@ export function EntityEditor({
     const addPropertyEntry = useEditorState.useAddPropertyEntry()
     const modifyPropertyEntry = useEditorState.useModifyPropertyEntry()
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
+    const { setPreviewingFilePath, previewingFilePath } = useContext(FileExplorerContext)
 
     const isDataEntity = useMemo(() => {
         if (!entity) return false
         return isDataEntityUtil(entity)
     }, [entity])
+
+    const isFileDataEntity = useMemo(() => {
+        if (!entity) return false
+        return isFileDataEntityUtil(entity)
+    }, [entity])
+
+    const togglePreview = useCallback(() => {
+        if (entity) {
+            if (previewingFilePath === entity["@id"]) {
+                setPreviewingFilePath("")
+            } else {
+                setPreviewingFilePath(entity["@id"])
+            }
+        }
+    }, [entity, previewingFilePath, setPreviewingFilePath])
+
+    const isBeingPreviewed = useMemo(() => {
+        return previewingFilePath === entity?.["@id"]
+    }, [entity, previewingFilePath])
 
     const hasUnsavedChanges = useMemo(() => {
         const diff = entitiesChangelist.get(entityId)
@@ -132,6 +153,9 @@ export function EntityEditor({
                 isSaving={isSaving}
                 canSaveAs={!isDataEntity}
                 toggleEntityBrowserPanel={toggleEntityBrowserPanel}
+                canHavePreview={isFileDataEntity}
+                togglePreview={togglePreview}
+                isBeingPreviewed={isBeingPreviewed}
             />
 
             <div className="p-4 pr-10 overflow-y-auto">

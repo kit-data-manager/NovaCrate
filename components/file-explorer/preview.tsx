@@ -1,6 +1,6 @@
 "use client"
 
-import { Download, Eye, XIcon } from "lucide-react"
+import { Download, Eye, FileIcon, XIcon } from "lucide-react"
 import HelpTooltip from "@/components/help-tooltip"
 import { Button } from "@/components/ui/button"
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
@@ -10,7 +10,13 @@ import { Error } from "@/components/error"
 import { BaseViewer } from "@/components/file-explorer/viewers/base"
 import useSWR from "swr"
 
-export function FilePreview() {
+export function FilePreview({
+    showFileName = false,
+    closeable = true
+}: {
+    showFileName?: boolean
+    closeable?: boolean
+}) {
     const { previewingFilePath, setPreviewingFilePath, setDownloadError } =
         useContext(FileExplorerContext)
     const { serviceProvider, crateId } = useContext(CrateDataContext)
@@ -24,7 +30,7 @@ export function FilePreview() {
     }, [crateId, previewingFilePath, serviceProvider, setDownloadError])
 
     const resourceUrl = useMemo(() => {
-        if (serviceProvider && serviceProvider.getCrateFileURL && crateId) {
+        if (serviceProvider && serviceProvider.getCrateFileURL && crateId && previewingFilePath) {
             return serviceProvider.getCrateFileURL(crateId, previewingFilePath)
         } else return undefined
     }, [crateId, previewingFilePath, serviceProvider])
@@ -56,13 +62,52 @@ export function FilePreview() {
                     </div>
                 </HelpTooltip>
                 <div className="grow" />
-                <Button variant="header" size="sm" onClick={downloadFile}>
-                    <Download className="w-4 h-4 mr-2" /> Download
-                </Button>
-                <Button variant="header" size="sm" onClick={() => setPreviewingFilePath("")}>
-                    <XIcon className="w-4 h-4" />
-                </Button>
+                {showFileName ? null : (
+                    <>
+                        {previewingFilePath ? (
+                            <Button variant="header" size="sm" onClick={downloadFile}>
+                                <Download className="w-4 h-4 mr-2" /> Download
+                            </Button>
+                        ) : null}
+                        {closeable ? (
+                            <Button
+                                variant="header"
+                                size="sm"
+                                onClick={() => setPreviewingFilePath("")}
+                            >
+                                <XIcon className="w-4 h-4" />
+                            </Button>
+                        ) : null}
+                    </>
+                )}
             </div>
+            {showFileName ? (
+                <div className="flex p-2 gap-2 bg-accent">
+                    <div className="self-center text-sm pl-2 flex items-center truncate">
+                        <FileIcon className="w-4 h-4 mr-2 shrink-0" /> {previewingFilePath}
+                    </div>
+                    <div className="grow" />
+                    {previewingFilePath ? (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs"
+                            onClick={downloadFile}
+                        >
+                            <Download className="w-4 h-4 mr-2" /> Download
+                        </Button>
+                    ) : null}
+                    {closeable ? (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPreviewingFilePath("")}
+                        >
+                            <XIcon className="w-4 h-4" />
+                        </Button>
+                    ) : null}
+                </div>
+            ) : null}
             <Error title="Could not load file for preview" error={previewError} />
             <BaseViewer
                 setPreviewNotSupported={setPreviewNotSupported}

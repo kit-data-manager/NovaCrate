@@ -2,22 +2,18 @@
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { FileExplorer } from "@/components/file-explorer/explorer"
-import { useContext } from "react"
 import { FilePreview } from "@/components/file-explorer/preview"
-import { FileExplorerContext } from "@/components/file-explorer/context"
 import { Metadata } from "@/components/Metadata"
 
 function Content() {
-    const { previewingFilePath } = useContext(FileExplorerContext)
-
     return (
         <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel defaultSize={50} minSize={15}>
+            <ResizablePanel defaultSize={34} minSize={15}>
                 <FileExplorer />
             </ResizablePanel>
             <ResizableHandle />
-            <ResizablePanel defaultSize={50} minSize={15} hidden={!previewingFilePath}>
-                <FilePreview />
+            <ResizablePanel defaultSize={66} minSize={15}>
+                <FilePreview closeable={false} />
             </ResizablePanel>
         </ResizablePanelGroup>
     )

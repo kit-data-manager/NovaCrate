@@ -2,6 +2,7 @@ import { ObjectViewer } from "@/components/file-explorer/viewers/object"
 import { ImageViewer } from "@/components/file-explorer/viewers/image"
 import { TextViewer } from "@/components/file-explorer/viewers/text"
 import { PreviewNotSupported } from "@/components/file-explorer/viewers/not-supported"
+import { Eye } from "lucide-react"
 
 export interface ViewerProps {
     data?: Blob
@@ -24,7 +25,16 @@ const IMAGE_TYPES = [
 const TEXT_TYPES = ["text/plain", "application/json"]
 
 export function BaseViewer(props: ViewerProps) {
-    if (!props.data) return <PreviewNotSupported />
+    if (!props.data)
+        return (
+            <div className="grow flex justify-center items-center">
+                <div className="flex flex-col justify-center items-center p-10 text-center text-muted-foreground">
+                    <Eye className="w-20 h-20" />
+                    <div className="text-2xl py-4">File Preview</div>
+                    <div>Select a file on the left to preview it here</div>
+                </div>
+            </div>
+        )
 
     if (UNSUPPORTED.includes(props.data.type)) {
         return <PreviewNotSupported />
