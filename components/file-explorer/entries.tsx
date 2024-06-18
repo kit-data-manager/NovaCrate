@@ -8,7 +8,7 @@ import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { FolderContent } from "@/components/file-explorer/content"
 import { FileExplorerContext } from "@/components/file-explorer/context"
 import { DefaultSectionOpen } from "@/components/file-explorer/explorer"
-import { useGoToEntity } from "@/lib/hooks"
+import { useGoToEntityEditor } from "@/lib/hooks"
 
 function isNonEmptyPart(part: string) {
     return part !== "" && part !== "."
@@ -34,7 +34,7 @@ export function FolderEntry(props: {
     const [isOpen, setIsOpen] = useState(
         props.defaultSectionOpen !== "indeterminate" ? props.defaultSectionOpen : false
     )
-    const goToEntity = useGoToEntity(entity)
+    const goToEntity = useGoToEntityEditor(entity)
 
     useEffect(() => {
         if (props.defaultSectionOpen !== "indeterminate") setIsOpen(props.defaultSectionOpen)
@@ -107,7 +107,7 @@ export function FolderEntry(props: {
 export function FileEntry(props: { filePath: string }) {
     const entity = useEditorState((state) => state.entities.get(props.filePath))
     const { setPreviewingFilePath, previewingFilePath } = useContext(FileExplorerContext)
-    const goToEntity = useGoToEntity(entity)
+    const goToEntity = useGoToEntityEditor(entity)
 
     const isMock = useMemo(() => {
         return entity == undefined

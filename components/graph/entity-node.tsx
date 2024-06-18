@@ -12,7 +12,7 @@ import {
     ContextMenuTrigger
 } from "@/components/ui/context-menu"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useGoToEntity } from "@/lib/hooks"
+import { useGoToEntityEditor } from "@/lib/hooks"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { useGraphSettings } from "@/components/providers/graph-settings-provider"
@@ -53,7 +53,7 @@ export default function EntityNode({
     const aggregateProperties = useGraphSettings((store) => store.aggregateProperties)
     const showTextProperties = useGraphSettings((store) => store.showTextProperties)
 
-    const goToEntity = useGoToEntity(entity)
+    const goToEntity = useGoToEntityEditor(entity)
 
     const handles = useMemo(() => {
         if (showTextProperties) {

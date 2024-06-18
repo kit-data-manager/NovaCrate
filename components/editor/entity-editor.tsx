@@ -27,6 +27,7 @@ import { ContextualEntityHint } from "@/components/editor/hints/contextual-entit
 import { ActionButton } from "@/components/actions/action-buttons"
 import { EntityIcon } from "@/components/entity-icon"
 import { FileExplorerContext } from "@/components/file-explorer/context"
+import { useGoToFileExplorer, useGoToGraph } from "@/lib/hooks"
 
 export function EntityEditor({
     entityId,
@@ -63,6 +64,10 @@ export function EntityEditor({
             }
         }
     }, [entity, previewingFilePath, setPreviewingFilePath])
+
+    const showInGraph = useGoToGraph()
+
+    const showInFileExplorer = useGoToFileExplorer(entity)
 
     const isBeingPreviewed = useMemo(() => {
         return previewingFilePath === entity?.["@id"]
@@ -156,13 +161,16 @@ export function EntityEditor({
                 canHavePreview={isFileDataEntity}
                 togglePreview={togglePreview}
                 isBeingPreviewed={isBeingPreviewed}
+                goToGraph={showInGraph}
+                goToFileExplorer={isFileDataEntity ? showInFileExplorer : undefined}
             />
 
-            <div className="p-4 pr-10 overflow-y-auto">
+            <div className="pt-12 p-4 pr-10 overflow-y-auto">
                 <div className="flex justify-between items-center">
                     <h2 className="text-3xl font-bold flex items-center gap-2">
                         <EntityIcon entity={entity} /> {displayName}
                     </h2>
+                    <div className="gap-2 flex"></div>
                 </div>
 
                 <WebWorkerWarning />

@@ -10,7 +10,7 @@ import { memo, useCallback, useEffect, useState } from "react"
 import { useEditorState } from "@/lib/state/editor-state"
 import { getEntityDisplayName } from "@/lib/utils"
 import { EntityIcon } from "@/components/entity-icon"
-import { useGoToEntity, useGoToPage } from "@/lib/hooks"
+import { useGoToEntityEditor, useGoToPage } from "@/lib/hooks"
 import { useActionsStore } from "@/components/providers/actions-provider"
 import { ActionCommandItem } from "@/components/actions/action-buttons"
 
@@ -46,7 +46,7 @@ function GlobalSearchInner({
     const entities = useEditorState.useEntities()
     const actions = useActionsStore((store) => store.getAllActions())
 
-    const goToEntity = useGoToEntity()
+    const goToEntity = useGoToEntityEditor()
 
     const goToEntities = useGoToPage("entities")
     const goToFileExplorer = useGoToPage("file-explorer")
