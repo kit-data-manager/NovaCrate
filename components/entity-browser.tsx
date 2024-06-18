@@ -1,13 +1,15 @@
 "use client"
 
 import { Skeleton } from "@/components/ui/skeleton"
-import { useCallback, useContext, useEffect, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Button } from "@/components/ui/button"
 import {
+    Diff,
     getEntityDisplayName,
     isContextualEntity,
     isDataEntity,
+    isFileDataEntity,
     isRoCrateMetadataEntity,
     isRootEntity,
     toArray
@@ -17,8 +19,12 @@ import {
     ChevronsDownUp,
     ChevronsUpDown,
     EllipsisVertical,
+    Eye,
     LayoutGrid,
-    PackageSearch
+    PackageSearch,
+    Save,
+    Trash,
+    Undo2
 } from "lucide-react"
 import {
     createEntityEditorTab,
@@ -40,6 +46,15 @@ import { ActionButton, ActionDropdownMenuItem } from "@/components/actions/actio
 import { PropertyOverview } from "@/components/editor/property-overview"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuSeparator,
+    ContextMenuTrigger
+} from "@/components/ui/context-menu"
+import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { FileExplorerContext } from "@/components/file-explorer/context"
 
 type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -48,33 +63,90 @@ export function EntityBrowserItem(props: { entityId: string }) {
     const showIdInsteadOfName = useEntityBrowserState((store) => store.showIdInsteadOfName)
     const { openTab } = useContext(EntityEditorTabsContext)
     const entity = useEditorState((state) => state.entities.get(props.entityId))
+    const { saveEntity } = useContext(CrateDataContext)
+    const revertEntity = useEditorState.useRevertEntity()
+    const { showDeleteEntityModal } = useContext(GlobalModalContext)
+    const { setPreviewingFilePath } = useContext(FileExplorerContext)
+    const changeList = useEditorState((store) => store.getEntitiesChangelist())
+
+    const canHavePreview = useMemo(() => {
+        return entity ? isFileDataEntity(entity) : false
+    }, [entity])
+
+    const hasUnsavedChanges = useMemo(() => {
+        return entity ? changeList.get(entity["@id"]) !== Diff.None : false
+    }, [entity, changeList])
 
     const openSelf = useCallback(() => {
         if (!entity) return
         openTab(createEntityEditorTab(entity), true)
     }, [openTab, entity])
 
+    const onSaveClick = useCallback(() => {
+        if (entity) saveEntity(entity).then()
+    }, [entity, saveEntity])
+
+    const onRevertClick = useCallback(() => {
+        if (entity) revertEntity(entity["@id"])
+    }, [entity, revertEntity])
+
+    const onDeleteClick = useCallback(() => {
+        if (entity) showDeleteEntityModal(entity["@id"])
+    }, [entity, showDeleteEntityModal])
+
+    const onPreviewClick = useCallback(() => {
+        if (entity) setPreviewingFilePath(entity["@id"])
+    }, [entity, setPreviewingFilePath])
+
     if (!entity) return null
 
     return (
-        <Button
-            size="sm"
-            variant="list-entry"
-            className="group/entityBrowserItem shrink-0"
-            onClick={openSelf}
-        >
-            <EntityIcon entity={entity} />
-            <div className="truncate">
-                <span className="group-hover/entityBrowserItem:underline underline-offset-2">
-                    {showIdInsteadOfName ? props.entityId : getEntityDisplayName(entity)}
-                </span>
-                {showEntityType ? (
-                    <span className="ml-2 text-xs text-muted-foreground">
-                        {toArray(entity["@type"]).join(", ")}
-                    </span>
+        <ContextMenu>
+            <ContextMenuTrigger asChild>
+                <Button
+                    size="sm"
+                    variant="list-entry"
+                    className="group/entityBrowserItem shrink-0"
+                    onClick={openSelf}
+                >
+                    <EntityIcon entity={entity} unsavedChanges={hasUnsavedChanges} />
+                    <div className="truncate">
+                        <span className="group-hover/entityBrowserItem:underline underline-offset-2">
+                            {showIdInsteadOfName ? props.entityId : getEntityDisplayName(entity)}
+                        </span>
+                        {showEntityType ? (
+                            <span className="ml-2 text-xs text-muted-foreground">
+                                {toArray(entity["@type"]).join(", ")}
+                            </span>
+                        ) : null}
+                    </div>
+                </Button>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+                <ContextMenuItem onClick={openSelf}>
+                    <EntityIcon entity={entity} size="sm" /> Open Tab
+                </ContextMenuItem>
+                {canHavePreview ? (
+                    <ContextMenuItem onClick={onPreviewClick}>
+                        <Eye className="w-4 h-4 mr-2" /> Preview
+                    </ContextMenuItem>
                 ) : null}
-            </div>
-        </Button>
+                <ContextMenuSeparator />
+                <ContextMenuItem onClick={onSaveClick} disabled={!hasUnsavedChanges}>
+                    <Save className="w-4 h-4 mr-2" /> Save Entity
+                </ContextMenuItem>
+                <ContextMenuItem onClick={onRevertClick} disabled={!hasUnsavedChanges}>
+                    <Undo2 className="w-4 h-4 mr-2" /> Revert Changes
+                </ContextMenuItem>
+                <ContextMenuSeparator />
+                <ContextMenuItem
+                    className="bg-destructive text-destructive-foreground"
+                    onClick={onDeleteClick}
+                >
+                    <Trash className="w-4 h-4 mr-2" /> Delete
+                </ContextMenuItem>
+            </ContextMenuContent>
+        </ContextMenu>
     )
 }
 
