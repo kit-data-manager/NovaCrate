@@ -232,10 +232,20 @@ export default function EditorLandingPage() {
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <Button size="lg" variant="link" className="rounded-none border-r-0 h-12">
+                        <Button
+                            size="lg"
+                            variant="link"
+                            className="rounded-none border-r-0 h-12"
+                            disabled
+                        >
                             <BookOpen className="w-6 h-6 mr-3" /> Documentation
                         </Button>
-                        <Button size="lg" variant="link" className="rounded-none border-r-0 h-12">
+                        <Button
+                            size="lg"
+                            variant="link"
+                            className="rounded-none border-r-0 h-12"
+                            disabled
+                        >
                             <Cog className="w-6 h-6 mr-3" /> Settings
                         </Button>
                         <Button
