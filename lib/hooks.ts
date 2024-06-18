@@ -11,6 +11,7 @@ import { isRootEntity } from "@/lib/utils"
 import { useGraphState } from "@/components/providers/graph-state-provider"
 import { Action, notFoundAction } from "@/lib/state/actions"
 import { useActionsStore } from "@/components/providers/actions-provider"
+import { FileExplorerContext } from "@/components/file-explorer/context"
 
 const MAX_LIST_LENGTH = 100
 
@@ -153,7 +154,7 @@ export function useAutoId(name: string) {
     }, [entities, name])
 }
 
-export function useGoToEntity(entity?: IFlatEntity) {
+export function useGoToEntityEditor(entity?: IFlatEntity) {
     const pathname = usePathname()
     const router = useRouter()
     const { openTab } = useContext(EntityEditorTabsContext)
@@ -172,6 +173,42 @@ export function useGoToEntity(entity?: IFlatEntity) {
             router.push(href)
         },
         [entity, openTab, pathname, router]
+    )
+}
+
+export function useGoToGraph() {
+    const pathname = usePathname()
+    const router = useRouter()
+
+    return useCallback(() => {
+        const href =
+            pathname
+                .split("/")
+                .filter((_, i) => i < 3)
+                .join("/") + "/graph"
+        router.push(href)
+    }, [pathname, router])
+}
+
+export function useGoToFileExplorer(entity?: IFlatEntity) {
+    const pathname = usePathname()
+    const router = useRouter()
+    const { setPreviewingFilePath } = useContext(FileExplorerContext)
+
+    return useCallback(
+        (_entity?: IFlatEntity) => {
+            if (_entity || entity) {
+                setPreviewingFilePath(_entity?.["@id"] || entity?.["@id"]!)
+            }
+
+            const href =
+                pathname
+                    .split("/")
+                    .filter((_, i) => i < 3)
+                    .join("/") + "/file-explorer"
+            router.push(href)
+        },
+        [entity, pathname, router, setPreviewingFilePath]
     )
 }
 

@@ -1,8 +1,17 @@
 import { Button } from "@/components/ui/button"
-import { EllipsisVertical, Eye, PanelLeftClose, RefreshCw, Save } from "lucide-react"
+import {
+    EllipsisVertical,
+    Eye,
+    Folder,
+    GitFork,
+    PanelLeftClose,
+    RefreshCw,
+    Save
+} from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
+    DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
@@ -18,7 +27,9 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
     toggleEntityBrowserPanel,
     canHavePreview,
     togglePreview,
-    isBeingPreviewed
+    isBeingPreviewed,
+    goToGraph,
+    goToFileExplorer
 }: {
     hasUnsavedChanges: boolean
     isSaving: boolean
@@ -27,6 +38,8 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
     canHavePreview: boolean
     togglePreview: () => void
     isBeingPreviewed: boolean
+    goToGraph: () => void
+    goToFileExplorer?: () => void
 }) {
     const saveAction = useAction("entity.save")
 
@@ -65,7 +78,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
 
             <div className="flex gap-2 items-center text-sm">
                 {hasUnsavedChanges ? (
-                    <div className="text-muted-foreground">There are unsaved changes</div>
+                    <div className="text-muted-foreground truncate">There are unsaved changes</div>
                 ) : null}
                 <Button
                     size="sm"
@@ -98,6 +111,15 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
+                        <DropdownMenuItem onClick={goToGraph}>
+                            <GitFork className="w-4 h-4 mr-2" /> Show in Graph
+                        </DropdownMenuItem>
+                        {goToFileExplorer ? (
+                            <DropdownMenuItem onClick={goToFileExplorer}>
+                                <Folder className="w-4 h-4 mr-2" /> Show in File Explorer
+                            </DropdownMenuItem>
+                        ) : null}
+                        <DropdownMenuSeparator />
                         {canSaveAs ? <ActionDropdownMenuItem actionId={"entity.save-as"} /> : null}
                         <ActionDropdownMenuItem actionId={"entity.revert"} />
                         <DropdownMenuSeparator />
