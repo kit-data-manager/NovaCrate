@@ -16,6 +16,7 @@ import { EntityIcon } from "@/components/entity-icon"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useEditorState } from "@/lib/state/editor-state"
 import { CheckedState } from "@radix-ui/react-checkbox"
+import HelpTooltip from "@/components/help-tooltip"
 
 function SelectReferenceModalEntry({
     entity,
@@ -147,7 +148,11 @@ export function SelectReferenceModal({
                         id="onlyShowMatching-reference"
                     />
                     <label htmlFor="onlyShowMatching-reference">
-                        Only show Entities of matching type
+                        Only show Entities of matching type{" "}
+                        <HelpTooltip>
+                            Only Entities that can be used in the current property will be shown.
+                            Should only be deactivated by experts.
+                        </HelpTooltip>
                     </label>
                 </div>
             </DialogContent>

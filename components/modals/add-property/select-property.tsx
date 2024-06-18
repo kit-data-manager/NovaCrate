@@ -19,6 +19,7 @@ import { PossibleProperty } from "@/components/modals/add-property/add-property-
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
 import { camelCaseReadable } from "@/lib/utils"
 import { MarkdownComment } from "@/components/markdown-comment"
+import HelpTooltip from "@/components/help-tooltip"
 
 const AddPropertyModalEntry = memo(function AddPropertyModalEntry({
     property,
@@ -169,7 +170,13 @@ export function SelectProperty({
                     onCheckedChange={handleBypassCheckedChange}
                     id="onlyShowAllowed-create"
                 />
-                <label htmlFor="onlyShowAllowed-create">Only show allowed Properties</label>
+                <label htmlFor="onlyShowAllowed-create">
+                    Only show matching Properties{" "}
+                    <HelpTooltip>
+                        When enabled, only properties that are allowed on the current type are
+                        shown. Should only be deactivated by experts.
+                    </HelpTooltip>
+                </label>
             </div>
         </>
     )
