@@ -198,7 +198,7 @@ export default function EditorLandingPage() {
                             className="border-r-0 rounded-r-none h-12"
                             onClick={() => openZipFilePicker()}
                         >
-                            <PackageOpen className="w-6 h-6 mr-3" /> Import Crate
+                            <PackageOpen className="w-6 h-6 mr-3" /> Import existing Crate
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -213,11 +213,11 @@ export default function EditorLandingPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 <DropdownMenuItem onClick={createCrateFromFolder}>
-                                    <FolderOpen className="w-4 h-4 mr-2" /> From Folder
+                                    <FolderOpen className="w-4 h-4 mr-2" /> Start with Data
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={createEmptyCrate}>
-                                    <PackagePlus className="w-4 h-4 mr-2" />
-                                    Empty Crate
+                                    <Loader className="w-4 h-4 mr-2" />
+                                    Start from scratch
                                 </DropdownMenuItem>
                                 {/*<DropdownMenuSub>*/}
                                 {/*    <DropdownMenuSubTrigger>*/}
