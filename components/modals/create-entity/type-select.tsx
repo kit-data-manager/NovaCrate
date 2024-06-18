@@ -19,6 +19,7 @@ import { Blocks } from "lucide-react"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useAsync } from "@/lib/hooks"
 import { COMMON_PROPERTIES } from "@/lib/constants"
+import HelpTooltip from "@/components/help-tooltip"
 
 export function TypeSelect({
     open,
@@ -134,7 +135,13 @@ export function TypeSelect({
                                 onCheckedChange={toggleRestrictions}
                                 id="onlyShowAllowed-create"
                             />
-                            <label htmlFor="onlyShowAllowed-create">Only show valid Types</label>
+                            <label htmlFor="onlyShowAllowed-create">
+                                Only show matching Types{" "}
+                                <HelpTooltip>
+                                    Only show Types that can be used for the current property.
+                                    Should only be disabled by experts.
+                                </HelpTooltip>
+                            </label>
                         </>
                     ) : null}
                 </div>

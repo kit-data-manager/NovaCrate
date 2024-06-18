@@ -310,6 +310,16 @@ export function CreateEntity({
                 </div>
             ) : null}
 
+            <div>
+                <Label>Name</Label>
+                <Input
+                    value={name}
+                    placeholder={emptyFolder ? "Folder Name" : "Entity Name"}
+                    onChange={onNameChange}
+                    onKeyDown={onNameInputKeyDown}
+                />
+            </div>
+
             {!hasFileUpload && !hasFolderUpload && !forceId ? (
                 <div>
                     <Label>Identifier</Label>
@@ -328,17 +338,6 @@ export function CreateEntity({
                     </a>
                 </div>
             ) : null}
-
-            <div>
-                <Label>Name</Label>
-                <Input
-                    value={name}
-                    placeholder={emptyFolder ? "Folder Name" : "Entity Name"}
-                    onChange={onNameChange}
-                    autoFocus
-                    onKeyDown={onNameInputKeyDown}
-                />
-            </div>
 
             <div className="mt-2 flex justify-between">
                 <Button variant="secondary" onClick={() => onBackClick()}>
