@@ -2,7 +2,7 @@
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Button } from "@/components/ui/button"
-import { Braces, Bug, Folder, GitFork, Library, PackageSearch } from "lucide-react"
+import { BookOpenText, Braces, Bug, Folder, GitFork, Library, PackageSearch } from "lucide-react"
 import { PropsWithChildren, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -67,19 +67,19 @@ export function NavSidebar({ children }: PropsWithChildren<{}>) {
 
                         <div className="grow"></div>
 
-                        <Button variant="link" className={`justify-start w-full`}>
+                        <Button variant="link" className={`justify-start w-full`} disabled>
                             <Bug className="h-4 w-4 mr-2" />
                             Validation
+                        </Button>
+
+                        <Button variant="link" className={`justify-start w-full`} disabled>
+                            <BookOpenText className="h-4 w-4 mr-2" />
+                            Documentation
                         </Button>
 
                         <div className="text-center text-sm text-muted-foreground">
                             {packageJson.name} v{packageJson.version}
                         </div>
-
-                        {/*<Button variant="link" className={`justify-start w-full`}>*/}
-                        {/*    <BookOpenText className="h-4 w-4 mr-2" />*/}
-                        {/*    Help*/}
-                        {/*</Button>*/}
                     </div>
                 </div>
             </ResizablePanel>
