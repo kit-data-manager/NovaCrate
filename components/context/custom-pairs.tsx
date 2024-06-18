@@ -1,7 +1,7 @@
 import HelpTooltip from "@/components/help-tooltip"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Plus, Trash } from "lucide-react"
+import { ArrowLeft, ExternalLinkIcon, Plus, Trash } from "lucide-react"
 import {
     Table,
     TableBody,
@@ -94,7 +94,15 @@ export function CustomPairs() {
                         <DialogDescription>
                             Custom context pairs define extensions to your base specification. The
                             key is the name of the new Type or Property and the value references the
-                            Resource (e.g. https://schema.org/Person).
+                            Resource (e.g.{" "}
+                            <a
+                                className="hover:underline inline-flex"
+                                href="https://schema.org/Person"
+                                target="_blank"
+                            >
+                                https://schema.org/Person <ExternalLinkIcon className="w-3 h-3" />
+                            </a>
+                            ).
                         </DialogDescription>
                     </DialogHeader>
 

@@ -1,6 +1,6 @@
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import React, { useMemo } from "react"
-import { Search } from "lucide-react"
+import { ExternalLinkIcon, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTypeIcon } from "@/components/type-icon"
 import { SlimClass } from "@/lib/schema-worker/helpers"
@@ -134,8 +134,12 @@ export function SimpleTypeSelect({
 
             <div className="text-sm text-muted-foreground">
                 Descriptions based on{" "}
-                <a target="_blank" href="https://schema.org/" className="underline">
-                    Schema.org
+                <a
+                    target="_blank"
+                    href="https://schema.org/"
+                    className="hover:underline inline-flex"
+                >
+                    Schema.org <ExternalLinkIcon className="w-3 h-3" />
                 </a>{" "}
                 Type Descriptions
             </div>
