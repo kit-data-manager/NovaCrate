@@ -16,7 +16,7 @@ import ReactFlow, {
 } from "reactflow"
 import "reactflow/dist/style.css"
 import { Button } from "@/components/ui/button"
-import { EllipsisVertical, Fullscreen, GitCompare, Rows2, Rows4 } from "lucide-react"
+import { EllipsisVertical, Fullscreen, GitCompare, Rows2, Rows3, Rows4 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { EntityNodeHandle, NEW_PROP_HANDLE } from "@/components/graph/entity-node"
 import { isReference, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
@@ -175,8 +175,13 @@ export function EntityGraph() {
         setShowTextProperties(!showTextProperties)
     }, [setShowTextProperties, showTextProperties])
 
-    const comfortableView = useCallback(() => {
+    const fullView = useCallback(() => {
         setShowTextProperties(true)
+        setAggregateProperties(false)
+    }, [setAggregateProperties, setShowTextProperties])
+
+    const normalView = useCallback(() => {
+        setShowTextProperties(false)
         setAggregateProperties(false)
     }, [setAggregateProperties, setShowTextProperties])
 
@@ -349,11 +354,14 @@ export function EntityGraph() {
                     className={`transition gap-2 items-center flex ${crateDataIsLoading || !crateId ? "opacity-0" : "opacity-100"}`}
                 >
                     <div className="p-0.5 bg-accent rounded-lg">
-                        <Button variant="secondary" size="sm" onClick={comfortableView}>
-                            <Rows2 className="w-4 h-4 mr-2" /> Complete View
+                        <Button variant="secondary" size="sm" onClick={fullView}>
+                            <Rows2 className="w-4 h-4 mr-2" /> Full
+                        </Button>
+                        <Button variant="secondary" size="sm" onClick={normalView}>
+                            <Rows3 className="w-4 h-4 mr-2" /> Normal
                         </Button>
                         <Button variant="secondary" size="sm" onClick={compactView}>
-                            <Rows4 className="w-4 h-4 mr-2" /> Compact View
+                            <Rows4 className="w-4 h-4 mr-2" /> Compact
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
