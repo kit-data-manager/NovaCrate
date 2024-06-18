@@ -35,7 +35,7 @@ export function CreateEntityModal({
     const { createFileEntity, createFolderEntity } = useContext(CrateDataContext)
     const context = useEditorState.useCrateContext()
 
-    const [fullTypeBrowser, setFullTypeBrowser] = useState(!!restrictToClasses)
+    const [fullTypeBrowser, setFullTypeBrowser] = useState(false)
     const [selectedType, setSelectedType] = useState("")
 
     const [uploading, setUploading] = useState(false)
@@ -56,9 +56,7 @@ export function CreateEntityModal({
                 setSelectedType("")
                 setFullTypeBrowser(false)
                 resetUploadState()
-            }, 100)
-        } else {
-            setFullTypeBrowser(!!restrictToClasses)
+            }, 200)
         }
     }, [forceId, open, resetUploadState, restrictToClasses])
 
@@ -192,6 +190,7 @@ export function CreateEntityModal({
                             onTypeSelect={onTypeSelect}
                             onOpenChange={onOpenChange}
                             setFullTypeBrowser={setFullTypeBrowser}
+                            restrictToClasses={restrictToClasses}
                         />
                     )
                 ) : (
