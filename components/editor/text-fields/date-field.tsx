@@ -1,4 +1,4 @@
-import { ChangeEvent, memo, useCallback, useMemo } from "react"
+import { ChangeEvent, memo, useCallback, useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Calendar } from "lucide-react"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
@@ -28,25 +28,36 @@ export const DateField = memo(function DateField({
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
+    const [localValueCopy, setLocalValueCopy] = useState("")
+
     const onInputChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>) => {
-            onChange(DateTime.fromISO(e.target.value).toISODate() || getDefaultDate())
+            const parsed = DateTime.fromISO(e.target.value).toISODate()
+            if (parsed) onChange(parsed)
+
+            setLocalValueCopy(parsed || e.target.value)
         },
         [onChange]
     )
 
-    const parsedValue = useMemo(() => {
-        return DateTime.fromISO(value).toLocal().toISODate()
+    useEffect(() => {
+        const parsedValue = DateTime.fromISO(value).toLocal().toISODate()
+        if (parsedValue) setLocalValueCopy(parsedValue)
+    }, [value])
+
+    const onBlur = useCallback(() => {
+        setLocalValueCopy(DateTime.fromISO(value).toLocal().toISODate() || getDefaultDate())
     }, [value])
 
     return (
         <div className="flex w-full relative">
             <Calendar className="w-4 h-4 absolute left-2.5 top-3 pointer-events-none text-muted-foreground" />
             <Input
-                value={parsedValue || value}
+                value={localValueCopy}
                 type="date"
                 onChange={onInputChange}
-                className="self-center rounded-r-none pl-9"
+                className={`self-center rounded-r-none pl-9`}
+                onBlur={onBlur}
             />
             <SinglePropertyDropdown
                 propertyRange={propertyRange}
