@@ -1,9 +1,7 @@
 "use client"
 
 import {
-    Check,
     ChevronDown,
-    Cog,
     Copy,
     Download,
     FileUp,
@@ -11,8 +9,7 @@ import {
     FolderUp,
     Info,
     Package,
-    Palette,
-    Search
+    Palette
 } from "lucide-react"
 import {
     Menubar,
@@ -27,7 +24,6 @@ import {
     MenubarSubTrigger,
     MenubarTrigger
 } from "@/components/ui/menubar"
-import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 import React, { useCallback, useContext, useMemo } from "react"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
@@ -40,10 +36,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { getEntityDisplayName } from "@/lib/utils"
 import { ActionButton, ActionMenubarItem } from "@/components/actions/action-buttons"
 import { EntityIcon } from "@/components/entity-icon"
-import {
-    ActionKeyboardShortcuts,
-    KeyboardShortcut
-} from "@/components/actions/action-keyboard-shortcuts"
+import { KeyboardShortcut } from "@/components/actions/action-keyboard-shortcuts"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -81,7 +74,7 @@ function EntityMenu() {
 export function NavHeader() {
     const theme = useTheme()
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
-    const { showCreateEntityModal, showGlobalSearchModal } = useContext(GlobalModalContext)
+    const { showCreateEntityModal } = useContext(GlobalModalContext)
     const { serviceProvider, crateId, isSaving, crateDataIsLoading } = useContext(CrateDataContext)
     // const { undo, redo } = useEditorState.temporal.getState()
     const [_, copyFn] = useCopyToClipboard()
