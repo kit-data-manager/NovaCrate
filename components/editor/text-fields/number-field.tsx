@@ -1,4 +1,4 @@
-import { ChangeEvent, memo, useCallback } from "react"
+import { ChangeEvent, memo, useCallback, useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Diff } from "lucide-react"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
@@ -18,21 +18,34 @@ export const NumberField = memo(function NumberField({
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
+    const [localValueCopy, setLocalValueCopy] = useState("")
+
     const onInputChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>) => {
-            onChange(e.target.value)
+            const parsed = parseFloat(e.target.value) + ""
+            if (parsed && parsed.length > 0 && parsed !== "NaN") onChange(parsed)
+            setLocalValueCopy(e.target.value)
         },
         [onChange]
     )
+
+    useEffect(() => {
+        setLocalValueCopy(value)
+    }, [value])
+
+    const onBlur = useCallback(() => {
+        setLocalValueCopy(value)
+    }, [value])
 
     return (
         <div className="flex w-full relative">
             <Diff className="w-4 h-4 absolute left-2.5 top-3 pointer-events-none text-muted-foreground" />
             <Input
-                value={value}
+                value={localValueCopy}
                 onChange={onInputChange}
                 className="self-center rounded-r-none pl-9"
                 type="number"
+                onBlur={onBlur}
             />
             <SinglePropertyDropdown
                 propertyRange={propertyRange}
