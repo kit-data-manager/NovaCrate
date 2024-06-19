@@ -64,6 +64,7 @@ export const ActionButton = memo(function ActionButton(
             {...cleanProps(props)}
         >
             <GenericActionContent {...props} />
+            {props.children}
         </Button>
     )
 })

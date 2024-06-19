@@ -33,13 +33,17 @@ import React, { useCallback, useContext, useMemo } from "react"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { useCrateName, useCurrentEntity } from "@/lib/hooks"
+import { useAction, useCrateName, useCurrentEntity } from "@/lib/hooks"
 import { useEditorState } from "@/lib/state/editor-state"
 import { useCopyToClipboard } from "usehooks-ts"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getEntityDisplayName } from "@/lib/utils"
 import { ActionButton, ActionMenubarItem } from "@/components/actions/action-buttons"
 import { EntityIcon } from "@/components/entity-icon"
+import {
+    ActionKeyboardShortcuts,
+    KeyboardShortcut
+} from "@/components/actions/action-keyboard-shortcuts"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -114,6 +118,7 @@ export function NavHeader() {
     }, [crateId, serviceProvider])
 
     const crateName = useCrateName()
+    const searchAction = useAction("editor.global-search")
 
     return (
         <div className="p-4 py-3 w-full grid grid-cols-[1fr_auto_1fr]">
@@ -232,7 +237,18 @@ export function NavHeader() {
                 {/*<div className="flex items-center mr-2 text-green-500">*/}
                 {/*    <Check className="w-4 h-4 mr-2" /> No Issues detected*/}
                 {/*</div>*/}
-                <ActionButton variant="secondary" actionId={"editor.global-search"} hideName />
+                <ActionButton
+                    variant="outline"
+                    actionId={"editor.global-search"}
+                    noShortcut
+                    hideName
+                    className="text-muted-foreground font-normal hover:bg-background cursor-text"
+                >
+                    <span className="pl-2 pr-4 font-normal">Search for anything...</span>
+                    <span className="text-muted-foreground text-xs tracking-widest">
+                        <KeyboardShortcut action={searchAction} />
+                    </span>
+                </ActionButton>
                 <ActionButton variant="secondary" actionId={"editor.settings"} iconOnly />
             </div>
         </div>
