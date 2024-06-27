@@ -20,14 +20,11 @@ import { EntityEditorHeader } from "@/components/editor/entity-editor-header"
 import { UnknownTypeWarning } from "@/components/editor/unknown-type-warning"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Skeleton } from "@/components/ui/skeleton"
-import { RootEntityHint } from "@/components/editor/hints/root-entity-hint"
 import { InternalEntityHint } from "@/components/editor/hints/internal-entity-hint"
-import { DataEntityHint } from "@/components/editor/hints/data-entity-hint"
-import { ContextualEntityHint } from "@/components/editor/hints/contextual-entity-hint"
 import { ActionButton } from "@/components/actions/action-buttons"
-import { EntityIcon } from "@/components/entity-icon"
 import { FileExplorerContext } from "@/components/file-explorer/context"
 import { useGoToFileExplorer, useGoToGraph } from "@/lib/hooks"
+import { EntityBadge } from "../entity-badge"
 
 export function EntityEditor({
     entityId,
@@ -167,18 +164,15 @@ export function EntityEditor({
 
             <div className="pt-12 p-4 pr-10 overflow-y-auto">
                 <div className="flex justify-between items-center">
-                    <h2 className="text-3xl font-bold flex items-center gap-2">
-                        <EntityIcon entity={entity} /> {displayName}
+                    <h2 className="text-3xl font-bold flex items-center gap-4">
+                        <EntityBadge entity={entity} size="lg" /> {displayName}
                     </h2>
                     <div className="gap-2 flex"></div>
                 </div>
 
                 <WebWorkerWarning />
                 <UnknownTypeWarning entityType={entity?.["@type"] || []} />
-                <RootEntityHint entity={entity} />
                 <InternalEntityHint entity={entity} />
-                <DataEntityHint entity={entity} />
-                <ContextualEntityHint entity={entity} />
                 <Error className="mt-4" title="Error while saving" error={saveError} />
 
                 <div className="my-12 flex flex-col gap-4 mr-2">
