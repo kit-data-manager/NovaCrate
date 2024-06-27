@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useContext, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Trash } from "lucide-react"
+import { ArrowLeft, Loader2, Trash } from "lucide-react"
 import { useEditorState } from "@/lib/state/editor-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { getEntityDisplayName } from "@/lib/utils"
@@ -29,18 +29,25 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
     const localOnOpenChange = useCallback(
         (isOpen: boolean) => {
             if (!isDeleting) onOpenChange(isOpen)
+            if (!isOpen)
+                setTimeout(() => {
+                    setDeleteError(undefined)
+                }, 300)
         },
         [isDeleting, onOpenChange]
     )
 
     const onDeleteEntityClick = useCallback(() => {
         if (entity) {
-            onOpenChange(false)
             setIsDeleting(true)
             deleteEntity(entity)
-                .then(() => {
-                    setDeleteError(undefined)
-                    removeEntity(entity["@id"])
+                .then((success) => {
+                    console.log(success)
+                    if (success) {
+                        setDeleteError(undefined)
+                        removeEntity(entity["@id"])
+                        onOpenChange(false)
+                    } else setDeleteError("Unknown error while deleting")
                 })
                 .catch((e) => {
                     console.error(e)
@@ -59,8 +66,11 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
                     "@id": entityId,
                     "@type": [context.reverse(RO_CRATE_FILE) || RO_CRATE_FILE]
                 })
-                .then(() => {
-                    setDeleteError(undefined)
+                .then((success) => {
+                    if (success) {
+                        setDeleteError(undefined)
+                        onOpenChange(false)
+                    } else setDeleteError("Unknown error while deleting")
                 })
                 .catch((e) => {
                     console.error(e)
@@ -108,7 +118,12 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
                         onClick={onDeleteEntityClick}
                         disabled={isDeleting}
                     >
-                        <Trash className="w-4 h-4 mr-2" /> Delete
+                        {isDeleting ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                            <Trash className="w-4 h-4 mr-2" />
+                        )}{" "}
+                        Delete
                     </Button>
                 </div>
             </DialogContent>
