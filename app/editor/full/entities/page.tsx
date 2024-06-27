@@ -18,7 +18,7 @@ function EntityEditorFilePreview(props: PropsWithChildren) {
             <ResizableHandle />
             <ResizablePanel defaultSize={34} minSize={20}>
                 <div className="h-full w-full overflow-auto">
-                    <FilePreview showFileName={true} />
+                    <FilePreview doubleHeight={true} />
                 </div>
             </ResizablePanel>
         </ResizablePanelGroup>

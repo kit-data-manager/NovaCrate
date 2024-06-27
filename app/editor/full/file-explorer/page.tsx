@@ -13,7 +13,7 @@ function Content() {
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel defaultSize={66} minSize={15}>
-                <FilePreview closeable={false} />
+                <FilePreview />
             </ResizablePanel>
         </ResizablePanelGroup>
     )
