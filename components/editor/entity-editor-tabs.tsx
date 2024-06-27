@@ -7,7 +7,7 @@ import {
 } from "@/components/providers/entity-tabs-provider"
 import { Diff, getEntityDisplayName } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Package, XIcon } from "lucide-react"
+import { Package, PanelLeftClose, XIcon } from "lucide-react"
 import { EntityIcon } from "@/components/entity-icon"
 import { EntityEditor } from "@/components/editor/entity-editor"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
@@ -179,7 +179,15 @@ export function EntityEditorTabs({
 
     if (tabs.length == 0) {
         return (
-            <div className="flex flex-col justify-center items-center h-full">
+            <div className="relative flex flex-col justify-center items-center h-full">
+                <Button
+                    className="absolute top-2 left-2"
+                    size="icon"
+                    variant="secondary"
+                    onClick={toggleEntityBrowserPanel}
+                >
+                    <PanelLeftClose className="w-4 h-4" />
+                </Button>
                 <Package className="w-52 h-52 mb-20 text-muted" />
                 <div>Select an Entity on the left</div>
                 <div className="my-2 text-muted-foreground">or</div>
