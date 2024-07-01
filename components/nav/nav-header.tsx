@@ -4,6 +4,7 @@ import {
     ChevronDown,
     Copy,
     Download,
+    File,
     FileUp,
     FolderArchive,
     FolderUp,
@@ -110,6 +111,12 @@ export function NavHeader() {
         }
     }, [crateId, serviceProvider])
 
+    const downloadRoCrateMetadataFile = useCallback(() => {
+        if (serviceProvider && crateId) {
+            serviceProvider.downloadRoCrateMetadataJSON(crateId).then()
+        }
+    }, [crateId, serviceProvider])
+
     const crateName = useCrateName()
     const searchAction = useAction("editor.global-search")
 
@@ -206,6 +213,9 @@ export function NavHeader() {
                                 <MenubarSubContent>
                                     <MenubarItem onClick={downloadCrateZip}>
                                         <FolderArchive className="w-4 h-4 mr-2" /> As .zip Archive
+                                    </MenubarItem>
+                                    <MenubarItem onClick={downloadRoCrateMetadataFile}>
+                                        <File className="w-4 h-4 mr-2" /> ro-crate-metadata.json
                                     </MenubarItem>
                                 </MenubarSubContent>
                             </MenubarSub>

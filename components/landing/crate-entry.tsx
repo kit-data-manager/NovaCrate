@@ -1,8 +1,8 @@
 import {
+    Download,
     EllipsisVertical,
     FileIcon,
     FolderArchive,
-    HardDriveDownload,
     Package,
     Trash,
     XIcon
@@ -142,22 +142,24 @@ export function CrateEntry({
                                 </DropdownMenuItem>
                             ) : null}
                             <DropdownMenuSubTrigger>
-                                <HardDriveDownload className="w-4 h-4 mr-2" /> Export...
+                                <Download className="w-4 h-4 mr-2" /> Export...
                             </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent>
                                 <DropdownMenuItem
                                     onClick={() => {
                                         if (serviceProvider) {
-                                            serviceProvider.downloadCrateZip(crateId)
+                                            serviceProvider.downloadCrateZip(crateId).then()
                                         }
                                     }}
                                 >
-                                    <FolderArchive className="w-4 h-4 mr-2" /> Crate as .zip
+                                    <FolderArchive className="w-4 h-4 mr-2" /> As .zip Archive
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={() => {
                                         if (serviceProvider) {
-                                            serviceProvider.downloadRoCrateMetadataJSON(crateId)
+                                            serviceProvider
+                                                .downloadRoCrateMetadataJSON(crateId)
+                                                .then()
                                         }
                                     }}
                                 >
