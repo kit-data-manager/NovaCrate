@@ -415,7 +415,7 @@ export default function EditorLandingPage() {
                                             crateId={recentCrate}
                                             openEditor={openEditor}
                                             removeFromRecentCrates={removeFromRecentCrates}
-                                            isRecentCrate={storedCrates.includes(recentCrate)}
+                                            isRecentCrate={recentCrates?.includes(recentCrate)}
                                             deleteCrate={showDeleteCrateModal}
                                         />
                                     )
