@@ -37,13 +37,15 @@ export function CrateEntry({
     openEditor,
     deleteCrate,
     removeFromRecentCrates,
-    isRecentCrate
+    isRecentCrate,
+    search
 }: {
     crateId: string
     isRecentCrate?: boolean
     removeFromRecentCrates(id: string): void
     openEditor(id: string): void
     deleteCrate(id: string): void
+    search: string
 }) {
     const { serviceProvider } = useContext(CrateDataContext)
     const [crateDetails, setCrateDetails] = useState<CrateDetails | undefined>()
@@ -100,6 +102,9 @@ export function CrateEntry({
             return <code>{crateId}</code>
         }
     }, [crateDetails, crateId])
+
+    if (search && !crateDetails) return null
+    if (search && !crateDetails?.name?.toUpperCase().includes(search.toUpperCase())) return null
 
     return (
         <div className="grid grid-cols-[20px_4fr_2fr_112px] gap-4 w-full transition hover:bg-secondary p-2 rounded-lg">

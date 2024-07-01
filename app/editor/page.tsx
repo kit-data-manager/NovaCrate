@@ -11,6 +11,7 @@ import {
     Package,
     PackageOpen,
     PackagePlus,
+    Search,
     Sun
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -23,7 +24,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useFilePicker } from "use-file-picker"
-import { Fragment, useCallback, useContext, useEffect, useState } from "react"
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { CrateEntry } from "@/components/landing/crate-entry"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
@@ -35,6 +36,8 @@ import { Error } from "@/components/error"
 import { Pagination } from "@/components/pagination"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Input } from "@/components/ui/input"
 
 export default function EditorLandingPage() {
     const router = useRouter()
@@ -62,6 +65,7 @@ export default function EditorLandingPage() {
         fromExample: undefined as undefined | string,
         fromZip: undefined as File | undefined
     })
+    const [search, setSearch] = useState("")
 
     const showDeleteCrateModal = useCallback((crateId: string) => {
         setDeleteCrateModalState({
@@ -148,6 +152,20 @@ export default function EditorLandingPage() {
         error: storedCratesError,
         revalidate
     } = useAsync("", storedCratesResolver)
+
+    const searchInfo = useMemo(() => {
+        return search ? (
+            <div className="text-sm text-muted-foreground">
+                Showing search results for &quot;{search}&quot;
+                <button
+                    onClick={() => setSearch("")}
+                    className="hover:underline underline-offset-4 ml-4"
+                >
+                    Clear
+                </button>
+            </div>
+        ) : null
+    }, [search])
 
     return (
         <div className="w-full h-full grid grid-cols-[1fr_2fr]">
@@ -285,7 +303,7 @@ export default function EditorLandingPage() {
 
                 <div className="pt-16">
                     <Tabs defaultValue="recent">
-                        <div className="flex justify-center pb-4">
+                        <div className="flex justify-center pb-4 gap-4">
                             <TabsList>
                                 <TabsTrigger value={"recent"}>
                                     <Clock className="w-4 h-4 mr-2" /> Recent Crates
@@ -294,6 +312,22 @@ export default function EditorLandingPage() {
                                     <HardDrive className="w-4 h-4 mr-2" /> All Crates
                                 </TabsTrigger>
                             </TabsList>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="secondary" size="icon">
+                                        <Search className="w-4 h-4" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="grid grid-cols-1 gap-2">
+                                    {" "}
+                                    <h4 className="font-medium leading-none">Search for Crates</h4>
+                                    <Input
+                                        placeholder="Search..."
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                    />
+                                </PopoverContent>
+                            </Popover>
                         </div>
                         <TabsContent value={"recent"}>
                             <div className="flex justify-center p-20 pt-0">
@@ -310,6 +344,7 @@ export default function EditorLandingPage() {
                                             Actions
                                         </div>
                                     </div>
+                                    {searchInfo}
                                     <Pagination pageSize={10}>
                                         {!recentCrates ? (
                                             [0, 0, 0].map((_, i) => {
@@ -344,6 +379,7 @@ export default function EditorLandingPage() {
                                                             recentCrate
                                                         )}
                                                         deleteCrate={showDeleteCrateModal}
+                                                        search={search}
                                                     />
                                                 )
                                             })
@@ -371,6 +407,7 @@ export default function EditorLandingPage() {
                                             Actions
                                         </div>
                                     </div>
+                                    {searchInfo}
                                     <Pagination pageSize={10}>
                                         {!storedCrates ? (
                                             [0, 0, 0].map((_, i) => {
@@ -405,6 +442,7 @@ export default function EditorLandingPage() {
                                                             recentCrate
                                                         )}
                                                         deleteCrate={showDeleteCrateModal}
+                                                        search={search}
                                                     />
                                                 )
                                             })
