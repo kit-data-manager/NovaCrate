@@ -2,7 +2,16 @@ import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from "r
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, ExternalLink, File, Folder, Plus } from "lucide-react"
+import {
+    ArrowLeft,
+    ExternalLink,
+    File,
+    FileX2,
+    Folder,
+    FolderDot,
+    HardDriveUpload,
+    Plus
+} from "lucide-react"
 import { useFilePicker } from "use-file-picker"
 import { camelCaseReadable, encodeFilePath, fileNameWithoutEnding } from "@/lib/utils"
 import { Error } from "@/components/error"
@@ -33,8 +42,7 @@ export function CreateEntity({
 }) {
     const context = useEditorState.useCrateContext()
 
-    const [websiteFile, setWebsiteFile] = useState(false)
-    const [websiteFileURL, setWebsiteFileURL] = useState("")
+    const [forceWithoutFile, setForceWithoutFile] = useState(false)
     const fileUpload = useMemo(() => {
         return context.resolve(selectedType) === RO_CRATE_FILE
     }, [context, selectedType])
@@ -52,7 +60,7 @@ export function CreateEntity({
 
     const [name, setName] = useState(defaultName || "")
     const [identifier, setIdentifier] = useState<null | string>(null)
-    const [emptyFolder] = useState(false)
+    const [emptyFolder, setEmptyFolder] = useState(false)
     const { plainFiles, openFilePicker } = useFilePicker({})
     const { plainFiles: folderFiles, openFilePicker: openFolderPicker } = useFilePicker({
         initializeWithCustomParameters(input: HTMLInputElement) {
@@ -98,13 +106,12 @@ export function CreateEntity({
     }, [baseFileName, basePath, emptyFolder, name])
 
     const localOnCreateClick = useCallback(() => {
-        if (!forceId && (hasFileUpload || hasFolderUpload)) {
+        if (
+            !forceId &&
+            ((hasFileUpload && !forceWithoutFile) || (hasFolderUpload && !forceWithoutFile))
+        ) {
             if (hasFileUpload) {
-                if (websiteFile) {
-                    onCreateClick(websiteFileURL, name)
-                } else {
-                    onUploadFile(path, name, plainFiles[0])
-                }
+                onUploadFile(path, name, plainFiles[0])
             } else {
                 onUploadFolder(path, name, emptyFolder ? [] : folderFiles)
             }
@@ -122,8 +129,7 @@ export function CreateEntity({
         onUploadFolder,
         path,
         plainFiles,
-        websiteFile,
-        websiteFileURL
+        forceWithoutFile
     ])
 
     const onNameInputKeyDown = useCallback(
@@ -152,22 +158,9 @@ export function CreateEntity({
     }, [folderFiles])
 
     const createDisabled = useMemo(() => {
-        if (
-            hasFileUpload &&
-            (websiteFile ? /^\w+:\/\//.test(websiteFileURL) : plainFiles.length > 0)
-        )
-            return false
         if (hasFolderUpload && folderFiles.length > 0) return false
         return autoId.length <= 0
-    }, [
-        autoId.length,
-        folderFiles.length,
-        hasFileUpload,
-        hasFolderUpload,
-        plainFiles.length,
-        websiteFile,
-        websiteFileURL
-    ])
+    }, [autoId.length, folderFiles.length, hasFolderUpload])
 
     if (hasFileUpload && hasFolderUpload)
         return (
@@ -214,40 +207,23 @@ export function CreateEntity({
 
             {hasFileUpload ? (
                 <div>
-                    {/* Currently broken in ro-crate-javaA */}
-                    {/*<div className="mb-4 flex justify-center gap-2 items-center">*/}
-                    {/*    <Button*/}
-                    {/*        variant={websiteFile ? "secondary" : "default"}*/}
-                    {/*        onClick={() => setWebsiteFile(false)}*/}
-                    {/*    >*/}
-                    {/*        <HardDrive className="w-4 h-4 mr-2" /> Local File*/}
-                    {/*    </Button>*/}
-                    {/*    or*/}
-                    {/*    <Button*/}
-                    {/*        variant={!websiteFile ? "secondary" : "default"}*/}
-                    {/*        onClick={() => setWebsiteFile(true)}*/}
-                    {/*    >*/}
-                    {/*        <Globe className="w-4 h-4 mr-2" />*/}
-                    {/*        Remote File*/}
-                    {/*    </Button>*/}
-                    {/*</div>*/}
-                    {websiteFile ? (
-                        <>
-                            <Label>
-                                File URL{" "}
-                                <HelpTooltip>
-                                    The file will not be downloaded. Make sure the URL points
-                                    directly to the file that you want to reference.
-                                </HelpTooltip>
-                            </Label>
-                            <Input
-                                value={websiteFileURL}
-                                onChange={(e) => setWebsiteFileURL(e.target.value)}
-                                placeholder={"https://..."}
-                                type="url"
-                            />
-                        </>
-                    ) : (
+                    <div className="mb-4 flex justify-center gap-2 items-center">
+                        <Button
+                            variant={forceWithoutFile ? "secondary" : "default"}
+                            onClick={() => setForceWithoutFile(false)}
+                        >
+                            <HardDriveUpload className="w-4 h-4 mr-2" /> Upload File
+                        </Button>
+                        or
+                        <Button
+                            variant={!forceWithoutFile ? "secondary" : "default"}
+                            onClick={() => setForceWithoutFile(true)}
+                        >
+                            <FileX2 className="w-4 h-4 mr-2" />
+                            Without File
+                        </Button>
+                    </div>
+                    {forceWithoutFile ? null : (
                         <>
                             <Label>File</Label>
                             <div>
@@ -266,38 +242,58 @@ export function CreateEntity({
 
             {hasFolderUpload ? (
                 <div>
-                    <Label>Folder</Label>
-                    <div className="flex items-center">
-                        {!emptyFolder ? (
-                            <Button variant="outline" onClick={openFolderPicker}>
-                                <Folder className="w-4 h-4 mr-2" />
-                                {folderFiles.length == 0
-                                    ? "Select Folder"
-                                    : folderFiles[0].webkitRelativePath.split("/")[0]}
-                            </Button>
-                        ) : null}
-                        {/*{baseFileName || emptyFolder ? null : (*/}
-                        {/*    <span className="m-2 text-muted-foreground">or</span>*/}
-                        {/*)}*/}
-                        {/*{baseFileName ? null : (*/}
-                        {/*    <Button*/}
-                        {/*        variant={emptyFolder ? "default" : "outline"}*/}
-                        {/*        onClick={() => setEmptyFolder((v) => !v)}*/}
-                        {/*    >*/}
-                        {/*        <FolderDot className="w-4 h-4 mr-2" />*/}
-                        {/*        Empty Folder*/}
-                        {/*    </Button>*/}
-                        {/*)}*/}
-                        <span className="ml-2 text-muted-foreground">
-                            {folderFiles.length == 0
-                                ? ""
-                                : `${folderFiles.length} files (${prettyBytes(folderFiles.map((f) => f.size).reduce((a, b) => a + b))} total)`}
-                        </span>
+                    <div className="mb-4 flex justify-center gap-2 items-center">
+                        <Button
+                            variant={forceWithoutFile ? "secondary" : "default"}
+                            onClick={() => setForceWithoutFile(false)}
+                        >
+                            <HardDriveUpload className="w-4 h-4 mr-2" /> Upload Folder
+                        </Button>
+                        or
+                        <Button
+                            variant={!forceWithoutFile ? "secondary" : "default"}
+                            onClick={() => setForceWithoutFile(true)}
+                        >
+                            <FileX2 className="w-4 h-4 mr-2" />
+                            Without Data
+                        </Button>
                     </div>
+                    {forceWithoutFile ? null : (
+                        <>
+                            <Label>Folder</Label>
+                            <div className="flex items-center">
+                                {!emptyFolder ? (
+                                    <Button variant="outline" onClick={openFolderPicker}>
+                                        <Folder className="w-4 h-4 mr-2" />
+                                        {folderFiles.length == 0
+                                            ? "Select Folder"
+                                            : folderFiles[0].webkitRelativePath.split("/")[0]}
+                                    </Button>
+                                ) : null}
+                                {baseFileName || emptyFolder ? null : (
+                                    <span className="m-2 text-muted-foreground">or</span>
+                                )}
+                                {baseFileName ? null : (
+                                    <Button
+                                        variant={emptyFolder ? "default" : "outline"}
+                                        onClick={() => setEmptyFolder((v) => !v)}
+                                    >
+                                        <FolderDot className="w-4 h-4 mr-2" />
+                                        Empty Folder
+                                    </Button>
+                                )}
+                                <span className="ml-2 text-muted-foreground">
+                                    {folderFiles.length == 0
+                                        ? ""
+                                        : `${folderFiles.length} files (${prettyBytes(folderFiles.map((f) => f.size).reduce((a, b) => a + b))} total)`}
+                                </span>
+                            </div>
+                        </>
+                    )}
                 </div>
             ) : null}
 
-            {(hasFileUpload || hasFolderUpload) && !forceId ? (
+            {(hasFileUpload || hasFolderUpload) && !forceId && !forceWithoutFile ? (
                 <div>
                     <Label className="flex gap-1 items-center py-1">
                         Path{" "}
@@ -320,7 +316,9 @@ export function CreateEntity({
                 />
             </div>
 
-            {!hasFileUpload && !hasFolderUpload && !forceId ? (
+            {(!hasFileUpload || forceWithoutFile) &&
+            (!hasFolderUpload || forceWithoutFile) &&
+            !forceId ? (
                 <div>
                     <Label>Identifier</Label>
                     <Input
