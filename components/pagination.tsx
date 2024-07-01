@@ -16,15 +16,13 @@ import { Input } from "@/components/ui/input"
 
 const DEFAULT_PAGE_SIZE = 10
 
-export function PropertyPagination({
+export function Pagination({
     children,
-    paginationMinimum,
     pageSize = DEFAULT_PAGE_SIZE,
-    addEntryDropdown
+    leftContent
 }: PropsWithChildren<{
-    paginationMinimum?: number
     pageSize?: number
-    addEntryDropdown: ReactElement
+    leftContent?: ReactElement
 }>) {
     const [page, setPage] = useState(0)
     const [jumpToPageValue, setJumpToPageValue] = useState("1")
@@ -46,8 +44,8 @@ export function PropertyPagination({
     }, [children])
 
     const active = useMemo(() => {
-        return childrenLength > (paginationMinimum || 10)
-    }, [childrenLength, paginationMinimum])
+        return childrenLength > pageSize
+    }, [childrenLength, pageSize])
 
     const pageCount = useMemo(() => {
         return Math.floor((childrenLength - 1) / pageSize) + 1
@@ -108,7 +106,7 @@ export function PropertyPagination({
         <>
             {toArray(children).slice(sliceStart, sliceEnd)}
             <div className="flex justify-between items-start">
-                <div className="mt-[-16px]">{addEntryDropdown}</div>
+                {leftContent ? <div className="mt-[-16px]">{leftContent}</div> : <div />}
                 <div className="flex">
                     <Button
                         variant="outline"
@@ -164,7 +162,7 @@ export function PropertyPagination({
     ) : (
         <>
             {children}
-            <div className="mt-[-16px]">{addEntryDropdown}</div>
+            {leftContent ? <div className="mt-[-16px]">{leftContent}</div> : null}
         </>
     )
 }

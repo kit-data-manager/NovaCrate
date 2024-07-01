@@ -33,6 +33,7 @@ import { useAsync, useRecentCrates } from "@/lib/hooks"
 import { DeleteCrateModal } from "@/components/landing/delete-crate-modal"
 import { CreateCrateModal } from "@/components/landing/create-crate-modal"
 import { Error } from "@/components/error"
+import { Pagination } from "@/components/pagination"
 
 export default function EditorLandingPage() {
     const router = useRouter()
@@ -307,11 +308,20 @@ export default function EditorLandingPage() {
                 </div>
 
                 <div className="flex justify-center p-20">
-                    <div className="flex flex-col gap-6 w-[min(90vw,1000px)]">
-                        <div className="font-bold text-xl flex items-center">
-                            <Clock className="w-6 h-6 mr-3" /> Recent Crates
-                        </div>
+                    <div className="flex flex-col gap-2 w-[min(90vw,1000px)]">
                         <div className="grid grid-cols-[20px_4fr_2fr_120px] gap-4 w-full">
+                            <Clock className="w-6 h-6 mr-3" />
+                            <div className="font-semibold text-xl flex items-center">
+                                Recent Crates
+                            </div>
+                            <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
+                                Last Opened
+                            </div>
+                            <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
+                                Actions
+                            </div>
+                        </div>
+                        <Pagination pageSize={5}>
                             {!recentCrates ? (
                                 [0, 0, 0].map((_, i) => {
                                     return (
@@ -345,7 +355,8 @@ export default function EditorLandingPage() {
                                     )
                                 })
                             )}
-                        </div>
+                        </Pagination>
+
                         {showShowMoreRecentButton ? (
                             <Button
                                 className="w-20 self-center"
@@ -359,15 +370,24 @@ export default function EditorLandingPage() {
                 </div>
 
                 <div className="flex justify-center p-20 pt-0">
-                    <div className="flex flex-col gap-6 w-[min(90vw,1000px)]">
-                        <div className="font-bold text-xl flex items-center">
-                            <HardDrive className="w-6 h-6 mr-3" /> Stored Crates
-                        </div>
+                    <div className="flex flex-col gap-2 w-[min(90vw,1000px)]">
                         <Error
                             title="An Error occured while fetching stored crates"
                             error={storedCratesError}
                         />
                         <div className="grid grid-cols-[20px_4fr_2fr_120px] gap-4 w-full">
+                            <HardDrive className="w-6 h-6 mr-3" />
+                            <div className="font-semibold text-xl flex items-center">
+                                Stored Crates
+                            </div>
+                            <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
+                                Last Opened
+                            </div>
+                            <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
+                                Actions
+                            </div>
+                        </div>
+                        <Pagination pageSize={5}>
                             {!storedCrates ? (
                                 [0, 0, 0].map((_, i) => {
                                     return (
@@ -388,7 +408,7 @@ export default function EditorLandingPage() {
                                     </div>
                                 </>
                             ) : (
-                                storedCrates.slice(0, showStoredCratesAmount).map((recentCrate) => {
+                                storedCrates.map((recentCrate) => {
                                     return (
                                         <CrateEntry
                                             key={recentCrate}
@@ -401,7 +421,8 @@ export default function EditorLandingPage() {
                                     )
                                 })
                             )}
-                        </div>
+                        </Pagination>
+
                         {showShowMoreStoredButton ? (
                             <Button
                                 className="w-20 self-center"

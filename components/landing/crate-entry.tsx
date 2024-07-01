@@ -88,25 +88,18 @@ export function CrateEntry({
 
     const title = useMemo(() => {
         if (crateDetails && crateDetails.name) {
-            return (
-                <>
-                    <div>{crateDetails.name ?? null}</div>
-                    <code className="text-muted-foreground text-xs flex items-center">
-                        {crateId}
-                    </code>
-                </>
-            )
+            return <div>{crateDetails.name ?? null}</div>
         } else {
             return <code>{crateId}</code>
         }
     }, [crateDetails, crateId])
 
     return (
-        <>
+        <div className="grid grid-cols-[20px_4fr_2fr_112px] gap-4 w-full transition hover:bg-secondary p-2 rounded-lg">
             <div className="flex flex-col items-center justify-center">
                 <Package className="w-4 h-4" />
             </div>
-            <div>
+            <div className="flex flex-col justify-center">
                 {title}
                 <Error
                     title="Could not fetch details for this crate"
@@ -120,19 +113,20 @@ export function CrateEntry({
                           timeStyle: "medium",
                           dateStyle: "long"
                       })
-                    : null}
+                    : "Never"}
             </div>
             <div className="flex gap-2">
                 <Button
                     onClick={() => {
                         openEditor(crateId)
                     }}
+                    size="sm"
                 >
                     Open
                 </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon">
+                        <Button variant="outline" size="sm">
                             <EllipsisVertical className="w-4 h-4" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -183,6 +177,6 @@ export function CrateEntry({
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-        </>
+        </div>
     )
 }
