@@ -3,7 +3,7 @@ import { GlobalModalContext } from "@/components/providers/global-modals-provide
 import { useGoToMainMenu, useRegisterAction, useSaveAllEntities } from "@/lib/hooks"
 import { useEditorState } from "@/lib/state/editor-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { Cog, Plus, RefreshCw, SaveAll, Search, Undo2, XIcon } from "lucide-react"
+import { ArrowLeft, Cog, Plus, RefreshCw, SaveAll, Search, Undo2 } from "lucide-react"
 
 export default function DefaultActions() {
     const { showCreateEntityModal, showGlobalSearchModal, showSettingsModal } =
@@ -37,9 +37,8 @@ export default function DefaultActions() {
         keyboardShortcut: ["command", "k"],
         icon: Search
     })
-    useRegisterAction("editor.close", "Close Editor", gotToMainMenu, {
-        keyboardShortcut: ["command", "w"],
-        icon: XIcon
+    useRegisterAction("editor.close", "Back to Main Menu", gotToMainMenu, {
+        icon: ArrowLeft
     })
 
     useRegisterAction("editor.settings", "Settings", showSettingsModal, {
