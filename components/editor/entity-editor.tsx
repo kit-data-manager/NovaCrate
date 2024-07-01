@@ -11,6 +11,7 @@ import {
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
     isFileDataEntity as isFileDataEntityUtil,
+    isRootEntity,
     propertyHasChanged
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
@@ -98,7 +99,9 @@ export function EntityEditor({
 
     const properties = useMemo(() => {
         if (!entity) return []
-        return mapEntityToProperties(entity, originalEntity)
+        return mapEntityToProperties(entity, originalEntity).filter((e) =>
+            isRootEntity(entity) ? !e.propertyName.startsWith("@") : true
+        )
     }, [entity, originalEntity])
 
     const propertiesChangelist = useMemo(() => {
