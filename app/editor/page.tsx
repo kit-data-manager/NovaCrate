@@ -24,7 +24,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useFilePicker } from "use-file-picker"
-import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { Fragment, useCallback, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { CrateEntry } from "@/components/landing/crate-entry"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
@@ -34,13 +34,12 @@ import { DeleteCrateModal } from "@/components/landing/delete-crate-modal"
 import { CreateCrateModal } from "@/components/landing/create-crate-modal"
 import { Error } from "@/components/error"
 import { Pagination } from "@/components/pagination"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function EditorLandingPage() {
     const router = useRouter()
     const theme = useTheme()
     const { recentCrates, removeFromRecentCrates } = useRecentCrates()
-    const [showStoredCratesAmount, setShowStoredCratesAmount] = useState(5)
-    const [showRecentCratesAmount, setShowRecentCratesAmount] = useState(5)
     const [fadeOutAnimation, setFadeOutAnimation] = useState(false)
     const { serviceProvider, setCrateId, unsetCrateId } = useContext(CrateDataContext)
     const { openFilePicker: openZipFilePicker, plainFiles: zipFiles } = useFilePicker({
@@ -121,14 +120,6 @@ export default function EditorLandingPage() {
         }
     }, [zipFiles])
 
-    const onShowMoreStoredClick = useCallback(() => {
-        setShowStoredCratesAmount((old) => old + 5)
-    }, [])
-
-    const onShowMoreRecentClick = useCallback(() => {
-        setShowRecentCratesAmount((old) => old + 5)
-    }, [])
-
     const openEditor = useCallback(
         (id: string) => {
             if (fadeOutAnimation) return
@@ -156,14 +147,6 @@ export default function EditorLandingPage() {
         error: storedCratesError,
         revalidate
     } = useAsync("", storedCratesResolver)
-
-    const showShowMoreStoredButton = useMemo(() => {
-        return !!(storedCrates && storedCrates.length > showStoredCratesAmount)
-    }, [showStoredCratesAmount, storedCrates])
-
-    const showShowMoreRecentButton = useMemo(() => {
-        return !!(recentCrates && recentCrates.length > showRecentCratesAmount)
-    }, [recentCrates, showRecentCratesAmount])
 
     return (
         <div className="w-full h-full grid grid-cols-[1fr_2fr]">
@@ -307,132 +290,137 @@ export default function EditorLandingPage() {
                     </button>
                 </div>
 
-                <div className="flex justify-center p-20">
-                    <div className="flex flex-col gap-2 w-[min(90vw,1000px)]">
-                        <div className="grid grid-cols-[20px_4fr_2fr_120px] gap-4 w-full">
-                            <Clock className="w-6 h-6 mr-3" />
-                            <div className="font-semibold text-xl flex items-center">
-                                Recent Crates
-                            </div>
-                            <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
-                                Last Opened
-                            </div>
-                            <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
-                                Actions
-                            </div>
+                <div className="pt-16">
+                    <Tabs defaultValue="recent">
+                        <div className="flex justify-center pb-4">
+                            <TabsList>
+                                <TabsTrigger value={"recent"}>
+                                    <Clock className="w-4 h-4 mr-2" /> Recent Crates
+                                </TabsTrigger>
+                                <TabsTrigger value={"stored"}>
+                                    <HardDrive className="w-4 h-4 mr-2" /> All Crates
+                                </TabsTrigger>
+                            </TabsList>
                         </div>
-                        <Pagination pageSize={5}>
-                            {!recentCrates ? (
-                                [0, 0, 0].map((_, i) => {
-                                    return (
-                                        <Fragment key={i}>
-                                            <Skeleton className="w-4 h-4" />
-                                            <Skeleton className="w-full h-8" />
-                                            <Skeleton className="w-full h-8" />
-                                            <Skeleton className="w-full h-8" />
-                                        </Fragment>
-                                    )
-                                })
-                            ) : recentCrates.length === 0 ? (
-                                <>
-                                    <div />
-                                    <div className="col-span-3">
-                                        Your recently used crates will be shown here once you start
-                                        working on a crate.
+                        <TabsContent value={"recent"}>
+                            <div className="flex justify-center p-20 pt-0">
+                                <div className="flex flex-col gap-2 w-[min(90vw,1000px)]">
+                                    <div className="grid grid-cols-[20px_4fr_2fr_120px] gap-4 w-full pl-2">
+                                        <Clock className="w-6 h-6 mr-3" />
+                                        <div className="font-semibold text-xl flex items-center">
+                                            Recent Crates
+                                        </div>
+                                        <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
+                                            Last Opened
+                                        </div>
+                                        <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
+                                            Actions
+                                        </div>
                                     </div>
-                                </>
-                            ) : (
-                                recentCrates.slice(0, showRecentCratesAmount).map((recentCrate) => {
-                                    return (
-                                        <CrateEntry
-                                            key={recentCrate}
-                                            crateId={recentCrate}
-                                            openEditor={openEditor}
-                                            removeFromRecentCrates={removeFromRecentCrates}
-                                            isRecentCrate={recentCrates.includes(recentCrate)}
-                                            deleteCrate={showDeleteCrateModal}
-                                        />
-                                    )
-                                })
-                            )}
-                        </Pagination>
-
-                        {showShowMoreRecentButton ? (
-                            <Button
-                                className="w-20 self-center"
-                                variant="link"
-                                onClick={onShowMoreRecentClick}
-                            >
-                                Show More
-                            </Button>
-                        ) : null}
-                    </div>
-                </div>
-
-                <div className="flex justify-center p-20 pt-0">
-                    <div className="flex flex-col gap-2 w-[min(90vw,1000px)]">
-                        <Error
-                            title="An Error occured while fetching stored crates"
-                            error={storedCratesError}
-                        />
-                        <div className="grid grid-cols-[20px_4fr_2fr_120px] gap-4 w-full">
-                            <HardDrive className="w-6 h-6 mr-3" />
-                            <div className="font-semibold text-xl flex items-center">
-                                Stored Crates
+                                    <Pagination pageSize={10}>
+                                        {!recentCrates ? (
+                                            [0, 0, 0].map((_, i) => {
+                                                return (
+                                                    <Fragment key={i}>
+                                                        <Skeleton className="w-4 h-4" />
+                                                        <Skeleton className="w-full h-8" />
+                                                        <Skeleton className="w-full h-8" />
+                                                        <Skeleton className="w-full h-8" />
+                                                    </Fragment>
+                                                )
+                                            })
+                                        ) : recentCrates.length === 0 ? (
+                                            <>
+                                                <div />
+                                                <div className="col-span-3">
+                                                    Your recently used crates will be shown here
+                                                    once you start working on a crate.
+                                                </div>
+                                            </>
+                                        ) : (
+                                            recentCrates.map((recentCrate) => {
+                                                return (
+                                                    <CrateEntry
+                                                        key={recentCrate}
+                                                        crateId={recentCrate}
+                                                        openEditor={openEditor}
+                                                        removeFromRecentCrates={
+                                                            removeFromRecentCrates
+                                                        }
+                                                        isRecentCrate={recentCrates.includes(
+                                                            recentCrate
+                                                        )}
+                                                        deleteCrate={showDeleteCrateModal}
+                                                    />
+                                                )
+                                            })
+                                        )}
+                                    </Pagination>
+                                </div>
                             </div>
-                            <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
-                                Last Opened
-                            </div>
-                            <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
-                                Actions
-                            </div>
-                        </div>
-                        <Pagination pageSize={5}>
-                            {!storedCrates ? (
-                                [0, 0, 0].map((_, i) => {
-                                    return (
-                                        <Fragment key={i}>
-                                            <Skeleton className="w-4 h-4" />
-                                            <Skeleton className="w-full h-8" />
-                                            <Skeleton className="w-full h-8" />
-                                            <Skeleton className="w-full h-8" />
-                                        </Fragment>
-                                    )
-                                })
-                            ) : storedCrates.length === 0 ? (
-                                <>
-                                    <div />
-                                    <div className="col-span-3">
-                                        Your local crates will be shown here once you start working
-                                        on a crate.
+                        </TabsContent>
+                        <TabsContent value={"stored"}>
+                            <div className="flex justify-center p-20 pt-0">
+                                <div className="flex flex-col gap-2 w-[min(90vw,1000px)]">
+                                    <Error
+                                        title="An Error occured while fetching stored crates"
+                                        error={storedCratesError}
+                                    />
+                                    <div className="grid grid-cols-[20px_4fr_2fr_120px] gap-4 w-full pl-2">
+                                        <HardDrive className="w-6 h-6 mr-3" />
+                                        <div className="font-semibold text-xl flex items-center">
+                                            All Crates
+                                        </div>
+                                        <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
+                                            Last Opened
+                                        </div>
+                                        <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
+                                            Actions
+                                        </div>
                                     </div>
-                                </>
-                            ) : (
-                                storedCrates.map((recentCrate) => {
-                                    return (
-                                        <CrateEntry
-                                            key={recentCrate}
-                                            crateId={recentCrate}
-                                            openEditor={openEditor}
-                                            removeFromRecentCrates={removeFromRecentCrates}
-                                            isRecentCrate={recentCrates?.includes(recentCrate)}
-                                            deleteCrate={showDeleteCrateModal}
-                                        />
-                                    )
-                                })
-                            )}
-                        </Pagination>
-
-                        {showShowMoreStoredButton ? (
-                            <Button
-                                className="w-20 self-center"
-                                variant="link"
-                                onClick={onShowMoreStoredClick}
-                            >
-                                Show More
-                            </Button>
-                        ) : null}
-                    </div>
+                                    <Pagination pageSize={10}>
+                                        {!storedCrates ? (
+                                            [0, 0, 0].map((_, i) => {
+                                                return (
+                                                    <Fragment key={i}>
+                                                        <Skeleton className="w-4 h-4" />
+                                                        <Skeleton className="w-full h-8" />
+                                                        <Skeleton className="w-full h-8" />
+                                                        <Skeleton className="w-full h-8" />
+                                                    </Fragment>
+                                                )
+                                            })
+                                        ) : storedCrates.length === 0 ? (
+                                            <>
+                                                <div />
+                                                <div className="col-span-3">
+                                                    Your local crates will be shown here once you
+                                                    start working on a crate.
+                                                </div>
+                                            </>
+                                        ) : (
+                                            storedCrates.map((recentCrate) => {
+                                                return (
+                                                    <CrateEntry
+                                                        key={recentCrate}
+                                                        crateId={recentCrate}
+                                                        openEditor={openEditor}
+                                                        removeFromRecentCrates={
+                                                            removeFromRecentCrates
+                                                        }
+                                                        isRecentCrate={recentCrates?.includes(
+                                                            recentCrate
+                                                        )}
+                                                        deleteCrate={showDeleteCrateModal}
+                                                    />
+                                                )
+                                            })
+                                        )}
+                                    </Pagination>
+                                </div>
+                            </div>
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </div>
         </div>
