@@ -2,7 +2,7 @@ import { useCurrentEntity } from "@/lib/hooks"
 import { useCallback, useContext, useMemo, useState } from "react"
 import { sortByPropertyName } from "@/components/editor/property-editor"
 import { AtSign, LayoutGrid, Minus, SearchIcon, XIcon } from "lucide-react"
-import { camelCaseReadable } from "@/lib/utils"
+import { camelCaseReadable, isRootEntity } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
 import { useEntityBrowserState } from "@/lib/state/entity-browser-state"
@@ -17,7 +17,9 @@ export function PropertyOverview() {
 
     const properties = useMemo(() => {
         if (!currentEntity) return []
-        const all = Object.keys(currentEntity).sort((a, b) => sortByPropertyName(a, b))
+        const all = Object.keys(currentEntity)
+            .sort((a, b) => sortByPropertyName(a, b))
+            .filter((e) => (isRootEntity(currentEntity) ? !e.startsWith("@") : true))
         if (!search) return all
         else
             return all.filter((property) =>
