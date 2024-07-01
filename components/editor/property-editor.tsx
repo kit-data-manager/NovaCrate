@@ -20,7 +20,7 @@ import { useAsync } from "@/lib/hooks"
 import { Trash } from "lucide-react"
 import { MarkdownComment } from "@/components/markdown-comment"
 import { getDefaultDate } from "@/components/editor/text-fields/date-field"
-import { PropertyPagination } from "@/components/editor/property-pagination"
+import { Pagination } from "@/components/pagination"
 
 export interface EntityEditorProperty {
     propertyName: string
@@ -252,8 +252,8 @@ export const PropertyEditor = memo(function PropertyEditor({
                     </div>
                 ) : null}
                 <div className="flex flex-col gap-4">
-                    <PropertyPagination
-                        addEntryDropdown={
+                    <Pagination
+                        leftContent={
                             <AddEntryDropdown
                                 propertyName={property.propertyName}
                                 propertyRange={propertyRange}
@@ -276,7 +276,7 @@ export const PropertyEditor = memo(function PropertyEditor({
                                 />
                             )
                         })}
-                    </PropertyPagination>
+                    </Pagination>
                 </div>
             </div>
         </div>
