@@ -3,10 +3,11 @@
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Button } from "@/components/ui/button"
 import { BookOpenText, Braces, Bug, Folder, GitFork, Library, PackageSearch } from "lucide-react"
-import { PropsWithChildren, useMemo } from "react"
+import { PropsWithChildren, useContext, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import packageJson from "@/package.json"
+import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 
 function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>) {
     const pathname = usePathname()
@@ -39,6 +40,8 @@ function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>)
 }
 
 export function NavSidebar({ children }: PropsWithChildren<{}>) {
+    const { showDocumentationModal } = useContext(GlobalModalContext)
+
     return (
         <ResizablePanelGroup direction="horizontal" autoSaveId="globalSidebarLayout">
             <ResizablePanel minSize={10} defaultSize={15}>
@@ -72,7 +75,11 @@ export function NavSidebar({ children }: PropsWithChildren<{}>) {
                             Validation
                         </Button>
 
-                        <Button variant="link" className={`justify-start w-full`} disabled>
+                        <Button
+                            variant="link"
+                            className={`justify-start w-full`}
+                            onClick={showDocumentationModal}
+                        >
                             <BookOpenText className="h-4 w-4 mr-2" />
                             Documentation
                         </Button>

@@ -1,4 +1,5 @@
 import {
+    Copy,
     Download,
     EllipsisVertical,
     FileIcon,
@@ -8,7 +9,7 @@ import {
     XIcon
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useContext, useEffect, useMemo, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { getEntityDisplayName } from "@/lib/utils"
 import { crateDetailsKey } from "@/components/landing/util"
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Error } from "@/components/error"
 import { DateTime } from "luxon"
+import { useCopyToClipboard } from "usehooks-ts"
 
 export interface CrateDetails {
     name?: string
@@ -46,6 +48,7 @@ export function CrateEntry({
     const { serviceProvider } = useContext(CrateDataContext)
     const [crateDetails, setCrateDetails] = useState<CrateDetails | undefined>()
     const [error, setError] = useState<unknown>()
+    const [_, copyText] = useCopyToClipboard()
 
     useEffect(() => {
         const content = window.localStorage.getItem(crateDetailsKey(crateId))
@@ -85,6 +88,10 @@ export function CrateEntry({
                 })
         }
     }, [serviceProvider, crateId])
+
+    const copyInternalID = useCallback(() => {
+        copyText(crateId).then()
+    }, [copyText, crateId])
 
     const title = useMemo(() => {
         if (crateDetails && crateDetails.name) {
@@ -167,6 +174,9 @@ export function CrateEntry({
                                 </DropdownMenuItem>
                             </DropdownMenuSubContent>
                         </DropdownMenuSub>
+                        <DropdownMenuItem onClick={copyInternalID}>
+                            <Copy className="w-4 h-4 mr-2" /> Copy internal Identifier
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="bg-destructive text-destructive-foreground"

@@ -4,7 +4,6 @@ import {
     BookOpen,
     ChevronDown,
     Clock,
-    Cog,
     FolderOpen,
     HardDrive,
     Loader,
@@ -35,6 +34,7 @@ import { CreateCrateModal } from "@/components/landing/create-crate-modal"
 import { Error } from "@/components/error"
 import { Pagination } from "@/components/pagination"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 
 export default function EditorLandingPage() {
     const router = useRouter()
@@ -45,6 +45,7 @@ export default function EditorLandingPage() {
     const { openFilePicker: openZipFilePicker, plainFiles: zipFiles } = useFilePicker({
         accept: ".zip"
     })
+    const { showDocumentationModal } = useContext(GlobalModalContext)
 
     useEffect(() => {
         console.debug("Unsetting crate ID")
@@ -220,17 +221,9 @@ export default function EditorLandingPage() {
                             size="lg"
                             variant="link"
                             className="rounded-none border-r-0 h-12"
-                            disabled
+                            onClick={showDocumentationModal}
                         >
                             <BookOpen className="w-6 h-6 mr-3" /> Documentation
-                        </Button>
-                        <Button
-                            size="lg"
-                            variant="link"
-                            className="rounded-none border-r-0 h-12"
-                            disabled
-                        >
-                            <Cog className="w-6 h-6 mr-3" /> Settings
                         </Button>
                         <Button
                             size="lg"
