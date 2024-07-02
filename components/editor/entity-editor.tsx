@@ -34,7 +34,7 @@ export function EntityEditor({
     entityId: string
     toggleEntityBrowserPanel(): void
 }) {
-    const { isSaving, saveError } = useContext(CrateDataContext)
+    const { isSaving, saveError, clearSaveError } = useContext(CrateDataContext)
     const entity = useEditorState((store) => store.entities.get(entityId))
     const originalEntity = useEditorState((store) => store.initialEntities.get(entityId))
     const entitiesChangelist = useEditorState((store) => store.getEntitiesChangelist())
@@ -125,6 +125,16 @@ export function EntityEditor({
         return entity ? getEntityDisplayName(entity) : ""
     }, [entity])
 
+    const ownSaveError = useMemo(() => {
+        if (saveError.has(entityId)) {
+            return saveError.get(entityId)
+        } else return undefined
+    }, [entityId, saveError])
+
+    const clearOwnSaveError = useCallback(() => {
+        clearSaveError(entityId)
+    }, [clearSaveError, entityId])
+
     if (!entity) {
         return (
             <div>
@@ -176,7 +186,12 @@ export function EntityEditor({
                 <WebWorkerWarning />
                 <UnknownTypeWarning entityType={entity?.["@type"] || []} />
                 <InternalEntityHint entity={entity} />
-                <Error className="mt-4" title="Error while saving" error={saveError} />
+                <Error
+                    className="mt-4"
+                    title="Error while saving"
+                    error={ownSaveError}
+                    onClear={clearOwnSaveError}
+                />
 
                 <div className="my-12 flex flex-col gap-4 mr-2">
                     {properties.map((property) => {

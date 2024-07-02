@@ -1,5 +1,5 @@
 import { CircleAlert, TriangleAlert, XIcon } from "lucide-react"
-import { PropsWithChildren, useEffect, useMemo, useState } from "react"
+import { PropsWithChildren, useMemo } from "react"
 import { handleSpringError } from "@/lib/spring-error-handling"
 
 function cn(size?: "md" | "xl") {
@@ -26,22 +26,15 @@ export function Error(
               prefix?: string
           }
         | PropsWithChildren<{}>
-    ) & { size?: "md" | "xl"; className?: string; warn?: boolean }
+    ) & { size?: "md" | "xl"; className?: string; warn?: boolean; onClear?: () => void }
 ) {
-    const [forceHide, setForceHide] = useState(false)
-
     const parsedText = useMemo(() => {
         if (!("error" in props)) return undefined
         return props.error ? handleSpringError(props.error) : ""
     }, [props])
 
-    useEffect(() => {
-        setForceHide(false)
-    }, [props])
-
     if ("error" in props && !props.error) return null
     if ("children" in props && !props.children) return null
-    if (forceHide) return null
 
     return (
         <div
@@ -68,15 +61,17 @@ export function Error(
                 props.children
             )}
             <div className="grow" />
-            <button
-                className={
-                    "p-2 rounded transition hover:bg-primary/10" +
-                    (props.warn ? "" : "bg-destructive hover:bg-destructive-foreground/20")
-                }
-                onClick={() => setForceHide(true)}
-            >
-                <XIcon className="w-4 h-4" />
-            </button>
+            {props.onClear ? (
+                <button
+                    className={
+                        "p-2 rounded transition hover:bg-primary/10" +
+                        (props.warn ? "" : "bg-destructive hover:bg-destructive-foreground/20")
+                    }
+                    onClick={() => props.onClear?.call(null)}
+                >
+                    <XIcon className="w-4 h-4" />
+                </button>
+            ) : null}
         </div>
     )
 }
