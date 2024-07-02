@@ -25,10 +25,28 @@ export function ShortcutHandler({ action }: { action: Action & { keyboardShortcu
         (e: KeyboardEvent) => {
             if (action.keyboardShortcut.includes("⌘") && !(e.metaKey || e.ctrlKey)) return
             if (action.keyboardShortcut.includes("command") && !(e.metaKey || e.ctrlKey)) return
+            if (
+                !action.keyboardShortcut.includes("⌘") &&
+                !action.keyboardShortcut.includes("command") &&
+                (e.metaKey || e.ctrlKey)
+            )
+                return
             if (action.keyboardShortcut.includes("shift") && !e.shiftKey) return
             if (action.keyboardShortcut.includes("⇧") && !e.shiftKey) return
+            if (
+                !action.keyboardShortcut.includes("⇧") &&
+                !action.keyboardShortcut.includes("shift") &&
+                e.shiftKey
+            )
+                return
             if (action.keyboardShortcut.includes("⌥") && !e.altKey) return
             if (action.keyboardShortcut.includes("alt") && !e.altKey) return
+            if (
+                !action.keyboardShortcut.includes("⌥") &&
+                !action.keyboardShortcut.includes("alt") &&
+                e.altKey
+            )
+                return
             if (
                 action.keyboardShortcut[action.keyboardShortcut.length - 1].toUpperCase() ===
                 e.key.toUpperCase()

@@ -158,16 +158,13 @@ export function EntityBrowserSection(props: {
     const entities = useEditorState(
         (store) => {
             return Array.from(store.entities.entries())
-                .map(
-                    ([key, item]) =>
-                        [key, { "@id": item["@id"], "@type": item["@type"] }] as [
-                            string,
-                            IFlatEntity
-                        ]
-                )
+                .map(([key, item]) => [key, item] as [string, IFlatEntity])
                 .filter(([_, item]) => !isRootEntity(item) && !isRoCrateMetadataEntity(item))
                 .filter(([_, item]) =>
                     props.section === "Data" ? isDataEntity(item) : isContextualEntity(item)
+                )
+                .sort((a, b) =>
+                    getEntityDisplayName(a[1]).localeCompare(getEntityDisplayName(b[1]))
                 )
         },
         (a, b) => {
