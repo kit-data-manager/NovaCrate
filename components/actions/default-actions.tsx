@@ -17,7 +17,7 @@ export default function DefaultActions() {
         showCreateEntityModal()
     }, [showCreateEntityModal])
     useRegisterAction("crate.add-entity", "Add new Entity", createEntityAction, {
-        keyboardShortcut: ["command", "a"],
+        keyboardShortcut: ["shift", "command", "a"],
         icon: Plus
     })
 
