@@ -301,6 +301,15 @@ export class RestProvider implements CrateServiceProvider {
         }
     }
 
+    async healthCheck(): Promise<void> {
+        const request = await fetch("http://localhost:8080/health")
+        if (request.ok) {
+            return
+        } else {
+            throw handleSpringError(await request.json())
+        }
+    }
+
     private getEntityRoutePart(entityData: IFlatEntity) {
         return isRootEntity(entityData)
             ? "root"

@@ -142,7 +142,8 @@ export function EntityGraph() {
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const { showDeleteEntityModal, showAddPropertyModal } = useContext(GlobalModalContext)
-    const { saveError, crateDataIsLoading, crateId, isSaving } = useContext(CrateDataContext)
+    const { saveError, crateDataIsLoading, crateId, isSaving, clearSaveError } =
+        useContext(CrateDataContext)
     const nodesInitialized = useNodesInitialized()
 
     const {
@@ -425,7 +426,16 @@ export function EntityGraph() {
                 </Panel>
 
                 <Panel position="bottom-left">
-                    <Error title="Error while saving" error={saveError} />
+                    <div className="max-h-[200px] overflow-y-auto flex gap-2 flex-col">
+                        {Array.from(saveError.entries()).map(([key, value]) => (
+                            <Error
+                                title="Error while saving"
+                                key={key}
+                                error={value}
+                                onClear={() => clearSaveError(key)}
+                            />
+                        ))}
+                    </div>
                 </Panel>
 
                 {crateDataIsLoading || !crateId ? (

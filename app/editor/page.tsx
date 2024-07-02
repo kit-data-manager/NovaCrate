@@ -44,7 +44,12 @@ export default function EditorLandingPage() {
     const theme = useTheme()
     const { recentCrates, removeFromRecentCrates } = useRecentCrates()
     const [fadeOutAnimation, setFadeOutAnimation] = useState(false)
-    const { serviceProvider, setCrateId, unsetCrateId } = useContext(CrateDataContext)
+    const {
+        serviceProvider,
+        setCrateId,
+        unsetCrateId,
+        healthTestError: error
+    } = useContext(CrateDataContext)
     const { openFilePicker: openZipFilePicker, plainFiles: zipFiles } = useFilePicker({
         accept: ".zip"
     })
@@ -300,6 +305,12 @@ export default function EditorLandingPage() {
                         </div>
                     </button>
                 </div>
+
+                <Error
+                    title="Service Provider is not reachable"
+                    error={error}
+                    className="m-20 mb-0"
+                />
 
                 <div className="pt-16">
                     <Tabs defaultValue="recent">

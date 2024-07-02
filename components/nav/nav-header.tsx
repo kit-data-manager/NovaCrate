@@ -2,6 +2,7 @@
 
 import {
     ChevronDown,
+    CircleAlert,
     Copy,
     Download,
     File,
@@ -38,6 +39,9 @@ import { getEntityDisplayName } from "@/lib/utils"
 import { ActionButton, ActionMenubarItem } from "@/components/actions/action-buttons"
 import { EntityIcon } from "@/components/entity-icon"
 import { KeyboardShortcut } from "@/components/actions/action-keyboard-shortcuts"
+import { Button } from "@/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Error } from "@/components/error"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -76,7 +80,16 @@ export function NavHeader() {
     const theme = useTheme()
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const { showCreateEntityModal } = useContext(GlobalModalContext)
-    const { serviceProvider, crateId, isSaving, crateDataIsLoading } = useContext(CrateDataContext)
+    const {
+        serviceProvider,
+        crateId,
+        isSaving,
+        crateDataIsLoading,
+        error,
+        saveError,
+        clearSaveError,
+        healthTestError
+    } = useContext(CrateDataContext)
     // const { undo, redo } = useEditorState.temporal.getState()
     const [_, copyFn] = useCopyToClipboard()
 
@@ -240,6 +253,31 @@ export function NavHeader() {
                 {/*<div className="flex items-center mr-2 text-green-500">*/}
                 {/*    <Check className="w-4 h-4 mr-2" /> No Issues detected*/}
                 {/*</div>*/}
+                {error || saveError.size > 0 || healthTestError ? (
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button size="icon" variant="destructive" className="relative">
+                                <CircleAlert className="w-4 h-4" />
+                                <CircleAlert className="w-4 h-4 absolute animate-ping top-[11px] left-[11px]" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[400px] flex flex-col gap-2">
+                            <Error
+                                title="Service Provider is not reachable"
+                                error={healthTestError}
+                            />
+                            <Error title="Error while loading crate data" error={error} />
+                            {Array.from(saveError.entries()).map(([key, value]) => (
+                                <Error
+                                    title={`Error while saving entity with id "${key}"`}
+                                    key={key}
+                                    error={value}
+                                    onClear={() => clearSaveError(key)}
+                                />
+                            ))}
+                        </PopoverContent>
+                    </Popover>
+                ) : null}
                 <ActionButton
                     variant="outline"
                     actionId={"editor.global-search"}

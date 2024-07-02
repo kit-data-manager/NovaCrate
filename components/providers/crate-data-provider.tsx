@@ -10,6 +10,7 @@ import { toast } from "sonner"
 import { TriangleAlert } from "lucide-react"
 import { getEntityDisplayName } from "@/lib/utils"
 import { EntityIcon } from "@/components/entity-icon"
+import { useInterval } from "usehooks-ts"
 
 const CRATE_ID_STORAGE_KEY = "crate-id"
 
@@ -39,6 +40,7 @@ export interface ICrateDataProvider {
     saveError: Map<string, unknown>
     clearSaveError(id?: string): void
     error: unknown
+    healthTestError: unknown
 }
 
 export const CrateDataContext = createContext<ICrateDataProvider>({
@@ -84,6 +86,7 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
         throw "Crate Data Provider not mounted yet"
     },
     error: undefined,
+    healthTestError: undefined,
     setCrateId() {
         throw "Crate Data Provider not mounted yet"
     },
@@ -105,6 +108,10 @@ export function CrateDataProvider({
     const { data, error, isLoading, mutate } = useSWR<ICrate>(crateId, serviceProvider.getCrate)
     const lastCrateData = useRef<ICrate | undefined>(undefined)
     const router = useRouter()
+
+    // Backend health is periodically checked. When health is bad, error is in this state. If this state is undefined, backend is healthy
+    // Might be unrelated to general crate error
+    const [healthTestError, setHealthTestError] = useState<unknown>()
 
     useEffect(() => {
         if (data) {
@@ -139,6 +146,27 @@ export function CrateDataProvider({
         setInitialCrateContext,
         setInitialEntities
     ])
+
+    const healthTest = useCallback(async () => {
+        try {
+            await serviceProvider.healthCheck()
+            setHealthTestError(undefined)
+            if (healthTestError !== undefined) {
+                toast.info("Service Provider has recovered")
+            }
+        } catch (e) {
+            console.error("Health test failed with error", e)
+            setHealthTestError(e)
+            if (healthTestError === undefined) {
+                toast.error("Service Provider is no longer reachable")
+            }
+        }
+    }, [healthTestError, serviceProvider])
+
+    useInterval(healthTest, 5000)
+    useEffect(() => {
+        healthTest().then()
+    }, [healthTest])
 
     const [isSaving, setIsSaving] = useState(false)
     const [saveError, setSaveError] = useState<Map<string, any>>(new Map())
@@ -450,7 +478,8 @@ export function CrateDataProvider({
                 saveRoCrateMetadataJSON,
                 setCrateId,
                 unsetCrateId,
-                clearSaveError
+                clearSaveError,
+                healthTestError
             }}
         >
             {children}
