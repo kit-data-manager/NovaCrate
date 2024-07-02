@@ -6,6 +6,10 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { Draft, produce } from "immer"
 import { applyServerDifferences } from "@/lib/ensure-sync"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { TriangleAlert } from "lucide-react"
+import { getEntityDisplayName } from "@/lib/utils"
+import { EntityIcon } from "@/components/entity-icon"
 
 const CRATE_ID_STORAGE_KEY = "crate-id"
 
@@ -32,7 +36,8 @@ export interface ICrateDataProvider {
     importOrganizationFromRor(url: string): Promise<string>
     reload(): void
     isSaving: boolean
-    saveError: unknown
+    saveError: Map<string, unknown>
+    clearSaveError(id?: string): void
     error: unknown
 }
 
@@ -74,7 +79,10 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
     },
     crateDataIsLoading: false,
     isSaving: false,
-    saveError: undefined,
+    saveError: new Map(),
+    clearSaveError() {
+        throw "Crate Data Provider not mounted yet"
+    },
     error: undefined,
     setCrateId() {
         throw "Crate Data Provider not mounted yet"
@@ -133,7 +141,19 @@ export function CrateDataProvider({
     ])
 
     const [isSaving, setIsSaving] = useState(false)
-    const [saveError, setSaveError] = useState<any>()
+    const [saveError, setSaveError] = useState<Map<string, any>>(new Map())
+
+    const clearSaveError = useCallback((id?: string) => {
+        if (id) {
+            setSaveError(
+                produce((draft) => {
+                    draft.delete(id)
+                })
+            )
+        } else {
+            setSaveError(new Map())
+        }
+    }, [])
 
     const saveEntity = useCallback(
         async (entityData: IFlatEntity, mutateNow: boolean = true) => {
@@ -148,9 +168,22 @@ export function CrateDataProvider({
 
                     const updateResult = await fn(crateId, entityData)
                     setIsSaving(false)
-                    setSaveError(undefined)
+                    setSaveError(
+                        produce((draft) => {
+                            draft.delete(entityData["@id"])
+                        })
+                    )
 
                     if (data && mutateNow) {
+                        if (updateResult)
+                            toast(
+                                <div className="flex items-center">
+                                    <EntityIcon entity={entityData} />{" "}
+                                    {getEntityDisplayName(entityData)} saved
+                                </div>,
+                                { duration: 2000 }
+                            )
+
                         const newData = produce<ICrate>(data, (newData: Draft<ICrate>) => {
                             const index = newData["@graph"].findIndex(
                                 (e) => e["@id"] === entityData["@id"]
@@ -165,16 +198,37 @@ export function CrateDataProvider({
                         await mutate(newData)
                     }
 
+                    if (!updateResult)
+                        toast(
+                            <div className="flex items-center text-warn">
+                                <TriangleAlert className="w-4 h-4 mr-2" />
+                                Could not save changes to <EntityIcon entity={entityData} />{" "}
+                                {getEntityDisplayName(entityData)}
+                            </div>
+                        )
+
                     return updateResult
                 } catch (e) {
                     console.error("Error occurred while trying to update entity", e)
-                    setSaveError(e)
+                    toast(
+                        <div className="flex items-center text-warn">
+                            <TriangleAlert className="w-4 h-4 mr-2" /> Could not save changes to
+                            <div className="w-2" />
+                            <EntityIcon entity={entityData} /> {getEntityDisplayName(entityData)}
+                        </div>,
+                        { important: true }
+                    )
+                    setSaveError(
+                        produce((draft) => {
+                            draft.set(entityData["@id"], e)
+                        })
+                    )
                     setIsSaving(false)
                     return false
                 }
             } else return false
         },
-        [data, mutate, crateId, serviceProvider]
+        [crateId, serviceProvider, data, mutate]
     )
 
     const saveAllEntities = useCallback(
@@ -182,6 +236,8 @@ export function CrateDataProvider({
             for (const entity of entities) {
                 await saveEntity(entity, false)
             }
+
+            if (entities.length > 0) toast(`Saved changes to ${entities.length} entities`)
 
             await mutate()
         },
@@ -195,13 +251,16 @@ export function CrateDataProvider({
                 try {
                     const result = await serviceProvider.createFileEntity(crateId, entity, file)
                     setIsSaving(false)
-                    setSaveError(undefined)
                     mutate().then()
 
                     return result
                 } catch (e) {
                     console.error("Error occurred while trying to create file entity", e)
-                    setSaveError(e)
+                    setSaveError(
+                        produce((draft) => {
+                            draft.set(entity["@id"], e)
+                        })
+                    )
                     setIsSaving(false)
                     return false
                 }
@@ -242,13 +301,16 @@ export function CrateDataProvider({
                     }
 
                     setIsSaving(false)
-                    setSaveError(undefined)
                     mutate().then()
 
                     return true
                 } catch (e) {
                     console.error("Error occurred while trying to create file entity", e)
-                    setSaveError(e)
+                    setSaveError(
+                        produce((draft) => {
+                            draft.set(entity["@id"], e)
+                        })
+                    )
                     setIsSaving(false)
                     return false
                 }
@@ -277,7 +339,11 @@ export function CrateDataProvider({
                     return deleteResult
                 } catch (e) {
                     console.error("Error occurred while trying to delete entity", e)
-                    setSaveError(e)
+                    setSaveError(
+                        produce((draft) => {
+                            draft.set(entityData["@id"], e)
+                        })
+                    )
                     return false
                 }
             } else return false
@@ -383,7 +449,8 @@ export function CrateDataProvider({
                 removeCustomContextPair,
                 saveRoCrateMetadataJSON,
                 setCrateId,
-                unsetCrateId
+                unsetCrateId,
+                clearSaveError
             }}
         >
             {children}

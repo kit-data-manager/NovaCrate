@@ -4,6 +4,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import TauriAutoShow from "@/components/tauri"
+import { Toaster } from "@/components/ui/sonner"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -27,6 +28,7 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <TooltipProvider>{children}</TooltipProvider>
+                    <Toaster />
                 </ThemeProvider>
             </body>
         </html>
