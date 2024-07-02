@@ -145,4 +145,9 @@ declare interface CrateServiceProvider {
     addCustomContextPair(crateId: string, key: string, value: string): Promise<void>
 
     removeCustomContextPair(crateId: string, key: string): Promise<void>
+
+    /**
+     * Check if the provider is healthy. Throw if not, resolve if yes
+     */
+    healthCheck(): Promise<void>
 }
