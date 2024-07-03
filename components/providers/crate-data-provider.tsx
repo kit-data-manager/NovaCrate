@@ -183,6 +183,10 @@ export function CrateDataProvider({
         }
     }, [])
 
+    useEffect(() => {
+        clearSaveError()
+    }, [clearSaveError, crateId])
+
     const saveEntity = useCallback(
         async (entityData: IFlatEntity, mutateNow: boolean = true) => {
             if (crateId) {
@@ -238,11 +242,11 @@ export function CrateDataProvider({
                     return updateResult
                 } catch (e) {
                     console.error("Error occurred while trying to update entity", e)
-                    toast(
-                        <div className="flex items-center text-warn">
-                            <TriangleAlert className="w-4 h-4 mr-2" /> Could not save changes to
-                            <div className="w-2" />
-                            <EntityIcon entity={entityData} /> {getEntityDisplayName(entityData)}
+                    toast.warning(
+                        <div>
+                            <TriangleAlert className="w-4 h-4 mr-1 inline-block text-warn" /> Could
+                            not save changes to <EntityIcon entity={entityData} className="mr-1" />
+                            {getEntityDisplayName(entityData)}
                         </div>,
                         { important: true }
                     )
