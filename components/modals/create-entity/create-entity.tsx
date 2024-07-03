@@ -110,7 +110,7 @@ export function CreateEntity({
     useEffect(() => {
         setPath((currentPath) => {
             if (!emptyFolder) {
-                return (basePath || "") + (baseFileName || "")
+                return (basePath || "") + encodeFilePath(baseFileName || "")
             } else return currentPath
         })
     }, [baseFileName, basePath, emptyFolder])
