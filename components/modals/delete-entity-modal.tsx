@@ -42,7 +42,6 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
             setIsDeleting(true)
             deleteEntity(entity)
                 .then((success) => {
-                    console.log(success)
                     if (success) {
                         setDeleteError(undefined)
                         removeEntity(entity["@id"])

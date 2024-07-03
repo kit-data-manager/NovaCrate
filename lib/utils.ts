@@ -140,7 +140,7 @@ export function sum(a: number, b: number) {
 
 export function getFolderPath(filePath: string) {
     const split = filePath.split("/")
-    if (split.length === 1) return ""
+    if (split.length === 0) return ""
     if (split[split.length - 1] === "") return filePath
     else return split.slice(0, split.length - 1).join("/") + "/"
 }
