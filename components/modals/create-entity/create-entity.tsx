@@ -13,7 +13,7 @@ import {
     Plus
 } from "lucide-react"
 import { useFilePicker } from "use-file-picker"
-import { camelCaseReadable, encodeFilePath, fileNameWithoutEnding } from "@/lib/utils"
+import { asValidPath, camelCaseReadable, encodeFilePath, fileNameWithoutEnding } from "@/lib/utils"
 import { Error } from "@/components/error"
 import prettyBytes from "pretty-bytes"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -99,9 +99,10 @@ export function CreateEntity({
     }, [folderFiles, plainFiles])
 
     const path = useMemo(() => {
-        return (
+        return asValidPath(
             (basePath || "") +
-            (emptyFolder ? encodeFilePath(name.replaceAll("/", "")) : baseFileName || "")
+                (emptyFolder ? encodeFilePath(name.replaceAll("/", "")) : baseFileName || ""),
+            true
         )
     }, [baseFileName, basePath, emptyFolder, name])
 

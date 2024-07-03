@@ -163,7 +163,7 @@ export function CrateDataProvider({
         }
     }, [healthTestError, serviceProvider])
 
-    useInterval(healthTest, 5000)
+    useInterval(healthTest, 10000)
     useEffect(() => {
         healthTest().then()
     }, [healthTest])
