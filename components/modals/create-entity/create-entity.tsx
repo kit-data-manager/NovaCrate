@@ -13,7 +13,7 @@ import {
     Plus
 } from "lucide-react"
 import { useFilePicker } from "use-file-picker"
-import { asValidPath, camelCaseReadable, encodeFilePath, fileNameWithoutEnding } from "@/lib/utils"
+import { camelCaseReadable, encodeFilePath, fileNameWithoutEnding } from "@/lib/utils"
 import { Error } from "@/components/error"
 import prettyBytes from "pretty-bytes"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -43,6 +43,7 @@ export function CreateEntity({
     const context = useEditorState.useCrateContext()
 
     const [forceWithoutFile, setForceWithoutFile] = useState(false)
+    const [path, setPath] = useState("")
     const fileUpload = useMemo(() => {
         return context.resolve(selectedType) === RO_CRATE_FILE
     }, [context, selectedType])
@@ -98,13 +99,21 @@ export function CreateEntity({
         } else return undefined
     }, [folderFiles, plainFiles])
 
-    const path = useMemo(() => {
-        return asValidPath(
-            (basePath || "") +
-                (emptyFolder ? encodeFilePath(name.replaceAll("/", "")) : baseFileName || ""),
-            true
-        )
-    }, [baseFileName, basePath, emptyFolder, name])
+    useEffect(() => {
+        setPath((currentPath) => {
+            if (emptyFolder) {
+                return (basePath || "") + (encodeFilePath(name.replaceAll("/", "")) || "")
+            } else return currentPath
+        })
+    }, [basePath, emptyFolder, name])
+
+    useEffect(() => {
+        setPath((currentPath) => {
+            if (!emptyFolder) {
+                return (basePath || "") + (baseFileName || "")
+            } else return currentPath
+        })
+    }, [baseFileName, basePath, emptyFolder])
 
     const localOnCreateClick = useCallback(() => {
         if (
@@ -300,10 +309,10 @@ export function CreateEntity({
                         Path{" "}
                         <HelpTooltip>
                             The path where the file(s) will be located in the Crate. To upload to a
-                            different path, use the File Explorer
+                            different path, use the File Explorer for more convenience.
                         </HelpTooltip>
                     </Label>
-                    <Input value={path} disabled />
+                    <Input value={path} onChange={(e) => setPath(e.target.value)} />
                 </div>
             ) : null}
 
