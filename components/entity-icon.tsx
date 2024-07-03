@@ -1,90 +1,51 @@
 import { useMemo } from "react"
-import { isDataEntity, isFileDataEntity, isRootEntity } from "@/lib/utils"
+import { cn, isDataEntity, isFileDataEntity, isRootEntity } from "@/lib/utils"
 import { Asterisk } from "lucide-react"
 
 const entityBrowserItemIconBaseCN =
-    "min-w-5 min-h-5 flex justify-center items-center border mr-2 rounded font-bold text-xs shrink-0"
+    "min-w-5 min-h-5 inline-flex justify-center items-center border mr-2 rounded font-bold text-xs shrink-0 relative"
+
+const asteriskCn = "absolute right-[-7px] top-[-7px] text-foreground text-xl rounded-full bg-muted"
+
+const sizeCn = {
+    md: "",
+    lg: "min-w-7 min-h-7 rounded-lg",
+    sm: "min-h-[18px] min-w-[18px] aspect-square ml-[-1px] mr-[7px]"
+}
 
 export function EntityIcon(props: {
     entity?: IFlatEntity
     size?: "md" | "lg" | "sm"
     unsavedChanges?: boolean
+    className?: string
 }) {
-    const sizeMod = useMemo(() => {
-        return props.size == "lg"
-            ? " min-w-7 min-h-7 rounded-lg"
-            : props.size == "sm"
-              ? " min-h-[18px] min-w-[18px] aspect-square ml-[-1px] mr-[7px]"
-              : ""
-    }, [props.size])
+    const content = useMemo(() => {
+        if (!props.entity) return "?"
+        else if (isRootEntity(props.entity)) return "R"
+        else if (isDataEntity(props.entity)) return isFileDataEntity(props.entity) ? "F" : "D"
+        else return "C"
+    }, [props.entity])
 
-    if (!props.entity) {
-        return (
-            <div
-                className={
-                    entityBrowserItemIconBaseCN +
-                    " border-muted-foreground text-muted-foreground" +
-                    sizeMod
-                }
-            >
-                <div
-                    className={`absolute right-[-7px] top-[-7px] text-foreground text-xl bg-muted rounded-full ${props.unsavedChanges ? "" : "hidden"}`}
-                >
-                    <Asterisk className="w-4 h-4" />
-                </div>
-                <span>?</span>
+    const baseColor = useMemo(() => {
+        if (!props.entity) return "border-muted-foreground text-muted-foreground"
+        else if (isRootEntity(props.entity)) return "border-root text-root"
+        else if (isDataEntity(props.entity)) return "border-data text-data"
+        else return "border-contextual text-contextual"
+    }, [props.entity])
+
+    return (
+        <div
+            className={cn(
+                entityBrowserItemIconBaseCN,
+                sizeCn[props.size || "md"],
+                baseColor,
+                props.className
+            )}
+        >
+            <div className={cn(asteriskCn) + ` ${props.unsavedChanges ? "" : "hidden"}`}>
+                <Asterisk className="w-4 h-4" />
             </div>
-        )
-    } else if (isRootEntity(props.entity)) {
-        return (
-            <div
-                className={
-                    entityBrowserItemIconBaseCN +
-                    " relative text-background bg-root border-transparent dark:border-root dark:text-root dark:bg-transparent" +
-                    sizeMod
-                }
-            >
-                <div
-                    className={`absolute right-[-7px] top-[-7px] text-foreground text-xl bg-muted rounded-full ${props.unsavedChanges ? "" : "hidden"}`}
-                >
-                    <Asterisk className="w-4 h-4" />
-                </div>
-                <span>R</span>
-            </div>
-        )
-    } else if (isDataEntity(props.entity)) {
-        return (
-            <div
-                className={
-                    entityBrowserItemIconBaseCN +
-                    " relative text-background bg-data border-transparent dark:border-data dark:text-data dark:bg-transparent" +
-                    sizeMod
-                }
-            >
-                <div
-                    className={`absolute right-[-7px] top-[-7px] text-foreground text-xl bg-muted rounded-full ${props.unsavedChanges ? "" : "hidden"}`}
-                >
-                    <Asterisk className="w-4 h-4" />
-                </div>
-                <span>{isFileDataEntity(props.entity) ? "F" : "D"}</span>
-            </div>
-        )
-    } else {
-        return (
-            <div
-                className={
-                    entityBrowserItemIconBaseCN +
-                    " relative text-background bg-contextual border-transparent dark:border-contextual dark:text-contextual dark:bg-transparent" +
-                    sizeMod
-                }
-            >
-                <div
-                    className={`absolute right-[-7px] top-[-7px] text-foreground text-xl bg-muted rounded-full ${props.unsavedChanges ? "" : "hidden"}`}
-                >
-                    <Asterisk className="w-4 h-4" />
-                </div>
-                <span>C</span>
-            </div>
-        )
-    }
+            <span>{content}</span>
+        </div>
+    )
 }

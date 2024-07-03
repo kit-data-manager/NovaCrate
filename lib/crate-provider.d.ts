@@ -97,7 +97,8 @@ declare interface CrateServiceProvider {
     createFileEntity(crateId: string, entityData: IFlatEntity, file: File): Promise<boolean>
 
     /**
-     * Remove an entity from the crate and also remove all references
+     * Remove an entity from the crate and also remove all references. If this is a data entity, it will also remove
+     * the data from the crate
      * @param crateId ID of the target crate
      * @param entityData Data of the entity that should be deleted. Relevant are only @id and @type
      * @returns Promise - resolves on success
