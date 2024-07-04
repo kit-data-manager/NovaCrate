@@ -144,7 +144,7 @@ export function useAutoId(name: string) {
 
     return useMemo(() => {
         if (name == "") return ""
-        let generated = "#" + name.toLowerCase().trim().replaceAll(" ", "-")
+        let generated = "#" + encodeURIComponent(name.toLowerCase().trim().replaceAll(" ", "-"))
         let maxIterations = 10
         while (entities.has(generated)) {
             if (maxIterations-- < 0) throw "Could not generate a unique id after 10 attempts"
