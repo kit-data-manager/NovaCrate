@@ -4,7 +4,6 @@ import { Download, Eye, FileIcon, XIcon } from "lucide-react"
 import HelpTooltip from "@/components/help-tooltip"
 import { Button } from "@/components/ui/button"
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
-import { FileExplorerContext } from "@/components/file-explorer/context"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Error } from "@/components/error"
 import { BaseViewer } from "@/components/file-explorer/viewers/base"
@@ -12,13 +11,17 @@ import useSWR from "swr"
 
 export function FilePreview({
     doubleHeight = false,
-    closeable = true
+    closeable = true,
+    previewingFilePath,
+    setPreviewingFilePath,
+    setDownloadError
 }: {
     doubleHeight?: boolean
     closeable?: boolean
+    previewingFilePath: string
+    setPreviewingFilePath(path: string): void
+    setDownloadError(e: unknown): void
 }) {
-    const { previewingFilePath, setPreviewingFilePath, setDownloadError } =
-        useContext(FileExplorerContext)
     const { serviceProvider, crateId } = useContext(CrateDataContext)
     const [previewNotSupported, setPreviewNotSupported] = useState(false)
     const [previewError, setPreviewError] = useState<unknown>()
@@ -36,7 +39,12 @@ export function FilePreview({
     }, [crateId, previewingFilePath, serviceProvider])
 
     const fileFetcher = useCallback(async (url: string) => {
-        return await (await fetch(url)).blob()
+        const req = await fetch(url)
+        if (req.ok) {
+            return await req.blob()
+        } else {
+            return new Blob([], { type: "text/x-unsupported" })
+        }
     }, [])
 
     const { data, error, isLoading } = useSWR(resourceUrl, fileFetcher)

@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
-export interface EntityBrowserState {
+export interface EntityBrowserSettings {
     showFolderStructure: boolean
     showEntityType: boolean
     showIdInsteadOfName: boolean
@@ -13,7 +13,7 @@ export interface EntityBrowserState {
     setShowPropertyOverview(val: boolean): void
 }
 
-export const useEntityBrowserState = create<EntityBrowserState>()(
+export const useEntityBrowserSettings = create<EntityBrowserSettings>()(
     persist(
         (set) => ({
             showFolderStructure: true,

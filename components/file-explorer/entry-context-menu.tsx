@@ -12,7 +12,7 @@ import HelpTooltip from "@/components/help-tooltip"
 import { useCallback, useContext } from "react"
 import { useCopyToClipboard } from "usehooks-ts"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { FileExplorerContext } from "@/components/file-explorer/context"
+import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { encodeFilePath, getFolderPath } from "@/lib/utils"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
@@ -34,7 +34,7 @@ export function EntryContextMenu({
     blankSpace?: boolean
 }) {
     const { serviceProvider, crateId } = useContext(CrateDataContext)
-    const { setDownloadError } = useContext(FileExplorerContext)
+    const setDownloadError = useFileExplorerState((store) => store.setDownloadError)
     const { showCreateEntityModal, showDeleteEntityModal } = useContext(GlobalModalContext)
     const [_, copy] = useCopyToClipboard()
 
