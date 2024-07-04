@@ -136,9 +136,7 @@ export function camelCaseReadable(propertyName: string) {
 }
 
 export function encodeFilePath(fileID: string) {
-    // TODO: Issue with ro-crate-java
-    // return fileID.replaceAll("\\", "/").split("/").map(encodeURIComponent).join("/")
-    return fileID
+    return fileID.replaceAll("\\", "/").split("/").map(encodeURIComponent).join("/")
 }
 
 export function fileNameWithoutEnding(fileName: string) {
