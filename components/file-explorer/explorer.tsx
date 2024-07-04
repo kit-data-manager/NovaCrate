@@ -14,7 +14,7 @@ import {
 import { Error } from "@/components/error"
 import { FolderContent } from "@/components/file-explorer/content"
 import HelpTooltip from "@/components/help-tooltip"
-import { FileExplorerContext } from "@/components/file-explorer/context"
+import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useEditorState } from "@/lib/state/editor-state"
 import {
@@ -35,7 +35,7 @@ export type DefaultSectionOpen = boolean | "indeterminate"
 export function FileExplorer() {
     const crateData = useContext(CrateDataContext)
     const entities = useEditorState.useEntities()
-    const { downloadError } = useContext(FileExplorerContext)
+    const downloadError = useFileExplorerState((store) => store.downloadError)
 
     const filesListResolver = useCallback(
         async (crateId: string) => {

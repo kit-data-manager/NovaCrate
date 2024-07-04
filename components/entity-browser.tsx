@@ -41,7 +41,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { useEntityBrowserState } from "@/lib/state/entity-browser-state"
+import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { ActionButton, ActionDropdownMenuItem } from "@/components/actions/action-buttons"
 import { PropertyOverview } from "@/components/editor/property-overview"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
@@ -54,19 +54,17 @@ import {
     ContextMenuTrigger
 } from "@/components/ui/context-menu"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
-import { FileExplorerContext } from "@/components/file-explorer/context"
 
 type DefaultSectionOpen = boolean | "indeterminate"
 
 export function EntityBrowserItem(props: { entityId: string }) {
-    const showEntityType = useEntityBrowserState((store) => store.showEntityType)
-    const showIdInsteadOfName = useEntityBrowserState((store) => store.showIdInsteadOfName)
-    const { openTab } = useContext(EntityEditorTabsContext)
+    const showEntityType = useEntityBrowserSettings((store) => store.showEntityType)
+    const showIdInsteadOfName = useEntityBrowserSettings((store) => store.showIdInsteadOfName)
+    const { openTab, setPreviewingFilePath } = useContext(EntityEditorTabsContext)
     const entity = useEditorState((state) => state.entities.get(props.entityId))
     const { saveEntity } = useContext(CrateDataContext)
     const revertEntity = useEditorState.useRevertEntity()
     const { showDeleteEntityModal } = useContext(GlobalModalContext)
-    const { setPreviewingFilePath } = useContext(FileExplorerContext)
     const changeList = useEditorState((store) => store.getEntitiesChangelist())
 
     const canHavePreview = useMemo(() => {
@@ -256,10 +254,12 @@ export function EntityBrowserContent({
 }
 
 export function EntityBrowser() {
-    const state = useEntityBrowserState()
+    const state = useEntityBrowserSettings()
     const [defaultSectionOpen, setDefaultSectionOpen] = useState<DefaultSectionOpen>(true)
-    const showPropertyOverview = useEntityBrowserState((store) => store.showPropertyOverview)
-    const setShowPropertyOverview = useEntityBrowserState((store) => store.setShowPropertyOverview)
+    const showPropertyOverview = useEntityBrowserSettings((store) => store.showPropertyOverview)
+    const setShowPropertyOverview = useEntityBrowserSettings(
+        (store) => store.setShowPropertyOverview
+    )
 
     const collapseAllSections = useCallback(() => {
         setDefaultSectionOpen(false)

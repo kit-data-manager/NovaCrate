@@ -8,7 +8,6 @@ import { EntityEditorTabsProvider } from "@/components/providers/entity-tabs-pro
 import { CrateVerifyProvider } from "@/components/providers/crate-verify-provider"
 import { GlobalModalProvider } from "@/components/providers/global-modals-provider"
 import { useCrateName, useRecentCrates } from "@/lib/hooks"
-import { FileExplorerProvider } from "@/components/file-explorer/context"
 import { GraphStateProvider } from "@/components/providers/graph-state-provider"
 import { GraphSettingsProvider } from "@/components/providers/graph-settings-provider"
 import { ActionsProvider } from "@/components/providers/actions-provider"
@@ -21,19 +20,17 @@ export default function EditorLayout(props: PropsWithChildren) {
         <ActionsProvider>
             <CrateVerifyProvider>
                 <EntityEditorTabsProvider>
-                    <FileExplorerProvider>
-                        <GlobalModalProvider>
-                            <GraphStateProvider>
-                                <GraphSettingsProvider>
-                                    <DefaultActions />
-                                    <EntityActions />
-                                    <ActionKeyboardShortcuts />
-                                    <RecentlyUsed />
-                                    <Nav>{props.children}</Nav>
-                                </GraphSettingsProvider>
-                            </GraphStateProvider>
-                        </GlobalModalProvider>
-                    </FileExplorerProvider>
+                    <GlobalModalProvider>
+                        <GraphStateProvider>
+                            <GraphSettingsProvider>
+                                <DefaultActions />
+                                <EntityActions />
+                                <ActionKeyboardShortcuts />
+                                <RecentlyUsed />
+                                <Nav>{props.children}</Nav>
+                            </GraphSettingsProvider>
+                        </GraphStateProvider>
+                    </GlobalModalProvider>
                 </EntityEditorTabsProvider>
             </CrateVerifyProvider>
         </ActionsProvider>

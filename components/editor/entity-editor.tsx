@@ -10,9 +10,9 @@ import {
     Diff,
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
-    isFileDataEntity as isFileDataEntityUtil,
     isRootEntity,
-    propertyHasChanged
+    propertyHasChanged,
+    canHavePreview as canHavePreviewUtil
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
@@ -23,9 +23,9 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { InternalEntityHint } from "@/components/editor/hints/internal-entity-hint"
 import { ActionButton } from "@/components/actions/action-buttons"
-import { FileExplorerContext } from "@/components/file-explorer/context"
 import { useGoToFileExplorer, useGoToGraph } from "@/lib/hooks"
 import { EntityBadge } from "../entity-badge"
+import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
 
 export function EntityEditor({
     entityId,
@@ -41,16 +41,16 @@ export function EntityEditor({
     const addPropertyEntry = useEditorState.useAddPropertyEntry()
     const modifyPropertyEntry = useEditorState.useModifyPropertyEntry()
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
-    const { setPreviewingFilePath, previewingFilePath } = useContext(FileExplorerContext)
+    const { setPreviewingFilePath, previewingFilePath } = useContext(EntityEditorTabsContext)
 
     const isDataEntity = useMemo(() => {
         if (!entity) return false
         return isDataEntityUtil(entity)
     }, [entity])
 
-    const isFileDataEntity = useMemo(() => {
+    const canHavePreview = useMemo(() => {
         if (!entity) return false
-        return isFileDataEntityUtil(entity)
+        return canHavePreviewUtil(entity)
     }, [entity])
 
     const togglePreview = useCallback(() => {
@@ -168,11 +168,11 @@ export function EntityEditor({
                 isSaving={isSaving}
                 canSaveAs={!isDataEntity}
                 toggleEntityBrowserPanel={toggleEntityBrowserPanel}
-                canHavePreview={isFileDataEntity}
+                canHavePreview={canHavePreview}
                 togglePreview={togglePreview}
                 isBeingPreviewed={isBeingPreviewed}
                 goToGraph={showInGraph}
-                goToFileExplorer={isFileDataEntity ? showInFileExplorer : undefined}
+                goToFileExplorer={canHavePreview ? showInFileExplorer : undefined}
             />
 
             <div className="pt-12 p-4 pr-10 overflow-y-auto">

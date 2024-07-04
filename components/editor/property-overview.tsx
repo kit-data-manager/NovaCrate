@@ -5,14 +5,16 @@ import { AtSign, LayoutGrid, Minus, SearchIcon, XIcon } from "lucide-react"
 import { camelCaseReadable, isRootEntity } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
-import { useEntityBrowserState } from "@/lib/state/entity-browser-state"
+import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 
 export function PropertyOverview() {
     const currentEntity = useCurrentEntity()
     const { focusProperty } = useContext(EntityEditorTabsContext)
-    const setShowPropertyOverview = useEntityBrowserState((store) => store.setShowPropertyOverview)
+    const setShowPropertyOverview = useEntityBrowserSettings(
+        (store) => store.setShowPropertyOverview
+    )
     const [search, setSearch] = useState("")
 
     const properties = useMemo(() => {

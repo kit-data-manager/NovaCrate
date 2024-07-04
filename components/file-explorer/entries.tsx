@@ -1,14 +1,14 @@
 import { useEditorState } from "@/lib/state/editor-state"
-import { useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, Eye, File, FileX, Folder, FolderX } from "lucide-react"
 import { encodeFilePath, getEntityDisplayName } from "@/lib/utils"
 import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { FolderContent } from "@/components/file-explorer/content"
-import { FileExplorerContext } from "@/components/file-explorer/context"
 import { DefaultSectionOpen } from "@/components/file-explorer/explorer"
 import { useGoToEntityEditor } from "@/lib/hooks"
+import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 
 function isNonEmptyPart(part: string) {
     return part !== "" && part !== "."
@@ -106,7 +106,8 @@ export function FolderEntry(props: {
 
 export function FileEntry(props: { filePath: string }) {
     const entity = useEditorState((state) => state.entities.get(props.filePath))
-    const { setPreviewingFilePath, previewingFilePath } = useContext(FileExplorerContext)
+    const setPreviewingFilePath = useFileExplorerState((store) => store.setPreviewingFilePath)
+    const previewingFilePath = useFileExplorerState((store) => store.previewingFilePath)
     const goToEntity = useGoToEntityEditor(entity)
 
     const isMock = useMemo(() => {

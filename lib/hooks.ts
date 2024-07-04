@@ -11,7 +11,7 @@ import { isRootEntity } from "@/lib/utils"
 import { useGraphState } from "@/components/providers/graph-state-provider"
 import { Action, notFoundAction } from "@/lib/state/actions"
 import { useActionsStore } from "@/components/providers/actions-provider"
-import { FileExplorerContext } from "@/components/file-explorer/context"
+import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 
 const MAX_LIST_LENGTH = 100
 
@@ -193,7 +193,7 @@ export function useGoToGraph() {
 export function useGoToFileExplorer(entity?: IFlatEntity) {
     const pathname = usePathname()
     const router = useRouter()
-    const { setPreviewingFilePath } = useContext(FileExplorerContext)
+    const setPreviewingFilePath = useFileExplorerState((store) => store.setPreviewingFilePath)
 
     return useCallback(
         (_entity?: IFlatEntity) => {

@@ -44,6 +44,15 @@ export function getEntityDisplayName(entity: IFlatEntity, fallback: boolean = tr
     return ""
 }
 
+function isValidUrl(string: string) {
+    try {
+        new URL(string)
+        return true
+    } catch (_) {
+        return false
+    }
+}
+
 export function isRootEntity(entity: IFlatEntity) {
     return entity["@id"] === "./"
 }
@@ -61,6 +70,10 @@ export function isFileDataEntity(entity: IFlatEntity) {
         toArray(entity["@type"]).includes("File") ||
         toArray(entity["@type"]).includes("MediaObject")
     )
+}
+
+export function canHavePreview(entity: IFlatEntity) {
+    return isFileDataEntity(entity) && !entity["@id"].startsWith("#") && !isValidUrl(entity["@id"])
 }
 
 export function isFolderDataEntity(entity: IFlatEntity) {

@@ -25,6 +25,9 @@ export interface IEntityEditorTabsContext {
     closeAllTabs(): void
     focusProperty(entityId: string, propertyName: string): void
     unFocusProperty(): void
+
+    previewingFilePath: string
+    setPreviewingFilePath(path: string): void
 }
 
 export const EntityEditorTabsContext = createContext<IEntityEditorTabsContext>({
@@ -51,6 +54,10 @@ export const EntityEditorTabsContext = createContext<IEntityEditorTabsContext>({
     },
     unFocusProperty() {
         console.warn("EntityEditorTabsContextProvider not mounted yet")
+    },
+    previewingFilePath: "",
+    setPreviewingFilePath() {
+        console.warn("EntityEditorTabsContextProvider not mounted yet")
     }
 })
 
@@ -61,6 +68,7 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
     const [tabs, setTabs] = useState<IEntityEditorTab[]>([{ entityId: "./" }])
     const [focusedEntity, setFocusedEntity] = useState("./")
     const [focusedProperty, setFocusedProperty] = useState("")
+    const [previewingFilePath, setPreviewingFilePath] = useState("")
 
     useEffect(() => {
         for (const [entityId, diff] of entitiesChangelist) {
@@ -174,7 +182,9 @@ export function EntityEditorTabsProvider(props: PropsWithChildren) {
                 closeAllTabs,
                 closeOtherTabs,
                 focusProperty,
-                unFocusProperty
+                unFocusProperty,
+                previewingFilePath,
+                setPreviewingFilePath
             }}
         >
             {props.children}

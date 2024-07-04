@@ -196,6 +196,7 @@ export default function EditorLandingPage() {
                 <div className="flex flex-col items-center justify-center h-[max(45vh,200px)] p-10">
                     <Package className="w-32 h-32 mb-10" />
                     <h2 className="text-5xl font-bold">NovaCrate</h2>
+                    <h4>RO-Crate Editor</h4>
                 </div>
 
                 <div className="flex flex-col items-center pr-20">

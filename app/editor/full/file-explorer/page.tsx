@@ -4,8 +4,11 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { FileExplorer } from "@/components/file-explorer/explorer"
 import { FilePreview } from "@/components/file-explorer/preview"
 import { Metadata } from "@/components/Metadata"
+import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 
 function Content() {
+    const { previewingFilePath, setPreviewingFilePath, setDownloadError } = useFileExplorerState()
+
     return (
         <ResizablePanelGroup direction="horizontal">
             <ResizablePanel defaultSize={34} minSize={15}>
@@ -13,7 +16,11 @@ function Content() {
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel defaultSize={66} minSize={15}>
-                <FilePreview />
+                <FilePreview
+                    previewingFilePath={previewingFilePath}
+                    setPreviewingFilePath={setPreviewingFilePath}
+                    setDownloadError={setDownloadError}
+                />
             </ResizablePanel>
         </ResizablePanelGroup>
     )
