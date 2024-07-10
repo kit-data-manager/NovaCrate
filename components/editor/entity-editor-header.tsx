@@ -44,7 +44,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
     const saveAction = useAction("entity.save")
 
     return (
-        <div className="flex gap-2 top-0 p-2 bg-accent overflow-x-auto">
+        <div className="flex gap-2 p-2 bg-accent overflow-x-auto shrink-0">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
