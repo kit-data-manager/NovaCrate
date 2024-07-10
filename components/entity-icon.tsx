@@ -14,7 +14,7 @@ const sizeCn = {
 }
 
 export function EntityIcon(props: {
-    entity?: IFlatEntity
+    entity?: IEntity
     size?: "md" | "lg" | "sm"
     unsavedChanges?: boolean
     className?: string

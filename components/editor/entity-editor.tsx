@@ -84,7 +84,7 @@ export function EntityEditor({
     )
 
     const onModifyPropertyEntry = useCallback(
-        (propertyName: string, valueIdx: number, value: FlatEntitySinglePropertyTypes) => {
+        (propertyName: string, valueIdx: number, value: EntitySinglePropertyTypes) => {
             modifyPropertyEntry(entityId, propertyName, valueIdx, value)
         },
         [entityId, modifyPropertyEntry]

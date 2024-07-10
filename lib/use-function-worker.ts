@@ -2,6 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { FunctionWorker } from "@/lib/function-worker"
 import { useInterval } from "usehooks-ts"
 
+/**
+ * React hook to use a function worker. Supply this hook with the flat object of functions that the function worker script receives. Build the function worker script into a bundle and specify the bundle path as scriptPath.
+ * When the worker is not mounted, the function will be run locally instead.
+ * @param functions Flat object of functions that the function worker can run (the same object that was passed to the function worker)
+ * @param scriptPath Path to the script of the function worker
+ */
 export function useFunctionWorker<T extends Record<string, (...args: any[]) => any>>(
     functions: T,
     scriptPath: string

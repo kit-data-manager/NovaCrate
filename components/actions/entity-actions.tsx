@@ -13,7 +13,7 @@ export default function EntityActions() {
     return entity ? <Handler entity={entity} /> : null
 }
 
-function Handler({ entity }: { entity: IFlatEntity }) {
+function Handler({ entity }: { entity: IEntity }) {
     const { saveEntity } = useContext(CrateDataContext)
     const revertEntity = useEditorState.useRevertEntity()
     const addPropertyEntry = useEditorState.useAddPropertyEntry()

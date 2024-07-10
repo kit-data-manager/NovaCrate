@@ -1,26 +1,48 @@
+/**
+ * Represents a reference to another entity
+ */
 declare interface IReference {
     "@id": string
 }
 
+/**
+ * Allowed context types for the @context field of the ro-crate-metadata.json
+ */
 declare type CrateContextType =
     | string
     | Record<string, string>
     | (string | Record<string, string>)[]
 
-declare type FlatEntityPropertyTypes = string | IReference | (string | IReference)[]
-declare type FlatEntitySinglePropertyTypes = string | IReference
+/**
+ * Possible values of a property of an entity. Can be a string, a reference or an array containing both
+ */
+declare type EntityPropertyTypes = string | IReference | (string | IReference)[]
 
-declare interface IFlatEntity extends Record<string, FlatEntityPropertyTypes> {
+/**
+ * Possible values of a single entry of a property of an entity. Can't be an array.
+ */
+declare type EntitySinglePropertyTypes = string | IReference
+
+/**
+ * Interface for a valid entity
+ */
+declare interface IEntity extends Record<string, EntityPropertyTypes> {
     "@id": string
     "@type": string | string[]
 }
 
-declare interface IFlatEntityWithFile {
-    entity: IFlatEntity
+/**
+ * Utility interface to capture an entity together with a corresponding file
+ */
+declare interface IEntityWithFile {
+    entity: IEntity
     file: File
 }
 
+/**
+ * Interface for a valid crate
+ */
 declare interface ICrate {
     "@context": CrateContextType
-    "@graph": IFlatEntity[]
+    "@graph": IEntity[]
 }

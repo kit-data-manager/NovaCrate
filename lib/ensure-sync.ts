@@ -4,7 +4,7 @@ import { Draft } from "immer"
 export function applyServerDifferences(
     crateData: ICrate,
     lastCrateData: ICrate | undefined,
-    newEntities: Draft<Map<string, IFlatEntity>>
+    newEntities: Draft<Map<string, IEntity>>
 ) {
     const { handleRemaining, handleRemoved, handleNew } = compareCrateGraphs(
         crateData["@graph"],
@@ -70,7 +70,7 @@ function compareRecords<A extends Record<string, unknown>, B extends Record<stri
     return { handleNew, handleRemoved, handleRemaining }
 }
 
-function compareEntities(newEntity: IFlatEntity, oldEntity: IFlatEntity) {
+function compareEntities(newEntity: IEntity, oldEntity: IEntity) {
     const { handleRemaining, handleRemoved, handleNew } = compareRecords(newEntity, oldEntity)
     const unchanged: string[] = []
     const changed: string[] = []
@@ -102,9 +102,9 @@ function compareEntities(newEntity: IFlatEntity, oldEntity: IFlatEntity) {
 }
 
 function compareCrateGraphs(newGraph: ICrate["@graph"], oldGraph: ICrate["@graph"]) {
-    const onlyNewEntities: IFlatEntity[] = []
-    const onlyRemovedEntities: IFlatEntity[] = []
-    const remaining: [IFlatEntity, IFlatEntity][] = []
+    const onlyNewEntities: IEntity[] = []
+    const onlyRemovedEntities: IEntity[] = []
+    const remaining: [IEntity, IEntity][] = []
 
     for (const entity of newGraph) {
         const old = oldGraph.find((e) => e["@id"] === entity["@id"])
@@ -121,15 +121,15 @@ function compareCrateGraphs(newGraph: ICrate["@graph"], oldGraph: ICrate["@graph
         }
     }
 
-    function handleNew(cb: (entity: IFlatEntity) => void) {
+    function handleNew(cb: (entity: IEntity) => void) {
         onlyNewEntities.forEach(cb)
     }
 
-    function handleRemoved(cb: (entity: IFlatEntity) => void) {
+    function handleRemoved(cb: (entity: IEntity) => void) {
         onlyRemovedEntities.forEach(cb)
     }
 
-    function handleRemaining(cb: (entities: [IFlatEntity, IFlatEntity]) => void) {
+    function handleRemaining(cb: (entities: [IEntity, IEntity]) => void) {
         remaining.forEach(cb)
     }
 

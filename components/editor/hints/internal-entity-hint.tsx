@@ -3,7 +3,7 @@ import { AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Wrench } from "lucide-react"
 import { Hint } from "@/components/hint"
 
-export function InternalEntityHint({ entity }: { entity: IFlatEntity }) {
+export function InternalEntityHint({ entity }: { entity: IEntity }) {
     if (isRoCrateMetadataEntity(entity)) {
         return (
             <Hint name="internal-entity" className="mt-8">

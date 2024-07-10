@@ -24,7 +24,7 @@ export function AddPropertyModal({
     onlyReferences = false
 }: {
     open: boolean
-    onPropertyAdd: (propertyName: string, values: FlatEntitySinglePropertyTypes) => void
+    onPropertyAdd: (propertyName: string, values: EntitySinglePropertyTypes) => void
     onOpenChange: (open: boolean) => void
     typeArray: string[]
     onlyReferences?: boolean

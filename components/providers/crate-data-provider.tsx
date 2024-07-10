@@ -21,15 +21,15 @@ export interface ICrateDataProvider {
     unsetCrateId(): void
     crateData?: ICrate
     crateDataIsLoading: boolean
-    saveEntity(entity: IFlatEntity): Promise<boolean>
-    saveAllEntities(entities: IFlatEntity[]): Promise<void>
-    createFileEntity(entity: IFlatEntity, file: File): Promise<boolean>
+    saveEntity(entity: IEntity): Promise<boolean>
+    saveAllEntities(entities: IEntity[]): Promise<void>
+    createFileEntity(entity: IEntity, file: File): Promise<boolean>
     createFolderEntity(
-        entity: IFlatEntity,
-        files: IFlatEntityWithFile[],
+        entity: IEntity,
+        files: IEntityWithFile[],
         progressCallback?: (current: number, max: number, errors: unknown[]) => void
     ): Promise<boolean>
-    deleteEntity(entity: IFlatEntity): Promise<boolean>
+    deleteEntity(entity: IEntity): Promise<boolean>
     addCustomContextPair(key: string, value: string): Promise<void>
     removeCustomContextPair(key: string): Promise<void>
     saveRoCrateMetadataJSON(json: string): Promise<void>
@@ -188,7 +188,7 @@ export function CrateDataProvider({
     }, [clearSaveError, crateId])
 
     const saveEntity = useCallback(
-        async (entityData: IFlatEntity, mutateNow: boolean = true) => {
+        async (entityData: IEntity, mutateNow: boolean = true) => {
             if (crateId) {
                 setIsSaving(true)
                 try {
@@ -264,7 +264,7 @@ export function CrateDataProvider({
     )
 
     const saveAllEntities = useCallback(
-        async (entities: IFlatEntity[]) => {
+        async (entities: IEntity[]) => {
             for (const entity of entities) {
                 await saveEntity(entity, false)
             }
@@ -277,7 +277,7 @@ export function CrateDataProvider({
     )
 
     const createFileEntity = useCallback(
-        async (entity: IFlatEntity, file: File) => {
+        async (entity: IEntity, file: File) => {
             if (crateId) {
                 setIsSaving(true)
                 try {
@@ -303,8 +303,8 @@ export function CrateDataProvider({
 
     const createFolderEntity = useCallback(
         async (
-            entity: IFlatEntity,
-            files: IFlatEntityWithFile[],
+            entity: IEntity,
+            files: IEntityWithFile[],
             progressCallback?: (current: number, max: number, errors: unknown[]) => void
         ) => {
             if (crateId) {
@@ -352,7 +352,7 @@ export function CrateDataProvider({
     )
 
     const deleteEntity = useCallback(
-        async (entityData: IFlatEntity) => {
+        async (entityData: IEntity) => {
             if (crateId) {
                 try {
                     const deleteResult = await serviceProvider.deleteEntity(crateId, entityData)

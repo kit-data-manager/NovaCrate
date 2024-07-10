@@ -11,7 +11,7 @@ import { Error } from "@/components/error"
 export interface SinglePropertyEditorProps {
     entityId: string
     propertyName: string
-    value: FlatEntitySinglePropertyTypes
+    value: EntitySinglePropertyTypes
     valueIndex: number
     propertyRange?: SlimClass[]
     onModifyProperty: PropertyEditorProps["onModifyPropertyEntry"]

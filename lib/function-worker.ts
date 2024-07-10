@@ -1,5 +1,8 @@
 const HEALTH_TEST_FN = "__healthTest__"
 
+/**
+ * Class to construct a function worker. Should be constructed in the main thread to hold the Web Worker.
+ */
 export class FunctionWorker<T extends Record<string, (...args: any[]) => any>> {
     private readonly functions: T
     private _worker: Worker | undefined
@@ -111,6 +114,10 @@ interface FunctionWorkerMessage {
     nonce: string
 }
 
+/**
+ * Utility to let a script work as a function worker. Should be used in a web worker script
+ * @param functions Functions that the worker can run (flat object containing functions)
+ */
 export function workAsFunctionWorker<T extends Record<string, (...args: any[]) => any>>(
     functions: T
 ) {

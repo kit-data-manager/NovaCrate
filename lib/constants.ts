@@ -1,3 +1,5 @@
+// Constants inferred from the RO-Crate Specification v1.1
+
 export const SCHEMA_ORG_TIME = "https://schema.org/Time"
 export const SCHEMA_ORG_DATE_TIME = "https://schema.org/DateTime"
 export const SCHEMA_ORG_DATE = "https://schema.org/Date"

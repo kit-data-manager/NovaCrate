@@ -45,7 +45,7 @@ function sortByID(a: EntityNodeHandle, b: EntityNodeHandle) {
     return a.id > b.id ? 1 : -1
 }
 
-function entitiesToGraph(entitiesMap: Map<string, IFlatEntity>): [Node[], Edge[]] {
+function entitiesToGraph(entitiesMap: Map<string, IEntity>): [Node[], Edge[]] {
     const entities = Array.from(entitiesMap.values())
     const nodes: Node[] = []
     const edges: Edge[] = []
@@ -117,7 +117,7 @@ function entitiesToGraph(entitiesMap: Map<string, IFlatEntity>): [Node[], Edge[]
     return [nodes, edges]
 }
 
-function propertyEntryExists(entity: IFlatEntity, propertyName: string, targetId: string) {
+function propertyEntryExists(entity: IEntity, propertyName: string, targetId: string) {
     if (propertyName in entity) {
         const prop = entity[propertyName]
         if (Array.isArray(prop)) {
@@ -192,7 +192,7 @@ export function EntityGraph() {
     }, [setAggregateProperties, setShowTextProperties])
 
     const handleAddPropertySelect = useCallback(
-        (source: IFlatEntity, target: IFlatEntity) => {
+        (source: IEntity, target: IEntity) => {
             return (propertyName: string) => {
                 if (propertyName in source) {
                     addPropertyEntry(source["@id"], propertyName, {

@@ -42,7 +42,7 @@ export interface IGlobalModalContext {
 
 export type AddPropertyModalCallback = (
     propertyName: string,
-    values: FlatEntitySinglePropertyTypes
+    values: EntitySinglePropertyTypes
 ) => void
 
 export const GlobalModalContext = createContext<IGlobalModalContext>({
@@ -224,7 +224,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     }, [])
 
     const onEntityCreated = useCallback(
-        (entity?: IFlatEntity) => {
+        (entity?: IEntity) => {
             setCreateEntityModalState({
                 open: false
             })
