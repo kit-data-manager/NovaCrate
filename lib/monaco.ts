@@ -3,6 +3,9 @@ import { Monaco } from "@monaco-editor/react"
 import { useTheme } from "next-themes"
 import type { editor } from "monaco-editor"
 
+/**
+ * Utility to apply desired settings to the monaco editor
+ */
 export function useHandleMonacoMount() {
     const theme = useTheme()
 

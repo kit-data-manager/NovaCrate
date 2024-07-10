@@ -22,54 +22,54 @@ export interface ICrateEditorContext {
 
     revertContext(): void
 
-    initialEntities: Map<string, IFlatEntity>
-    entities: Map<string, IFlatEntity>
+    initialEntities: Map<string, IEntity>
+    entities: Map<string, IEntity>
 
-    setInitialEntities(data: Map<string, IFlatEntity>): void
-    setEntities(data: Map<string, IFlatEntity>): void
+    setInitialEntities(data: Map<string, IEntity>): void
+    setEntities(data: Map<string, IEntity>): void
 
-    getEntities(): Map<string, IFlatEntity>
+    getEntities(): Map<string, IEntity>
     getEntitiesChangelist(): Map<string, Diff>
-    getChangedEntities(): IFlatEntity[]
+    getChangedEntities(): IEntity[]
     getHasUnsavedChanges(): boolean
     addEntity(
         entityId: string,
         types: string[],
-        properties?: Record<string, FlatEntityPropertyTypes>,
+        properties?: Record<string, EntityPropertyTypes>,
         autoReference?: AutoReference
-    ): IFlatEntity | undefined
+    ): IEntity | undefined
     removeEntity(entityId: string): void
-    addProperty(entityId: string, propertyName: string, value?: FlatEntityPropertyTypes): void
+    addProperty(entityId: string, propertyName: string, value?: EntityPropertyTypes): void
     addPropertyEntry(
         entityId: string,
         propertyName: string,
-        typeOrValue: PropertyEditorTypes | FlatEntitySinglePropertyTypes
+        typeOrValue: PropertyEditorTypes | EntitySinglePropertyTypes
     ): void
     setPropertyValue(
         entityId: string,
         propertyName: string,
-        value: FlatEntitySinglePropertyTypes,
+        value: EntitySinglePropertyTypes,
         valueIdx?: number
     ): void
     modifyPropertyEntry(
         entityId: string,
         propertyName: string,
         valueIdx: number,
-        value: FlatEntitySinglePropertyTypes
+        value: EntitySinglePropertyTypes
     ): void
     removePropertyEntry(
         entityId: string,
         propertyName: string,
-        valueOrValueIdx: number | FlatEntitySinglePropertyTypes
+        valueOrValueIdx: number | EntitySinglePropertyTypes
     ): void
     revertEntity(entityId: string): void
     revertAllEntities(): void
 }
 
 function setPropertyValue(
-    entity: Draft<IFlatEntity>,
+    entity: Draft<IEntity>,
     propertyName: string,
-    value: FlatEntitySinglePropertyTypes,
+    value: EntitySinglePropertyTypes,
     valueIdx?: number
 ) {
     if (propertyName in entity) {
@@ -78,7 +78,7 @@ function setPropertyValue(
             prop[valueIdx ?? prop.length] = value
         } else if (valueIdx === undefined || valueIdx > 0) {
             entity[propertyName] = [prop]
-            ;(entity[propertyName] as FlatEntitySinglePropertyTypes[])[valueIdx ?? 1] = value
+            ;(entity[propertyName] as EntitySinglePropertyTypes[])[valueIdx ?? 1] = value
         } else {
             entity[propertyName] = value
         }
@@ -92,8 +92,8 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
         immer<ICrateEditorContext>((setState, getState) => ({
             initialCrateContext: new CrateContext([]),
             crateContext: new CrateContext([]),
-            initialEntities: new Map<string, IFlatEntity>(),
-            entities: new Map<string, IFlatEntity>(),
+            initialEntities: new Map<string, IEntity>(),
+            entities: new Map<string, IEntity>(),
 
             setCrateContext(crateContext: CrateContextType) {
                 setState((state) => {
@@ -113,17 +113,17 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                 })
             },
 
-            getEntities(): Map<string, IFlatEntity> {
+            getEntities(): Map<string, IEntity> {
                 return getState().entities
             },
 
-            setEntities(data: Map<string, IFlatEntity>) {
+            setEntities(data: Map<string, IEntity>) {
                 setState((state) => {
                     state.entities = data
                 })
             },
 
-            setInitialEntities(data: Map<string, IFlatEntity>) {
+            setInitialEntities(data: Map<string, IEntity>) {
                 setState((state) => {
                     state.initialEntities = data
                 })
@@ -146,7 +146,7 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                 return changelist
             },
 
-            getChangedEntities(): IFlatEntity[] {
+            getChangedEntities(): IEntity[] {
                 const result = []
                 for (const [id, diff] of getState().getEntitiesChangelist().entries()) {
                     if (diff !== Diff.None) {
@@ -157,7 +157,7 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                 const entities = getState().getEntities()
                 return result
                     .map((id) => entities.get(id))
-                    .filter((e) => e !== undefined) as IFlatEntity[]
+                    .filter((e) => e !== undefined) as IEntity[]
             },
 
             getHasUnsavedChanges(): boolean {
@@ -171,9 +171,9 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
             addEntity(
                 entityId: string,
                 types: string[],
-                properties?: Record<string, FlatEntityPropertyTypes>,
+                properties?: Record<string, EntityPropertyTypes>,
                 autoReference?: AutoReference
-            ): IFlatEntity | undefined {
+            ): IEntity | undefined {
                 if (!getState().entities.has(entityId)) {
                     const entity = {
                         ...properties,
@@ -207,7 +207,7 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                 })
             },
 
-            addProperty(entityId: string, propertyName: string, value?: FlatEntityPropertyTypes) {
+            addProperty(entityId: string, propertyName: string, value?: EntityPropertyTypes) {
                 const target = getState().entities.get(entityId)
                 if (target && !(propertyName in target)) {
                     setState((state) => {
@@ -219,7 +219,7 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
             addPropertyEntry(
                 entityId: string,
                 propertyName: string,
-                typeOrValue: PropertyEditorTypes | FlatEntitySinglePropertyTypes
+                typeOrValue: PropertyEditorTypes | EntitySinglePropertyTypes
             ) {
                 if (getState().entities.get(entityId)) {
                     setState((state) => {
@@ -237,7 +237,7 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
             setPropertyValue(
                 entityId: string,
                 propertyName: string,
-                value: FlatEntitySinglePropertyTypes,
+                value: EntitySinglePropertyTypes,
                 valueIdx?: number
             ) {
                 if (getState().entities.get(entityId)) {
@@ -256,7 +256,7 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                 entityId: string,
                 propertyName: string,
                 valueIdx: number,
-                value: FlatEntitySinglePropertyTypes
+                value: EntitySinglePropertyTypes
             ) {
                 if (getState().entities.get(entityId)) {
                     setState((state) => {
@@ -273,7 +273,7 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
             removePropertyEntry(
                 entityId: string,
                 propertyName: string,
-                valueOrValueIdx: number | FlatEntitySinglePropertyTypes
+                valueOrValueIdx: number | EntitySinglePropertyTypes
             ) {
                 if (
                     getState().entities.get(entityId) &&

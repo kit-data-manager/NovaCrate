@@ -14,7 +14,7 @@ export function CreateProviders({
 }: {
     selectedType: string
     backToTypeSelect: () => void
-    onProviderCreate: (entity: IFlatEntity | string) => void
+    onProviderCreate: (entity: IEntity | string) => void
     autoReference?: AutoReference
     fallback: React.ReactNode
 }) {

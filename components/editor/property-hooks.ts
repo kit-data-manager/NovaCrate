@@ -16,7 +16,7 @@ import { referenceCheck } from "@/lib/utils"
 
 export function usePropertyCanBe(
     _propertyRange?: SlimClass[] | string[],
-    value?: FlatEntitySinglePropertyTypes
+    value?: EntitySinglePropertyTypes
 ) {
     const propertyRange = useMemo(() => {
         return _propertyRange?.map((p) => (typeof p === "object" ? p["@id"] : p))
@@ -119,7 +119,7 @@ export function usePropertyCanBe(
 }
 
 function textValueGuard(
-    value: FlatEntitySinglePropertyTypes | undefined,
+    value: EntitySinglePropertyTypes | undefined,
     guardedFn: (value: string) => boolean,
     fallback: boolean
 ) {

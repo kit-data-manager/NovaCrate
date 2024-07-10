@@ -26,7 +26,7 @@ export function EntryContextMenu({
     goToEntity,
     blankSpace
 }: {
-    entity?: IFlatEntity
+    entity?: IEntity
     filePath?: string
     fileName?: string
     folder?: boolean

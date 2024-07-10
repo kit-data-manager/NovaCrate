@@ -11,14 +11,26 @@ import {
     SCHEMA_ORG_TIME
 } from "./constants"
 
+/**
+ * Utility from shadcn/ui to merge multiple className strings into one
+ * @param inputs className strings
+ */
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
 }
 
-export function isReference(value: FlatEntitySinglePropertyTypes): value is IReference {
+/**
+ * Checks if the supplied value is a reference. A valid reference is an object that contains the "@id" property
+ * @param value
+ */
+export function isReference(value: EntitySinglePropertyTypes): value is IReference {
     return typeof value === "object" && "@id" in value
 }
 
+/**
+ * Convert a value to an array. If an array is supplied as the input, it will be returned without changes.
+ * @param input
+ */
 export function toArray<T>(input: T | T[]): T[] {
     if (Array.isArray(input)) {
         return input
@@ -27,7 +39,12 @@ export function toArray<T>(input: T | T[]): T[] {
     }
 }
 
-export function getEntityDisplayName(entity: IFlatEntity, fallback: boolean = true) {
+/**
+ * Compute the display name for the supplied entity. Will first try the name property, then the givenName and familyName properties. Lastly, it will return the @id if fallback is true. Will return an empty string otherwise.
+ * @param entity Entity to retrieve the name for
+ * @param fallback If true, will return the @id of the entity if no name could be found.
+ */
+export function getEntityDisplayName(entity: IEntity, fallback: boolean = true) {
     if (entity.name) {
         return toArray(entity.name)
             .map((s) => (typeof s === "string" ? s.trim() : s))
@@ -44,6 +61,10 @@ export function getEntityDisplayName(entity: IFlatEntity, fallback: boolean = tr
     return ""
 }
 
+/**
+ * Check if the string represents a valid URL
+ * @param string String to check
+ */
 function isValidUrl(string: string) {
     try {
         new URL(string)
@@ -53,38 +74,72 @@ function isValidUrl(string: string) {
     }
 }
 
-export function isRootEntity(entity: IFlatEntity) {
+/**
+ * Check if this entity is the crate root
+ * @param entity
+ */
+export function isRootEntity(entity: IEntity) {
     return entity["@id"] === "./"
 }
 
-export function isRoCrateMetadataEntity(entity: IFlatEntity) {
+/**
+ * Check if this entity is the meta-entity for the ro-crate-metadata.json file
+ * @param entity
+ */
+export function isRoCrateMetadataEntity(entity: IEntity) {
     return entity["@id"] === "ro-crate-metadata.json"
 }
 
-export function isDataEntity(entity: IFlatEntity) {
+/**
+ * Check if this is a data entity
+ * @param entity
+ */
+export function isDataEntity(entity: IEntity) {
     return isFileDataEntity(entity) || isFolderDataEntity(entity)
 }
 
-export function isFileDataEntity(entity: IFlatEntity) {
+/**
+ * Check if this is a data entity that represents a file. Checks if the type of this entity includes File or MediaObject
+ * @param entity
+ */
+export function isFileDataEntity(entity: IEntity) {
     return (
         toArray(entity["@type"]).includes("File") ||
         toArray(entity["@type"]).includes("MediaObject")
     )
 }
 
-export function canHavePreview(entity: IFlatEntity) {
+/**
+ * Checks if this entity can be previewed. Entities that are file entities and do not have a URL-id are assumed to be previewable
+ * @param entity
+ */
+export function canHavePreview(entity: IEntity) {
     return isFileDataEntity(entity) && !entity["@id"].startsWith("#") && !isValidUrl(entity["@id"])
 }
 
-export function isFolderDataEntity(entity: IFlatEntity) {
+/**
+ * Check if the supplied entity is a data entity that represents a folder (dataset). Will check for the Dataset type.
+ * @param entity
+ */
+export function isFolderDataEntity(entity: IEntity) {
     return toArray(entity["@type"]).includes("Dataset")
 }
 
-export function isContextualEntity(entity: IFlatEntity) {
+/**
+ * Check if the supplied entity is a contextual entity. An entity is a contextual entity if it is not a data entity and not the crate root.
+ * @param entity
+ */
+export function isContextualEntity(entity: IEntity) {
     return !isRootEntity(entity) && !isDataEntity(entity)
 }
 
-export function isEntityEqual(a: IFlatEntity, b: IFlatEntity) {
+/**
+ * Check if two entities are equal. Will deeply compare their properties
+ * @param a
+ * @param b
+ * @returns true if both entities should be considered equal
+ */
+export function isEntityEqual(a: IEntity, b: IEntity) {
     const entriesA = Object.entries(a)
     const entriesB = Object.entries(b)
     if (entriesA.length !== entriesB.length) return false
@@ -101,10 +156,13 @@ export function isEntityEqual(a: IFlatEntity, b: IFlatEntity) {
     return true
 }
 
-export function propertyHasChanged(
-    _value: FlatEntityPropertyTypes,
-    _oldValue: FlatEntityPropertyTypes
-) {
+/**
+ * Check if two property values are equal.
+ * @param _value
+ * @param _oldValue
+ * @returns true when the properties are *not* equal
+ */
+export function propertyHasChanged(_value: EntityPropertyTypes, _oldValue: EntityPropertyTypes) {
     const value = toArray(_value).slice()
     const oldValue = toArray(_oldValue).slice()
 
@@ -128,27 +186,57 @@ export function propertyHasChanged(
     )
 }
 
-export function camelCaseReadable(propertyName: string) {
-    if (propertyName === "@id") return "Identifier"
-    if (propertyName === "@type") return "Type"
-    const split = propertyName.replace(/([A-Z][a-z])/g, " $1")
+/**
+ * Turns a camel-case string into a human-readable one
+ * @param str Camel-case string
+ * @example
+ * someExample
+ * -> Some Example
+ */
+export function camelCaseReadable(str: string) {
+    if (str === "@id") return "Identifier"
+    if (str === "@type") return "Type"
+    const split = str.replace(/([A-Z][a-z])/g, " $1")
     return split.charAt(0).toUpperCase() + split.slice(1)
 }
 
-export function encodeFilePath(fileID: string) {
-    return fileID.replaceAll("\\", "/").split("/").map(encodeURIComponent).join("/")
+/**
+ * Encode a file path for safe use
+ * @param filePath Path of the file
+ */
+export function encodeFilePath(filePath: string) {
+    return filePath.replaceAll("\\", "/").split("/").map(encodeURIComponent).join("/")
 }
 
+/**
+ * Return the name of a file without the ending
+ * @example
+ * file.docx
+ * -> file
+ * @param fileName
+ */
 export function fileNameWithoutEnding(fileName: string) {
     if (fileName.match(/\.[A-z0-9]+$/)) {
         return fileName.replace(/\.[A-z0-9]+$/, "")
     } else return fileName
 }
 
+/**
+ * The most primitive of operations as a function (for use in reducers for example)
+ * @param a
+ * @param b
+ */
 export function sum(a: number, b: number) {
     return a + b
 }
 
+/**
+ * Get the folder portion of a file path
+ * @example
+ * /some/long/path/file.txt
+ * -> /some/long/path/
+ * @param filePath
+ */
 export function getFolderPath(filePath: string) {
     const split = filePath.split("/")
     if (split.length === 0) return ""
@@ -156,6 +244,11 @@ export function getFolderPath(filePath: string) {
     else return split.slice(0, split.length - 1).join("/") + "/"
 }
 
+/**
+ * Convert a path into a valid path (without empty parts and with an ending slash if needed)
+ * @param path Path to convert
+ * @param endWithSlash Whether an ending slash should be added to indicate a folder
+ */
 export function asValidPath(path: string, endWithSlash?: boolean) {
     const filtered = path
         .split("/")
@@ -164,10 +257,21 @@ export function asValidPath(path: string, endWithSlash?: boolean) {
     return endWithSlash ? filtered + "/" : filtered
 }
 
+/**
+ * Check if the supplied value is not present in the array of
+ * @param value Value to check
+ * @param of Array of values, of which `value` should not be one
+ * @returns true if `value` is not found in `of`
+ */
 export function isNoneOf(value: string, of: string[]) {
     return of.find((s) => s === value) === undefined
 }
 
+/**
+ * Check if a given property type range allows for its value to be a reference.
+ * A property can have a reference as its value if at least one of its allowed types is not a primitive datatype
+ * @param propertyRange
+ */
 export function referenceCheck(propertyRange?: string[]) {
     return propertyRange
         ? propertyRange.length === 0 ||
@@ -189,6 +293,9 @@ export function referenceCheck(propertyRange?: string[]) {
         : undefined
 }
 
+/**
+ * Indicates the type of difference between two things.
+ */
 export enum Diff {
     None,
     Changed,

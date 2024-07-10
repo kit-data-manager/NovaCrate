@@ -6,7 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const entityBrowserItemIconBaseCN = "border px-2 py-1 text-sm"
 
-export function EntityBadge(props: { entity?: IFlatEntity; size?: "md" | "lg" | "sm" }) {
+export function EntityBadge(props: { entity?: IEntity; size?: "md" | "lg" | "sm" }) {
     const sizeMod = useMemo(() => {
         return props.size == "lg" ? " rounded-lg" : props.size == "sm" ? " " : ""
     }, [props.size])

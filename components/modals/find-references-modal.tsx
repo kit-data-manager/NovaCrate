@@ -19,7 +19,7 @@ import {
 import { EntityIcon } from "@/components/entity-icon"
 import { useAsync } from "@/lib/hooks"
 
-interface ReferencingEntity extends IFlatEntity {
+interface ReferencingEntity extends IEntity {
     "@propertyNameReadable": string
     "@propertyName": string
 }
@@ -29,7 +29,7 @@ const FindReferencesModalEntry = memo(function AddPropertyModalEntry({
     onSelect
 }: {
     entity: ReferencingEntity
-    onSelect: (entity: IFlatEntity, propertyName: string) => void
+    onSelect: (entity: IEntity, propertyName: string) => void
 }) {
     const readableName = useMemo(() => {
         return getEntityDisplayName(entity)
@@ -88,7 +88,7 @@ export function FindReferencesModalInner({
     const { openTab, focusProperty } = useContext(EntityEditorTabsContext)
 
     const onSelect = useCallback(
-        (entity: IFlatEntity, propertyName: string) => {
+        (entity: IEntity, propertyName: string) => {
             onOpenChange(false)
             openTab(createEntityEditorTab(entity), true)
             focusProperty(entity["@id"], propertyName)
@@ -97,11 +97,11 @@ export function FindReferencesModalInner({
     )
 
     const referencesResolver = useCallback(
-        async (entities: Map<string, IFlatEntity>) => {
+        async (entities: Map<string, IEntity>) => {
             const result = new Set<ReferencingEntity>()
             for (const [_, entity] of entities) {
                 for (const [propertyName, prop] of Object.entries(entity)) {
-                    function handleEntry(prop: FlatEntitySinglePropertyTypes, index?: number) {
+                    function handleEntry(prop: EntitySinglePropertyTypes, index?: number) {
                         if (typeof prop === "object" && "@id" in prop && prop["@id"] === entityId) {
                             result.add({
                                 ...entity,

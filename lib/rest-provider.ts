@@ -73,7 +73,7 @@ export class RestProvider implements CrateServiceProvider {
         }
     }
 
-    createEntity(crateId: string, entityData: IFlatEntity): Promise<boolean> {
+    createEntity(crateId: string, entityData: IEntity): Promise<boolean> {
         return this.updateEntity(crateId, entityData, true)
     }
 
@@ -109,7 +109,7 @@ export class RestProvider implements CrateServiceProvider {
         }
     }
 
-    async createFileEntity(crateId: string, entityData: IFlatEntity, file: File) {
+    async createFileEntity(crateId: string, entityData: IEntity, file: File) {
         const body = new FormData()
 
         body.append(
@@ -140,7 +140,7 @@ export class RestProvider implements CrateServiceProvider {
         }
     }
 
-    async deleteEntity(crateId: string, entityData: IFlatEntity): Promise<boolean> {
+    async deleteEntity(crateId: string, entityData: IEntity): Promise<boolean> {
         const request = await fetch(this.getEntityRoute(crateId, entityData), {
             method: "DELETE"
         })
@@ -212,7 +212,7 @@ export class RestProvider implements CrateServiceProvider {
 
     async updateEntity(
         crateId: string,
-        entityData: IFlatEntity,
+        entityData: IEntity,
         create: boolean = false
     ): Promise<boolean> {
         if (isFileDataEntity(entityData)) {
@@ -310,7 +310,7 @@ export class RestProvider implements CrateServiceProvider {
         }
     }
 
-    private getEntityRoutePart(entityData: IFlatEntity) {
+    private getEntityRoutePart(entityData: IEntity) {
         return isRootEntity(entityData)
             ? "root"
             : isContextualEntity(entityData)
@@ -320,7 +320,7 @@ export class RestProvider implements CrateServiceProvider {
                 : "data/files"
     }
 
-    private getEntityRoute(crateId: string, entityData: IFlatEntity) {
+    private getEntityRoute(crateId: string, entityData: IEntity) {
         const part = this.getEntityRoutePart(entityData)
         return `http://localhost:8080/crates/${encodeURIComponent(crateId)}/entities/${part}/${isRootEntity(entityData) ? "" : encodeURIComponent(entityData["@id"])}`
     }

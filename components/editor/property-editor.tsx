@@ -24,7 +24,7 @@ import { Pagination } from "@/components/pagination"
 
 export interface EntityEditorProperty {
     propertyName: string
-    values: FlatEntitySinglePropertyTypes[]
+    values: EntitySinglePropertyTypes[]
     deleted: boolean
 }
 
@@ -38,8 +38,8 @@ export function sortByPropertyName(a: string, b: string) {
 
 // TODO maybe get rid of this, causes problems with re-rendering
 export function mapEntityToProperties(
-    data: IFlatEntity,
-    initialData?: IFlatEntity
+    data: IEntity,
+    initialData?: IEntity
 ): EntityEditorProperty[] {
     const deletedProperties: EntityEditorProperty[] = Object.keys(initialData || {})
         .filter((key) => !(key in data))
@@ -48,7 +48,7 @@ export function mapEntityToProperties(
     return Object.keys(data)
         .map((key) => {
             let value = data[key]
-            let arrValue: FlatEntitySinglePropertyTypes[]
+            let arrValue: EntitySinglePropertyTypes[]
             if (!Array.isArray(value)) {
                 arrValue = [value]
             } else {
@@ -66,10 +66,10 @@ export function mapEntityToProperties(
         .sort((a, b) => sortByPropertyName(a.propertyName, b.propertyName))
 }
 
-export function mapPropertiesToEntity(data: EntityEditorProperty[]): IFlatEntity {
-    const result: Record<string, FlatEntityPropertyTypes> = {}
+export function mapPropertiesToEntity(data: EntityEditorProperty[]): IEntity {
+    const result: Record<string, EntityPropertyTypes> = {}
 
-    function autoUnpack(value: FlatEntitySinglePropertyTypes[]) {
+    function autoUnpack(value: EntitySinglePropertyTypes[]) {
         if (value.length === 1) return value[0]
         else return value
     }
@@ -82,7 +82,7 @@ export function mapPropertiesToEntity(data: EntityEditorProperty[]): IFlatEntity
     if (!("@id" in result)) throw "Mapping properties to entity failed, no @id property"
     if (!("@type" in result)) throw "Mapping properties to entity failed, no @id property"
 
-    return result as IFlatEntity
+    return result as IEntity
 }
 
 export enum PropertyEditorTypes {
@@ -95,9 +95,7 @@ export enum PropertyEditorTypes {
     Reference
 }
 
-export function getPropertyTypeDefaultValue(
-    type: PropertyEditorTypes
-): FlatEntitySinglePropertyTypes {
+export function getPropertyTypeDefaultValue(type: PropertyEditorTypes): EntitySinglePropertyTypes {
     if (type === PropertyEditorTypes.Text) return ""
     if (type === PropertyEditorTypes.Reference) return { "@id": "" }
     if (type === PropertyEditorTypes.Date) return getDefaultDate()
@@ -114,7 +112,7 @@ export interface PropertyEditorProps {
     onModifyPropertyEntry: (
         propertyName: string,
         valueIdx: number,
-        value: FlatEntitySinglePropertyTypes
+        value: EntitySinglePropertyTypes
     ) => void
     onAddPropertyEntry: (propertyName: string, type: PropertyEditorTypes) => void
     onRemovePropertyEntry: (propertyName: string, index: number) => void

@@ -14,7 +14,7 @@ function isNonEmptyPart(part: string) {
     return part !== "" && part !== "."
 }
 
-function entityDisplayNameFileExplorer(entity: IFlatEntity) {
+function entityDisplayNameFileExplorer(entity: IEntity) {
     const parts = entity["@id"].split("/").filter(isNonEmptyPart)
     return parts[parts.length - 1] || entity["@id"]
 }

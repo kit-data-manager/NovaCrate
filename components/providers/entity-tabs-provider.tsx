@@ -8,7 +8,7 @@ export interface IEntityEditorTab {
     entityId: string
 }
 
-export function createEntityEditorTab(entity: IFlatEntity): IEntityEditorTab {
+export function createEntityEditorTab(entity: IEntity): IEntityEditorTab {
     return {
         entityId: entity["@id"]
     }

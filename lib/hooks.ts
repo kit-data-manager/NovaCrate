@@ -15,6 +15,10 @@ import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 
 const MAX_LIST_LENGTH = 100
 
+/**
+ * Utility hook to provide easy access to recent crates (stored in local storage)
+ * Contains the IDs of recent crates
+ */
 export function useRecentCrates() {
     const [recentCrates, setRecentCrates] = useState<string[] | undefined>(undefined)
 
@@ -78,6 +82,12 @@ export function useRecentCrates() {
     return { recentCrates, addRecentCrate, removeFromRecentCrates }
 }
 
+/**
+ * Compare a value or an array of values using Object.is
+ * @param data
+ * @param oldData
+ * @returns true when data and oldData are equal, or if each of their indexes is equal (in case of an array)
+ */
 function isEqual<I>(data: I | I[], oldData: I | I[]) {
     if (Array.isArray(data) && Array.isArray(oldData)) {
         if (data.length !== oldData.length) return false
@@ -90,6 +100,13 @@ function isEqual<I>(data: I | I[], oldData: I | I[]) {
     }
 }
 
+/**
+ * Wrapper to evaluate an asynchronous function and provide its output
+ * Will automatically rerun the function when the input changes.
+ * When input is null, the resolver will not be executed
+ * @param input Input for the resolver. Will trigger rerun when changed. When set to null, the resolver will not be executed
+ * @param resolver Asynchronous function to run with the input
+ */
 export function useAsync<I, O>(
     input: I | null,
     resolver: (input: I) => Promise<O>
@@ -139,6 +156,11 @@ export function useAsync<I, O>(
     }
 }
 
+/**
+ * Utility for the create-entity-modal
+ * Tries to guess an entity ID from the entity name
+ * @param name Name of the entity
+ */
 export function useAutoId(name: string) {
     const entities = useEditorState.useEntities()
 
@@ -154,13 +176,17 @@ export function useAutoId(name: string) {
     }, [entities, name])
 }
 
-export function useGoToEntityEditor(entity?: IFlatEntity) {
+/**
+ * Returns a function that redirects the user to the entities page and opens/focuses a tab for the supplied entity
+ * @param entity
+ */
+export function useGoToEntityEditor(entity?: IEntity) {
     const pathname = usePathname()
     const router = useRouter()
     const { openTab } = useContext(EntityEditorTabsContext)
 
     return useCallback(
-        (_entity?: IFlatEntity) => {
+        (_entity?: IEntity) => {
             if (_entity || entity) {
                 openTab(createEntityEditorTab(_entity || entity!), true)
             }
@@ -176,6 +202,9 @@ export function useGoToEntityEditor(entity?: IFlatEntity) {
     )
 }
 
+/**
+ * Returns a function that redirects the user to the graph
+ */
 export function useGoToGraph() {
     const pathname = usePathname()
     const router = useRouter()
@@ -190,13 +219,17 @@ export function useGoToGraph() {
     }, [pathname, router])
 }
 
-export function useGoToFileExplorer(entity?: IFlatEntity) {
+/**
+ * Returns a function that redirects the user to the file explorer page and opens the preview for the supplied entity
+ * @param entity
+ */
+export function useGoToFileExplorer(entity?: IEntity) {
     const pathname = usePathname()
     const router = useRouter()
     const setPreviewingFilePath = useFileExplorerState((store) => store.setPreviewingFilePath)
 
     return useCallback(
-        (_entity?: IFlatEntity) => {
+        (_entity?: IEntity) => {
             if (_entity || entity) {
                 setPreviewingFilePath(_entity?.["@id"] || entity?.["@id"]!)
             }
@@ -212,6 +245,10 @@ export function useGoToFileExplorer(entity?: IFlatEntity) {
     )
 }
 
+/**
+ * Returns a function that redirects the user to the specified page
+ * @param page Name of the page to redirect to (e.g. "entites")
+ */
 export function useGoToPage(page: string) {
     const pathname = usePathname()
     const router = useRouter()
@@ -228,11 +265,20 @@ export function useGoToPage(page: string) {
     }, [page, pathname, router])
 }
 
+/**
+ * Returns the name of the current page
+ * @example
+ * // User is on /editor/full/entities
+ * useCurrentPageName() // returns "entities"
+ */
 export function useCurrentPageName() {
     const pathname = usePathname()
     return pathname.split("/")[3]
 }
 
+/**
+ * Returns a function that redirects the user to the main menu
+ */
 export function useGoToMainMenu() {
     const router = useRouter()
 
@@ -241,6 +287,9 @@ export function useGoToMainMenu() {
     }, [router])
 }
 
+/**
+ * Wrapper to call CrateDataContext.saveAllEntities with only entities that have changes
+ */
 export function useSaveAllEntities() {
     const { saveAllEntities } = useContext(CrateDataContext)
     const getChangedEntities = useEditorState.useGetChangedEntities()
@@ -250,6 +299,9 @@ export function useSaveAllEntities() {
     }, [getChangedEntities, saveAllEntities])
 }
 
+/**
+ * Returns the name of the current crate
+ */
 export function useCrateName() {
     const crate = useContext(CrateDataContext)
 
@@ -260,21 +312,31 @@ export function useCrateName() {
 
 /**
  * This hook tries to find the currently active entity
- * Works in Entities page and Graph page
+ * Works in Entities page, File Explorer page and Graph page
  */
 export function useCurrentEntity() {
     const page = useCurrentPageName()
     const { activeTabEntityID } = useContext(EntityEditorTabsContext)
     const activeNodeEntityID = useGraphState((store) => store.selectedEntityID)
+    const fileExplorerFilePath = useFileExplorerState((store) => store.previewingFilePath)
     return useEditorState((store) => {
         if (page === "entities") {
             return store.entities.get(activeTabEntityID)
+        } else if (page === "file-explorer") {
+            return store.entities.get(fileExplorerFilePath)
         } else if (page === "graph" && activeNodeEntityID) {
             return store.entities.get(activeNodeEntityID)
         } else return undefined
     })
 }
 
+/**
+ * This hook registers an action with the Actions Registry
+ * @param id Unique ID of the action
+ * @param name Display name of the action
+ * @param fn Function for the action. Will be called when the action is executed
+ * @param options Options for this action
+ */
 export function useRegisterAction(
     id: string,
     name: string,
@@ -304,10 +366,18 @@ export function useRegisterAction(
     }, [action, registerAction, unregisterAction])
 }
 
+/**
+ * Get an action from the Action Registry via the action id
+ * @param id ID of the action
+ */
 export function useAction(id: string) {
     return useActionsStore((store) => store.actions.get(id) || notFoundAction(id))
 }
 
+/**
+ * Helper hook to determine if the Action Registry is ready yet. The Action Registry is always safe to use, but while
+ * it is not ready, yet it may miss some actions
+ */
 export function useActionsReady() {
     return useActionsStore((store) => store.isReady())
 }

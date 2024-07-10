@@ -22,7 +22,7 @@ function SelectReferenceModalEntry({
     entity,
     onSelect
 }: {
-    entity: IFlatEntity
+    entity: IEntity
     onSelect: (ref: IReference) => void
 }) {
     const displayName = useMemo(() => {

@@ -2,14 +2,19 @@
 
 New easily usable research object crate editor.
 
-## Web App
+[[_TOC_]]
+
+## Installation
 
 ### Prerequisites
 
 - Make sure [ro-crate-rest](https://gitlab.kit.edu/kit/scc/dem/dem-students/ChristopherR/implementation/ro-crate-rest) is running
-- Node.js >= 20
+- Install Node.js >= 20
+- Close the NovaCrate repository
 
 ### Updating dependencies
+
+This step might be necessary after fetching new commits.
 
 ```bash
 npm install
@@ -18,6 +23,8 @@ npm install
 
 ### Development
 
+This command starts NovaCrate in development mode. This enabled hot reload, but also increases response time
+
 ```bash
 npm run dev
 ```
@@ -25,6 +32,8 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ### Building
+
+This command builds NovaCrate in the `out` folder.
 
 ```bash
 npm run build
@@ -36,24 +45,13 @@ The website can then be found in the `out` folder. Use any web server for viewin
 npx serve@latest out
 ```
 
-## Desktop App
+## Structure
 
-A simple [tauri](https://tauri.app/) wrapper is used to produce a desktop version. **Optional**, not required for the web app.
+Most of the structure of the editor and many implementation and design details are outlined in the bachelors thesis.
 
-### Prerequisites
- 
-- All Prerequisites of the Web App
-- Rust Toolchain
-- `tauri-cli` installed via cargo
+To summarize: This is a Next.js app. Pages are located in /app, components in /components and anything else is probably in /lib
 
-### Development
 
-```bash
-cd src-tauri && cargo tauri dev
-```
+## Tauri Integration
 
-### Build
-
-```bash
-cd src-tauri && cargo tauri build
-```
+Initial tests with tauri, to turn NovaCrate into a desktop app, were successful. Sources can be found in the src-tauri folder.

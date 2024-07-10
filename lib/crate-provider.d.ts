@@ -67,7 +67,7 @@ declare interface CrateServiceProvider {
      * @param entityData Changed data of the entity. Unchanged keys can be omitted. @id must be present. Keys that must be removed will be set to null
      * @returns Promise - resolves on success
      */
-    updateEntity(crateId: string, entityData: IFlatEntity): Promise<boolean>
+    updateEntity(crateId: string, entityData: IEntity): Promise<boolean>
 
     /**
      * Add a new entity to the crate. Should fail when an entity with the given ID already
@@ -76,7 +76,7 @@ declare interface CrateServiceProvider {
      * @param entityData Data of the new entity
      * @returns Promise - resolves on success
      */
-    createEntity(crateId: string, entityData: IFlatEntity): Promise<boolean>
+    createEntity(crateId: string, entityData: IEntity): Promise<boolean>
 
     /**
      * Import an entity from orcid.org.
@@ -94,7 +94,7 @@ declare interface CrateServiceProvider {
      */
     importOrganizationFromRor(crateId: string, url: string): Promise<string>
 
-    createFileEntity(crateId: string, entityData: IFlatEntity, file: File): Promise<boolean>
+    createFileEntity(crateId: string, entityData: IEntity, file: File): Promise<boolean>
 
     /**
      * Remove an entity from the crate and also remove all references. If this is a data entity, it will also remove
@@ -103,7 +103,7 @@ declare interface CrateServiceProvider {
      * @param entityData Data of the entity that should be deleted. Relevant are only @id and @type
      * @returns Promise - resolves on success
      */
-    deleteEntity(crateId: string, entityData: IFlatEntity): Promise<boolean>
+    deleteEntity(crateId: string, entityData: IEntity): Promise<boolean>
 
     /**
      * Get a complete list of file names in the crate archive

@@ -23,7 +23,7 @@ export function CreateEntityModal({
     basePath
 }: {
     open: boolean
-    onEntityCreated: (entity?: IFlatEntity) => void
+    onEntityCreated: (entity?: IEntity) => void
     onOpenChange: (open: boolean) => void
     restrictToClasses?: SlimClass[]
     autoReference?: AutoReference
@@ -83,7 +83,7 @@ export function CreateEntityModal({
     )
 
     const onProviderCreate = useCallback(
-        (entityOrId: IFlatEntity | string) => {
+        (entityOrId: IEntity | string) => {
             onEntityCreated(typeof entityOrId === "object" ? entityOrId : undefined)
             if (typeof entityOrId === "string") {
                 openTab({ entityId: entityOrId }, true)
