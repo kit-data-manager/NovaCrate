@@ -8,16 +8,13 @@ import {
     CommandList
 } from "@/components/ui/command"
 import { Skeleton } from "@/components/ui/skeleton"
-import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useState } from "react"
 import { camelCaseReadable, getEntityDisplayName } from "@/lib/utils"
 import { Error } from "@/components/error"
 import { useEditorState } from "@/lib/state/editor-state"
-import {
-    createEntityEditorTab,
-    EntityEditorTabsContext
-} from "@/components/providers/entity-tabs-provider"
+import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { EntityIcon } from "@/components/entity-icon"
-import { useAsync } from "@/lib/hooks"
+import { useAsync, useGoToEntityEditor } from "@/lib/hooks"
 
 interface ReferencingEntity extends IEntity {
     "@propertyNameReadable": string
@@ -85,15 +82,18 @@ export function FindReferencesModalInner({
     entityId: string
 }) {
     const entities = useEditorState.useEntities()
-    const { openTab, focusProperty } = useContext(EntityEditorTabsContext)
+    const goToEntityEditor = useGoToEntityEditor()
+    const openTab = useEntityEditorTabs((store) => store.openTab)
+    const focusProperty = useEntityEditorTabs((store) => store.focusProperty)
 
     const onSelect = useCallback(
         (entity: IEntity, propertyName: string) => {
             onOpenChange(false)
+            goToEntityEditor()
             openTab(createEntityEditorTab(entity), true)
             focusProperty(entity["@id"], propertyName)
         },
-        [focusProperty, onOpenChange, openTab]
+        [focusProperty, goToEntityEditor, onOpenChange, openTab]
     )
 
     const referencesResolver = useCallback(

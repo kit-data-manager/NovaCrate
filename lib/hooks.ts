@@ -2,10 +2,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "r
 import { crateDetailsKey } from "@/components/landing/util"
 import { useEditorState } from "@/lib/state/editor-state"
 import { usePathname, useRouter } from "next/navigation"
-import {
-    createEntityEditorTab,
-    EntityEditorTabsContext
-} from "@/components/providers/entity-tabs-provider"
+import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { isRootEntity } from "@/lib/utils"
 import { useGraphState } from "@/components/providers/graph-state-provider"
@@ -183,7 +180,7 @@ export function useAutoId(name: string) {
 export function useGoToEntityEditor(entity?: IEntity) {
     const pathname = usePathname()
     const router = useRouter()
-    const { openTab } = useContext(EntityEditorTabsContext)
+    const openTab = useEntityEditorTabs((store) => store.openTab)
 
     return useCallback(
         (_entity?: IEntity) => {
@@ -316,7 +313,7 @@ export function useCrateName() {
  */
 export function useCurrentEntity() {
     const page = useCurrentPageName()
-    const { activeTabEntityID } = useContext(EntityEditorTabsContext)
+    const activeTabEntityID = useEntityEditorTabs((store) => store.activeTabEntityID)
     const activeNodeEntityID = useGraphState((store) => store.selectedEntityID)
     const fileExplorerFilePath = useFileExplorerState((store) => store.previewingFilePath)
     return useEditorState((store) => {

@@ -4,7 +4,6 @@ import { PropsWithChildren, useContext, useEffect } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Nav } from "@/components/nav/nav"
 import { usePathname } from "next/navigation"
-import { EntityEditorTabsProvider } from "@/components/providers/entity-tabs-provider"
 import { CrateVerifyProvider } from "@/components/providers/crate-verify-provider"
 import { GlobalModalProvider } from "@/components/providers/global-modals-provider"
 import { useCrateName, useRecentCrates } from "@/lib/hooks"
@@ -14,24 +13,24 @@ import { ActionsProvider } from "@/components/providers/actions-provider"
 import DefaultActions from "@/components/actions/default-actions"
 import { ActionKeyboardShortcuts } from "@/components/actions/action-keyboard-shortcuts"
 import EntityActions from "@/components/actions/entity-actions"
+import { EntityEditorTabsSupervisor } from "@/components/editor/entity-editor-tabs-supervisor"
 
 export default function EditorLayout(props: PropsWithChildren) {
     return (
         <ActionsProvider>
             <CrateVerifyProvider>
-                <EntityEditorTabsProvider>
-                    <GlobalModalProvider>
-                        <GraphStateProvider>
-                            <GraphSettingsProvider>
-                                <DefaultActions />
-                                <EntityActions />
-                                <ActionKeyboardShortcuts />
-                                <RecentlyUsed />
-                                <Nav>{props.children}</Nav>
-                            </GraphSettingsProvider>
-                        </GraphStateProvider>
-                    </GlobalModalProvider>
-                </EntityEditorTabsProvider>
+                <GlobalModalProvider>
+                    <GraphStateProvider>
+                        <GraphSettingsProvider>
+                            <DefaultActions />
+                            <EntityActions />
+                            <ActionKeyboardShortcuts />
+                            <RecentlyUsed />
+                            <EntityEditorTabsSupervisor />
+                            <Nav>{props.children}</Nav>
+                        </GraphSettingsProvider>
+                    </GraphStateProvider>
+                </GlobalModalProvider>
             </CrateVerifyProvider>
         </ActionsProvider>
     )

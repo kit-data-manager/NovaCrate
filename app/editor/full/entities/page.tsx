@@ -3,14 +3,15 @@
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { EntityBrowser } from "@/components/entity-browser"
 import { EntityEditorTabs } from "@/components/editor/entity-editor-tabs"
-import { createRef, PropsWithChildren, useCallback, useContext } from "react"
+import { createRef, PropsWithChildren, useCallback } from "react"
 import { ImperativePanelHandle } from "react-resizable-panels"
 import { Metadata } from "@/components/Metadata"
 import { FilePreview } from "@/components/file-explorer/preview"
-import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
+import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 
 function EntityEditorFilePreview(props: PropsWithChildren) {
-    const { previewingFilePath, setPreviewingFilePath } = useContext(EntityEditorTabsContext)
+    const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
+    const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
 
     return (
         <ResizablePanelGroup direction="horizontal">
@@ -34,7 +35,7 @@ function EntityEditorFilePreview(props: PropsWithChildren) {
 
 export default function Entities() {
     const entityBrowserPanel = createRef<ImperativePanelHandle>()
-    const { previewingFilePath } = useContext(EntityEditorTabsContext)
+    const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
 
     const toggleEntityBrowserPanel = useCallback(() => {
         if (entityBrowserPanel.current) {

@@ -1,17 +1,17 @@
 import { useCurrentEntity } from "@/lib/hooks"
-import { useCallback, useContext, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { sortByPropertyName } from "@/components/editor/property-editor"
 import { AtSign, LayoutGrid, Minus, SearchIcon, XIcon } from "lucide-react"
 import { camelCaseReadable, isRootEntity } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
+import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 
 export function PropertyOverview() {
     const currentEntity = useCurrentEntity()
-    const { focusProperty } = useContext(EntityEditorTabsContext)
+    const focusProperty = useEntityEditorTabs((store) => store.focusProperty)
     const setShowPropertyOverview = useEntityBrowserSettings(
         (store) => store.setShowPropertyOverview
     )
