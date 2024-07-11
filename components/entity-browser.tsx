@@ -63,15 +63,15 @@ export function EntityBrowserItem(props: { entityId: string }) {
     const { saveEntity } = useContext(CrateDataContext)
     const revertEntity = useEditorState.useRevertEntity()
     const { showDeleteEntityModal } = useContext(GlobalModalContext)
-    const changeList = useEditorState((store) => store.getEntitiesChangelist())
+    const diff = useEditorState((state) => state.getEntityDiff(props.entityId))
 
     const canHavePreview = useMemo(() => {
         return entity ? isFileDataEntity(entity) : false
     }, [entity])
 
     const hasUnsavedChanges = useMemo(() => {
-        return entity ? changeList.get(entity["@id"]) !== Diff.None : false
-    }, [entity, changeList])
+        return entity ? diff !== Diff.None : false
+    }, [diff, entity])
 
     const openSelf = useCallback(() => {
         if (!entity) return

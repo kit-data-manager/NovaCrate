@@ -378,3 +378,39 @@ export function useAction(id: string) {
 export function useActionsReady() {
     return useActionsStore((store) => store.isReady())
 }
+
+export function useDeferredValue<T>(
+    value: T,
+    onChange: (v: T) => void,
+    options?: Partial<{ time: number }>
+) {
+    const [state, setState] = useState(value)
+
+    useEffect(() => {
+        setState(value)
+    }, [value])
+
+    const updateDeferredValueTimer = useRef<number>()
+    const debouncedState = useRef(state)
+    useEffect(() => {
+        debouncedState.current = state
+    }, [state])
+
+    const onTriggerChange = useCallback(
+        (newValue: T) => {
+            setState(newValue)
+            if (updateDeferredValueTimer.current === undefined) {
+                updateDeferredValueTimer.current = window.setTimeout(() => {
+                    onChange(debouncedState.current)
+                    updateDeferredValueTimer.current = undefined
+                }, options?.time || 300)
+            }
+        },
+        [onChange, options?.time]
+    )
+
+    return {
+        unDeferredValue: state,
+        deferredOnChange: onTriggerChange
+    }
+}
