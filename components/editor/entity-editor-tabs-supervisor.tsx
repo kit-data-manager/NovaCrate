@@ -20,7 +20,7 @@ export function EntityEditorTabsSupervisor() {
                 }
             }
         }
-    })
+    }, [entities, entitiesChangelist, openTab, tabs])
 
     return null
 }

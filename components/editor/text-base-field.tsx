@@ -11,6 +11,7 @@ import { BooleanField } from "@/components/editor/text-fields/boolean-field"
 import { NumberField } from "@/components/editor/text-fields/number-field"
 import { TimeField } from "@/components/editor/text-fields/time-field"
 import { DateTimeField } from "@/components/editor/text-fields/datetime-field"
+import { useDeferredValue } from "@/lib/hooks"
 
 function propertyCanBeToInputType({
     canBeDate,
@@ -48,8 +49,8 @@ function shouldResetInputType(
 }
 
 export const TextBaseField = memo(function TextBaseField({
-    value,
-    onChange,
+    value: _value,
+    onChange: _onChange,
     onChangeType,
     propertyRange,
     onRemoveEntry
@@ -60,6 +61,11 @@ export const TextBaseField = memo(function TextBaseField({
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
+    const { unDeferredValue: value, deferredOnChange: onChange } = useDeferredValue(
+        _value,
+        _onChange
+    )
+
     const canBe = usePropertyCanBe(propertyRange, value)
     const propertyRangeRef = useRef(propertyRange)
 

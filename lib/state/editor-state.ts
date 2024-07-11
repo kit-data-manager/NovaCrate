@@ -30,6 +30,7 @@ export interface ICrateEditorContext {
 
     getEntities(): Map<string, IEntity>
     getEntitiesChangelist(): Map<string, Diff>
+    getEntityDiff(id: string): Diff | null
     getChangedEntities(): IEntity[]
     getHasUnsavedChanges(): boolean
     addEntity(
@@ -132,18 +133,21 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
             getEntitiesChangelist(): Map<string, Diff> {
                 const changelist = new Map<string, Diff>()
                 const entities = getState().entities
-                const initialEntities = getState().initialEntities
-                for (const [entityId, entity] of entities) {
-                    if (!initialEntities.has(entityId)) {
-                        changelist.set(entityId, Diff.New)
-                        continue
-                    }
-                    const original = initialEntities.get(entityId)!
-                    if (isEntityEqual(original, entity)) {
-                        changelist.set(entityId, Diff.None)
-                    } else changelist.set(entityId, Diff.Changed)
+                for (const [entityId] of entities) {
+                    const diff = getState().getEntityDiff(entityId)
+                    if (diff) changelist.set(entityId, diff)
                 }
                 return changelist
+            },
+
+            getEntityDiff(id: string): Diff | null {
+                const entity = getState().entities.get(id)
+                if (!entity) return null
+                const initialEntity = getState().initialEntities.get(id)
+                if (!initialEntity) return Diff.New
+                if (isEntityEqual(entity, initialEntity)) {
+                    return Diff.None
+                } else return Diff.Changed
             },
 
             getChangedEntities(): IEntity[] {
