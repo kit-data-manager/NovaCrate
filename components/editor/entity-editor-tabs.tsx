@@ -1,10 +1,7 @@
 "use client"
 
 import { useCallback, useContext, useEffect, useMemo, useRef } from "react"
-import {
-    EntityEditorTabsContext,
-    IEntityEditorTab
-} from "@/components/providers/entity-tabs-provider"
+import { IEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { Diff, getEntityDisplayName } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Package, PanelLeftClose, XIcon } from "lucide-react"
@@ -33,7 +30,10 @@ function Tab({
 }) {
     const entity = useEditorState((store) => store.entities.get(tab.entityId))
     const entitiesSize = useEditorState((store) => store.entities.size)
-    const { focusTab, closeTab, closeOtherTabs, closeAllTabs } = useContext(EntityEditorTabsContext)
+    const focusTab = useEntityEditorTabs((store) => store.focusTab)
+    const closeTab = useEntityEditorTabs((store) => store.closeTab)
+    const closeAllTabs = useEntityEditorTabs((store) => store.closeAllTabs)
+    const closeOtherTabs = useEntityEditorTabs((store) => store.closeOtherTabs)
     const { showSaveEntityChangesModal } = useContext(GlobalModalContext)
     const { crateDataIsLoading } = useContext(CrateDataContext)
 
@@ -171,7 +171,8 @@ export function EntityEditorTabs({
 }: {
     toggleEntityBrowserPanel(): void
 }) {
-    const { tabs, activeTabEntityID } = useContext(EntityEditorTabsContext)
+    const tabs = useEntityEditorTabs((store) => store.tabs)
+    const activeTabEntityID = useEntityEditorTabs((store) => store.activeTabEntityID)
 
     const currentTab = useMemo(() => {
         return tabs.find((tab) => tab.entityId === activeTabEntityID)

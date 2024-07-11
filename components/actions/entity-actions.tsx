@@ -5,7 +5,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { toArray } from "@/lib/utils"
 import { Copy, Plus, Save, Search, Trash, Undo2 } from "lucide-react"
-import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
+import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 
 export default function EntityActions() {
     const entity = useCurrentEntity()
@@ -23,7 +23,7 @@ function Handler({ entity }: { entity: IEntity }) {
         showDeleteEntityModal,
         showSaveAsModal
     } = useContext(GlobalModalContext)
-    const { focusProperty } = useContext(EntityEditorTabsContext)
+    const focusProperty = useEntityEditorTabs((store) => store.focusProperty)
 
     const saveCurrentEntity = useCallback(() => {
         saveEntity(entity).then()

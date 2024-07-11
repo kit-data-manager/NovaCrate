@@ -13,7 +13,7 @@ import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
 import { SinglePropertyEditor } from "@/components/editor/single-property-editor"
 import { camelCaseReadable } from "@/lib/utils"
-import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
+import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
 import { handleSpringError } from "@/lib/spring-error-handling"
 import { useAsync } from "@/lib/hooks"
@@ -132,7 +132,8 @@ export const PropertyEditor = memo(function PropertyEditor({
     onRemovePropertyEntry
 }: PropertyEditorProps) {
     const { isReady: crateVerifyReady, worker } = useContext(CrateVerifyContext)
-    const { focusedProperty, unFocusProperty } = useContext(EntityEditorTabsContext)
+    const focusedProperty = useEntityEditorTabs((store) => store.focusedProperty)
+    const unFocusProperty = useEntityEditorTabs((store) => store.unFocusProperty)
     const crateContext = useEditorState.useCrateContext()
     const container = createRef<HTMLDivElement>()
 

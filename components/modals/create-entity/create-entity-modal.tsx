@@ -5,7 +5,7 @@ import { AutoReference } from "@/components/providers/global-modals-provider"
 import { useEditorState } from "@/lib/state/editor-state"
 import { TypeSelect } from "@/components/modals/create-entity/type-select"
 import { CreateEntity } from "@/components/modals/create-entity/create-entity"
-import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
+import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { SimpleTypeSelect } from "@/components/modals/create-entity/simple-type-select"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { UploadProgress } from "@/components/modals/create-entity/upload-progress"
@@ -31,7 +31,8 @@ export function CreateEntityModal({
     basePath?: string
 }) {
     const addEntity = useEditorState.useAddEntity()
-    const { focusTab, openTab } = useContext(EntityEditorTabsContext)
+    const focusTab = useEntityEditorTabs((store) => store.focusTab)
+    const openTab = useEntityEditorTabs((store) => store.openTab)
     const { createFileEntity, createFolderEntity } = useContext(CrateDataContext)
     const context = useEditorState.useCrateContext()
 

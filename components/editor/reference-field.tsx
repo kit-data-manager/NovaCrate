@@ -6,10 +6,7 @@ import { getEntityDisplayName } from "@/lib/utils"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { SlimClass } from "@/lib/schema-worker/helpers"
-import {
-    createEntityEditorTab,
-    EntityEditorTabsContext
-} from "@/components/providers/entity-tabs-provider"
+import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
 import { EntityIcon } from "@/components/entity-icon"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
@@ -35,7 +32,7 @@ export const ReferenceField = memo(function ReferenceField({
 }) {
     const referencedEntity = useEditorState((store) => store.entities.get(value["@id"]))
     const { showCreateEntityModal } = useContext(GlobalModalContext)
-    const { openTab } = useContext(EntityEditorTabsContext)
+    const openTab = useEntityEditorTabs((store) => store.openTab)
 
     const [selectModalOpen, setSelectModalOpen] = useState(false)
 

@@ -25,7 +25,7 @@ import { InternalEntityHint } from "@/components/editor/hints/internal-entity-hi
 import { ActionButton } from "@/components/actions/action-buttons"
 import { useGoToFileExplorer, useGoToGraph } from "@/lib/hooks"
 import { EntityBadge } from "../entity-badge"
-import { EntityEditorTabsContext } from "@/components/providers/entity-tabs-provider"
+import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 
 export function EntityEditor({
     entityId,
@@ -41,7 +41,8 @@ export function EntityEditor({
     const addPropertyEntry = useEditorState.useAddPropertyEntry()
     const modifyPropertyEntry = useEditorState.useModifyPropertyEntry()
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
-    const { setPreviewingFilePath, previewingFilePath } = useContext(EntityEditorTabsContext)
+    const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
+    const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
 
     const isDataEntity = useMemo(() => {
         if (!entity) return false

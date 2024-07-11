@@ -26,10 +26,7 @@ import {
     Trash,
     Undo2
 } from "lucide-react"
-import {
-    createEntityEditorTab,
-    EntityEditorTabsContext
-} from "@/components/providers/entity-tabs-provider"
+import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { EntityIcon } from "./entity-icon"
 import { useEditorState } from "@/lib/state/editor-state"
 import {
@@ -60,7 +57,8 @@ type DefaultSectionOpen = boolean | "indeterminate"
 export function EntityBrowserItem(props: { entityId: string }) {
     const showEntityType = useEntityBrowserSettings((store) => store.showEntityType)
     const showIdInsteadOfName = useEntityBrowserSettings((store) => store.showIdInsteadOfName)
-    const { openTab, setPreviewingFilePath } = useContext(EntityEditorTabsContext)
+    const openTab = useEntityEditorTabs((store) => store.openTab)
+    const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
     const entity = useEditorState((state) => state.entities.get(props.entityId))
     const { saveEntity } = useContext(CrateDataContext)
     const revertEntity = useEditorState.useRevertEntity()
