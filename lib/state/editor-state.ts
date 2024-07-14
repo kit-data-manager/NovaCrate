@@ -135,7 +135,7 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
                 const entities = getState().entities
                 for (const [entityId] of entities) {
                     const diff = getState().getEntityDiff(entityId)
-                    if (diff) changelist.set(entityId, diff)
+                    if (diff !== null) changelist.set(entityId, diff)
                 }
                 return changelist
             },
