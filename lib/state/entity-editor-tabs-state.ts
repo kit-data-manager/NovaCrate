@@ -71,23 +71,18 @@ export const useEntityEditorTabs = create<IEntityEditorTabsState>()(
             }
         },
         closeOtherTabs(id: string) {
+            const changelist = useEditorState.getState().getEntitiesChangelist()
             set((store) => {
                 store.tabs = store.tabs.filter(
-                    (tab) =>
-                        tab.entityId === id ||
-                        useEditorState.getState().getEntitiesChangelist().get(tab.entityId) !==
-                            Diff.None
+                    (tab) => tab.entityId === id || changelist.get(tab.entityId) !== Diff.None
                 )
             })
             get().focusTab(id)
         },
         closeAllTabs() {
             set((store) => {
-                store.tabs = store.tabs.filter(
-                    (tab) =>
-                        useEditorState.getState().getEntitiesChangelist().get(tab.entityId) !==
-                        Diff.None
-                )
+                const changelist = useEditorState.getState().getEntitiesChangelist()
+                store.tabs = store.tabs.filter((tab) => changelist.get(tab.entityId) !== Diff.None)
                 if (store.tabs.length > 0) {
                     get().focusTab(store.tabs[0].entityId)
                 }
