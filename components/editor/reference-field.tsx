@@ -10,6 +10,7 @@ import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-e
 import { useEditorState } from "@/lib/state/editor-state"
 import { EntityIcon } from "@/components/entity-icon"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export const ReferenceField = memo(function ReferenceField({
     entityId,
@@ -88,24 +89,40 @@ export const ReferenceField = memo(function ReferenceField({
 
             {isEmpty ? (
                 <>
-                    <Button
-                        className="grow rounded-r-none border-r-0 first:rounded-l-md rounded-l-none"
-                        variant="outline"
-                        onClick={() => onCreateClick()}
-                    >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create
-                    </Button>
-                    <Button
-                        className="grow rounded-none"
-                        variant="outline"
-                        onClick={() => {
-                            setSelectModalOpen(true)
-                        }}
-                    >
-                        <LinkIcon className="w-4 h-4 mr-2" />
-                        Select
-                    </Button>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                className="grow rounded-r-none border-r-0 first:rounded-l-md rounded-l-none"
+                                variant="outline"
+                                onClick={() => onCreateClick()}
+                            >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Create
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            Create a new Entity that will be added to the Crate and reference by
+                            this property.
+                        </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                className="grow rounded-none"
+                                variant="outline"
+                                onClick={() => {
+                                    setSelectModalOpen(true)
+                                }}
+                            >
+                                <LinkIcon className="w-4 h-4 mr-2" />
+                                Select
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            Reference an Entity that already exists in the Crate
+                        </TooltipContent>
+                    </Tooltip>
                 </>
             ) : (
                 <>
