@@ -8,6 +8,7 @@ import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/di
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Error } from "@/components/error"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export function OrganizationImport({
     createManually,
@@ -60,23 +61,22 @@ export function OrganizationImport({
 
     return (
         <>
-            <div className="flex justify-center gap-2 pb-6 items-center">
-                <Button
-                    variant={createManually ? "default" : "secondary"}
-                    onClick={() => setCreateManually(true)}
-                    disabled={creating}
-                >
-                    <TextCursor className="w-4 h-4 mr-2" /> Create Manually
-                </Button>
-                or
-                <Button
-                    variant={createManually ? "secondary" : "default"}
-                    onClick={() => setCreateManually(false)}
-                    disabled={creating}
-                >
-                    <Import className="w-4 h-4 mr-2" /> Import from ROR
-                </Button>
-            </div>
+            <Tabs
+                className="flex justify-center mb-2"
+                value={createManually ? "manual" : "import"}
+                onValueChange={(v) => {
+                    setCreateManually(v === "manual")
+                }}
+            >
+                <TabsList className="flex">
+                    <TabsTrigger value="manual">
+                        <TextCursor className="w-4 h-4 mr-2" /> Create Manually
+                    </TabsTrigger>
+                    <TabsTrigger value="import">
+                        <Import className="w-4 h-4 mr-2" /> Import from ROR
+                    </TabsTrigger>
+                </TabsList>
+            </Tabs>
 
             {createManually ? null : (
                 <>

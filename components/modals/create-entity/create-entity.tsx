@@ -22,6 +22,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import HelpTooltip from "@/components/help-tooltip"
 import { useAutoId } from "@/lib/hooks"
 import { CreateEntityHint } from "@/components/modals/create-entity/create-entity-hint"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export function CreateEntity({
     selectedType,
@@ -204,10 +205,9 @@ export function CreateEntity({
 
                     {hasFolderUpload ? (
                         <>
-                            Add a folder to the Crate. Use the File Explorer to upload the folder to
-                            a specific parent-folder. You can choose to also import all the files in
-                            the selected folder. If you want to create an empty folder, select Empty
-                            Folder and enter a name of your choice.
+                            Add a folder to the Crate. If you want to create an empty folder, select
+                            Empty Folder and enter a name of your choice. Otherwise, the folder and
+                            all contained files and folders will be uploaded.
                         </>
                     ) : null}
                 </DialogDescription>
@@ -217,22 +217,22 @@ export function CreateEntity({
 
             {hasFileUpload ? (
                 <div>
-                    <div className="mb-4 flex justify-center gap-2 items-center">
-                        <Button
-                            variant={forceWithoutFile ? "secondary" : "default"}
-                            onClick={() => setForceWithoutFile(false)}
-                        >
-                            <HardDriveUpload className="w-4 h-4 mr-2" /> Upload File
-                        </Button>
-                        or
-                        <Button
-                            variant={!forceWithoutFile ? "secondary" : "default"}
-                            onClick={() => setForceWithoutFile(true)}
-                        >
-                            <FileX2 className="w-4 h-4 mr-2" />
-                            Without File
-                        </Button>
-                    </div>
+                    <Tabs
+                        className="flex justify-center mb-2"
+                        value={forceWithoutFile ? "without-file" : "with-file"}
+                        onValueChange={(v) => {
+                            setForceWithoutFile(v === "without-file")
+                        }}
+                    >
+                        <TabsList className="flex">
+                            <TabsTrigger value="with-file">
+                                <HardDriveUpload className="w-4 h-4 mr-2" /> Upload File
+                            </TabsTrigger>
+                            <TabsTrigger value="without-file">
+                                <FileX2 className="w-4 h-4 mr-2" /> Without Data
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
                     {forceWithoutFile ? null : (
                         <>
                             <Label>File</Label>
@@ -252,22 +252,22 @@ export function CreateEntity({
 
             {hasFolderUpload ? (
                 <div>
-                    <div className="mb-4 flex justify-center gap-2 items-center">
-                        <Button
-                            variant={forceWithoutFile ? "secondary" : "default"}
-                            onClick={() => setForceWithoutFile(false)}
-                        >
-                            <HardDriveUpload className="w-4 h-4 mr-2" /> Upload Folder
-                        </Button>
-                        or
-                        <Button
-                            variant={!forceWithoutFile ? "secondary" : "default"}
-                            onClick={() => setForceWithoutFile(true)}
-                        >
-                            <FileX2 className="w-4 h-4 mr-2" />
-                            Without Data
-                        </Button>
-                    </div>
+                    <Tabs
+                        className="flex justify-center mb-2"
+                        value={forceWithoutFile ? "without-file" : "with-file"}
+                        onValueChange={(v) => {
+                            setForceWithoutFile(v === "without-file")
+                        }}
+                    >
+                        <TabsList className="flex">
+                            <TabsTrigger value="with-file">
+                                <HardDriveUpload className="w-4 h-4 mr-2" /> Upload Folder
+                            </TabsTrigger>
+                            <TabsTrigger value="without-file">
+                                <FileX2 className="w-4 h-4 mr-2" /> Without Data
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
                     {forceWithoutFile ? null : (
                         <>
                             <Label>Folder</Label>
