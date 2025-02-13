@@ -1,20 +1,33 @@
 # NovaCrate
 
-New easily usable research object crate editor.
+Web-based interactive editor for **creating, editing and visualising** research object crates. Currently requires
+to run a separate backend to allow manipulating ro-crates on the local hard drive. The editor can be extended to work with any local or 
+distributed back-end.
 
-[[_TOC_]]
+![](./docs/teaser.png)
+
+![](./docs/teaser2.png)
 
 ## Installation
 
 ### Prerequisites
 
-- Make sure [ro-crate-rest](https://gitlab.kit.edu/kit/scc/dem/dem-students/ChristopherR/implementation/ro-crate-rest) is running
+- Clone and install [ro-crate-rest](https://gitlab.kit.edu/kit/scc/dem/dem-students/ChristopherR/implementation/ro-crate-rest), make sure it is running
 - Install Node.js >= 20
-- Close the NovaCrate repository
+- Clone the NovaCrate repository
+
+### Quickstart
+
+Once the prerequisites are met, run the following code to get started quickly:
+
+```bash
+npm install
+npm run dev
+```
 
 ### Updating dependencies
 
-This step might be necessary after fetching new commits.
+This step might be necessary after fetching new commits and on the first installation.
 
 ```bash
 npm install
@@ -44,6 +57,10 @@ The website can then be found in the `out` folder. Use any web server for viewin
 ```bash
 npx serve@latest out
 ```
+
+## Thesis
+
+This project was created as part of a [bachelor thesis](https://doi.org/10.5445/IR/1000178790)
 
 ## Structure
 
