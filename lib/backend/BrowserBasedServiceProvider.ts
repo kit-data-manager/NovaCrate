@@ -1,8 +1,29 @@
-import { localCrates } from "@/lib/backend/browser-based/LocalCrate"
+let demoCrate: ICrate = {
+    "@context": "https://w3id.org/ro/crate/1.1/context",
+    "@graph": [
+        {
+            "@type": "Dataset",
+            "@id": "./"
+        }
+    ]
+}
+
+let localCrates: Record<string, ICrate> = {
+    democrate: demoCrate
+}
 
 export class BrowserBasedServiceProvider implements CrateServiceProvider {
-    createCrate(name: string, description: string): Promise<string> {
-        throw "Not supported in browser-based environment yet"
+    async createCrate(name: string, description: string) {
+        const id = crypto.randomUUID()
+        localCrates[id] = { ...demoCrate }
+        let created = localCrates[id]["@graph"].find((n) => n["@id"] === "./")
+
+        if (created) {
+            created.description = description
+            created.name = name
+        }
+
+        return id
     }
 
     createCrateFromCrateZip(zip: File): Promise<string> {
@@ -18,8 +39,23 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
         throw "Not supported in browser-based environment yet"
     }
 
-    createEntity(crateId: string, entityData: IEntity): Promise<boolean> {
-        throw "Not supported in browser-based environment yet"
+    async createEntity(crateId: string, entityData: IEntity) {
+        const crate = await this.getCrate(crateId)
+
+        const existingIndex = crate["@graph"].findIndex(
+            (existing) => existing["@id"] === entityData["@id"]
+        )
+        if (existingIndex >= 0) throw "Entity with the same id already exists"
+
+        crate["@graph"].push(entityData)
+
+        console.log(
+            Object.getOwnPropertyDescriptors(
+                crate["@graph"].find((n) => n["@id"] === entityData["@id"])
+            )
+        )
+
+        return true
     }
 
     createFileEntity(crateId: string, entityData: IEntity, file: File): Promise<boolean> {
@@ -97,18 +133,21 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
 
     async updateEntity(crateId: string, entityData: IEntity) {
         const crate = await this.getCrate(crateId)
-        const existingIndex = crate["@graph"].findIndex(
-            (existing) => existing["@id"] === entityData["@id"]
-        )
+        let entity = crate["@graph"].find((n) => n["@id"] === entityData["@id"])
 
-        if (existingIndex < 0) throw "Entity not found"
-        const entity = crate["@graph"][existingIndex]
+        if (!entity) throw "Entity not found"
+
+        console.log(Object.getOwnPropertyDescriptors(entity))
 
         for (const [key, value] of Object.entries(entityData)) {
             if (value === null && key in entity) {
                 delete entity[key]
             } else if (value !== null) {
-                entity[key] = value
+                try {
+                    entity[key] = value
+                } catch (e) {
+                    console.error(e, key, value, Object.getOwnPropertyDescriptors(entity))
+                }
             }
         }
 
