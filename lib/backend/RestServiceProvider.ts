@@ -2,7 +2,7 @@ import { isContextualEntity, isFileDataEntity, isFolderDataEntity, isRootEntity 
 import fileDownload from "js-file-download"
 import { handleSpringError } from "@/lib/spring-error-handling"
 
-export class RestProvider implements CrateServiceProvider {
+export class RestServiceProvider implements CrateServiceProvider {
     async createCrateFromFiles(
         name: string,
         description: string,
