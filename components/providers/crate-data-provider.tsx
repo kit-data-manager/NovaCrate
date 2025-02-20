@@ -247,8 +247,7 @@ export function CrateDataProvider({
                             <TriangleAlert className="w-4 h-4 mr-1 inline-block text-warn" /> Could
                             not save changes to <EntityIcon entity={entityData} className="mr-1" />
                             {getEntityDisplayName(entityData)}
-                        </div>,
-                        { important: true }
+                        </div>
                     )
                     setSaveError(
                         produce((draft) => {
