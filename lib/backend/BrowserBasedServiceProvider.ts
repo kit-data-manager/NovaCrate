@@ -1,4 +1,6 @@
-let demoCrate: ICrate = {
+import autoBind from "auto-bind"
+
+const demoCrate: ICrate = {
     "@context": "https://w3id.org/ro/crate/1.1/context",
     "@graph": [
         {
@@ -8,15 +10,19 @@ let demoCrate: ICrate = {
     ]
 }
 
-let localCrates: Record<string, ICrate> = {
-    democrate: demoCrate
-}
-
 export class BrowserBasedServiceProvider implements CrateServiceProvider {
+    localCrates: Record<string, ICrate> = {
+        democrate: { ...demoCrate }
+    }
+
+    constructor() {
+        autoBind(this)
+    }
+
     async createCrate(name: string, description: string) {
         const id = crypto.randomUUID()
-        localCrates[id] = { ...demoCrate }
-        let created = localCrates[id]["@graph"].find((n) => n["@id"] === "./")
+        this.localCrates[id] = { ...demoCrate }
+        let created = this.localCrates[id]["@graph"].find((n) => n["@id"] === "./")
 
         if (created) {
             created.description = description
@@ -40,21 +46,14 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
     }
 
     async createEntity(crateId: string, entityData: IEntity) {
-        const crate = await this.getCrate(crateId)
+        const crate = this.getCrateInternal(crateId)
 
         const existingIndex = crate["@graph"].findIndex(
             (existing) => existing["@id"] === entityData["@id"]
         )
         if (existingIndex >= 0) throw "Entity with the same id already exists"
 
-        crate["@graph"].push(entityData)
-
-        console.log(
-            Object.getOwnPropertyDescriptors(
-                crate["@graph"].find((n) => n["@id"] === entityData["@id"])
-            )
-        )
-
+        crate["@graph"].push(structuredClone(entityData))
         return true
     }
 
@@ -63,14 +62,14 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
     }
 
     async deleteCrate(id: string) {
-        if (id in localCrates) {
-            delete localCrates[id]
+        if (id in this.localCrates) {
+            delete this.localCrates[id]
             return true
         } else throw "Crate not found"
     }
 
     async deleteEntity(crateId: string, entityData: IEntity) {
-        const crate = await this.getCrate(crateId)
+        const crate = this.getCrateInternal(crateId)
         const existingIndex = crate["@graph"].findIndex(
             (existing) => existing["@id"] === entityData["@id"]
         )
@@ -95,7 +94,11 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
     }
 
     async getCrate(id: string) {
-        if (id in localCrates) return localCrates[id]
+        return structuredClone(this.getCrateInternal(id))
+    }
+
+    private getCrateInternal(id: string) {
+        if (id in this.localCrates) return this.localCrates[id]
         else throw "Crate not found"
     }
 
@@ -104,7 +107,7 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
     }
 
     async getStoredCrateIds() {
-        return Object.keys(localCrates)
+        return Object.keys(this.localCrates)
     }
 
     async healthCheck() {
@@ -132,22 +135,16 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
     }
 
     async updateEntity(crateId: string, entityData: IEntity) {
-        const crate = await this.getCrate(crateId)
-        let entity = crate["@graph"].find((n) => n["@id"] === entityData["@id"])
+        const crate = this.getCrateInternal(crateId)
+        const entity = crate["@graph"].find((n) => n["@id"] === entityData["@id"])
 
         if (!entity) throw "Entity not found"
-
-        console.log(Object.getOwnPropertyDescriptors(entity))
 
         for (const [key, value] of Object.entries(entityData)) {
             if (value === null && key in entity) {
                 delete entity[key]
             } else if (value !== null) {
-                try {
-                    entity[key] = value
-                } catch (e) {
-                    console.error(e, key, value, Object.getOwnPropertyDescriptors(entity))
-                }
+                entity[key] = value
             }
         }
 

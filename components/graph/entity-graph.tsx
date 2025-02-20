@@ -349,6 +349,7 @@ export function EntityGraph() {
                 connectionLineType={ConnectionLineType.Bezier}
                 nodeTypes={nodeTypes}
                 deleteKeyCode={["Delete", "Backspace"]}
+                proOptions={{ hideAttribution: true }}
             >
                 <Panel
                     position="top-left"
