@@ -8,6 +8,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import packageJson from "@/package.json"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { StorageInfo } from "@/components/storage-info"
 
 function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>) {
     const pathname = usePathname()
@@ -69,6 +70,8 @@ export function NavSidebar({ children }: PropsWithChildren<{}>) {
                         </NavSidebarLink>
 
                         <div className="grow"></div>
+
+                        <StorageInfo />
 
                         <Button variant="link" className={`justify-start w-full`} disabled>
                             <Bug className="h-4 w-4 mr-2" />

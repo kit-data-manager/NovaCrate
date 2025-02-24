@@ -324,4 +324,8 @@ export class RestServiceProvider implements CrateServiceProvider {
         const part = this.getEntityRoutePart(entityData)
         return `http://localhost:8080/crates/${encodeURIComponent(crateId)}/entities/${part}/${isRootEntity(entityData) ? "" : encodeURIComponent(entityData["@id"])}`
     }
+
+    async getStorageInfo() {
+        return null
+    }
 }

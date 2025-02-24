@@ -35,7 +35,7 @@ export class FunctionWorker<T extends Record<string, (...args: any[]) => any>> {
     }
 
     mount(scriptPath: string) {
-        if (window.Worker) {
+        if (typeof window !== "undefined" && window.Worker) {
             this._worker = new window.Worker(scriptPath)
             return true
         } else return false
