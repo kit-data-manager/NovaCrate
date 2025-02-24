@@ -39,6 +39,16 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
             try {
                 navigator.storage.getDirectory().then(() => {
                     console.log("OPFS available")
+
+                    navigator.storage.persisted().then((result) => {
+                        console.log(`Persist is ${result ? "" : "not"} enabled`)
+                        if (!result)
+                            navigator.storage.persist().then((result) => {
+                                console.log(
+                                    `Requested to persist storage: ${result ? "Success" : "Failed"}`
+                                )
+                            })
+                    })
                 })
             } catch (e) {
                 console.error("Exception while trying to initialize OPFS", e)
@@ -181,5 +191,9 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
 
         await this.saveRoCrateMetadataJSON(crateId, JSON.stringify(crate))
         return true
+    }
+
+    getStorageInfo() {
+        return opfsFunctions.getStorageInfo()
     }
 }

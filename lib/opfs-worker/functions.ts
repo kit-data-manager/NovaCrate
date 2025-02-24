@@ -95,10 +95,22 @@ export async function getCrates() {
     return entries
 }
 
+export async function getStorageInfo(): Promise<{
+    usedSpace: number
+    totalSpace: number
+    persistent: boolean
+}> {
+    const quota = await navigator.storage.estimate()
+    const persistent = await navigator.storage.persisted()
+
+    return { persistent, totalSpace: quota.quota ?? quota.usage ?? 0, usedSpace: quota.usage ?? 0 }
+}
+
 export const opfsFunctions = {
     writeFile,
     readFile,
     getCrates,
     deleteCrateDir,
-    getCrateDirContents
+    getCrateDirContents,
+    getStorageInfo
 }

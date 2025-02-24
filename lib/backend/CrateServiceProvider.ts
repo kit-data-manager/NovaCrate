@@ -151,4 +151,17 @@ declare interface CrateServiceProvider {
      * Check if the provider is healthy. Throw if not, resolve if yes
      */
     healthCheck(): Promise<void>
+
+    /**
+     * Get storage information in general or per crate. If not applicable, should return null.
+     * If storage information is not applicable per crate, but is in general, simply ignore the crateId.
+     * @param crateId
+     */
+    getStorageInfo(crateId?: string): Promise<CrateServiceProviderStorageInfo | null>
+}
+
+declare interface CrateServiceProviderStorageInfo {
+    usedSpace: number
+    totalSpace: number
+    persistent: boolean
 }
