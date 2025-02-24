@@ -5,17 +5,28 @@ import { opfsFunctions } from "@/lib/opfs-worker/functions"
 const template: (name: string, description: string) => ICrate = (
     name: string,
     description: string
-) => ({
-    "@context": "https://w3id.org/ro/crate/1.1/context",
-    "@graph": [
-        {
-            "@type": "Dataset",
-            "@id": "./",
-            name,
-            description
-        }
-    ]
-})
+) =>
+    ({
+        "@context": "https://w3id.org/ro/crate/1.1/context",
+        "@graph": [
+            {
+                "@id": "./",
+                "@type": "Dataset",
+                name: name,
+                description: description
+            },
+            {
+                about: {
+                    "@id": "./"
+                },
+                conformsTo: {
+                    "@id": "https://w3id.org/ro/crate/1.1"
+                },
+                "@id": "ro-crate-metadata.json",
+                "@type": "CreativeWork"
+            }
+        ]
+    }) as ICrate
 
 export class BrowserBasedServiceProvider implements CrateServiceProvider {
     private worker: FunctionWorker<typeof opfsFunctions>
@@ -106,8 +117,8 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
         return JSON.parse(data) as ICrate
     }
 
-    getCrateFilesList(crateId: string): Promise<string[]> {
-        throw "Not supported in browser-based environment yet"
+    async getCrateFilesList(crateId: string) {
+        return await opfsFunctions.getCrateDirContents(crateId)
     }
 
     async getStoredCrateIds() {
