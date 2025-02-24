@@ -2,10 +2,10 @@ const webpack = require("webpack")
 const path = require("path")
 
 const config = {
-    entry: "./lib/schema-worker/index.ts",
+    entry: { schema: "./lib/schema-worker/index.ts", opfs: "./lib/opfs-worker/index.ts" },
     output: {
         path: path.resolve(__dirname, "public"),
-        filename: "schema-worker.js"
+        filename: "[name]-worker.js"
     },
     module: {
         rules: [
