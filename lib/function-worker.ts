@@ -1,14 +1,25 @@
 const HEALTH_TEST_FN = "__healthTest__"
 
+interface FunctionWorkerOptions {
+    /**
+     * Whether the execution of a function should fall back to executing locally if the web worker
+     * is not available
+     * @default true
+     */
+    localFallback?: boolean
+}
+
 /**
  * Class to construct a function worker. Should be constructed in the main thread to hold the Web Worker.
  */
 export class FunctionWorker<T extends Record<string, (...args: any[]) => any>> {
     private readonly functions: T
     private _worker: Worker | undefined
+    private options: FunctionWorkerOptions
 
-    constructor(functions: T) {
+    constructor(functions: T, options: FunctionWorkerOptions = { localFallback: true }) {
         this.functions = functions
+        this.options = options
     }
 
     get worker() {
@@ -62,6 +73,8 @@ export class FunctionWorker<T extends Record<string, (...args: any[]) => any>> {
         name: K,
         args: Parameters<T[K]>
     ): Promise<ReturnType<T[K]>> {
+        if (!this.options.localFallback)
+            throw "FunctionWorker: Web worker is not available. Local Fallback is disabled."
         console.warn(
             "FunctionWorker: Executing function locally because the worker is not available",
             name
