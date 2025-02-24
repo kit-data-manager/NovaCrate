@@ -11,12 +11,42 @@ const demoCrate: ICrate = {
 }
 
 export class BrowserBasedServiceProvider implements CrateServiceProvider {
+    private fileSystemHandle?: FileSystemDirectoryHandle
+
     localCrates: Record<string, ICrate> = {
         democrate: { ...demoCrate }
     }
 
     constructor() {
+        if (navigator && navigator.storage) {
+            try {
+                navigator.storage.estimate().then(console.log)
+                navigator.storage.persisted().then((persisted) => {
+                    console.log("Is persistent storage enabled?", persisted)
+                    if (!persisted) {
+                        navigator.storage.persist().then((persisted) => {
+                            console.log("Tried enabling persistent storage, success: ", persisted)
+                        })
+                    }
+                })
+            } catch (e) {
+                console.error("Exception while trying to initialize OPFS", e)
+            }
+        }
+
         autoBind(this)
+    }
+
+    private async getFileSystemHandle() {
+        if (this.fileSystemHandle) return this.fileSystemHandle
+        else {
+            return await navigator.storage.getDirectory()
+        }
+    }
+
+    private async getCrateStorageHandle() {
+        const fs = await this.getFileSystemHandle()
+        return fs.getDirectoryHandle("crateStorage", { create: true })
     }
 
     async createCrate(name: string, description: string) {
@@ -107,7 +137,16 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
     }
 
     async getStoredCrateIds() {
-        return Object.keys(this.localCrates)
+        // return Object.keys(this.localCrates)
+
+        const fs = await this.getFileSystemHandle()
+        const crateStorage = await this.getCrateStorageHandle()
+
+        const entries: string[] = []
+        for await (const name of crateStorage.keys()) {
+            entries.push(name)
+        }
+        return entries
     }
 
     async healthCheck() {
