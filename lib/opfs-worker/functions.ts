@@ -54,15 +54,34 @@ export async function readFile(crateId: string, filePath: string) {
     return await file.text()
 }
 
-export async function getCrateDirContents(crateId: string, dirPath: string) {
-    const dir = await resolveDirPath(crateId, dirPath)
+export async function getCrateDirContents(crateId: string) {
+    const dir = await getCrateDir(crateId)
 
-    const entries: { name: string; type: FileSystemHandleKind }[] = []
-    for await (const file of dir) {
-        entries.push({ name: file[0], type: file[1].kind })
+    const stack: { handle: FileSystemDirectoryHandle; path: string[] }[] = [
+        { handle: dir, path: [""] }
+    ]
+    const entries: { name: string; type: FileSystemHandleKind; path: string[] }[] = []
+
+    const iterate = async (target: FileSystemDirectoryHandle, path: string[]) => {
+        for await (const [name, handle] of target) {
+            entries.push({ name: name, type: handle.kind, path })
+            if (handle.kind === "directory")
+                stack.push({ handle: handle as FileSystemDirectoryHandle, path: path.concat(name) })
+        }
     }
 
-    return entries
+    while (stack.length > 0) {
+        const entry = stack.shift()!
+        await iterate(entry.handle, entry.path)
+    }
+
+    return entries.map(
+        (entry) =>
+            entry.path.join("/") +
+            (entry.path.join("/").length > 0 ? "/" : "") +
+            entry.name +
+            (entry.type === "directory" ? "/" : "")
+    )
 }
 
 export async function getCrates() {
@@ -80,5 +99,6 @@ export const opfsFunctions = {
     writeFile,
     readFile,
     getCrates,
-    deleteCrateDir
+    deleteCrateDir,
+    getCrateDirContents
 }
