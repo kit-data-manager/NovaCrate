@@ -149,19 +149,24 @@ export function CrateDataProvider({
 
     const healthTest = useCallback(async () => {
         try {
+            console.log("running health test")
             await serviceProvider.healthCheck()
-            setHealthTestError(undefined)
-            if (healthTestError !== undefined) {
-                toast.info("Service Provider has recovered")
-            }
+            setHealthTestError((prev: unknown) => {
+                if (prev !== undefined) {
+                    toast.info("Service Provider has recovered")
+                }
+                return undefined
+            })
         } catch (e) {
             console.error("Health test failed with error", e)
-            setHealthTestError(e)
-            if (healthTestError === undefined) {
-                toast.error("Service Provider is no longer reachable")
-            }
+            setHealthTestError((prev: unknown) => {
+                if (prev === undefined) {
+                    toast.error("Service Provider is no longer reachable")
+                }
+                return e
+            })
         }
-    }, [healthTestError, serviceProvider])
+    }, [serviceProvider])
 
     useInterval(healthTest, 10000)
     useEffect(() => {
