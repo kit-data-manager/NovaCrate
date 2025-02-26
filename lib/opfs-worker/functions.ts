@@ -1,3 +1,5 @@
+import * as fs from "happy-opfs"
+
 async function getCrateStorageDir() {
     const fileSystemHandle = await navigator.storage.getDirectory()
     return await fileSystemHandle.getDirectoryHandle("crate-storage", { create: true })
@@ -16,19 +18,16 @@ async function deleteCrateDir(id: string) {
 async function resolveFilePath(crateId: string, filePath: string) {
     const parts = filePath.split("/")
     const dir = await resolveDirPath(crateId, parts.slice(0, parts.length - 1).join("/"))
-    console.log(parts[parts.length - 1])
     return dir.getFileHandle(parts[parts.length - 1], { create: true })
 }
 
 async function resolveDirPath(crateId: string, filePath: string) {
     const parts = filePath.split("/")
-    console.log(crateId, filePath)
 
     let base = await getCrateDir(crateId)
     if (filePath === "") return base
 
     for (let i = 0; i < parts.length; i++) {
-        console.log(parts[i])
         base = await base.getDirectoryHandle(parts[i])
     }
 
@@ -44,14 +43,11 @@ export async function writeFile(crateId: string, filePath: string, data: Uint8Ar
     handle.close()
 
     if (written !== data.byteLength) throw "Partial write detected"
-    console.log("Write completed successfully")
 }
 
 export async function readFile(crateId: string, filePath: string) {
     const metadataFile = await resolveFilePath(crateId, filePath)
-
-    const file = await metadataFile.getFile()
-    return await file.text()
+    return await metadataFile.getFile()
 }
 
 export async function getCrateDirContents(crateId: string) {
@@ -95,6 +91,16 @@ export async function getCrates() {
     return entries
 }
 
+export async function createCrateZip(crateId: string) {
+    const result = await fs.zip(`/crate-storage/${crateId}`, { preserveRoot: false })
+    if (result.isOk()) {
+        const zip = result.unwrap()
+        return new Blob([zip], { type: "application/zip" })
+    } else {
+        console.error(result.unwrapErr())
+    }
+}
+
 export async function getStorageInfo(): Promise<{
     usedSpace: number
     totalSpace: number
@@ -112,5 +118,6 @@ export const opfsFunctions = {
     getCrates,
     deleteCrateDir,
     getCrateDirContents,
-    getStorageInfo
+    getStorageInfo,
+    createCrateZip
 }
