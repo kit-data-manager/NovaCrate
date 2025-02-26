@@ -117,7 +117,7 @@ declare interface CrateServiceProvider {
      * @param crateId ID of the target crate
      * @param filePath Path to the desired file, including file name and extension
      */
-    getCrateFileURL?: (crateId: string, filePath: string) => string
+    getCrateFileURL?: (crateId: string, filePath: string) => Promise<string>
 
     /**
      * Get the crate archive. This function should initiate a download or save dialog (or similar)

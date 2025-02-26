@@ -37,7 +37,7 @@ export class RestServiceProvider implements CrateServiceProvider {
         return id
     }
 
-    getCrateFileURL(crateId: string, filePath: string): string {
+    async getCrateFileURL(crateId: string, filePath: string) {
         return `http://localhost:8080/crates/${encodeURIComponent(crateId)}/files/${encodeURIComponent(filePath)}`
     }
 

@@ -38,8 +38,8 @@ export function FilePreview({
         } else return undefined
     }, [crateId, previewingFilePath, serviceProvider])
 
-    const fileFetcher = useCallback(async (url: string) => {
-        const req = await fetch(url)
+    const fileFetcher = useCallback(async (url: Promise<string>) => {
+        const req = await fetch(await url)
         if (req.ok) {
             return await req.blob()
         } else {

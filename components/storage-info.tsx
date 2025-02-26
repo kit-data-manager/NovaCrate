@@ -7,6 +7,7 @@ import { HardDrive } from "lucide-react"
 import { useInterval } from "usehooks-ts"
 import { Error } from "@/components/error"
 import HelpTooltip from "@/components/help-tooltip"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function StorageInfo() {
     const { serviceProvider } = useContext(CrateDataContext)
@@ -19,7 +20,7 @@ export function StorageInfo() {
 
     useInterval(mutate, 60000)
 
-    if (isLoading) return <div>Loading...</div>
+    if (isLoading) return <Skeleton className="w-full p-4 h-14 mb-2" />
     if (!data) return null
 
     if (error) return <Error error={error} title={"Storage Info not available"} />

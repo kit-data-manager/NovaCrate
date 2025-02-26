@@ -1,6 +1,7 @@
 import autoBind from "auto-bind"
 import { FunctionWorker } from "@/lib/function-worker"
 import { opfsFunctions } from "@/lib/opfs-worker/functions"
+import fileDownload from "js-file-download"
 
 const template: (name: string, description: string) => ICrate = (
     name: string,
@@ -106,25 +107,42 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
     }
 
     async deleteEntity(crateId: string, entityData: IEntity): Promise<boolean> {
-        throw "Not supported in browser-based environment yet"
+        const crate = await this.getCrate(crateId)
+        const existing = crate["@graph"].findIndex((n) => n["@id"] === entityData["@id"])
+        if (existing >= 0) {
+            crate["@graph"].splice(existing, 1)
+        }
+
+        await this.saveRoCrateMetadataJSON(crateId, JSON.stringify(crate))
+        return true
     }
 
-    downloadCrateZip(id: string): Promise<void> {
-        throw "Not supported in browser-based environment yet"
+    async downloadCrateZip(id: string) {
+        const crate = await this.getCrate(id)
+        const root = crate["@graph"].find((n) => n["@id"] === "./")
+        const name = root?.name ?? "crate-export"
+
+        const blob = await this.worker.execute("createCrateZip", id)
+        if (blob) {
+            fileDownload(blob, `${name}.zip`, "application/zip")
+        } else {
+            throw "Zip file was not created"
+        }
     }
 
-    downloadFile(crateId: string, filePath: string): Promise<void> {
-        throw "Not supported in browser-based environment yet"
+    async downloadFile(crateId: string, filePath: string) {
+        const data = await opfsFunctions.readFile(crateId, filePath)
+        fileDownload(data, filePath.split("/").pop() ?? "unnamed")
     }
 
-    downloadRoCrateMetadataJSON(id: string): Promise<void> {
-        throw "Not supported in browser-based environment yet"
+    async downloadRoCrateMetadataJSON(id: string) {
+        await this.downloadFile(id, "ro-crate-metadata.json")
     }
 
     async getCrate(id: string) {
         // We can safely run this in the main thread to safe worker overhead
         const data = await opfsFunctions.readFile(id, "ro-crate-metadata.json")
-        return JSON.parse(data) as ICrate
+        return JSON.parse(await data.text()) as ICrate
     }
 
     async getCrateFilesList(crateId: string) {
@@ -195,5 +213,10 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
 
     getStorageInfo() {
         return opfsFunctions.getStorageInfo()
+    }
+
+    async getCrateFileURL(crateId: string, filePath: string) {
+        const file = await this.worker.execute("readFile", crateId, filePath)
+        return URL.createObjectURL(file)
     }
 }
