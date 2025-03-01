@@ -14,7 +14,7 @@ async function deleteCrateDir(id: string) {
     if (!result.isOk()) throw result.unwrapErr()
 }
 
-export async function writeFile(crateId: string, filePath: string, data: Uint8Array) {
+export async function writeFile(crateId: string, filePath: string, data: Uint8Array | Blob) {
     const result = await fs.writeFile(resolveCratePath(crateId, filePath), data)
 
     if (result.isErr()) throw result.unwrapErr()
@@ -29,6 +29,17 @@ export async function readFile(crateId: string, filePath: string) {
     }
 }
 
+export async function deleteFile(crateId: string, filePath: string) {
+    const exists = await fs.exists(resolveCratePath(crateId, filePath), { isFile: true })
+    if (!exists.isOk()) throw exists.unwrapErr()
+
+    // Fail silently if file does not exist
+    if (exists.unwrap() === false) return
+
+    const result = await fs.remove(resolveCratePath(crateId, filePath))
+    if (!result.isOk()) throw result.unwrapErr()
+}
+
 export async function getCrateDirContents(crateId: string) {
     const result = await fs.readDir(resolveCratePath(crateId), { recursive: true })
     if (!result.isOk()) throw result.unwrapErr()
@@ -37,6 +48,7 @@ export async function getCrateDirContents(crateId: string) {
     const contents: string[] = []
 
     for await (const entry of iterator) {
+        if (entry.handle.kind === "directory") continue
         contents.push(entry.path)
     }
 
@@ -107,5 +119,6 @@ export const opfsFunctions = {
     getCrateDirContents,
     getStorageInfo,
     createCrateZip,
-    createCrateFromZip
+    createCrateFromZip,
+    deleteFile
 }

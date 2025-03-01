@@ -2,6 +2,7 @@ import autoBind from "auto-bind"
 import { FunctionWorker } from "@/lib/function-worker"
 import { opfsFunctions } from "@/lib/opfs-worker/functions"
 import fileDownload from "js-file-download"
+import { handleSpringError } from "@/lib/spring-error-handling"
 
 const template: (name: string, description: string) => ICrate = (
     name: string,
@@ -75,13 +76,38 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
         return this.worker.execute("createCrateFromZip", zip)
     }
 
-    createCrateFromFiles(
+    async createCrateFromFiles(
         name: string,
         description: string,
         files: File[],
         progressCallback?: (current: number, total: number, errors: string[]) => void
-    ): Promise<string> {
-        throw "Not supported in browser-based environment yet"
+    ) {
+        const errors: string[] = []
+        const id = await this.createCrate(name, description)
+        progressCallback?.(0, files.length, errors)
+
+        for (const file of files) {
+            const pathSplit = file.webkitRelativePath.split("/")
+            if (pathSplit.length > 1) pathSplit[0] = "."
+            try {
+                await this.createFileEntity(
+                    id,
+                    {
+                        "@id": pathSplit.join("/").slice(2),
+                        "@type": "File",
+                        name: pathSplit[pathSplit.length - 1]
+                    },
+                    file
+                )
+            } catch (e) {
+                console.error(e)
+                errors.push(handleSpringError(e))
+            }
+
+            progressCallback?.(files.indexOf(file) + 1, files.length, errors)
+        }
+
+        return id
     }
 
     async createEntity(crateId: string, entityData: IEntity) {
@@ -97,8 +123,17 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
         return true
     }
 
-    createFileEntity(crateId: string, entityData: IEntity, file: File): Promise<boolean> {
-        throw "Not supported in browser-based environment yet"
+    async createFileEntity(crateId: string, entityData: IEntity, file: File) {
+        const entityCreated = await this.createEntity(crateId, {
+            ...entityData,
+            contentSize: file.size + "",
+            encodingFormat: file.type
+        })
+
+        if (entityCreated) {
+            await this.worker.execute("writeFile", crateId, entityData["@id"], file)
+            return true
+        } else throw "Could not create entity"
     }
 
     async deleteCrate(id: string): Promise<boolean> {
@@ -114,6 +149,7 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
         }
 
         await this.saveRoCrateMetadataJSON(crateId, JSON.stringify(crate))
+        await this.worker.execute("deleteFile", crateId, entityData["@id"])
         return true
     }
 
