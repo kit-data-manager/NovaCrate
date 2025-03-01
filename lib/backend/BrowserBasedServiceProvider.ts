@@ -71,8 +71,8 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
         return id
     }
 
-    createCrateFromCrateZip(zip: File): Promise<string> {
-        throw "Not supported in browser-based environment yet"
+    async createCrateFromCrateZip(zip: File) {
+        return this.worker.execute("createCrateFromZip", zip)
     }
 
     createCrateFromFiles(

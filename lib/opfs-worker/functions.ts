@@ -67,6 +67,27 @@ export async function createCrateZip(crateId: string) {
     }
 }
 
+export async function createCrateFromZip(zip: File) {
+    const id = crypto.randomUUID()
+
+    // We first have to write the zip file to OPFS before unzipping
+    const tmpZip = await fs.mkTemp({
+        basename: id,
+        extname: "zip"
+    })
+    if (!tmpZip.isOk()) throw tmpZip.unwrapErr()
+
+    const zipWrite = await fs.writeFile(tmpZip.unwrap(), zip)
+    if (!zipWrite.isOk()) throw zipWrite.unwrapErr()
+
+    const result = await fs.unzip(tmpZip.unwrap(), resolveCratePath(id))
+    if (!result.isOk()) throw result.unwrapErr()
+
+    fs.pruneTemp(new Date())
+
+    return id
+}
+
 export async function getStorageInfo(): Promise<{
     usedSpace: number
     totalSpace: number
@@ -85,5 +106,6 @@ export const opfsFunctions = {
     deleteCrateDir,
     getCrateDirContents,
     getStorageInfo,
-    createCrateZip
+    createCrateZip,
+    createCrateFromZip
 }
