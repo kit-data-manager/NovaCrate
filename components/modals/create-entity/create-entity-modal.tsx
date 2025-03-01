@@ -10,7 +10,7 @@ import { SimpleTypeSelect } from "@/components/modals/create-entity/simple-type-
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { UploadProgress } from "@/components/modals/create-entity/upload-progress"
 import { RO_CRATE_FILE } from "@/lib/constants"
-import { asValidPath, getFolderPath } from "@/lib/utils"
+import { asValidPath } from "@/lib/utils"
 import { CreateProviders } from "@/components/modals/create-entity/create-providers"
 
 export function CreateEntityModal({
@@ -136,7 +136,7 @@ export function CreateEntityModal({
                         return {
                             entity: {
                                 "@id":
-                                    getFolderPath(id) +
+                                    asValidPath(id, true) +
                                     file.webkitRelativePath.split("/").slice(1).join("/"),
                                 "@type": context.reverse(RO_CRATE_FILE) || RO_CRATE_FILE,
                                 name: file.name
