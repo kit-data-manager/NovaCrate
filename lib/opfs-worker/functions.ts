@@ -1,103 +1,69 @@
 import * as fs from "happy-opfs"
 
-async function getCrateStorageDir() {
-    const fileSystemHandle = await navigator.storage.getDirectory()
-    return await fileSystemHandle.getDirectoryHandle("crate-storage", { create: true })
-}
+const CRATE_STORAGE = "crate-storage" as const
 
-async function getCrateDir(id: string) {
-    const crateStorage = await getCrateStorageDir()
-    return await crateStorage.getDirectoryHandle(id, { create: true })
+function resolveCratePath(crateId: string, path?: string) {
+    if (path?.startsWith("./")) path = path.slice(2)
+    if (path?.startsWith("/")) path = path.slice(1)
+
+    return `/${CRATE_STORAGE}/${crateId}` + (path ? `/${path}` : "")
 }
 
 async function deleteCrateDir(id: string) {
-    const crateStorage = await getCrateStorageDir()
-    await crateStorage.removeEntry(id, { recursive: true })
-}
-
-async function resolveFilePath(crateId: string, filePath: string) {
-    const parts = filePath.split("/")
-    const dir = await resolveDirPath(crateId, parts.slice(0, parts.length - 1).join("/"))
-    return dir.getFileHandle(parts[parts.length - 1], { create: true })
-}
-
-async function resolveDirPath(crateId: string, filePath: string) {
-    const parts = filePath.split("/")
-
-    let base = await getCrateDir(crateId)
-    if (filePath === "") return base
-
-    for (let i = 0; i < parts.length; i++) {
-        base = await base.getDirectoryHandle(parts[i])
-    }
-
-    return base
+    const result = await fs.remove(resolveCratePath(id))
+    if (!result.isOk()) throw result.unwrapErr()
 }
 
 export async function writeFile(crateId: string, filePath: string, data: Uint8Array) {
-    const metadataFile = await resolveFilePath(crateId, filePath)
+    const result = await fs.writeFile(resolveCratePath(crateId, filePath), data)
 
-    const handle = await metadataFile.createSyncAccessHandle()
-    handle.truncate(0)
-    const written = handle.write(data)
-    handle.close()
-
-    if (written !== data.byteLength) throw "Partial write detected"
+    if (result.isErr()) throw result.unwrapErr()
 }
 
 export async function readFile(crateId: string, filePath: string) {
-    const metadataFile = await resolveFilePath(crateId, filePath)
-    return await metadataFile.getFile()
+    const result = await fs.readFile(resolveCratePath(crateId, filePath), { encoding: "blob" })
+    if (result.isOk()) {
+        return result.unwrap()
+    } else {
+        throw result.unwrapErr()
+    }
 }
 
 export async function getCrateDirContents(crateId: string) {
-    const dir = await getCrateDir(crateId)
+    const result = await fs.readDir(resolveCratePath(crateId), { recursive: true })
+    if (!result.isOk()) throw result.unwrapErr()
 
-    const stack: { handle: FileSystemDirectoryHandle; path: string[] }[] = [
-        { handle: dir, path: [""] }
-    ]
-    const entries: { name: string; type: FileSystemHandleKind; path: string[] }[] = []
+    const iterator = result.unwrap()
+    const contents: string[] = []
 
-    const iterate = async (target: FileSystemDirectoryHandle, path: string[]) => {
-        for await (const [name, handle] of target) {
-            entries.push({ name: name, type: handle.kind, path })
-            if (handle.kind === "directory")
-                stack.push({ handle: handle as FileSystemDirectoryHandle, path: path.concat(name) })
-        }
+    for await (const entry of iterator) {
+        contents.push(entry.path)
     }
 
-    while (stack.length > 0) {
-        const entry = stack.shift()!
-        await iterate(entry.handle, entry.path)
-    }
-
-    return entries.map(
-        (entry) =>
-            entry.path.join("/") +
-            (entry.path.join("/").length > 0 ? "/" : "") +
-            entry.name +
-            (entry.type === "directory" ? "/" : "")
-    )
+    return contents
 }
 
 export async function getCrates() {
-    const dir = await getCrateStorageDir()
+    const result = await fs.readDir(`/${CRATE_STORAGE}`)
+    if (!result.isOk()) throw result.unwrapErr()
 
-    const entries: string[] = []
-    for await (const file of dir.keys()) {
-        entries.push(file)
+    const iterator = result.unwrap()
+    const crateIds: string[] = []
+
+    for await (const entry of iterator) {
+        crateIds.push(entry.handle.name)
     }
 
-    return entries
+    return crateIds
 }
 
 export async function createCrateZip(crateId: string) {
-    const result = await fs.zip(`/crate-storage/${crateId}`, { preserveRoot: false })
+    const result = await fs.zip(resolveCratePath(crateId), { preserveRoot: false })
     if (result.isOk()) {
         const zip = result.unwrap()
         return new Blob([zip], { type: "application/zip" })
     } else {
-        console.error(result.unwrapErr())
+        throw result.unwrapErr()
     }
 }
 
