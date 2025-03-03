@@ -34,7 +34,7 @@ export async function deleteFile(crateId: string, filePath: string) {
     if (!exists.isOk()) throw exists.unwrapErr()
 
     // Fail silently if file does not exist
-    if (exists.unwrap() === false) return
+    if (!exists.unwrap()) return
 
     const result = await fs.remove(resolveCratePath(crateId, filePath))
     if (!result.isOk()) throw result.unwrapErr()
