@@ -29,8 +29,8 @@ export async function readFile(crateId: string, filePath: string) {
     }
 }
 
-export async function deleteFile(crateId: string, filePath: string) {
-    const exists = await fs.exists(resolveCratePath(crateId, filePath), { isFile: true })
+export async function deleteFileOrFolder(crateId: string, filePath: string) {
+    const exists = await fs.exists(resolveCratePath(crateId, filePath))
     if (!exists.isOk()) throw exists.unwrapErr()
 
     // Fail silently if file does not exist
@@ -120,5 +120,5 @@ export const opfsFunctions = {
     getStorageInfo,
     createCrateZip,
     createCrateFromZip,
-    deleteFile
+    deleteFileOrFolder
 }
