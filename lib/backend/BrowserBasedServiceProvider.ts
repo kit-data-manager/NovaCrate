@@ -149,7 +149,7 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
         }
 
         await this.saveRoCrateMetadataJSON(crateId, JSON.stringify(crate))
-        await this.worker.execute("deleteFile", crateId, entityData["@id"])
+        await this.worker.execute("deleteFileOrFolder", crateId, entityData["@id"])
         return true
     }
 
