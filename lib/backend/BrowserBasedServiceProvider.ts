@@ -208,12 +208,49 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
         throw "Not supported in browser-based environment yet"
     }
 
-    addCustomContextPair(crateId: string, key: string, value: string): Promise<void> {
-        throw "Not supported in browser-based environment yet"
+    async addCustomContextPair(crateId: string, key: string, value: string) {
+        const crate = await this.getCrate(crateId)
+        let context = crate["@context"]
+        if (!Array.isArray(context)) {
+            if (typeof context === "string") {
+                crate["@context"] = {
+                    "@vocab": context,
+                    [key]: value
+                }
+            } else {
+                if (key in context) throw "Key is already defined"
+                context[key] = value
+            }
+        } else {
+            const obj = context.findLast((e) => typeof e === "object")
+            if (obj) {
+                if (key in obj) throw "Key is already defined"
+                obj[key] = value
+            } else {
+                context.push({
+                    [key]: value
+                })
+            }
+        }
+
+        await this.saveRoCrateMetadataJSON(crateId, JSON.stringify(crate))
     }
 
-    removeCustomContextPair(crateId: string, key: string): Promise<void> {
-        throw "Not supported in browser-based environment yet"
+    async removeCustomContextPair(crateId: string, key: string) {
+        const crate = await this.getCrate(crateId)
+        let context = crate["@context"]
+        if (!Array.isArray(context)) {
+            if (typeof context !== "string") {
+                delete context[key]
+            }
+        } else {
+            const obj = context.find((e) => typeof e === "object" && key in e)
+            if (obj && typeof obj === "object") {
+                delete obj[key]
+            }
+        }
+
+        await this.saveRoCrateMetadataJSON(crateId, JSON.stringify(crate))
     }
 
     async saveRoCrateMetadataJSON(crateId: string, json: string): Promise<void> {
