@@ -3,6 +3,7 @@ import { FunctionWorker } from "@/lib/function-worker"
 import { opfsFunctions } from "@/lib/opfs-worker/functions"
 import fileDownload from "js-file-download"
 import { handleSpringError } from "@/lib/spring-error-handling"
+import { addBasePath } from "next/dist/client/add-base-path"
 
 const template: (name: string, description: string) => ICrate = (
     name: string,
@@ -59,7 +60,7 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
         }
 
         this.worker = new FunctionWorker(opfsFunctions)
-        this.worker.mount("/opfs-worker.js")
+        this.worker.mount(addBasePath("/opfs-worker.js"))
 
         autoBind(this)
     }
