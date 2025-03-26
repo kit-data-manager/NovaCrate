@@ -41,6 +41,14 @@ export async function deleteFileOrFolder(crateId: string, filePath: string) {
 }
 
 export async function getCrateDirContents(crateId: string) {
+    // First, check if crate storage dir exists and create it if not
+    const crateDirExists = await fs.exists(resolveCratePath(crateId, crateId))
+    if (!crateDirExists.isOk) throw crateDirExists.unwrapErr()
+    else if (!crateDirExists.unwrap()) {
+        const mkdirResult = await fs.mkdir(resolveCratePath(crateId, crateId))
+        if (!mkdirResult.isOk()) throw mkdirResult.unwrapErr()
+    }
+
     const result = await fs.readDir(resolveCratePath(crateId), { recursive: true })
     if (!result.isOk()) throw result.unwrapErr()
 
@@ -95,7 +103,7 @@ export async function createCrateFromZip(zip: File) {
     const result = await fs.unzip(tmpZip.unwrap(), resolveCratePath(id))
     if (!result.isOk()) throw result.unwrapErr()
 
-    fs.pruneTemp(new Date())
+    fs.pruneTemp(new Date()).then()
 
     return id
 }
