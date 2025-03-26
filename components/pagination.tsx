@@ -53,7 +53,8 @@ export function Pagination({
 
     useEffect(() => {
         if (lastChildrenLength.current >= 0) {
-            if (childrenLength > lastChildrenLength.current) {
+            // If last children length was 1 or less, assume it was just a loading skeleton -> do not jump to last page
+            if (childrenLength > lastChildrenLength.current && lastChildrenLength.current > 1) {
                 setPage(pageCount - 1)
             }
         }
