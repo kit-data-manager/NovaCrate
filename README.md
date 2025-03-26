@@ -5,7 +5,7 @@ remote backend.
 
 ## Usage
 
-The latest version of NovaCrate (Standalone Web App) can be found [**here**](https://kit-data-manager.github.io/novacrate/)
+The latest version of NovaCrate (Standalone Web App) can be found [**here**](https://kit-data-manager.github.io/NovaCrate/)
 
 ### Editions
 
@@ -13,7 +13,7 @@ NovaCrate can be used and deployed in multiple different ways. Currently, the fo
 
 | Name               | Status                 | Description                                                                                                                                                                                                             | Notes                                                                                                       |
 |--------------------|------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
-| Standalone Web App | Active                 | Standalone Web App without a backend. Stores Crates in the local origin-private file system of the browser                                                                                                              | [Access here](https://kit-data-manager.github.io/novacrate/)                                                |
+| Standalone Web App | Active                 | Standalone Web App without a backend. Stores Crates in the local origin-private file system of the browser                                                                                                              | [Access here](https://kit-data-manager.github.io/NovaCrate/)                                                |
 | Desktop App        | Not maintained         | Tauri App with a local backend. Has full access to file system and can make use of arbitrary backend software.                                                                                                          | See `src-tauri`                                                                                             |
 | Cloud Frontend     | Currently out of scope | NovaCrate is a frontend that can be used with any compatible backend solution, for example a cloud based service that hosts RO-Crates. This approach has not been explored yet due to lack of viable backend solutions. | See `src/lib/backend/CrateServiceProvider.ts` for a list of methods that a backend adapter should implement |
 

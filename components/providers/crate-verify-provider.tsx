@@ -2,6 +2,7 @@ import { schemaWorkerFunctions } from "@/lib/schema-worker/helpers"
 import { createContext, PropsWithChildren } from "react"
 import { FunctionWorker } from "@/lib/function-worker"
 import { useFunctionWorker } from "@/lib/use-function-worker"
+import { addBasePath } from "next/dist/client/add-base-path"
 
 export interface ICrateVerifyContext {
     isReady: boolean
@@ -20,7 +21,7 @@ export const CrateVerifyContext = createContext<ICrateVerifyContext>({
 export function CrateVerifyProvider(props: PropsWithChildren) {
     const { worker, isUsingWebWorker, isReady } = useFunctionWorker(
         schemaWorkerFunctions,
-        "/schema-worker.js"
+        addBasePath("/schema-worker.js")
     )
 
     return (
