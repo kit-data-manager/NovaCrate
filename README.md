@@ -3,14 +3,6 @@
 Web-based interactive editor for **creating, editing and visualising** research object crates. The editor can be extended to work with any local or 
 remote backend.
 
-### Screenshot: Entity Editor
-
-![](./docs/teaser.png)
-
-### Screenshot: RO-Crate Graph visualization
-
-![](./docs/teaser2.png)
-
 ## Usage
 
 The latest version of NovaCrate (Standalone Web App) can be found [**here**](https://kit-data-manager.github.io/novacrate/)
@@ -31,6 +23,18 @@ NovaCrate is a frontend that can be used for any backend that hosts RO-Crates (a
 See `src/lib/backend/CrateServiceProvider.ts` for a list of methods that a backend adapter should implement. All of these methods can make use of backend resources or be suplemented locally.
 
 NovaCrate currently does not include mechanisms for authentication, access control or concurrent access.
+
+## State of Development
+
+NovaCrate is currently in the public beta phase.
+
+- ✅ Create, read and edit RO-Crates
+- ✅ Visualize RO-Crates with a graph
+- ✅ Context-information and property descriptions
+- ✅ Automatic recommendation of fitting entity types and properties
+- ✅ Focused on good usability
+- ❌ Validation of RO-Crates
+- ❌ Support for RO-Crate Profiles
 
 ## Development
 
