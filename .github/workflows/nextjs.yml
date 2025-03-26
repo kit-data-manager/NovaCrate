@@ -57,7 +57,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Set base path environment variable
-        run: export BASE_PATH=${{ steps.deloyment.outputs.base_url }}
+        run: echo "BASE_PATH=/${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
       - name: Build with Next.js
         run: npm run build
       - name: Upload artifact
