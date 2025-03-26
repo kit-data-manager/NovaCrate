@@ -61,7 +61,7 @@ export function CreateEntity({
     }, [fileUpload, folderUpload, forceId])
 
     const [name, setName] = useState(defaultName || "")
-    const [identifier, setIdentifier] = useState<null | string>(null)
+    const [identifier, setIdentifier] = useState<string>("")
     const [emptyFolder, setEmptyFolder] = useState(false)
     const { plainFiles, openFilePicker } = useFilePicker({})
     const { plainFiles: folderFiles, openFilePicker: openFolderPicker } = useFilePicker({
@@ -78,7 +78,7 @@ export function CreateEntity({
         setIdentifier(e.target.value)
     }, [])
 
-    const _autoId = useAutoId(identifier || name)
+    const autoId = useAutoId(name)
 
     const hasFileUpload = useMemo(() => {
         return fileUpload && !forceId
@@ -87,10 +87,6 @@ export function CreateEntity({
     const hasFolderUpload = useMemo(() => {
         return folderUpload && !forceId
     }, [folderUpload, forceId])
-
-    const autoId = useMemo(() => {
-        return forceId || identifier || (!hasFileUpload && !hasFolderUpload && _autoId) || ""
-    }, [_autoId, forceId, hasFileUpload, hasFolderUpload, identifier])
 
     const baseFileName = useMemo(() => {
         if (plainFiles.length > 0) {
@@ -126,21 +122,22 @@ export function CreateEntity({
             } else {
                 onUploadFolder(path, name, emptyFolder ? [] : folderFiles)
             }
-        } else onCreateClick(autoId, name)
+        } else onCreateClick(forceId || identifier || autoId, name)
     }, [
-        autoId,
-        emptyFolder,
-        folderFiles,
         forceId,
         hasFileUpload,
+        forceWithoutFile,
         hasFolderUpload,
-        name,
         onCreateClick,
+        identifier,
+        autoId,
+        name,
         onUploadFile,
-        onUploadFolder,
         path,
         plainFiles,
-        forceWithoutFile
+        onUploadFolder,
+        emptyFolder,
+        folderFiles
     ])
 
     const onNameInputKeyDown = useCallback(
@@ -332,14 +329,9 @@ export function CreateEntity({
                 <div>
                     <Label>Identifier</Label>
                     <Input
-                        placeholder={
-                            hasFileUpload || hasFolderUpload
-                                ? "https://"
-                                : "#localname or https://..."
-                        }
-                        value={autoId}
+                        placeholder={autoId || "#localname or https://..."}
+                        value={identifier}
                         onChange={onIdentifierChange}
-                        disabled={!!forceId}
                     />
                     <a
                         href={
