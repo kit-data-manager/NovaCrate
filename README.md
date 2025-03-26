@@ -1,18 +1,41 @@
 # NovaCrate
 
-Web-based interactive editor for **creating, editing and visualising** research object crates. Currently requires
-to run a separate backend to allow manipulating ro-crates on the local hard drive. The editor can be extended to work with any local or 
-distributed back-end.
+Web-based interactive editor for **creating, editing and visualising** research object crates. The editor can be extended to work with any local or 
+remote backend.
+
+### Screenshot: Entity Editor
 
 ![](./docs/teaser.png)
 
+### Screenshot: RO-Crate Graph visualization
+
 ![](./docs/teaser2.png)
 
-## Installation
+## Usage
+
+The latest version of NovaCrate (Standalone Web App) can be found [**here**](https://kit-data-manager.github.io/novacrate/)
+
+### Editions
+
+NovaCrate can be used and deployed in multiple different ways. Currently, the following editions (conceptually) exist:
+
+| Name               | Status                 | Description                                                                                                                                                                                                             | Notes                                                                                                       |
+|--------------------|------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| Standalone Web App | Active                 | Standalone Web App without a backend. Stores Crates in the local origin-private file system of the browser                                                                                                              | [Access here](https://kit-data-manager.github.io/novacrate/)                                                |
+| Desktop App        | Not maintained         | Tauri App with a local backend. Has full access to file system and can make use of arbitrary backend software.                                                                                                          | See `src-tauri`                                                                                             |
+| Cloud Frontend     | Currently out of scope | NovaCrate is a frontend that can be used with any compatible backend solution, for example a cloud based service that hosts RO-Crates. This approach has not been explored yet due to lack of viable backend solutions. | See `src/lib/backend/CrateServiceProvider.ts` for a list of methods that a backend adapter should implement |
+
+### How To: Custom Backend
+
+NovaCrate is a frontend that can be used for any backend that hosts RO-Crates (an appropriate backend adapter must be implemented). This could be anything in the range from a simple file storage to a full REST Service for manipulating crates.
+See `src/lib/backend/CrateServiceProvider.ts` for a list of methods that a backend adapter should implement. All of these methods can make use of backend resources or be suplemented locally.
+
+NovaCrate currently does not include mechanisms for authentication, access control or concurrent access.
+
+## Development
 
 ### Prerequisites
 
-- Clone and install [ro-crate-rest](https://gitlab.kit.edu/kit/scc/dem/dem-students/ChristopherR/implementation/ro-crate-rest), make sure it is running
 - Install Node.js >= 20
 - Clone the NovaCrate repository
 
@@ -60,15 +83,10 @@ npx serve@latest out
 
 ## Thesis
 
-This project was created as part of a [bachelor thesis](https://doi.org/10.5445/IR/1000178790)
+This project was first created as part of a [bachelor thesis](https://doi.org/10.5445/IR/1000178790)
 
 ## Structure
 
-Most of the structure of the editor and many implementation and design details are outlined in the bachelors thesis.
+Most of the structure of the editor and many implementation and design details are outlined in the bachelor thesis.
 
-To summarize: This is a Next.js app. Pages are located in /app, components in /components and anything else is probably in /lib
-
-
-## Tauri Integration
-
-Initial tests with tauri, to turn NovaCrate into a desktop app, were successful. Sources can be found in the src-tauri folder.
+To summarize: This is a Next.js app. Pages are located in /app, components in /components and anything else is probably in /lib.
