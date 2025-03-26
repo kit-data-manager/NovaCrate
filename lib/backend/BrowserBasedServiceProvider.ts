@@ -64,6 +64,10 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
         autoBind(this)
     }
 
+    isWorkerHealthy(): boolean {
+        return this.workerOpfsHealthy
+    }
+
     async createCrate(name: string, description: string) {
         const id = crypto.randomUUID()
         const crate = template(name, description)

@@ -1,9 +1,10 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Cog, HardHat, Settings } from "lucide-react"
+import { Cog, HardHat } from "lucide-react"
 import { PropsWithChildren, useMemo, useState } from "react"
 import { GeneralSettings } from "@/components/modals/settings/general"
 import { WorkerSettings } from "@/components/modals/settings/workers"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
 export enum SettingsPages {
     GENERAL,
@@ -52,6 +53,10 @@ export function SettingsModal({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="min-w-[1000px] min-h-[600px] max-h-[600px]">
+                <VisuallyHidden>
+                    <DialogTitle>Settings</DialogTitle>
+                </VisuallyHidden>
+
                 <div className="grid grid-cols-[200px_auto] h-full max-h-full">
                     <div className="absolute bg-accent top-0 left-0 w-[200px] h-full rounded-l p-4 flex flex-col gap-2">
                         <h3 className="font-semibold text-2xl leading-none p-2 mb-2">Settings</h3>

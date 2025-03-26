@@ -1,9 +1,11 @@
-import { useCallback, useContext, useEffect, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { ProvisioningStatus } from "@/lib/schema-worker/SchemaGraph"
 import { CrateVerifyContext } from "@/components/providers/crate-verify-provider"
 import { Error } from "@/components/error"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Check, HardHat, Loader, Loader2, XIcon } from "lucide-react"
+import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { BrowserBasedServiceProvider } from "@/lib/backend/BrowserBasedServiceProvider"
 
 function ProvisioningStatusDisplay({ isLoaded, error }: { isLoaded?: boolean; error: unknown }) {
     if (typeof isLoaded === "undefined" && !error)
@@ -61,6 +63,18 @@ export function WorkerSettings() {
     const [schemaWorkerError, setSchemaWorkerError] = useState<unknown>()
     const { worker, isUsingWebWorker } = useContext(CrateVerifyContext)
 
+    const { serviceProvider } = useContext(CrateDataContext)
+
+    const hasServiceProviderWorker = useMemo(() => {
+        return serviceProvider instanceof BrowserBasedServiceProvider
+    }, [serviceProvider])
+
+    const isServiceProviderWorkerHealthy = useMemo(() => {
+        if (serviceProvider instanceof BrowserBasedServiceProvider) {
+            return serviceProvider.isWorkerHealthy()
+        } else return false
+    }, [serviceProvider])
+
     const fetchData = useCallback(async () => {
         const { workerActive, provisionStatus } = await worker.execute("getProvisioningStatus")
         setIsSchemaWorkerActive(workerActive)
@@ -74,7 +88,7 @@ export function WorkerSettings() {
     return (
         <div>
             <h3 className="font-semibold text-2xl leading-none p-2 pl-0 pt-0 mb-2">Workers</h3>
-            <div className="p-4 border rounded">
+            <div className="p-4 border rounded mb-4">
                 <Error title="Failed to get worker status" error={schemaWorkerError} />
                 <div>
                     <h4 className="mb-2 text-lg font-bold flex items-center">
@@ -114,6 +128,23 @@ export function WorkerSettings() {
                     </div>
                 </div>
             </div>
+
+            {hasServiceProviderWorker ? (
+                <div className="p-4 border rounded">
+                    <div>
+                        <h4 className="mb-2 text-lg font-bold flex items-center">
+                            <HardHat className="w-5 h-5 mr-2" /> OSPF Worker
+                        </h4>
+                        <div className="flex gap-2">
+                            Worker Healthy:{" "}
+                            <SuccessDisplay success={isServiceProviderWorkerHealthy} />
+                        </div>
+                        <div className="flex gap-2">
+                            Worker in Use: <SuccessDisplay success={true} />
+                        </div>
+                    </div>
+                </div>
+            ) : null}
         </div>
     )
 }
