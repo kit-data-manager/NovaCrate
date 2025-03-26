@@ -1,14 +1,16 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Cog, HardHat } from "lucide-react"
+import { Cog, HardDrive, HardHat } from "lucide-react"
 import { PropsWithChildren, useMemo, useState } from "react"
 import { GeneralSettings } from "@/components/modals/settings/general"
 import { WorkerSettings } from "@/components/modals/settings/workers"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
+import { StoragePage } from "@/components/modals/settings/storage"
 
 export enum SettingsPages {
     GENERAL,
-    WORKERS
+    WORKERS,
+    STORAGE
 }
 
 function SettingsPageButton({
@@ -47,6 +49,8 @@ export function SettingsModal({
                 return <GeneralSettings />
             case SettingsPages.WORKERS:
                 return <WorkerSettings />
+            case SettingsPages.STORAGE:
+                return <StoragePage />
         }
     }, [page])
 
@@ -73,6 +77,13 @@ export function SettingsModal({
                             setPage={setPage}
                         >
                             <HardHat className="w-4 h-4 mr-2" /> Workers
+                        </SettingsPageButton>
+                        <SettingsPageButton
+                            page={SettingsPages.STORAGE}
+                            currentPage={page}
+                            setPage={setPage}
+                        >
+                            <HardDrive className="w-4 h-4 mr-2" /> Storage
                         </SettingsPageButton>
                     </div>
                     <div />
