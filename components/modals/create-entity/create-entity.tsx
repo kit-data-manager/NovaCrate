@@ -80,10 +80,6 @@ export function CreateEntity({
 
     const _autoId = useAutoId(identifier || name)
 
-    const autoId = useMemo(() => {
-        return forceId || identifier || _autoId
-    }, [_autoId, forceId, identifier])
-
     const hasFileUpload = useMemo(() => {
         return fileUpload && !forceId
     }, [fileUpload, forceId])
@@ -91,6 +87,10 @@ export function CreateEntity({
     const hasFolderUpload = useMemo(() => {
         return folderUpload && !forceId
     }, [folderUpload, forceId])
+
+    const autoId = useMemo(() => {
+        return forceId || identifier || (!hasFileUpload && !hasFolderUpload && _autoId) || ""
+    }, [_autoId, forceId, hasFileUpload, hasFolderUpload, identifier])
 
     const baseFileName = useMemo(() => {
         if (plainFiles.length > 0) {
@@ -332,13 +332,21 @@ export function CreateEntity({
                 <div>
                     <Label>Identifier</Label>
                     <Input
-                        placeholder={"#localname or https://..."}
+                        placeholder={
+                            hasFileUpload || hasFolderUpload
+                                ? "https://"
+                                : "#localname or https://..."
+                        }
                         value={autoId}
                         onChange={onIdentifierChange}
                         disabled={!!forceId}
                     />
                     <a
-                        href="https://www.researchobject.org/ro-crate/1.1/contextual-entities.html#identifiers-for-contextual-entities"
+                        href={
+                            hasFileUpload || hasFolderUpload
+                                ? "https://www.researchobject.org/ro-crate/specification/1.1/data-entities.html"
+                                : "https://www.researchobject.org/ro-crate/specification/1.1/contextual-entities.html#identifiers-for-contextual-entities"
+                        }
                         target="_blank"
                         className="text-sm inline-flex pt-1 text-muted-foreground hover:underline"
                     >
