@@ -87,7 +87,7 @@ export async function createCrateZip(crateId: string) {
     }
 }
 
-export async function createCrateFromZip(zip: File) {
+export async function createCrateFromZip(zip: Blob) {
     const id = crypto.randomUUID()
 
     // We first have to write the zip file to OPFS before unzipping
