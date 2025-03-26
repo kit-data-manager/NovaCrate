@@ -59,31 +59,13 @@ export function DocumentationModalInner({
                 <div className="flex gap-1">
                     <a
                         className="hover:underline underline-offset-4"
-                        href="https://github.com/kit-data-manager/ro-crate-java"
+                        href="https://github.com/kit-data-manager/novacrate"
                         target="_blank"
                     >
-                        ro-crate-java GitHub Repository
+                        NovaCrate Repository
                     </a>
                     <ExternalLinkIcon className="w-4 h-4" />
                 </div>
-
-                <div className="flex gap-1">
-                    <a
-                        className="hover:underline underline-offset-4"
-                        href="https://github.com/kit-data-manager/ro-crate-rest"
-                        target="_blank"
-                    >
-                        ro-crate-rest GitHub Repository
-                    </a>
-                    <ExternalLinkIcon className="w-4 h-4" />
-                </div>
-
-                {/*<div className="flex gap-1">*/}
-                {/*    <a className="hover:underline underline-offset-4" href="" target="_blank">*/}
-                {/*        NovaCrate Repository*/}
-                {/*    </a>*/}
-                {/*    <ExternalLinkIcon className="w-4 h-4" />*/}
-                {/*</div>*/}
             </DialogContent>
         </Dialog>
     )
