@@ -114,7 +114,7 @@ class SchemaProvisionManager {
     private provisionSchemaOrgPromise: Promise<void> | undefined = undefined
     private async provisionSchemaOrg() {
         const fn = async () => {
-            const response = await fetch("/schema/schemaorg-adapted.json")
+            const response = await fetch(process.env.BASE_PATH + "/schema/schemaorg-adapted.json")
             if (!response.ok)
                 throw "Provisioning of Schema.org failed. Cannot continue with resolving."
 
