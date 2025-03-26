@@ -25,7 +25,12 @@ const config = {
     },
     resolve: {
         extensions: [".ts", ".ts", ".js"]
-    }
+    },
+    plugins: [
+        new webpack.DefinePlugin({
+            "process.env.BASE_PATH": JSON.stringify(process.env.BASE_PATH || "")
+        })
+    ]
 }
 
 module.exports = config

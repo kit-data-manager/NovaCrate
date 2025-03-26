@@ -56,6 +56,8 @@ jobs:
 #            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
       - name: Install dependencies
         run: npm ci
+      - name: Set base path environment variable
+        run: export BASE_PATH=${{ steps.deloyment.outputs.base_url }}
       - name: Build with Next.js
         run: npm run build
       - name: Upload artifact
