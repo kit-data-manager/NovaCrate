@@ -23,7 +23,7 @@ declare interface CrateServiceProvider {
      * @returns Promise - resolves on success with the id if the new crate
      * @throws Error when the ID is already in use or when an error occurred
      */
-    createCrateFromCrateZip(zip: File): Promise<string>
+    createCrateFromCrateZip(zip: Blob): Promise<string>
 
     /**
      * Create a new crate with a folder of files. The folder is not required to already
