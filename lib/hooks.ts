@@ -9,6 +9,7 @@ import { useGraphState } from "@/components/providers/graph-state-provider"
 import { Action, notFoundAction } from "@/lib/state/actions"
 import { useActionsStore } from "@/components/providers/actions-provider"
 import { useFileExplorerState } from "@/lib/state/file-explorer-state"
+import { addBasePath } from "next/dist/client/add-base-path"
 
 const MAX_LIST_LENGTH = 100
 
@@ -413,4 +414,20 @@ export function useDeferredValue<T>(
         unDeferredValue: state,
         deferredOnChange: onTriggerChange
     }
+}
+
+export function useDemoCrateLoader() {
+    return useCallback(async (name: string) => {
+        try {
+            const path = addBasePath("examples/" + name + ".zip")
+            const result = await fetch(path)
+
+            if (result.ok) {
+                return result.blob()
+            } else return null
+        } catch (e) {
+            console.error("Demo crate loader failed", e)
+            return null
+        }
+    }, [])
 }
