@@ -301,3 +301,21 @@ export enum Diff {
     Changed,
     New
 }
+
+/**
+ * Compare a value or an array of values using Object.is
+ * @param data
+ * @param oldData
+ * @returns true when data and oldData are equal, or if each of their indexes is equal (in case of an array)
+ */
+export function isEqual<I>(data: I | I[], oldData: I | I[]) {
+    if (Array.isArray(data) && Array.isArray(oldData)) {
+        if (data.length !== oldData.length) return false
+        for (let i = 0; i < data.length; i++) {
+            if (!Object.is(data[i], oldData[i])) return false
+        }
+        return true
+    } else {
+        return Object.is(data, oldData)
+    }
+}
