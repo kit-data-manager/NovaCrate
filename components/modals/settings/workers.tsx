@@ -133,7 +133,7 @@ export function WorkerSettings() {
                 <div className="p-4 border rounded">
                     <div>
                         <h4 className="mb-2 text-lg font-bold flex items-center">
-                            <HardHat className="w-5 h-5 mr-2" /> OSPF Worker
+                            <HardHat className="w-5 h-5 mr-2" /> OPFS Worker
                         </h4>
                         <div className="flex gap-2">
                             Worker Healthy:{" "}

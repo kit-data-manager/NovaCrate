@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Cog, HardDrive, HardHat } from "lucide-react"
+import { HardDrive, HardHat } from "lucide-react"
 import { PropsWithChildren, useMemo, useState } from "react"
 import { GeneralSettings } from "@/components/modals/settings/general"
 import { WorkerSettings } from "@/components/modals/settings/workers"
@@ -41,7 +41,7 @@ export function SettingsModal({
     open: boolean
     onOpenChange(open: boolean): void
 }) {
-    const [page, setPage] = useState(SettingsPages.GENERAL)
+    const [page, setPage] = useState(SettingsPages.WORKERS)
 
     const content = useMemo(() => {
         switch (page) {
@@ -64,13 +64,13 @@ export function SettingsModal({
                 <div className="grid grid-cols-[200px_auto] h-full max-h-full">
                     <div className="absolute bg-accent top-0 left-0 w-[200px] h-full rounded-l p-4 flex flex-col gap-2">
                         <h3 className="font-semibold text-2xl leading-none p-2 mb-2">Settings</h3>
-                        <SettingsPageButton
-                            page={SettingsPages.GENERAL}
-                            currentPage={page}
-                            setPage={setPage}
-                        >
-                            <Cog className="w-4 h-4 mr-2" /> General
-                        </SettingsPageButton>
+                        {/*<SettingsPageButton*/}
+                        {/*    page={SettingsPages.GENERAL}*/}
+                        {/*    currentPage={page}*/}
+                        {/*    setPage={setPage}*/}
+                        {/*>*/}
+                        {/*    <Cog className="w-4 h-4 mr-2" /> General*/}
+                        {/*</SettingsPageButton>*/}
                         <SettingsPageButton
                             page={SettingsPages.WORKERS}
                             currentPage={page}
