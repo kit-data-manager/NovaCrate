@@ -3,10 +3,12 @@
 import {
     BookOpen,
     ChevronDown,
+    CirclePlay,
     Clock,
     FolderOpen,
     HardDrive,
     Loader,
+    LoaderCircle,
     Moon,
     Package,
     PackageOpen,
@@ -29,7 +31,7 @@ import { useRouter } from "next/navigation"
 import { CrateEntry } from "@/components/landing/crate-entry"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useAsync, useRecentCrates } from "@/lib/hooks"
+import { useAsync, useDemoCrateLoader, useRecentCrates } from "@/lib/hooks"
 import { DeleteCrateModal } from "@/components/landing/delete-crate-modal"
 import { CreateCrateModal } from "@/components/landing/create-crate-modal"
 import { Error } from "@/components/error"
@@ -54,6 +56,9 @@ export default function EditorLandingPage() {
         accept: ".zip"
     })
     const { showDocumentationModal } = useContext(GlobalModalContext)
+    const demoLoader = useDemoCrateLoader()
+    const [demoLoaderError, setDemoLoaderError] = useState<unknown>()
+    const [demoLoading, setDemoLoading] = useState(false)
 
     useEffect(() => {
         console.debug("Unsetting crate ID")
@@ -67,7 +72,6 @@ export default function EditorLandingPage() {
     const [createCrateModalState, setCreateCrateModalState] = useState({
         open: false,
         fromFolder: false,
-        fromExample: undefined as undefined | string,
         fromZip: undefined as File | undefined
     })
     const [search, setSearch] = useState("")
@@ -95,7 +99,6 @@ export default function EditorLandingPage() {
 
     const createEmptyCrate = useCallback(() => {
         setCreateCrateModalState({
-            fromExample: undefined,
             fromFolder: false,
             fromZip: undefined,
             open: true
@@ -104,25 +107,50 @@ export default function EditorLandingPage() {
 
     const createCrateFromFolder = useCallback(() => {
         setCreateCrateModalState({
-            fromExample: undefined,
             fromFolder: true,
             fromZip: undefined,
             open: true
         })
     }, [])
 
-    // const createCrateFromExample = useCallback((example: string) => {
-    //     setCreateCrateModalState({
-    //         fromExample: example,
-    //         fromFolder: false,
-    //         open: true
-    //     })
-    // }, [])
+    const createCrateFromExample = useCallback(
+        async (name: string) => {
+            try {
+                setDemoLoading(true)
+                const data = await demoLoader(name)
+                if (data === null) {
+                    setDemoLoaderError("Failed to load demo crate")
+                    setDemoLoading(false)
+                } else {
+                    if (!serviceProvider) {
+                        setDemoLoading(false)
+                        return setDemoLoaderError("Service provider not ready")
+                    }
+                    const id = await serviceProvider?.createCrateFromCrateZip(data)
+                    setDemoLoaderError(undefined)
+
+                    setFadeOutAnimation(true)
+                    router.prefetch(`/editor/full/entities`)
+                    setTimeout(() => {
+                        if (id !== "undefined") {
+                            setCrateId(id)
+                            router.push(`/editor/full/entities`)
+                        } else {
+                            setDemoLoading(false)
+                            setDemoLoaderError("Failed to load demo crate")
+                        }
+                    }, 500)
+                }
+            } catch (e) {
+                setDemoLoaderError(e)
+            }
+        },
+        [demoLoader, router, serviceProvider, setCrateId]
+    )
 
     useEffect(() => {
         if (zipFiles.length > 0) {
             setCreateCrateModalState({
-                fromExample: undefined,
                 fromFolder: false,
                 fromZip: zipFiles[0],
                 open: true
@@ -228,16 +256,6 @@ export default function EditorLandingPage() {
                                     <Loader className="w-4 h-4 mr-2" />
                                     Start from scratch
                                 </DropdownMenuItem>
-                                {/*<DropdownMenuSub>*/}
-                                {/*    <DropdownMenuSubTrigger>*/}
-                                {/*        <Blocks className="w-4 h-4 mr-2" /> Examples*/}
-                                {/*    </DropdownMenuSubTrigger>*/}
-                                {/*    <DropdownMenuSubContent>*/}
-                                {/*        <DropdownMenuItem>*/}
-                                {/*            <Blocks className="w-4 h-4 mr-2" /> Example One*/}
-                                {/*        </DropdownMenuItem>*/}
-                                {/*    </DropdownMenuSubContent>*/}
-                                {/*</DropdownMenuSub>*/}
                             </DropdownMenuContent>
                         </DropdownMenu>
 
@@ -305,8 +323,40 @@ export default function EditorLandingPage() {
                             </div>
                         </div>
                     </button>
+
+                    <div
+                        className={`max-w-[1000px] ml-auto mr-auto border flex col-span-2 w-full rounded-lg p-4 items-center`}
+                    >
+                        <CirclePlay className="size-4 mr-2" />
+                        <div className="font-bold mr-2">Quickstart</div>
+                        <div>Try out NovaCrate with one of these demo crates</div>
+                        <div className="grow" />
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" disabled={demoLoading}>
+                                    {demoLoading && (
+                                        <LoaderCircle className="animate-spin mr-2 size-4" />
+                                    )}{" "}
+                                    Quickstart <ChevronDown className="size-4 ml-2" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem
+                                    onClick={() => createCrateFromExample("ro-crate-spec")}
+                                >
+                                    <CirclePlay className="size-4 mr-2" />
+                                    RO-Crate Specification Crate
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
 
+                <Error
+                    title="Demo could not be started"
+                    error={demoLoaderError}
+                    className="m-20 mb-0"
+                />
                 <Error
                     title="Service Provider is not reachable"
                     error={error}
@@ -359,16 +409,15 @@ export default function EditorLandingPage() {
                                     {searchInfo}
                                     <Pagination pageSize={10}>
                                         {!recentCrates ? (
-                                            [0, 0, 0].map((_, i) => {
-                                                return (
-                                                    <Fragment key={i}>
-                                                        <Skeleton className="w-4 h-4" />
-                                                        <Skeleton className="w-full h-8" />
-                                                        <Skeleton className="w-full h-8" />
-                                                        <Skeleton className="w-full h-8" />
-                                                    </Fragment>
-                                                )
-                                            })
+                                            <div>
+                                                {[0, 0, 0].map((_, i) => {
+                                                    return (
+                                                        <div key={i}>
+                                                            <Skeleton className="w-full h-8 mb-2" />
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
                                         ) : recentCrates.length === 0 ? (
                                             <>
                                                 <div />

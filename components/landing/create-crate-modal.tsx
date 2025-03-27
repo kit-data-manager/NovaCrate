@@ -21,14 +21,12 @@ export function CreateCrateModal({
     open,
     onOpenChange,
     fromFolder,
-    fromExample,
     fromZip,
     openEditor
 }: {
     open: boolean
     onOpenChange: (isOpen: boolean) => void
     fromFolder: boolean
-    fromExample?: string
     fromZip?: File
     openEditor(id: string): void
 }) {
@@ -128,26 +126,21 @@ export function CreateCrateModal({
     }, [files])
 
     const onCreateClick = useCallback(() => {
-        if (fromExample) {
-        } else if (fromFolder) {
+        if (fromFolder) {
             createCrateFromCrateFiles()
         } else {
             createEmptyCrate()
         }
-    }, [createCrateFromCrateFiles, createEmptyCrate, fromExample, fromFolder])
+    }, [createCrateFromCrateFiles, createEmptyCrate, fromFolder])
 
     return (
         <Dialog open={open} onOpenChange={localOnOpenChange}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Create a new Crate</DialogTitle>
-                    {fromExample ? (
-                        <DialogDescription>Using Example: {fromExample}</DialogDescription>
-                    ) : (
-                        <DialogDescription>
-                            You can always change the name and description later.
-                        </DialogDescription>
-                    )}
+                    <DialogDescription>
+                        You can always change the name and description later.
+                    </DialogDescription>
                 </DialogHeader>
 
                 {uploading ? (

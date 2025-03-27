@@ -77,7 +77,7 @@ export class BrowserBasedServiceProvider implements CrateServiceProvider {
         return id
     }
 
-    async createCrateFromCrateZip(zip: File) {
+    async createCrateFromCrateZip(zip: Blob) {
         return this.worker.execute("createCrateFromZip", zip)
     }
 

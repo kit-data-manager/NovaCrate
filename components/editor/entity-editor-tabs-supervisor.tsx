@@ -1,7 +1,7 @@
 "use client"
 
 import { useEditorState } from "@/lib/state/editor-state"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { Diff } from "@/lib/utils"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 
@@ -21,6 +21,20 @@ export function EntityEditorTabsSupervisor() {
             }
         }
     }, [entities, entitiesChangelist, openTab, tabs])
+
+    const rootOpened = useRef(false)
+    useEffect(() => {
+        if (rootOpened.current) return
+
+        const root = entities.get("./")
+        if (root) {
+            openTab(createEntityEditorTab(root), true)
+            rootOpened.current = true
+        } else if (entities.size > 0) {
+            // Assume entities are done with loading and there is no root
+            rootOpened.current = true
+        }
+    }, [entities, openTab])
 
     return null
 }
