@@ -4,7 +4,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { usePathname, useRouter } from "next/navigation"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { isRootEntity } from "@/lib/utils"
+import { isEqual, isRootEntity } from "@/lib/utils"
 import { useGraphState } from "@/components/providers/graph-state-provider"
 import { Action, notFoundAction } from "@/lib/state/actions"
 import { useActionsStore } from "@/components/providers/actions-provider"
@@ -78,24 +78,6 @@ export function useRecentCrates() {
     }, [])
 
     return { recentCrates, addRecentCrate, removeFromRecentCrates }
-}
-
-/**
- * Compare a value or an array of values using Object.is
- * @param data
- * @param oldData
- * @returns true when data and oldData are equal, or if each of their indexes is equal (in case of an array)
- */
-function isEqual<I>(data: I | I[], oldData: I | I[]) {
-    if (Array.isArray(data) && Array.isArray(oldData)) {
-        if (data.length !== oldData.length) return false
-        for (let i = 0; i < data.length; i++) {
-            if (!Object.is(data[i], oldData[i])) return false
-        }
-        return true
-    } else {
-        return Object.is(data, oldData)
-    }
 }
 
 /**
