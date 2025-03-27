@@ -124,7 +124,7 @@ export default function EditorLandingPage() {
                 } else {
                     if (!serviceProvider) {
                         setDemoLoading(false)
-                        return setDemoLoaderError("Service provider not ready")
+                        return setDemoLoaderError("Crate service not ready")
                     }
                     const id = await serviceProvider?.createCrateFromCrateZip(data)
                     setDemoLoaderError(undefined)
@@ -357,11 +357,7 @@ export default function EditorLandingPage() {
                     error={demoLoaderError}
                     className="m-20 mb-0"
                 />
-                <Error
-                    title="Service Provider is not reachable"
-                    error={error}
-                    className="m-20 mb-0"
-                />
+                <Error title="Crate service is not reachable" error={error} className="m-20 mb-0" />
 
                 <div className="pt-16">
                     <Tabs defaultValue="recent">

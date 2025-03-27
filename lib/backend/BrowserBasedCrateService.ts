@@ -31,7 +31,7 @@ const template: (name: string, description: string) => ICrate = (
         ]
     }) as ICrate
 
-export class BrowserBasedServiceProvider implements CrateServiceProvider {
+export class BrowserBasedCrateService implements CrateServiceAdapter {
     private worker: FunctionWorker<typeof opfsFunctions>
 
     private localOpfsHealthy = true

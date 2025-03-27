@@ -262,10 +262,7 @@ export function NavHeader() {
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[400px] flex flex-col gap-2">
-                            <Error
-                                title="Service Provider is not reachable"
-                                error={healthTestError}
-                            />
+                            <Error title="Crate service is not reachable" error={healthTestError} />
                             <Error title="Error while loading crate data" error={error} />
                             {Array.from(saveError.entries()).map(([key, value]) => (
                                 <Error
