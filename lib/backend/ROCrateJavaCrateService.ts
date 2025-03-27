@@ -1,42 +1,9 @@
 import { isContextualEntity, isFileDataEntity, isFolderDataEntity, isRootEntity } from "@/lib/utils"
 import fileDownload from "js-file-download"
 import { handleSpringError } from "@/lib/spring-error-handling"
+import { CrateServiceBase } from "@/lib/backend/CrateServiceBase"
 
-export class ROCrateJavaCrateService implements CrateServiceAdapter {
-    async createCrateFromFiles(
-        name: string,
-        description: string,
-        files: File[],
-        progressCallback?: (current: number, total: number, errors: string[]) => void
-    ) {
-        const errors: string[] = []
-        const id = await this.createCrate(name, description)
-        progressCallback?.(0, files.length, errors)
-
-        for (const file of files) {
-            const pathSplit = file.webkitRelativePath.split("/")
-            if (pathSplit.length > 1) pathSplit[0] = "."
-            try {
-                await this.createFileEntity(
-                    id,
-                    {
-                        "@id": pathSplit.join("/").slice(2),
-                        "@type": "File",
-                        name: pathSplit[pathSplit.length - 1]
-                    },
-                    file
-                )
-            } catch (e) {
-                console.error(e)
-                errors.push(handleSpringError(e))
-            }
-
-            progressCallback?.(files.indexOf(file) + 1, files.length, errors)
-        }
-
-        return id
-    }
-
+export class ROCrateJavaCrateService extends CrateServiceBase {
     async getCrateFileURL(crateId: string, filePath: string) {
         return `http://localhost:8080/crates/${encodeURIComponent(crateId)}/files/${encodeURIComponent(filePath)}`
     }

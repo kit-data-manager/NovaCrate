@@ -36,7 +36,7 @@ declare interface CrateServiceAdapter {
     createCrateFromFiles(
         name: string,
         description: string,
-        files: File[],
+        files: FolderFile[],
         progressCallback?: (current: number, total: number, errors: string[]) => void
     ): Promise<string>
 
@@ -162,4 +162,16 @@ declare interface CrateServiceProviderStorageInfo {
     usedSpace: number
     totalSpace: number
     persistent: boolean
+}
+
+/**
+ * This interface is used for carrying extended file information when uploading a folder.
+ * The File interface is not used to allow arbitrary folder uploads
+ */
+declare interface FolderFile {
+    /**
+     * Relative path of the file to the folder that was selected for upload
+     */
+    relativePath: string
+    data: Blob
 }
