@@ -61,11 +61,16 @@ export function CreateCrateModal({
             setUploading(true)
             setUploadErrors([])
             serviceProvider
-                .createCrateFromFiles(name, description, files, (current, max, errors) => {
-                    setCurrentProgress(current)
-                    setMaxProgress(max)
-                    setUploadErrors(errors)
-                })
+                .createCrateFromFiles(
+                    name,
+                    description,
+                    files.map((file) => ({ relativePath: file.webkitRelativePath, data: file })),
+                    (current, max, errors) => {
+                        setCurrentProgress(current)
+                        setMaxProgress(max)
+                        setUploadErrors(errors)
+                    }
+                )
                 .then((id) => {
                     openEditor(id)
                 })
