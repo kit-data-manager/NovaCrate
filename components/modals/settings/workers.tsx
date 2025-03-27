@@ -5,7 +5,7 @@ import { Error } from "@/components/error"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Check, HardHat, Loader, Loader2, XIcon } from "lucide-react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { BrowserBasedServiceProvider } from "@/lib/backend/BrowserBasedServiceProvider"
+import { BrowserBasedCrateService } from "@/lib/backend/BrowserBasedCrateService"
 
 function ProvisioningStatusDisplay({ isLoaded, error }: { isLoaded?: boolean; error: unknown }) {
     if (typeof isLoaded === "undefined" && !error)
@@ -66,11 +66,11 @@ export function WorkerSettings() {
     const { serviceProvider } = useContext(CrateDataContext)
 
     const hasServiceProviderWorker = useMemo(() => {
-        return serviceProvider instanceof BrowserBasedServiceProvider
+        return serviceProvider instanceof BrowserBasedCrateService
     }, [serviceProvider])
 
     const isServiceProviderWorkerHealthy = useMemo(() => {
-        if (serviceProvider instanceof BrowserBasedServiceProvider) {
+        if (serviceProvider instanceof BrowserBasedCrateService) {
             return serviceProvider.isWorkerHealthy()
         } else return false
     }, [serviceProvider])

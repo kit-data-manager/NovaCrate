@@ -1,14 +1,12 @@
 /**
- * The Crate Service Provider is in charge of delivering crate data and performing manipulations
+ * The Crate Service Adapter is in charge of delivering crate data and performing manipulations
  * of the crate data in response to UI events
  *
  * For file previews, either getCrateFileWithData or getCrateFileURL must be implemented
  *
  * Optional functions can be omitted, but will reduce the feature set of the UI
- *
- * @draft
  */
-declare interface CrateServiceProvider {
+declare interface CrateServiceAdapter {
     /**
      * Create an empty crate with no files except ro-crate-metadata.json
      * @param name Name of the crate
