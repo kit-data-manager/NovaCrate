@@ -3,9 +3,9 @@
 import { PropsWithChildren } from "react"
 import { CrateDataProvider } from "@/components/providers/crate-data-provider"
 import { GlobalModalProvider } from "@/components/providers/global-modals-provider"
-import { BrowserBasedServiceProvider } from "@/lib/backend/BrowserBasedServiceProvider"
+import { BrowserBasedCrateService } from "@/lib/backend/BrowserBasedCrateService"
 
-const serviceProvider = new BrowserBasedServiceProvider()
+const serviceProvider = new BrowserBasedCrateService()
 
 export default function EditorLayout(props: PropsWithChildren) {
     return (
