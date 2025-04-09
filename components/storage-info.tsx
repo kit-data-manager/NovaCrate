@@ -21,7 +21,7 @@ export function StorageInfo() {
     useInterval(mutate, 60000)
 
     if (isLoading) return <Skeleton className="w-full p-4 h-14 mb-2" />
-    if (!data) return <div>Current service provider does not provide storage information.</div>
+    if (!data) return <div>Current crate service does not provide storage information.</div>
 
     if (error) return <Error error={error} title={"Storage Info not available"} />
 

@@ -15,7 +15,7 @@ import { useInterval } from "usehooks-ts"
 const CRATE_ID_STORAGE_KEY = "crate-id"
 
 export interface ICrateDataProvider {
-    readonly serviceProvider?: CrateServiceProvider
+    readonly serviceProvider?: CrateServiceAdapter
     crateId?: string
     setCrateId(crateId: string): void
     unsetCrateId(): void
@@ -98,7 +98,7 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
 export function CrateDataProvider({
     serviceProvider,
     children
-}: PropsWithChildren<{ serviceProvider: CrateServiceProvider }>) {
+}: PropsWithChildren<{ serviceProvider: CrateServiceAdapter }>) {
     const [crateId, setCrateId] = useState<string | undefined>(undefined)
     const getEntities = useEditorState.useGetEntities()
     const setEntities = useEditorState.useSetEntities()
@@ -153,7 +153,7 @@ export function CrateDataProvider({
             await serviceProvider.healthCheck()
             setHealthTestError((prev: unknown) => {
                 if (prev !== undefined) {
-                    toast.info("Service Provider has recovered")
+                    toast.info("Crate service has recovered")
                 }
                 return undefined
             })
@@ -161,7 +161,7 @@ export function CrateDataProvider({
             console.error("Health test failed with error", e)
             setHealthTestError((prev: unknown) => {
                 if (prev === undefined) {
-                    toast.error("Service Provider is no longer reachable")
+                    toast.error("Crate service is no longer reachable")
                 }
                 return e
             })
