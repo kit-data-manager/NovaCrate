@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it using these metadata.
+type: software
+title: novacrate
+abstract: Web-based interactive editor for creating, editing and visualising research
+  object crates.
+version: 0.1.1
+keywords:
+  - ro-crate
+  - ro
+  - research
+  - object
+  - crate
+  - editor
+  - graph
+  - visualize
+  - nova
+  - novacrate
+  - web
+  - browser
+  - interactive
+  - edit
+  - next
+  - nextjs
+  - react
+authors:
+  - orcid: https://orcid.org/0009-0003-2196-9187
+    family-names: Raquet
+    given-names: Christopher
+    email: christopher.raquet@kit.edu
+    affiliation: Karlsruhe Institute of Technology (KIT)
+contact:
+  - orcid: https://orcid.org/0009-0003-2196-9187
+    family-names: Raquet
+    given-names: Christopher
+    email: christopher.raquet@kit.edu
+    affiliation: Karlsruhe Institute of Technology (KIT)
+license: Apache-2.0
+url: https://kit-data-manager.github.io/NovaCrate/
+repository-code: https://github.com/kit-data-manager/NovaCrate

@@ -1,6 +1,6 @@
 {
   "name": "novacrate",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "npm-run-all --parallel dev-next dev-webworker",
@@ -81,5 +81,50 @@
     "typescript": "^5",
     "webpack": "^5.91.0",
     "webpack-cli": "^5.1.4"
-  }
+  },
+  "description": "Web-based interactive editor for creating, editing and visualising research object crates.",
+  "keywords": [
+    "ro-crate",
+    "ro",
+    "research",
+    "object",
+    "crate",
+    "editor",
+    "graph",
+    "visualize",
+    "nova",
+    "novacrate",
+    "web",
+    "browser",
+    "interactive",
+    "edit",
+    "next",
+    "nextjs",
+    "react"
+  ],
+  "author": {
+    "name": "Christopher Raquet",
+    "url": "https://orcid.org/0009-0003-2196-9187",
+    "email": "christopher.raquet@kit.edu"
+  },
+  "maintainers": [
+    {
+      "name": "Christopher Raquet",
+      "url": "https://orcid.org/0009-0003-2196-9187",
+      "email": "christopher.raquet@kit.edu"
+    }
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://kit-data-manager.github.io/NovaCrate/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kit-data-manager/NovaCrate"
+  },
+  "contributors": [
+    {
+      "name": "Christopher Raquet",
+      "url": "https://orcid.org/0009-0003-2196-9187",
+      "email": "christopher.raquet@kit.edu"
+    }
+  ]
 }

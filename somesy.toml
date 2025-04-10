@@ -1,0 +1,39 @@
+[project]
+name = "novacrate"
+version = "0.1.1"
+description = "Web-based interactive editor for creating, editing and visualising research object crates."
+license = "Apache-2.0"
+repository = "https://github.com/kit-data-manager/NovaCrate"
+homepage = "https://kit-data-manager.github.io/NovaCrate/"
+documentation = "https://github.com/kit-data-manager/NovaCrate"
+keywords = [
+    "ro-crate",
+    "ro",
+    "research",
+    "object",
+    "crate",
+    "editor",
+    "graph",
+    "visualize",
+    "nova",
+    "novacrate",
+    "web",
+    "browser",
+    "interactive",
+    "edit",
+    "next",
+    "nextjs",
+    "react"
+]
+
+[[project.people]]
+given-names = "Christopher"
+family-names = "Raquet"
+email = "christopher.raquet@kit.edu"
+orcid = "https://orcid.org/0009-0003-2196-9187"
+affiliation = "Karlsruhe Institute of Technology (KIT)"
+author = true      # is a full author of the project (i.e. appears in citations)
+maintainer = true  # currently maintains the project (i.e. is a contact person)
+
+[config]
+verbose = true     # show detailed information about what somesy is doing

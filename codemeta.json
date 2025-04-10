@@ -1,0 +1,61 @@
+{
+  "@context": [
+    "https://doi.org/10.5063/schema/codemeta-2.0",
+    "https://w3id.org/software-iodata",
+    "https://raw.githubusercontent.com/jantman/repostatus.org/master/badges/latest/ontology.jsonld",
+    "https://schema.org",
+    "https://w3id.org/software-types"
+  ],
+  "@type": "SoftwareSourceCode",
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Christopher",
+      "familyName": "Raquet",
+      "email": "christopher.raquet@kit.edu",
+      "@id": "https://orcid.org/0009-0003-2196-9187",
+      "identifier": "https://orcid.org/0009-0003-2196-9187",
+      "affiliation": "Karlsruhe Institute of Technology (KIT)"
+    }
+  ],
+  "name": "novacrate",
+  "description": "Web-based interactive editor for creating, editing and visualising research object crates.",
+  "version": "0.1.1",
+  "keywords": [
+    "ro-crate",
+    "ro",
+    "research",
+    "object",
+    "crate",
+    "editor",
+    "graph",
+    "visualize",
+    "nova",
+    "novacrate",
+    "web",
+    "browser",
+    "interactive",
+    "edit",
+    "next",
+    "nextjs",
+    "react"
+  ],
+  "maintainer": [
+    {
+      "@type": "Person",
+      "givenName": "Christopher",
+      "familyName": "Raquet",
+      "email": "christopher.raquet@kit.edu",
+      "@id": "https://orcid.org/0009-0003-2196-9187",
+      "identifier": "https://orcid.org/0009-0003-2196-9187",
+      "affiliation": "Karlsruhe Institute of Technology (KIT)"
+    }
+  ],
+  "license": [
+    "https://spdx.org/licenses/Apache-2.0"
+  ],
+  "softwareHelp": "https://kit-data-manager.github.io/NovaCrate/",
+  "codeRepository": "https://github.com/kit-data-manager/NovaCrate",
+  "buildInstructions": "https://github.com/kit-data-manager/NovaCrate",
+  "url": "https://kit-data-manager.github.io/NovaCrate/"
+}
