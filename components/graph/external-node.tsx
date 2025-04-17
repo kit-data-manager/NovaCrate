@@ -33,7 +33,7 @@ export default function ExternalNode({
                     style={{ background: "#555" }}
                     onConnect={(params) => console.log("handle onConnect", params)}
                     isConnectable={isConnectable}
-                    className="!border-none !bg-primary/80"
+                    className="border-none! bg-primary/80!"
                 />
                 <div
                     className={`p-2 rounded border border-accent bg-background max-w-[600px] transition ${selected ? "bg-secondary" : ""}`}

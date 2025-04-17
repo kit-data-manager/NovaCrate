@@ -71,7 +71,7 @@ export default function EntityNode({
                     position={Position.Left}
                     onConnect={(params) => console.log("handle onConnect", params)}
                     isConnectable={isConnectable}
-                    className="!border-none !bg-primary/80"
+                    className="border-none! bg-primary/80!"
                 />
                 <div
                     className={`p-3 rounded-lg border dark:border-accent bg-background max-w-[600px] ${selected ? "bg-secondary" : ""}`}
@@ -122,7 +122,7 @@ export default function EntityNode({
                                   position={Position.Right}
                                   style={{ top: handlePos(i, handles.length) }}
                                   isConnectable={isConnectable}
-                                  className="!border-none !bg-primary/80"
+                                  className="border-none! bg-primary/80!"
                               />
                           )
                       })}
@@ -138,7 +138,7 @@ export default function EntityNode({
                               }
                     }
                     isConnectable={isConnectable}
-                    className="!border-none !bg-primary/80"
+                    className="border-none! bg-primary/80!"
                 />
             </ContextMenuTrigger>
             <ContextMenuContent>

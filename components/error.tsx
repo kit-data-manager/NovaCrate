@@ -42,7 +42,7 @@ export function Error(
                 cn(props.size) +
                 " " +
                 props.className +
-                (props.warn ? " !bg-transparent border-warn border text-warn" : "")
+                (props.warn ? " bg-transparent! border-warn border text-warn" : "")
             }
         >
             {props.warn ? (
