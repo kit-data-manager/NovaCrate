@@ -69,21 +69,21 @@ export function SettingsModal({
                         {/*    currentPage={page}*/}
                         {/*    setPage={setPage}*/}
                         {/*>*/}
-                        {/*    <Cog className="w-4 h-4 mr-2" /> General*/}
+                        {/*    <Cog className="size-4 mr-2" /> General*/}
                         {/*</SettingsPageButton>*/}
                         <SettingsPageButton
                             page={SettingsPages.WORKERS}
                             currentPage={page}
                             setPage={setPage}
                         >
-                            <HardHat className="w-4 h-4 mr-2" /> Workers
+                            <HardHat className="size-4 mr-2" /> Workers
                         </SettingsPageButton>
                         <SettingsPageButton
                             page={SettingsPages.STORAGE}
                             currentPage={page}
                             setPage={setPage}
                         >
-                            <HardDrive className="w-4 h-4 mr-2" /> Storage
+                            <HardDrive className="size-4 mr-2" /> Storage
                         </SettingsPageButton>
                     </div>
                     <div />

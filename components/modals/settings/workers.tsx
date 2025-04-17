@@ -13,7 +13,7 @@ function ProvisioningStatusDisplay({ isLoaded, error }: { isLoaded?: boolean; er
     if (!isLoaded && !error)
         return (
             <span className="text-muted-foreground flex items-center">
-                <Loader className="w-4 h-4 mr-2" /> Not required yet
+                <Loader className="size-4 mr-2" /> Not required yet
             </span>
         )
     if (error)
@@ -22,7 +22,7 @@ function ProvisioningStatusDisplay({ isLoaded, error }: { isLoaded?: boolean; er
                 <Tooltip delayDuration={100}>
                     <TooltipTrigger asChild>
                         <span className="text-error flex items-center max-w-[100px]">
-                            <XIcon className="w-4 h-4 mr-2" /> Failed
+                            <XIcon className="size-4 mr-2" /> Failed
                         </span>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -34,7 +34,7 @@ function ProvisioningStatusDisplay({ isLoaded, error }: { isLoaded?: boolean; er
     if (isLoaded)
         return (
             <span className="text-success flex items-center">
-                <Check className="w-4 h-4 mr-2" /> Loaded
+                <Check className="size-4 mr-2" /> Loaded
             </span>
         )
 }
@@ -42,15 +42,15 @@ function ProvisioningStatusDisplay({ isLoaded, error }: { isLoaded?: boolean; er
 export function SuccessDisplay({ success }: { success?: boolean }) {
     return success === undefined ? (
         <span className="text-muted-foreground flex items-center">
-            <Loader2 className="w-4 h-4" />
+            <Loader2 className="size-4" />
         </span>
     ) : success ? (
         <span className="text-success flex items-center">
-            <Check className="w-4 h-4" />
+            <Check className="size-4" />
         </span>
     ) : (
         <span className="text-error flex items-center">
-            <XIcon className="w-4 h-4" />
+            <XIcon className="size-4" />
         </span>
     )
 }

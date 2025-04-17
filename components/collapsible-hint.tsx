@@ -13,9 +13,9 @@ export function CollapsibleHint(props: PropsWithChildren<{ title: ReactNode }>) 
         <Collapsible className="border rounded-lg mb-2" open={isOpen} onOpenChange={onOpenChange}>
             <CollapsibleTrigger className="p-2 flex items-center w-full">
                 {isOpen ? (
-                    <ChevronDown className="w-4 h-4 mr-2" />
+                    <ChevronDown className="size-4 mr-2" />
                 ) : (
-                    <ChevronRight className="w-4 h-4 mr-2" />
+                    <ChevronRight className="size-4 mr-2" />
                 )}
                 <div className="font-medium text-sm grow text-left">{props.title}</div>
             </CollapsibleTrigger>

@@ -122,18 +122,18 @@ export default function JSONEditorPage() {
         <div className="w-full h-full flex flex-col relative">
             <Metadata page={"JSON Editor"} />
             <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
-                <Braces className="w-4 h-4 shrink-0 mr-2" />
+                <Braces className="size-4 shrink-0 mr-2" />
                 JSON Editor
                 <span className="flex gap-1 items-center text-muted-foreground ml-1">
-                    <Dot className="w-4 h-4" />
+                    <Dot className="size-4" />
                     ro-crate-metadata.json
                 </span>
                 <div className="grow" />
                 <div>
                     {editorHasChanges ? (
                         <div className="flex text-warn items-center mr-2">
-                            <TriangleAlert className="absolute w-4 h-4 mr-2 animate-ping" />
-                            <TriangleAlert className="w-4 h-4 mr-2" /> Unsaved Changes
+                            <TriangleAlert className="absolute size-4 mr-2 animate-ping" />
+                            <TriangleAlert className="size-4 mr-2" /> Unsaved Changes
                         </div>
                     ) : null}
                 </div>
@@ -142,12 +142,12 @@ export default function JSONEditorPage() {
                     onClick={saveChanges}
                     disabled={saving || editorHasErrors || !editorHasChanges}
                 >
-                    <Save className="w-4 h-4 mr-2" />
+                    <Save className="size-4 mr-2" />
                     <span className="text-sm">Save</span>
                     <div className="ml-1 text-xs text-muted-foreground">⌘S</div>
                 </Button>
                 <Button variant="header" onClick={download}>
-                    <Download className="w-4 h-4 mr-2" /> Download
+                    <Download className="size-4 mr-2" /> Download
                 </Button>
             </div>
             {hasUnsavedChanges ? (
@@ -165,10 +165,10 @@ export default function JSONEditorPage() {
                                 onClick={revertAllEntities}
                                 disabled={isSaving}
                             >
-                                <Undo2 className="w-4 h-4 mr-2" /> Revert all Entities
+                                <Undo2 className="size-4 mr-2" /> Revert all Entities
                             </Button>
                             <Button onClick={saveAllEntities} disabled={isSaving}>
-                                <SaveAll className="w-4 h-4 mr-2" /> Save all Entities
+                                <SaveAll className="size-4 mr-2" /> Save all Entities
                             </Button>
                         </div>
                     </div>
@@ -197,7 +197,7 @@ function Noticer({ hasErrors, hasChanges }: { hasErrors: boolean; hasChanges: bo
     if (hasErrors) {
         return (
             <div className="flex items-center p-2 px-4 gap-2 animate-w-grow bg-destructive rounded-lg">
-                <CircleAlert className="w-4 h-4" />
+                <CircleAlert className="size-4" />
                 <span className="text-sm">
                     There are errors in the JSON file. Fix them before saving.
                 </span>
@@ -208,8 +208,8 @@ function Noticer({ hasErrors, hasChanges }: { hasErrors: boolean; hasChanges: bo
     } else {
         return (
             <div className="flex items-center p-2 px-4 gap-2 text-warn">
-                <TriangleAlert className="w-4 h-4" />
-                <TriangleAlert className="absolute w-4 h-4 animate-ping" />
+                <TriangleAlert className="size-4" />
+                <TriangleAlert className="absolute size-4 animate-ping" />
                 <span>This is an expert feature. Be cautious while editing your data.</span>
             </div>
         )
