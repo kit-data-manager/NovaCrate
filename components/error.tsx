@@ -12,7 +12,7 @@ function cn(size?: "md" | "xl") {
 
 function cnIcon(size?: "md" | "xl") {
     if (!size || size == "md") {
-        return "w-4 h-4 mr-2 shrink-0"
+        return "size-4 mr-2 shrink-0"
     } else {
         return "w-8 h-8 mr-4 shrink-0"
     }
@@ -69,7 +69,7 @@ export function Error(
                     }
                     onClick={() => props.onClear?.call(null)}
                 >
-                    <XIcon className="w-4 h-4" />
+                    <XIcon className="size-4" />
                 </button>
             ) : null}
         </div>

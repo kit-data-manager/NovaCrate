@@ -82,14 +82,14 @@ export function EntryContextMenu({
         return (
             <ContextMenuSub>
                 <ContextMenuSubTrigger>
-                    <Plus className="w-4 h-4 mr-2" /> New
+                    <Plus className="size-4 mr-2" /> New
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     <ContextMenuItem onClick={createNewFile}>
-                        <FileIcon className="w-4 h-4 mr-2" /> File
+                        <FileIcon className="size-4 mr-2" /> File
                     </ContextMenuItem>
                     <ContextMenuItem onClick={createNewFolder}>
-                        <FolderOpen className="w-4 h-4 mr-2" /> Folder
+                        <FolderOpen className="size-4 mr-2" /> Folder
                     </ContextMenuItem>
                 </ContextMenuSubContent>
             </ContextMenuSub>
@@ -113,7 +113,7 @@ export function EntryContextMenu({
                 </ContextMenuItem>
             ) : (
                 <ContextMenuItem onClick={createEntityForExistingFile}>
-                    <Plus className="w-4 h-4 mr-2" /> Create Entity
+                    <Plus className="size-4 mr-2" /> Create Entity
                     <HelpTooltip className="ml-2">
                         This file or folder is present in the RO-Crate, but currently no
                         corresponding Data Entity exists. Create a corresponding Entity to add
@@ -126,18 +126,18 @@ export function EntryContextMenu({
 
             {filePath === "ro-crate-metadata.json" ? (
                 <ContextMenuItem onClick={goToJsonEditor}>
-                    <CurlyBraces className="w-4 h-4 mr-2" /> Edit in JSON Editor
+                    <CurlyBraces className="size-4 mr-2" /> Edit in JSON Editor
                 </ContextMenuItem>
             ) : null}
 
             {!folder ? (
                 <ContextMenuItem onClick={downloadFile}>
-                    <Download className="w-4 h-4 mr-2" /> Download
+                    <Download className="size-4 mr-2" /> Download
                 </ContextMenuItem>
             ) : null}
             <ContextMenuSub>
                 <ContextMenuSubTrigger>
-                    <Copy className="w-4 h-4 mr-2" /> Copy
+                    <Copy className="size-4 mr-2" /> Copy
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     {fileName ? (
@@ -163,7 +163,7 @@ export function EntryContextMenu({
                     className="bg-destructive text-destructive-foreground"
                     onClick={() => showDeleteEntityModal(entity?.["@id"] || filePath!)}
                 >
-                    <Trash className="w-4 h-4 mr-2" /> Delete
+                    <Trash className="size-4 mr-2" /> Delete
                 </ContextMenuItem>
             ) : null}
 

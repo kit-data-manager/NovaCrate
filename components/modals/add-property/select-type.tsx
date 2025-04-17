@@ -46,7 +46,7 @@ export function SelectType({
                                 value="text"
                                 onSelect={() => onTypeSelect(PropertyEditorTypes.Text)}
                             >
-                                <TypeIcon className="w-4 h-4 mr-2" /> Text
+                                <TypeIcon className="size-4 mr-2" /> Text
                             </CommandItem>
                         ) : null}
                         {possibleTypes.canBeNumber ? (
@@ -54,7 +54,7 @@ export function SelectType({
                                 value="number"
                                 onSelect={() => onTypeSelect(PropertyEditorTypes.Number)}
                             >
-                                <Diff className="w-4 h-4 mr-2" /> Number
+                                <Diff className="size-4 mr-2" /> Number
                             </CommandItem>
                         ) : null}
                         {possibleTypes.canBeBoolean ? (
@@ -62,7 +62,7 @@ export function SelectType({
                                 value="boolean"
                                 onSelect={() => onTypeSelect(PropertyEditorTypes.Boolean)}
                             >
-                                <Binary className="w-4 h-4 mr-2" /> Boolean
+                                <Binary className="size-4 mr-2" /> Boolean
                             </CommandItem>
                         ) : null}
                         {possibleTypes.canBeTime ? (
@@ -70,7 +70,7 @@ export function SelectType({
                                 value="time"
                                 onSelect={() => onTypeSelect(PropertyEditorTypes.Time)}
                             >
-                                <Clock9 className="w-4 h-4 mr-2" /> Time
+                                <Clock9 className="size-4 mr-2" /> Time
                             </CommandItem>
                         ) : null}
                         {possibleTypes.canBeDate ? (
@@ -78,7 +78,7 @@ export function SelectType({
                                 value="date"
                                 onSelect={() => onTypeSelect(PropertyEditorTypes.Date)}
                             >
-                                <Calendar className="w-4 h-4 mr-2" /> Date
+                                <Calendar className="size-4 mr-2" /> Date
                             </CommandItem>
                         ) : null}
                         {possibleTypes.canBeDateTime ? (
@@ -86,7 +86,7 @@ export function SelectType({
                                 value="date and time"
                                 onSelect={() => onTypeSelect(PropertyEditorTypes.DateTime)}
                             >
-                                <CalendarClock className="w-4 h-4 mr-2" /> Date and Time
+                                <CalendarClock className="size-4 mr-2" /> Date and Time
                             </CommandItem>
                         ) : null}
                         {possibleTypes.canBeReference ? (
@@ -94,7 +94,7 @@ export function SelectType({
                                 value="reference"
                                 onSelect={() => onTypeSelect(PropertyEditorTypes.Reference)}
                             >
-                                <LinkIcon className="w-4 h-4 mr-2" /> Reference
+                                <LinkIcon className="size-4 mr-2" /> Reference
                             </CommandItem>
                         ) : null}
                     </CommandGroup>
@@ -102,7 +102,7 @@ export function SelectType({
             </Command>
             <div>
                 <Button variant="secondary" size="sm" onClick={onBackClick}>
-                    <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                    <ArrowLeft className="size-4 mr-2" /> Back
                 </Button>
             </div>
         </>

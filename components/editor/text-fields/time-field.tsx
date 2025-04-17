@@ -43,7 +43,7 @@ export const TimeField = memo(function TimeField({
 
     return (
         <div className="flex w-full relative">
-            <Clock9 className="w-4 h-4 absolute left-2.5 top-3 pointer-events-none text-muted-foreground" />
+            <Clock9 className="size-4 absolute left-2.5 top-3 pointer-events-none text-muted-foreground" />
             <Input
                 value={localValueCopy}
                 onChange={onInputChange}

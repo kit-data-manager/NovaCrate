@@ -149,7 +149,7 @@ export function SimpleTypeSelect({
                     Close
                 </Button>
                 <Button variant="secondary" onClick={() => setFullTypeBrowser(true)}>
-                    <Search className="w-4 h-4 mr-2" /> Browse all Types
+                    <Search className="size-4 mr-2" /> Browse all Types
                 </Button>
             </div>
         </>

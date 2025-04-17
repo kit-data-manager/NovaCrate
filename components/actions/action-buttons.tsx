@@ -23,12 +23,12 @@ function GenericActionContent(props: GenericActionContentProps) {
         return action.icon
     }, [action.icon])
 
-    if (!ready) return <Loader2 className="w-4 h-4 animate-spin" />
+    if (!ready) return <Loader2 className="size-4 animate-spin" />
 
     return (
         <>
             {Icon && (
-                <Icon className={`w-4 h-4 ${props.iconOnly || props.hideName ? "" : "mr-2"}`} />
+                <Icon className={`size-4 ${props.iconOnly || props.hideName ? "" : "mr-2"}`} />
             )}{" "}
             {props.iconOnly || props.hideName ? null : action.name}
             {!props.iconOnly && !props.noShortcut && action.keyboardShortcut ? (

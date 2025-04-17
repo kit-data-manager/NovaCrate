@@ -109,7 +109,7 @@ export function CrateEntry({
     return (
         <div className="grid grid-cols-[20px_4fr_2fr_112px] gap-4 w-full transition hover:bg-secondary p-2 rounded-lg">
             <div className="flex flex-col items-center justify-center">
-                <Package className="w-4 h-4" />
+                <Package className="size-4" />
             </div>
             <div className="flex flex-col justify-center">
                 {title}
@@ -139,7 +139,7 @@ export function CrateEntry({
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm">
-                            <EllipsisVertical className="w-4 h-4" />
+                            <EllipsisVertical className="size-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
@@ -150,11 +150,11 @@ export function CrateEntry({
                                         removeFromRecentCrates(crateId)
                                     }}
                                 >
-                                    <XIcon className="w-4 h-4 mr-2" /> Remove from recently used
+                                    <XIcon className="size-4 mr-2" /> Remove from recently used
                                 </DropdownMenuItem>
                             ) : null}
                             <DropdownMenuSubTrigger>
-                                <Download className="w-4 h-4 mr-2" /> Export...
+                                <Download className="size-4 mr-2" /> Export...
                             </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent>
                                 <DropdownMenuItem
@@ -164,7 +164,7 @@ export function CrateEntry({
                                         }
                                     }}
                                 >
-                                    <FolderArchive className="w-4 h-4 mr-2" /> As .zip Archive
+                                    <FolderArchive className="size-4 mr-2" /> As .zip Archive
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={() => {
@@ -175,12 +175,12 @@ export function CrateEntry({
                                         }
                                     }}
                                 >
-                                    <FileIcon className="w-4 h-4 mr-2" /> ro-crate-metadata.json
+                                    <FileIcon className="size-4 mr-2" /> ro-crate-metadata.json
                                 </DropdownMenuItem>
                             </DropdownMenuSubContent>
                         </DropdownMenuSub>
                         <DropdownMenuItem onClick={copyInternalID}>
-                            <Copy className="w-4 h-4 mr-2" /> Copy internal Identifier
+                            <Copy className="size-4 mr-2" /> Copy internal Identifier
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -189,7 +189,7 @@ export function CrateEntry({
                                 deleteCrate(crateId)
                             }}
                         >
-                            <Trash className="w-4 h-4 mr-2" /> Permanently Delete
+                            <Trash className="size-4 mr-2" /> Permanently Delete
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

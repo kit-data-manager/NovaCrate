@@ -360,18 +360,18 @@ export function EntityGraph() {
                 >
                     <div className="p-0.5 bg-accent rounded-lg">
                         <Button variant="secondary" size="sm" onClick={fullView}>
-                            <Rows2 className="w-4 h-4 mr-2" /> Full
+                            <Rows2 className="size-4 mr-2" /> Full
                         </Button>
                         <Button variant="secondary" size="sm" onClick={normalView}>
-                            <Rows3 className="w-4 h-4 mr-2" /> Normal
+                            <Rows3 className="size-4 mr-2" /> Normal
                         </Button>
                         <Button variant="secondary" size="sm" onClick={compactView}>
-                            <Rows4 className="w-4 h-4 mr-2" /> Compact
+                            <Rows4 className="size-4 mr-2" /> Compact
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="secondary" size="sm">
-                                    <EllipsisVertical className="w-4 h-4 mx-2" />
+                                    <EllipsisVertical className="size-4 mx-2" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
@@ -398,7 +398,7 @@ export function EntityGraph() {
                     <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
                             <Button variant="outline" size="icon" onClick={() => centerView()}>
-                                <Fullscreen className="w-4 h-4" />
+                                <Fullscreen className="size-4" />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -409,7 +409,7 @@ export function EntityGraph() {
                     <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
                             <Button variant="outline" size="icon" onClick={() => reformat(false)}>
-                                <GitCompare className="w-4 h-4" />
+                                <GitCompare className="size-4" />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>

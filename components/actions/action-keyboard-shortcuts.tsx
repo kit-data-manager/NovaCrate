@@ -101,7 +101,7 @@ export function KeyboardShortcut({ action }: { action: Action }) {
 
     return (
         <span className="flex">
-            {hasShift ? <ArrowBigUp className="w-4 h-4" /> : null}
+            {hasShift ? <ArrowBigUp className="size-4" /> : null}
             {hasAlt ? "⌥" : null}
             {hasCommand ? "⌘" : null}
             {letter}

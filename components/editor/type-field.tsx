@@ -12,7 +12,7 @@ export function TypeField({
     return (
         // <Button variant="outline" className="flex w-full justify-start pl-3">
         <div className="flex grow justify-start pl-3 items-center rounded-lg p-2">
-            <Icon className="w-4 h-4 pointer-events-none text-muted-foreground mr-2" />
+            <Icon className="size-4 pointer-events-none text-muted-foreground mr-2" />
             {value}
         </div>
         // </Button>

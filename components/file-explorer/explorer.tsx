@@ -77,15 +77,15 @@ export function FileExplorer() {
     return (
         <div className="flex flex-col h-full">
             <div className="pl-4 pr-2 bg-accent text-sm h-10 flex items-center gap-2 truncate shrink-0">
-                <Folder className="w-4 h-4 shrink-0" /> File Explorer
+                <Folder className="size-4 shrink-0" /> File Explorer
                 <HelpTooltip>
                     <div>
                         <div className="text-wrap">
                             The File Explorer lists all files and folders in the RO-Crate. Files
                             that are not described by a Data Entity are marked by{" "}
-                            <FolderX className="inline-flex w-4 h-4 text-muted-foreground" />
+                            <FolderX className="inline-flex size-4 text-muted-foreground" />
                             {" or "}
-                            <FileX className="inline-flex w-4 h-4 text-muted-foreground" />.
+                            <FileX className="inline-flex size-4 text-muted-foreground" />.
                         </div>
                         <div className="mt-6">
                             <b>Double-Left-Click:</b> Edit/Create Data Entity
@@ -103,20 +103,20 @@ export function FileExplorer() {
                 <ActionButton variant="header" noShortcut actionId={"crate.add-entity"} />
                 <DropdownMenu>
                     <DropdownMenuTrigger className="px-1">
-                        <EllipsisVertical className="w-4 h-4 shrink-0" />
+                        <EllipsisVertical className="size-4 shrink-0" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuLabel>File Explorer Settings</DropdownMenuLabel>
                         <DropdownMenuItem onClick={collapseAllSections}>
-                            <ChevronsDownUp className={"w-4 h-4 mr-2"} /> Collapse All
+                            <ChevronsDownUp className={"size-4 mr-2"} /> Collapse All
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={expandAllSections}>
-                            <ChevronsUpDown className={"w-4 h-4 mr-2"} /> Expand All
+                            <ChevronsUpDown className={"size-4 mr-2"} /> Expand All
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem disabled={isPending} onClick={revalidate}>
                             <RefreshCw
-                                className={`w-4 h-4 mr-2 ${isPending ? "animate-spin" : ""}`}
+                                className={`size-4 mr-2 ${isPending ? "animate-spin" : ""}`}
                             />{" "}
                             Reload
                         </DropdownMenuItem>

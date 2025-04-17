@@ -152,23 +152,23 @@ export default function EntityNode({
                             onClick={() => saveEntity(entity)}
                             disabled={!entityHasChanges}
                         >
-                            <Save className="w-4 h-4 mr-2" /> Save Changes
+                            <Save className="size-4 mr-2" /> Save Changes
                         </ContextMenuItem>
                         <ContextMenuItem
                             onClick={() => revertEntity(data.entityId)}
                             disabled={!entityHasChanges}
                         >
-                            <Undo2 className="w-4 h-4 mr-2" /> Revert Changes
+                            <Undo2 className="size-4 mr-2" /> Revert Changes
                         </ContextMenuItem>
                         <ContextMenuSeparator />
                         <ContextMenuItem
                             className="bg-destructive text-destructive-foreground"
                             onClick={() => showDeleteEntityModal(data.entityId)}
                         >
-                            <Trash className="w-4 h-4 mr-2" />
+                            <Trash className="size-4 mr-2" />
                             Delete
                             <ContextMenuShortcut>
-                                <Delete className="w-4 h-4 text-destructive-foreground/80" />
+                                <Delete className="size-4 text-destructive-foreground/80" />
                             </ContextMenuShortcut>
                         </ContextMenuItem>
                     </>

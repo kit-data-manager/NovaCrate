@@ -48,7 +48,7 @@ export const DateTimeField = memo(function DateTimeField({
 
     return (
         <div className="flex w-full relative">
-            <CalendarClock className="w-4 h-4 absolute left-2.5 top-3 pointer-events-none text-muted-foreground" />
+            <CalendarClock className="size-4 absolute left-2.5 top-3 pointer-events-none text-muted-foreground" />
             <Input
                 value={localValueCopy}
                 onChange={onInputChange}

@@ -59,7 +59,7 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
                     variant="outline"
                     className={cn("border-l-0 rounded-l-none px-2", triggerClassName)}
                 >
-                    <EllipsisVertical className="w-4 h-4" />
+                    <EllipsisVertical className="size-4" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -67,11 +67,11 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
                     <DropdownMenuItem onClick={() => onClear()}>
                         {isReference ? (
                             <>
-                                <Unlink className="w-4 h-4 mr-2" /> Unlink
+                                <Unlink className="size-4 mr-2" /> Unlink
                             </>
                         ) : (
                             <>
-                                <Eraser className="w-4 h-4 mr-2" /> Clear
+                                <Eraser className="size-4 mr-2" /> Clear
                             </>
                         )}
                     </DropdownMenuItem>
@@ -79,7 +79,7 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
 
                 <DropdownMenuSub>
                     <DropdownMenuSubTrigger>
-                        <ArrowLeftRight className="w-4 h-4 mr-2" /> Change Type
+                        <ArrowLeftRight className="size-4 mr-2" /> Change Type
                     </DropdownMenuSubTrigger>
                     <TypeSelectDropdown
                         sub
@@ -94,7 +94,7 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
                     className="bg-destructive text-destructive-foreground"
                     onClick={() => onRemoveEntry()}
                 >
-                    <Trash className="w-4 h-4 mr-2" /> Delete Entry
+                    <Trash className="size-4 mr-2" /> Delete Entry
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

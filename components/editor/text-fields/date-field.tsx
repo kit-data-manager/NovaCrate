@@ -51,7 +51,7 @@ export const DateField = memo(function DateField({
 
     return (
         <div className="flex w-full relative">
-            <Calendar className="w-4 h-4 absolute left-2.5 top-3 pointer-events-none text-muted-foreground" />
+            <Calendar className="size-4 absolute left-2.5 top-3 pointer-events-none text-muted-foreground" />
             <Input
                 value={localValueCopy}
                 type="date"

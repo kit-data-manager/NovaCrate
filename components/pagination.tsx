@@ -115,7 +115,7 @@ export function Pagination({
                         className="rounded-r-none"
                         onClick={previousPage}
                     >
-                        <ChevronLeft className="w-4 h-4 shrink-0" />
+                        <ChevronLeft className="size-4 shrink-0" />
                     </Button>
                     <Popover>
                         <PopoverTrigger asChild>
@@ -139,7 +139,7 @@ export function Pagination({
                                     onKeyDown={jumpToPageKeyHandler}
                                 />
                                 <Button className="border-l-0 rounded-l-none" onClick={jumpToPage}>
-                                    <ArrowRight className="w-4 h-4" />
+                                    <ArrowRight className="size-4" />
                                 </Button>
                             </div>
                             <div className="text-xs text-muted-foreground">
@@ -155,7 +155,7 @@ export function Pagination({
                         className="rounded-l-none"
                         onClick={nextPage}
                     >
-                        <ChevronRight className="w-4 h-4 shrink-0" />
+                        <ChevronRight className="size-4 shrink-0" />
                     </Button>
                 </div>
             </div>

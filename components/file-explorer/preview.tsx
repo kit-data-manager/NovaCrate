@@ -62,7 +62,7 @@ export function FilePreview({
     return (
         <div className="flex flex-col h-full">
             <div className="pl-4 pr-2 bg-accent text-sm h-10 flex items-center shrink-0">
-                <Eye className="w-4 h-4 shrink-0 mr-2" />{" "}
+                <Eye className="size-4 shrink-0 mr-2" />{" "}
                 <span className="shrink-0">File Preview</span>
                 <HelpTooltip className="ml-2">
                     <div>
@@ -80,7 +80,7 @@ export function FilePreview({
                     <>
                         {previewingFilePath ? (
                             <Button variant="header" size="sm" onClick={downloadFile}>
-                                <Download className="w-4 h-4 mr-2" /> Download
+                                <Download className="size-4 mr-2" /> Download
                             </Button>
                         ) : null}
                         {closeable ? (
@@ -89,7 +89,7 @@ export function FilePreview({
                                 size="sm"
                                 onClick={() => setPreviewingFilePath("")}
                             >
-                                <XIcon className="w-4 h-4" />
+                                <XIcon className="size-4" />
                             </Button>
                         ) : null}
                     </>
@@ -98,7 +98,7 @@ export function FilePreview({
             {doubleHeight ? (
                 <div className="flex p-2 gap-2 bg-accent">
                     <div className="self-center text-sm pl-2 flex items-center truncate">
-                        <FileIcon className="w-4 h-4 mr-2 shrink-0" /> {previewingFilePath}
+                        <FileIcon className="size-4 mr-2 shrink-0" /> {previewingFilePath}
                     </div>
                     <div className="grow" />
                     {previewingFilePath ? (
@@ -108,7 +108,7 @@ export function FilePreview({
                             className="text-xs"
                             onClick={downloadFile}
                         >
-                            <Download className="w-4 h-4 mr-2" /> Download
+                            <Download className="size-4 mr-2" /> Download
                         </Button>
                     ) : null}
                     {closeable ? (
@@ -117,7 +117,7 @@ export function FilePreview({
                             size="sm"
                             onClick={() => setPreviewingFilePath("")}
                         >
-                            <XIcon className="w-4 h-4" />
+                            <XIcon className="size-4" />
                         </Button>
                     ) : null}
                 </div>

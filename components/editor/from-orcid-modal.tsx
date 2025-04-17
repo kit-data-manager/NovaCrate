@@ -122,7 +122,7 @@ export function CreateFromORCIDModal({
                                 </div>
                                 <div className="mt-4 flex justify-end">
                                     <Button>
-                                        <Plus className="w-4 h-4 mr-2" /> Create
+                                        <Plus className="size-4 mr-2" /> Create
                                     </Button>
                                 </div>
                             </>

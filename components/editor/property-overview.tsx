@@ -48,12 +48,12 @@ export function PropertyOverview() {
     return (
         <div className="h-full w-full flex flex-col">
             <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
-                <LayoutGrid className="w-4 h-4 shrink-0 mr-2" /> Property Overview
+                <LayoutGrid className="size-4 shrink-0 mr-2" /> Property Overview
                 <div className="grow" />
                 <Popover>
                     <PopoverTrigger asChild>
                         <Button variant="header" size="sm">
-                            <SearchIcon className="w-4 h-4" />
+                            <SearchIcon className="size-4" />
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="grid grid-cols-1 gap-2">
@@ -66,7 +66,7 @@ export function PropertyOverview() {
                     </PopoverContent>
                 </Popover>
                 <Button variant="header" size="sm" onClick={() => setShowPropertyOverview(false)}>
-                    <XIcon className="w-4 h-4" />
+                    <XIcon className="size-4" />
                 </Button>
             </div>
             <div className="p-2 overflow-y-auto">
@@ -92,9 +92,9 @@ export function PropertyOverview() {
                         onClick={() => onEntryClick(propertyName)}
                     >
                         {propertyName[0] === "@" ? (
-                            <AtSign className="w-4 h-4 mr-2" />
+                            <AtSign className="size-4 mr-2" />
                         ) : (
-                            <Minus className="w-4 h-4 mr-2" />
+                            <Minus className="size-4 mr-2" />
                         )}
                         <div className="group-hover/overviewItem:underline underline-offset-2">
                             {camelCaseReadable(propertyName)}

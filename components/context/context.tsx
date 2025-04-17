@@ -32,7 +32,7 @@ export function ContextPage() {
             />
 
             <div className="pl-4 bg-accent text-sm h-10 flex items-center">
-                <Library className="w-4 h-4 shrink-0 mr-2" /> Context
+                <Library className="size-4 shrink-0 mr-2" /> Context
             </div>
 
             <div className="p-4 pt-0">

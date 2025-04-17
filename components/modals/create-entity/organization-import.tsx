@@ -70,10 +70,10 @@ export function OrganizationImport({
             >
                 <TabsList className="flex">
                     <TabsTrigger value="manual">
-                        <TextCursor className="w-4 h-4 mr-2" /> Create Manually
+                        <TextCursor className="size-4 mr-2" /> Create Manually
                     </TabsTrigger>
                     <TabsTrigger value="import">
-                        <Import className="w-4 h-4 mr-2" /> Import from ROR
+                        <Import className="size-4 mr-2" /> Import from ROR
                     </TabsTrigger>
                 </TabsList>
             </Tabs>
@@ -89,7 +89,7 @@ export function OrganizationImport({
                                 target="_blank"
                                 className="inline-flex hover:underline"
                             >
-                                ROR.org <ExternalLink className="w-4 h-4 ml-1" />
+                                ROR.org <ExternalLink className="size-4 ml-1" />
                             </a>
                             . Enter either ROR ID or URL.
                         </DialogDescription>
@@ -107,13 +107,13 @@ export function OrganizationImport({
                     </div>
                     <div className="flex justify-between">
                         <Button variant="secondary" onClick={backToTypeSelect} disabled={creating}>
-                            <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                            <ArrowLeft className="size-4 mr-2" /> Back
                         </Button>
 
                         <div className="flex gap-2 items-center">
-                            {creating ? <LoaderCircle className="animate-spin w-4 h-4" /> : null}
+                            {creating ? <LoaderCircle className="animate-spin size-4" /> : null}
                             <Button onClick={onImportPress} disabled={creating}>
-                                <Import className="w-4 h-4 mr-2" /> Import
+                                <Import className="size-4 mr-2" /> Import
                             </Button>
                         </div>
                     </div>
