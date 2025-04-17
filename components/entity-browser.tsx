@@ -201,7 +201,7 @@ export function EntityBrowserSection(props: {
             </Button>
             {open ? (
                 <div className="flex flex-col pl-4">
-                    {entities.map(([key, _]) => {
+                    {entities.map(([key]) => {
                         return <EntityBrowserItem entityId={key} key={key} />
                     })}
                 </div>

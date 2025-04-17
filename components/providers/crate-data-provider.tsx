@@ -174,7 +174,7 @@ export function CrateDataProvider({
     }, [healthTest])
 
     const [isSaving, setIsSaving] = useState(false)
-    const [saveError, setSaveError] = useState<Map<string, any>>(new Map())
+    const [saveError, setSaveError] = useState<Map<string, unknown>>(new Map())
 
     const clearSaveError = useCallback((id?: string) => {
         if (id) {

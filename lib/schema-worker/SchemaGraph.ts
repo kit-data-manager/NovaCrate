@@ -210,7 +210,7 @@ export class SchemaGraph {
         const self = await this.getNode(classId)
         if (!self) throw new ReferenceError("classId not specified or invalid")
         const parents = await this.getClassParents(self["@id"])
-        let properties: Set<SchemaNode> = new Set<SchemaNode>()
+        const properties: Set<SchemaNode> = new Set<SchemaNode>()
         for (const nodeId of [...parents, self["@id"]]) {
             const props = await this.getClassSpecificProperties(nodeId)
             for (const prop of props) {
@@ -265,7 +265,7 @@ export class SchemaGraph {
     }
 
     async getSubClasses(classId: string) {
-        let childrenIds: Set<string> = new Set<string>()
+        const childrenIds: Set<string> = new Set<string>()
         const self = await this.getNode(classId)
         if (!self) throw new ReferenceError("classId not specified or invalid")
         if (!self.isClass()) throw new Error(`Node ${self["@id"]} is not a class`)
@@ -284,7 +284,7 @@ export class SchemaGraph {
     }
 
     async getSubProperties(propertyId: string) {
-        let childrenIds: Set<string> = new Set<string>()
+        const childrenIds: Set<string> = new Set<string>()
         const self = await this.getNode(propertyId)
         if (!self) throw new ReferenceError("propertyId not specified or invalid")
         if (!self.isProperty()) throw new Error("Node is not a property")

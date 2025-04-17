@@ -47,7 +47,7 @@ export function mapEntityToProperties(
 
     return Object.keys(data)
         .map((key) => {
-            let value = data[key]
+            const value = data[key]
             let arrValue: EntitySinglePropertyTypes[]
             if (!Array.isArray(value)) {
                 arrValue = [value]

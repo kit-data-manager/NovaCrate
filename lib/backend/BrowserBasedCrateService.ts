@@ -34,7 +34,6 @@ const template: (name: string, description: string) => ICrate = (
 export class BrowserBasedCrateService extends CrateServiceBase {
     private worker: FunctionWorker<typeof opfsFunctions>
 
-    private localOpfsHealthy = true
     private workerOpfsHealthy = true
 
     constructor() {
@@ -57,7 +56,6 @@ export class BrowserBasedCrateService extends CrateServiceBase {
                 })
             } catch (e) {
                 console.error("Exception while trying to initialize OPFS", e)
-                this.localOpfsHealthy = false
             }
         }
 
@@ -173,17 +171,17 @@ export class BrowserBasedCrateService extends CrateServiceBase {
         }
     }
 
-    importEntityFromOrcid(crateId: string, url: string): Promise<string> {
+    importEntityFromOrcid(): Promise<string> {
         throw "Not supported in browser-based environment yet"
     }
 
-    importOrganizationFromRor(crateId: string, url: string): Promise<string> {
+    importOrganizationFromRor(): Promise<string> {
         throw "Not supported in browser-based environment yet"
     }
 
     async addCustomContextPair(crateId: string, key: string, value: string) {
         const crate = await this.getCrate(crateId)
-        let context = crate["@context"]
+        const context = crate["@context"]
         if (!Array.isArray(context)) {
             if (typeof context === "string") {
                 crate["@context"] = {
@@ -211,7 +209,7 @@ export class BrowserBasedCrateService extends CrateServiceBase {
 
     async removeCustomContextPair(crateId: string, key: string) {
         const crate = await this.getCrate(crateId)
-        let context = crate["@context"]
+        const context = crate["@context"]
         if (!Array.isArray(context)) {
             if (typeof context !== "string") {
                 delete context[key]

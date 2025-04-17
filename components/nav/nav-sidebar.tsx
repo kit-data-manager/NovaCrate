@@ -39,7 +39,7 @@ function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>)
     )
 }
 
-export function NavSidebar({ children }: PropsWithChildren<{}>) {
+export function NavSidebar({ children }: PropsWithChildren) {
     const { showDocumentationModal } = useContext(GlobalModalContext)
 
     return (

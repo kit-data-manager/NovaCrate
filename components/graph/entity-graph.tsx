@@ -280,7 +280,10 @@ export function EntityGraph() {
 
     const backgroundContextMenuHandler = useCallback(
         (e: Event) => {
-            if ((e as any).target.querySelector(".react-flow__node") !== null) {
+            if (
+                ((e as MouseEvent).target as HTMLElement)?.querySelector(".react-flow__node") !==
+                null
+            ) {
                 e.preventDefault()
                 contextMenuTriggerRef.current?.dispatchEvent(new MouseEvent("contextmenu", e))
             }

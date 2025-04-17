@@ -109,16 +109,16 @@ export const ActionCommandItem = memo(function ActionContextMenuItem(
     )
 })
 
-function cleanProps<T extends Record<string, any>>(props: T) {
+function cleanProps<T extends object>(props: T) {
     const newData = {
         ...props
     }
 
-    delete newData.noShortcut
-    delete newData.actionId
-    delete newData.closeAnd
-    delete newData.iconOnly
-    delete newData.hideName
+    if ("noShortcut" in newData) delete newData.noShortcut
+    if ("actionId" in newData) delete newData.actionId
+    if ("closeAnd" in newData) delete newData.closeAnd
+    if ("iconOnly" in newData) delete newData.iconOnly
+    if ("hideName" in newData) delete newData.hideName
 
     return newData
 }

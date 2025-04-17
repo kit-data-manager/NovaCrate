@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const HEALTH_TEST_FN = "__healthTest__"
 
 interface FunctionWorkerOptions {
@@ -93,7 +94,7 @@ export class FunctionWorker<T extends Record<string, (...args: any[]) => any>> {
 
         return new Promise((resolve, reject) => {
             this.autoResolve(resolve, reject, nonce, worker)
-            transfer
+            return transfer
                 ? worker.postMessage({ name, args, nonce }, transfer)
                 : worker.postMessage({ name, args, nonce })
         })

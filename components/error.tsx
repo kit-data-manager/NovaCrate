@@ -25,7 +25,7 @@ export function Error(
               error: unknown
               prefix?: string
           }
-        | PropsWithChildren<{}>
+        | PropsWithChildren
     ) & { size?: "md" | "xl"; className?: string; warn?: boolean; onClear?: () => void }
 ) {
     const parsedText = useMemo(() => {

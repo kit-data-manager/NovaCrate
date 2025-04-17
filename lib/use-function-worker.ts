@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useRef, useState } from "react"
 import { FunctionWorker } from "@/lib/function-worker"
 import { useInterval } from "usehooks-ts"

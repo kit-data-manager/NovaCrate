@@ -1,6 +1,5 @@
 import { createRef, useCallback, useEffect } from "react"
 import { ViewerProps } from "@/components/file-explorer/viewers/base"
-import { EyeOff } from "lucide-react"
 import { PreviewNotSupported } from "@/components/file-explorer/viewers/not-supported"
 
 export function ObjectViewer({
