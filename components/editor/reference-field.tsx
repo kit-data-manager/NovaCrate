@@ -79,7 +79,7 @@ export const ReferenceField = memo(function ReferenceField({
     }, [referencedEntityName])
 
     return (
-        <div className="flex w-full">
+        <div className="flex w-full max-w-full min-w-0 overflow-none">
             <SelectReferenceModal
                 open={selectModalOpen}
                 onSelect={onSelect}
@@ -127,11 +127,11 @@ export const ReferenceField = memo(function ReferenceField({
             ) : (
                 <>
                     <Button
-                        className="grow rounded-r-none justify-start pl-3 truncate"
+                        className="shrink grow rounded-r-none justify-start pl-2 truncate min-w-0"
                         variant="outline"
                         onClick={openInNewTab}
                     >
-                        <EntityIcon entity={referencedEntity} />
+                        <EntityIcon className="mr-1" entity={referencedEntity} />
                         <div className="flex items-end truncate grow">
                             <ReferenceText />
                             <span className="text-muted-foreground ml-1 text-xs truncate">
