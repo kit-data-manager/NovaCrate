@@ -37,7 +37,7 @@ export function EntityBadge(props: { entity?: IEntity; size?: "md" | "lg" | "sm"
                         <span>Crate Root</span>
                     </div>
                 </TooltipTrigger>
-                <TooltipContent className="font-normal max-w-96">
+                <TooltipContent className="font-normal max-w-96 p-0 border border-input bg-transparent [&_.arrow]:fill-input [&_.arrow]:bg-input">
                     <Alert className="border-none m-0">
                         <InfoIcon className="size-4" />
                         <AlertTitle>Hint: Crate Root</AlertTitle>
@@ -73,7 +73,7 @@ export function EntityBadge(props: { entity?: IEntity; size?: "md" | "lg" | "sm"
                         <span>{isFileDataEntity(props.entity) ? "File" : "Dataset"}</span>
                     </div>
                 </TooltipTrigger>
-                <TooltipContent className="font-normal max-w-96">
+                <TooltipContent className="font-normal max-w-96 p-0 border border-input bg-transparent [&_.arrow]:fill-input [&_.arrow]:bg-input">
                     <Alert className="border-none m-0">
                         <InfoIcon className="size-4" />
                         <AlertTitle>Hint: Data Entities</AlertTitle>
@@ -112,7 +112,7 @@ export function EntityBadge(props: { entity?: IEntity; size?: "md" | "lg" | "sm"
                         <span>Contextual</span>
                     </div>
                 </TooltipTrigger>
-                <TooltipContent className="font-normal max-w-96">
+                <TooltipContent className="font-normal max-w-96 p-0 border border-input bg-transparent [&_.arrow]:fill-input [&_.arrow]:bg-input">
                     <Alert className="border-none m-0">
                         <InfoIcon className="size-4" />
                         <AlertTitle>Hint: Contextual Entities</AlertTitle>
