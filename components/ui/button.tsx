@@ -18,7 +18,7 @@ const buttonVariants = cva(
                 ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
                 link: "text-primary underline-offset-4 hover:underline",
                 "list-entry": "justify-start focus:bg-muted",
-                tab: "data-[active=true]:bg-muted rounded-none hover:bg-muted/70 transition-none",
+                tab: "data-[active=true]:bg-muted rounded-none hover:bg-muted/70 transition-none h-10!",
                 header: "text-xs"
             },
             size: {

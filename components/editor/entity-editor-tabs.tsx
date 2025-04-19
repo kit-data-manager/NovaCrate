@@ -140,7 +140,7 @@ function Tabs({ tabs, currentTab }: { tabs: IEntityEditorTab[]; currentTab?: IEn
     return (
         <div
             ref={container}
-            className="flex overflow-x-auto shrink-0 no-scrollbar"
+            className="flex overflow-x-auto shrink-0 no-scrollbar h-10"
             onWheel={(s) => {
                 if (s.deltaY !== 0 && container.current) {
                     // noinspection JSSuspiciousNameCombination
