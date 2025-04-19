@@ -52,7 +52,7 @@
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-w-grow: w-grow 0.1s ease;
-  --animate-slide-left: slide-left 0.5s ease;
+  --animate-slide-left: slide-left 2s ease;
   --animate-slide-left-reverse: slide-left-reverse 0.5s ease;
   --animate-fade-out: fade-out 0.5s ease;
   --animate-fade-in: fade-in 0.5s ease;
@@ -84,10 +84,13 @@
     }
   }
   @keyframes slide-left {
-    from {
+    0% {
       transform: translateX(0);
     }
-    to {
+    25% {
+      transform: translateX(-100%);
+    }
+    100% {
       transform: translateX(-100%);
     }
   }

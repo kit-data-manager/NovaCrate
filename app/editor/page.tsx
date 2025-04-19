@@ -219,7 +219,7 @@ export default function EditorLandingPage() {
             />
 
             <div
-                className={`bg-accent h-full flex flex-col ${fadeOutAnimation ? "animate-slide-left translate-x-[-100%]" : "animate-slide-left-reverse"}`}
+                className={`bg-accent h-full flex flex-col ${fadeOutAnimation ? "animate-slide-left" : "animate-slide-left-reverse"}`}
             >
                 <div className="flex flex-col items-center justify-center h-[max(45vh,200px)] p-10">
                     <Package className="w-32 h-32 mb-10" />
