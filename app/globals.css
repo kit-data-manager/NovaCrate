@@ -57,6 +57,8 @@
   --animate-fade-out: fade-out 0.5s ease;
   --animate-fade-in: fade-in 0.5s ease;
 
+  --radix-accordion-content-height: auto;
+
   @keyframes accordion-down {
     from {
       height: 0;
@@ -118,7 +120,7 @@
 @utility container {
   margin-inline: auto;
   padding-inline: 2rem;
-  @media (width >= --theme(--breakpoint-sm)) {
+  @media (width >= 640px) {
     max-width: none;
   }
   @media (width >= 1400px) {

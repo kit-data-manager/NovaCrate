@@ -170,7 +170,8 @@ export function CreateEntityModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
                 className={
-                    "transition-none " + (!selectedType && !fullTypeBrowser ? "max-w-[1000px]" : "")
+                    "transition-none " +
+                    (!selectedType && !fullTypeBrowser ? "max-w-[1000px]!" : "")
                 }
             >
                 {uploading ? (

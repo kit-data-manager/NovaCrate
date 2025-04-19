@@ -62,13 +62,13 @@ export function OrganizationImport({
     return (
         <>
             <Tabs
-                className="flex justify-center mb-2"
+                className="mb-4"
                 value={createManually ? "manual" : "import"}
                 onValueChange={(v) => {
                     setCreateManually(v === "manual")
                 }}
             >
-                <TabsList className="flex">
+                <TabsList className="flex self-center">
                     <TabsTrigger value="manual">
                         <TextCursor className="size-4 mr-2" /> Create Manually
                     </TabsTrigger>

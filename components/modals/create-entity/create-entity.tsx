@@ -215,13 +215,13 @@ export function CreateEntity({
             {hasFileUpload ? (
                 <div>
                     <Tabs
-                        className="flex justify-center mb-2"
+                        className="mb-4"
                         value={forceWithoutFile ? "without-file" : "with-file"}
                         onValueChange={(v) => {
                             setForceWithoutFile(v === "without-file")
                         }}
                     >
-                        <TabsList className="flex">
+                        <TabsList className="flex self-center">
                             <TabsTrigger value="with-file">
                                 <HardDriveUpload className="size-4 mr-2" /> Upload File
                             </TabsTrigger>
@@ -250,13 +250,13 @@ export function CreateEntity({
             {hasFolderUpload ? (
                 <div>
                     <Tabs
-                        className="flex justify-center mb-2"
+                        className="mb-4"
                         value={forceWithoutFile ? "without-file" : "with-file"}
                         onValueChange={(v) => {
                             setForceWithoutFile(v === "without-file")
                         }}
                     >
-                        <TabsList className="flex">
+                        <TabsList className="flex self-center">
                             <TabsTrigger value="with-file">
                                 <HardDriveUpload className="size-4 mr-2" /> Upload Folder
                             </TabsTrigger>

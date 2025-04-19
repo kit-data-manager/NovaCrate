@@ -62,13 +62,13 @@ export function PersonImport({
     return (
         <>
             <Tabs
-                className="flex justify-center mb-2"
+                className="mb-4"
                 value={createManually ? "manual" : "import"}
                 onValueChange={(v) => {
                     setCreateManually(v === "manual")
                 }}
             >
-                <TabsList className="flex">
+                <TabsList className="flex self-center">
                     <TabsTrigger value="manual">
                         <TextCursor className="size-4 mr-2" /> Create Manually
                     </TabsTrigger>
@@ -96,13 +96,14 @@ export function PersonImport({
                     </DialogHeader>
                     <Error error={error} title="Import failed" />
                     <div>
-                        <Label>ORCID URL or Identifier</Label>
+                        <Label htmlFor={"importOrcid"}>ORCID URL or Identifier</Label>
                         <Input
                             placeholder="https://orcid.org/..."
                             value={value}
                             onChange={(e) => setValue(e.target.value)}
                             onKeyDown={onKeyDown}
                             disabled={creating}
+                            id={"import-orcid"}
                         />
                     </div>
                     <div className="flex justify-between">

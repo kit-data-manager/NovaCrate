@@ -377,7 +377,6 @@ export default function EditorLandingPage() {
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="grid grid-cols-1 gap-2">
-                                    {" "}
                                     <h4 className="font-medium leading-none">Search for Crates</h4>
                                     <Input
                                         placeholder="Search..."
