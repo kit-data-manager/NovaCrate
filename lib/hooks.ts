@@ -373,7 +373,7 @@ export function useDeferredValue<T>(
         setState(value)
     }, [value])
 
-    const updateDeferredValueTimer = useRef<number>()
+    const updateDeferredValueTimer = useRef<number>(undefined)
     const debouncedState = useRef(state)
     useEffect(() => {
         debouncedState.current = state

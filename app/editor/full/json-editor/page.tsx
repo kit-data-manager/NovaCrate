@@ -30,7 +30,7 @@ export default function JSONEditorPage() {
     const [crateDataProxy, setCrateDataProxy] = useState(crateData)
     const theme = useTheme()
     const [editorHasErrors, setEditorHasErrors] = useState(false)
-    const editorValue = useRef<string | undefined>()
+    const editorValue = useRef<string | undefined>(undefined)
     const [editorHasChanges, setEditorHasChanges] = useState(false)
     const [saving, setSaving] = useState(false)
     const [saveError, setSaveError] = useState<unknown>()

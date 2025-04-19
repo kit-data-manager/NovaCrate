@@ -7,7 +7,7 @@ import { createGraphSettings, GraphSettings } from "@/lib/state/graph-settings"
 const GraphSettingsContext = createContext<StoreApi<GraphSettings> | null>(null)
 
 export function GraphSettingsProvider(props: PropsWithChildren) {
-    const storeRef = useRef<StoreApi<GraphSettings>>()
+    const storeRef = useRef<StoreApi<GraphSettings>>(undefined)
 
     if (!storeRef.current) {
         storeRef.current = createGraphSettings()
