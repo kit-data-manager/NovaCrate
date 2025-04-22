@@ -36,7 +36,7 @@
     "@types/dagre": "^0.7.52",
     "@types/luxon": "^3.4.2",
     "auto-bind": "^5.0.1",
-    "auto-zustand-selectors-hook": "^2.0.0",
+    "auto-zustand-selectors-hook": "^3.0.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "cmdk": "^1.1.1",
