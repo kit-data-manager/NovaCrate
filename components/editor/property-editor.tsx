@@ -246,8 +246,9 @@ export const PropertyEditor = memo(function PropertyEditor({
                     title="Error while determining type range"
                 />
                 {isDeleted ? (
-                    <div className="flex items-center text-muted-foreground">
-                        <Trash className="size-4 mr-2" /> Empty Property will be deleted on save
+                    <div className="flex items-center text-muted-foreground mb-4">
+                        <Trash className="size-4 mr-2" /> This empty property will be deleted on
+                        save
                     </div>
                 ) : null}
                 <div className="flex flex-col gap-4">

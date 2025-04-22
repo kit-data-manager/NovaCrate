@@ -247,6 +247,12 @@ export class BrowserBasedCrateService extends CrateServiceBase {
                     existing[key] = value
                 }
             }
+
+            for (const [key] of Object.entries(existing)) {
+                if (!(key in entityData)) {
+                    delete existing[key]
+                }
+            }
         } else {
             crate["@graph"].push(entityData)
         }
