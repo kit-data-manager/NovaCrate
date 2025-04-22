@@ -176,10 +176,11 @@ export function EntityEditor({
                 goToFileExplorer={canHavePreview ? showInFileExplorer : undefined}
             />
 
-            <div className="pt-12 p-4 pr-10 overflow-y-auto">
+            <div className="pt-12 p-4 pr-10 overflow-y-auto max-w-full">
                 <div className="flex justify-between items-center">
                     <h2 className="text-3xl font-bold flex items-center gap-4">
-                        <EntityBadge entity={entity} size="lg" /> {displayName}
+                        <EntityBadge entity={entity} size="lg" />
+                        <span className="break-all">{displayName}</span>
                     </h2>
                     <div className="gap-2 flex"></div>
                 </div>
