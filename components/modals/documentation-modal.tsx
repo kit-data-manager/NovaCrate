@@ -53,7 +53,7 @@ export function DocumentationModalInner({
                     >
                         RO-Crate Specification v1.1
                     </a>
-                    <ExternalLinkIcon className="w-4 h-4" />
+                    <ExternalLinkIcon className="size-4" />
                 </div>
 
                 <div className="flex gap-1">
@@ -64,7 +64,7 @@ export function DocumentationModalInner({
                     >
                         NovaCrate Repository
                     </a>
-                    <ExternalLinkIcon className="w-4 h-4" />
+                    <ExternalLinkIcon className="size-4" />
                 </div>
             </DialogContent>
         </Dialog>

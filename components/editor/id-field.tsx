@@ -43,20 +43,20 @@ export function IDField({ value }: { value: string }) {
 
     return (
         <div className="flex grow justify-start pl-3 items-center rounded-lg p-2">
-            <ScanBarcode className="w-4 h-4 pointer-events-none text-muted-foreground mr-2 shrink-0" />
+            <ScanBarcode className="size-4 pointer-events-none text-muted-foreground mr-2 shrink-0" />
             <span className="truncate grow">{value}</span>
             <DropdownMenu>
                 <DropdownMenuTrigger className="p-2">
-                    <EllipsisVertical className="w-4 h-4" />
+                    <EllipsisVertical className="size-4" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                     {canHavePreview ? (
                         <DropdownMenuItem onClick={togglePreview}>
-                            <Eye className="w-4 h-4 mr-2" /> Preview File
+                            <Eye className="size-4 mr-2" /> Preview File
                         </DropdownMenuItem>
                     ) : null}
                     <DropdownMenuItem onClick={copyFn}>
-                        <Copy className="w-4 h-4 mr-2" /> Copy Identifier
+                        <Copy className="size-4 mr-2" /> Copy Identifier
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>

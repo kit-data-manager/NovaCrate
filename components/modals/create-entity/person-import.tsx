@@ -62,18 +62,18 @@ export function PersonImport({
     return (
         <>
             <Tabs
-                className="flex justify-center mb-2"
+                className="mb-4"
                 value={createManually ? "manual" : "import"}
                 onValueChange={(v) => {
                     setCreateManually(v === "manual")
                 }}
             >
-                <TabsList className="flex">
+                <TabsList className="flex self-center">
                     <TabsTrigger value="manual">
-                        <TextCursor className="w-4 h-4 mr-2" /> Create Manually
+                        <TextCursor className="size-4 mr-2" /> Create Manually
                     </TabsTrigger>
                     <TabsTrigger value="import">
-                        <Import className="w-4 h-4 mr-2" /> Import from ORCID
+                        <Import className="size-4 mr-2" /> Import from ORCID
                     </TabsTrigger>
                 </TabsList>
             </Tabs>
@@ -89,31 +89,32 @@ export function PersonImport({
                                 target="_blank"
                                 className="inline-flex hover:underline"
                             >
-                                ORCID.org <ExternalLink className="w-4 h-4 ml-1" />
+                                ORCID.org <ExternalLink className="size-4 ml-1" />
                             </a>
                             . Enter either ORCID ID or URL.
                         </DialogDescription>
                     </DialogHeader>
                     <Error error={error} title="Import failed" />
                     <div>
-                        <Label>ORCID URL or Identifier</Label>
+                        <Label htmlFor={"importOrcid"}>ORCID URL or Identifier</Label>
                         <Input
                             placeholder="https://orcid.org/..."
                             value={value}
                             onChange={(e) => setValue(e.target.value)}
                             onKeyDown={onKeyDown}
                             disabled={creating}
+                            id={"import-orcid"}
                         />
                     </div>
                     <div className="flex justify-between">
                         <Button variant="secondary" onClick={backToTypeSelect} disabled={creating}>
-                            <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                            <ArrowLeft className="size-4 mr-2" /> Back
                         </Button>
 
                         <div className="flex gap-2 items-center">
-                            {creating ? <LoaderCircle className="animate-spin w-4 h-4" /> : null}
+                            {creating ? <LoaderCircle className="animate-spin size-4" /> : null}
                             <Button onClick={onImportPress} disabled={creating}>
-                                <Import className="w-4 h-4 mr-2" /> Import
+                                <Import className="size-4 mr-2" /> Import
                             </Button>
                         </div>
                     </div>

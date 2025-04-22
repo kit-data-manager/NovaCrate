@@ -219,7 +219,7 @@ export default function EditorLandingPage() {
             />
 
             <div
-                className={`bg-accent h-full flex flex-col ${fadeOutAnimation ? "animate-slide-left translate-x-[-100%]" : "animate-slide-left-reverse"}`}
+                className={`bg-accent h-full flex flex-col ${fadeOutAnimation ? "animate-slide-left" : "animate-slide-left-reverse"}`}
             >
                 <div className="flex flex-col items-center justify-center h-[max(45vh,200px)] p-10">
                     <Package className="w-32 h-32 mb-10" />
@@ -245,15 +245,15 @@ export default function EditorLandingPage() {
                                     className="rounded-none border-r-0 h-12"
                                 >
                                     <PackagePlus className="w-6 h-6 mr-3" /> New Crate{" "}
-                                    <ChevronDown className="w-4 h-4 ml-2" />
+                                    <ChevronDown className="size-4 ml-2" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 <DropdownMenuItem onClick={createCrateFromFolder}>
-                                    <FolderOpen className="w-4 h-4 mr-2" /> Start with Data
+                                    <FolderOpen className="size-4 mr-2" /> Start with Data
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={createEmptyCrate}>
-                                    <Loader className="w-4 h-4 mr-2" />
+                                    <Loader className="size-4 mr-2" />
                                     Start from scratch
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -364,20 +364,19 @@ export default function EditorLandingPage() {
                         <div className="flex justify-center pb-4 gap-4">
                             <TabsList>
                                 <TabsTrigger value={"recent"}>
-                                    <Clock className="w-4 h-4 mr-2" /> Recent Crates
+                                    <Clock className="size-4 mr-2" /> Recent Crates
                                 </TabsTrigger>
                                 <TabsTrigger value={"stored"}>
-                                    <HardDrive className="w-4 h-4 mr-2" /> All Crates
+                                    <HardDrive className="size-4 mr-2" /> All Crates
                                 </TabsTrigger>
                             </TabsList>
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button variant="secondary" size="icon">
-                                        <Search className="w-4 h-4" />
+                                        <Search className="size-4" />
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="grid grid-cols-1 gap-2">
-                                    {" "}
                                     <h4 className="font-medium leading-none">Search for Crates</h4>
                                     <Input
                                         placeholder="Search..."
@@ -470,7 +469,7 @@ export default function EditorLandingPage() {
                                             [0, 0, 0].map((_, i) => {
                                                 return (
                                                     <Fragment key={i}>
-                                                        <Skeleton className="w-4 h-4" />
+                                                        <Skeleton className="size-4" />
                                                         <Skeleton className="w-full h-8" />
                                                         <Skeleton className="w-full h-8" />
                                                         <Skeleton className="w-full h-8" />

@@ -15,13 +15,17 @@ const isORCID = (identifier: string) => {
     return identifier.length > 0 && /^https:\/\/orcid.org\/(\d{4}-){3}\d{3}(\d|X)$/.test(identifier)
 }
 
+/**
+ * Modal to create a contextual entity from ORCID. Currently only implemented with ro-crate-java and thus removed
+ * @param open Whether the modal is open
+ * @param onOpenChange Called when the open state should change
+ * @constructor
+ */
 export function CreateFromORCIDModal({
     open,
-    onEntityCreated,
     onOpenChange
 }: {
     open: boolean
-    onEntityCreated: (ref: IReference) => void
     onOpenChange: (open: boolean) => void
 }) {
     const [url, setUrl] = useState("")
@@ -118,7 +122,7 @@ export function CreateFromORCIDModal({
                                 </div>
                                 <div className="mt-4 flex justify-end">
                                     <Button>
-                                        <Plus className="w-4 h-4 mr-2" /> Create
+                                        <Plus className="size-4 mr-2" /> Create
                                     </Button>
                                 </div>
                             </>

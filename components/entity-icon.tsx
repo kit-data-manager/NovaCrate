@@ -43,7 +43,7 @@ export function EntityIcon(props: {
             )}
         >
             <div className={cn(asteriskCn) + ` ${props.unsavedChanges ? "" : "hidden"}`}>
-                <Asterisk className="w-4 h-4" />
+                <Asterisk className="size-4" />
             </div>
             <span>{content}</span>
         </div>

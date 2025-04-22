@@ -71,7 +71,7 @@ export default function EntityNode({
                     position={Position.Left}
                     onConnect={(params) => console.log("handle onConnect", params)}
                     isConnectable={isConnectable}
-                    className="!border-none !bg-primary/80"
+                    className="border-none! bg-primary/80!"
                 />
                 <div
                     className={`p-3 rounded-lg border dark:border-accent bg-background max-w-[600px] ${selected ? "bg-secondary" : ""}`}
@@ -122,7 +122,7 @@ export default function EntityNode({
                                   position={Position.Right}
                                   style={{ top: handlePos(i, handles.length) }}
                                   isConnectable={isConnectable}
-                                  className="!border-none !bg-primary/80"
+                                  className="border-none! bg-primary/80!"
                               />
                           )
                       })}
@@ -138,7 +138,7 @@ export default function EntityNode({
                               }
                     }
                     isConnectable={isConnectable}
-                    className="!border-none !bg-primary/80"
+                    className="border-none! bg-primary/80!"
                 />
             </ContextMenuTrigger>
             <ContextMenuContent>
@@ -152,23 +152,23 @@ export default function EntityNode({
                             onClick={() => saveEntity(entity)}
                             disabled={!entityHasChanges}
                         >
-                            <Save className="w-4 h-4 mr-2" /> Save Changes
+                            <Save className="size-4 mr-2" /> Save Changes
                         </ContextMenuItem>
                         <ContextMenuItem
                             onClick={() => revertEntity(data.entityId)}
                             disabled={!entityHasChanges}
                         >
-                            <Undo2 className="w-4 h-4 mr-2" /> Revert Changes
+                            <Undo2 className="size-4 mr-2" /> Revert Changes
                         </ContextMenuItem>
                         <ContextMenuSeparator />
                         <ContextMenuItem
                             className="bg-destructive text-destructive-foreground"
                             onClick={() => showDeleteEntityModal(data.entityId)}
                         >
-                            <Trash className="w-4 h-4 mr-2" />
+                            <Trash className="size-4 mr-2" />
                             Delete
                             <ContextMenuShortcut>
-                                <Delete className="w-4 h-4 text-destructive-foreground/80" />
+                                <Delete className="size-4 text-destructive-foreground/80" />
                             </ContextMenuShortcut>
                         </ContextMenuItem>
                     </>

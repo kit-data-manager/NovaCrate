@@ -64,14 +64,14 @@ export function DeleteCrateModal({
                 </div>
                 <div className="flex justify-between">
                     <Button variant="outline" onClick={onCloseClick} disabled={isDeleting}>
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Cancel
+                        <ArrowLeft className="size-4 mr-2" /> Cancel
                     </Button>
                     <Button
                         variant="destructive"
                         onClick={onDeleteCrateClick}
                         disabled={isDeleting}
                     >
-                        <Trash className="w-4 h-4 mr-2" /> Delete
+                        <Trash className="size-4 mr-2" /> Delete
                     </Button>
                 </div>
             </DialogContent>

@@ -79,7 +79,7 @@ export const ReferenceField = memo(function ReferenceField({
     }, [referencedEntityName])
 
     return (
-        <div className="flex w-full">
+        <div className="flex w-full max-w-full min-w-0 overflow-none">
             <SelectReferenceModal
                 open={selectModalOpen}
                 onSelect={onSelect}
@@ -96,7 +96,7 @@ export const ReferenceField = memo(function ReferenceField({
                                 variant="outline"
                                 onClick={() => onCreateClick()}
                             >
-                                <Plus className="w-4 h-4 mr-2" />
+                                <Plus className="size-4 mr-2" />
                                 Create
                             </Button>
                         </TooltipTrigger>
@@ -115,7 +115,7 @@ export const ReferenceField = memo(function ReferenceField({
                                     setSelectModalOpen(true)
                                 }}
                             >
-                                <LinkIcon className="w-4 h-4 mr-2" />
+                                <LinkIcon className="size-4 mr-2" />
                                 Select
                             </Button>
                         </TooltipTrigger>
@@ -127,18 +127,18 @@ export const ReferenceField = memo(function ReferenceField({
             ) : (
                 <>
                     <Button
-                        className="grow rounded-r-none justify-start pl-3 truncate"
+                        className="shrink grow rounded-r-none justify-start pl-2 truncate min-w-0"
                         variant="outline"
                         onClick={openInNewTab}
                     >
-                        <EntityIcon entity={referencedEntity} />
+                        <EntityIcon className="mr-1" entity={referencedEntity} />
                         <div className="flex items-end truncate grow">
                             <ReferenceText />
                             <span className="text-muted-foreground ml-1 text-xs truncate">
                                 {value["@id"]}
                             </span>
                             <div className="flex items-center self-center grow justify-end">
-                                <Eye className="w-4 h-4" />
+                                <Eye className="size-4" />
                             </div>
                         </div>
                     </Button>
@@ -150,7 +150,7 @@ export const ReferenceField = memo(function ReferenceField({
                         variant="outline"
                         className="rounded-none border-l-0 shrink-0"
                     >
-                        <LinkIcon className="w-4 h-4" />
+                        <LinkIcon className="size-4" />
                     </Button>
                 </>
             )}

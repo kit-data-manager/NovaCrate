@@ -5,7 +5,7 @@ import { StoreApi, useStore } from "zustand"
 const ActionsContext = createContext<StoreApi<ActionStore> | null>(null)
 
 export function ActionsProvider(props: PropsWithChildren) {
-    const actions = useRef<StoreApi<ActionStore>>()
+    const actions = useRef<StoreApi<ActionStore>>(undefined)
 
     if (!actions.current) {
         actions.current = createActionStore()

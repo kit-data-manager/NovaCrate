@@ -7,7 +7,7 @@ export function InternalEntityHint({ entity }: { entity: IEntity }) {
     if (isRoCrateMetadataEntity(entity)) {
         return (
             <Hint name="internal-entity" className="mt-8">
-                <Wrench className="w-4 h-4" />
+                <Wrench className="size-4" />
                 <AlertTitle>Hint: Internal Entity</AlertTitle>
                 <AlertDescription>
                     This is an internal entity that should not be edited by hand. This tab is

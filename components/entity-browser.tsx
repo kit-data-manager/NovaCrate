@@ -124,22 +124,22 @@ export function EntityBrowserItem(props: { entityId: string }) {
                 </ContextMenuItem>
                 {canHavePreview ? (
                     <ContextMenuItem onClick={onPreviewClick}>
-                        <Eye className="w-4 h-4 mr-2" /> Preview
+                        <Eye className="size-4 mr-2" /> Preview
                     </ContextMenuItem>
                 ) : null}
                 <ContextMenuSeparator />
                 <ContextMenuItem onClick={onSaveClick} disabled={!hasUnsavedChanges}>
-                    <Save className="w-4 h-4 mr-2" /> Save Entity
+                    <Save className="size-4 mr-2" /> Save Entity
                 </ContextMenuItem>
                 <ContextMenuItem onClick={onRevertClick} disabled={!hasUnsavedChanges}>
-                    <Undo2 className="w-4 h-4 mr-2" /> Revert Changes
+                    <Undo2 className="size-4 mr-2" /> Revert Changes
                 </ContextMenuItem>
                 <ContextMenuSeparator />
                 <ContextMenuItem
                     className="bg-destructive text-destructive-foreground"
                     onClick={onDeleteClick}
                 >
-                    <Trash className="w-4 h-4 mr-2" /> Delete
+                    <Trash className="size-4 mr-2" /> Delete
                 </ContextMenuItem>
             </ContextMenuContent>
         </ContextMenu>
@@ -201,7 +201,7 @@ export function EntityBrowserSection(props: {
             </Button>
             {open ? (
                 <div className="flex flex-col pl-4">
-                    {entities.map(([key, _]) => {
+                    {entities.map(([key]) => {
                         return <EntityBrowserItem entityId={key} key={key} />
                     })}
                 </div>
@@ -279,7 +279,7 @@ export function EntityBrowser() {
         return (
             <div className="h-full w-full flex flex-col">
                 <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
-                    <PackageSearch className="w-4 h-4 shrink-0 mr-2" /> Entities
+                    <PackageSearch className="size-4 shrink-0 mr-2" /> Entities
                 </div>
                 <div className="flex gap-2 top-0 z-10 p-2 bg-accent shrink-0">
                     <ActionButton
@@ -293,7 +293,7 @@ export function EntityBrowser() {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button variant="outline" size="sm" onClick={togglePropertyOverview}>
-                                <LayoutGrid className="w-4 h-4" />
+                                <LayoutGrid className="size-4" />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>Toggle Property Overview</TooltipContent>
@@ -302,7 +302,7 @@ export function EntityBrowser() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button size="sm" variant="outline" className={`text-xs`}>
-                                <EllipsisVertical className={`w-4 h-4`} />
+                                <EllipsisVertical className={`size-4`} />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
@@ -329,10 +329,10 @@ export function EntityBrowser() {
                             </DropdownMenuCheckboxItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={collapseAllSections}>
-                                <ChevronsDownUp className={"w-4 h-4 mr-2"} /> Collapse All
+                                <ChevronsDownUp className={"size-4 mr-2"} /> Collapse All
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={expandAllSections}>
-                                <ChevronsUpDown className={"w-4 h-4 mr-2"} /> Expand All
+                                <ChevronsUpDown className={"size-4 mr-2"} /> Expand All
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <ActionDropdownMenuItem actionId={"crate.reload-entities"} />

@@ -79,25 +79,25 @@ function GlobalSearchInner({
                 </CommandGroup>
                 <CommandGroup heading="Views">
                     <CommandItem value="show entity editor" onSelect={() => closeAnd(goToEntities)}>
-                        <PackageSearch className="w-4 h-4 mr-2" /> Show Entity Editor
+                        <PackageSearch className="size-4 mr-2" /> Show Entity Editor
                     </CommandItem>
                     <CommandItem
                         value="show file entities"
                         onSelect={() => closeAnd(goToFileExplorer)}
                     >
-                        <Folder className="w-4 h-4 mr-2" /> Show File Explorer
+                        <Folder className="size-4 mr-2" /> Show File Explorer
                     </CommandItem>
                     <CommandItem value="show graph" onSelect={() => closeAnd(goToGraph)}>
-                        <GitFork className="w-4 h-4 mr-2" /> Show RO-Crate Graph
+                        <GitFork className="size-4 mr-2" /> Show RO-Crate Graph
                     </CommandItem>
                     <CommandItem
                         value="edit ro-crate-metadata.json"
                         onSelect={() => closeAnd(goToJsonEditor)}
                     >
-                        <CurlyBraces className="w-4 h-4 mr-2" /> Edit ro-crate-metadata.json
+                        <CurlyBraces className="size-4 mr-2" /> Edit ro-crate-metadata.json
                     </CommandItem>
                     <CommandItem value="show context" onSelect={() => closeAnd(goToContext)}>
-                        <Library className="w-4 h-4 mr-2" /> Show Context
+                        <Library className="size-4 mr-2" /> Show Context
                     </CommandItem>
                 </CommandGroup>
                 <CommandGroup heading="Entities">

@@ -162,7 +162,7 @@ export function CreateCrateModal({
                                 <Label>Folder</Label>
                                 <div>
                                     <Button variant="outline" onClick={openFolderPicker}>
-                                        <Folder className="w-4 h-4 mr-2" />{" "}
+                                        <Folder className="size-4 mr-2" />{" "}
                                         {files.length == 0
                                             ? "Select Folder"
                                             : files[0].webkitRelativePath.split("/")[0]}
@@ -200,13 +200,13 @@ export function CreateCrateModal({
 
                         <div className="mt-4 flex justify-between">
                             <Button variant="secondary" onClick={() => localOnOpenChange(false)}>
-                                <ArrowLeft className="w-4 h-4 mr-2" /> Abort
+                                <ArrowLeft className="size-4 mr-2" /> Abort
                             </Button>
                             <Button
                                 onClick={onCreateClick}
                                 disabled={(fromFolder && files.length == 0) || !!fromZip}
                             >
-                                <PackagePlus className="w-4 h-4 mr-2" /> Create
+                                <PackagePlus className="size-4 mr-2" /> Create
                             </Button>
                         </div>
                     </>

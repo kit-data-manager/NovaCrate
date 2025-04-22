@@ -4,7 +4,7 @@ import { useCallback, useEffect } from "react"
 
 export default function TauriAutoShow() {
     const show = useCallback(async () => {
-        if ((window as any).__TAURI__) {
+        if ("__TAURI__" in window && window.__TAURI__) {
             ;(await import("@tauri-apps/api/window")).appWindow.show().then()
         }
     }, [])

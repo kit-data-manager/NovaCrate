@@ -53,7 +53,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                         className="text-xs"
                         onClick={toggleEntityBrowserPanel}
                     >
-                        <PanelLeftClose className="w-4 h-4" />
+                        <PanelLeftClose className="size-4" />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>Toggle Entity Browser</TooltipContent>
@@ -88,9 +88,9 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                     disabled={isSaving}
                 >
                     {isSaving ? (
-                        <RefreshCw className={"w-4 h-4 mr-2 animate-spin"} />
+                        <RefreshCw className={"size-4 mr-2 animate-spin"} />
                     ) : (
-                        <Save className={"w-4 h-4 mr-2"} />
+                        <Save className={"size-4 mr-2"} />
                     )}
                     {saveAction.name}
                 </Button>
@@ -101,22 +101,22 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                         className={`text-xs transition-colors ${isBeingPreviewed ? "bg-primary text-primary-foreground hover:bg-primary/70 hover:text-primary-foreground" : ""}`}
                         onClick={togglePreview}
                     >
-                        <Eye className="w-4 h-4 mr-2" /> Preview File
+                        <Eye className="size-4 mr-2" /> Preview File
                     </Button>
                 ) : null}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm">
-                            <EllipsisVertical className="w-4 h-4" />
+                            <EllipsisVertical className="size-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuItem onClick={goToGraph}>
-                            <GitFork className="w-4 h-4 mr-2" /> Show in Graph
+                            <GitFork className="size-4 mr-2" /> Show in Graph
                         </DropdownMenuItem>
                         {goToFileExplorer ? (
                             <DropdownMenuItem onClick={goToFileExplorer}>
-                                <Folder className="w-4 h-4 mr-2" /> Show in File Explorer
+                                <Folder className="size-4 mr-2" /> Show in File Explorer
                             </DropdownMenuItem>
                         ) : null}
                         <DropdownMenuSeparator />

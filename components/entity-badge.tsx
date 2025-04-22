@@ -37,9 +37,9 @@ export function EntityBadge(props: { entity?: IEntity; size?: "md" | "lg" | "sm"
                         <span>Crate Root</span>
                     </div>
                 </TooltipTrigger>
-                <TooltipContent className="font-normal max-w-96">
+                <TooltipContent className="font-normal max-w-96 p-0 border border-input bg-transparent [&_.arrow]:fill-input [&_.arrow]:bg-input">
                     <Alert className="border-none m-0">
-                        <InfoIcon className="w-4 h-4" />
+                        <InfoIcon className="size-4" />
                         <AlertTitle>Hint: Crate Root</AlertTitle>
                         <AlertDescription>
                             This is the root entity of your crate. It defines the name of the crate
@@ -73,16 +73,16 @@ export function EntityBadge(props: { entity?: IEntity; size?: "md" | "lg" | "sm"
                         <span>{isFileDataEntity(props.entity) ? "File" : "Dataset"}</span>
                     </div>
                 </TooltipTrigger>
-                <TooltipContent className="font-normal max-w-96">
+                <TooltipContent className="font-normal max-w-96 p-0 border border-input bg-transparent [&_.arrow]:fill-input [&_.arrow]:bg-input">
                     <Alert className="border-none m-0">
-                        <InfoIcon className="w-4 h-4" />
+                        <InfoIcon className="size-4" />
                         <AlertTitle>Hint: Data Entities</AlertTitle>
                         <AlertDescription>
                             A Data Entity directly corresponds to a file in the File Explorer. The
                             purpose of the Entity is to hold the metadata of the corresponding file.
                             That could be things like the file size or file type, but also the
                             author or the software that was used to create it. To add new metadata,
-                            simply press the <PlusIcon className="w-4 h-4 inline" />{" "}
+                            simply press the <PlusIcon className="size-4 inline" />{" "}
                             <b>Add Property </b>
                             button or edit an existing property. Some limited examples can be found
                             here:{" "}
@@ -112,9 +112,9 @@ export function EntityBadge(props: { entity?: IEntity; size?: "md" | "lg" | "sm"
                         <span>Contextual</span>
                     </div>
                 </TooltipTrigger>
-                <TooltipContent className="font-normal max-w-96">
+                <TooltipContent className="font-normal max-w-96 p-0 border border-input bg-transparent [&_.arrow]:fill-input [&_.arrow]:bg-input">
                     <Alert className="border-none m-0">
-                        <InfoIcon className="w-4 h-4" />
+                        <InfoIcon className="size-4" />
                         <AlertTitle>Hint: Contextual Entities</AlertTitle>
                         <AlertDescription>
                             A Contextual Entity describes something that is not directly a file or

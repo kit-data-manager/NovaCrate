@@ -147,7 +147,7 @@ export function TypeSelect({
                 </div>
 
                 <Button variant="secondary" onClick={() => setFullTypeBrowser(false)}>
-                    <Blocks className="w-4 h-4 mr-2" /> Quick Select
+                    <Blocks className="size-4 mr-2" /> Quick Select
                 </Button>
             </div>
         </>

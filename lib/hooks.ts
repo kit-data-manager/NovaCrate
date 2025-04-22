@@ -93,7 +93,7 @@ export function useAsync<I, O>(
 ): { data: O | undefined; error: unknown; isPending: boolean; revalidate(): void } {
     const [internalState, setInternalState] = useState<O | undefined>(undefined)
     const [pending, setPending] = useState(false)
-    const [error, setError] = useState<any>()
+    const [error, setError] = useState<unknown>()
 
     const lastInput = useRef<I | null>(null)
 
@@ -211,7 +211,7 @@ export function useGoToFileExplorer(entity?: IEntity) {
     return useCallback(
         (_entity?: IEntity) => {
             if (_entity || entity) {
-                setPreviewingFilePath(_entity?.["@id"] || entity?.["@id"]!)
+                setPreviewingFilePath(_entity?.["@id"] || entity?.["@id"] || "")
             }
 
             const href =
@@ -373,7 +373,7 @@ export function useDeferredValue<T>(
         setState(value)
     }, [value])
 
-    const updateDeferredValueTimer = useRef<number>()
+    const updateDeferredValueTimer = useRef<number>(undefined)
     const debouncedState = useRef(state)
     useEffect(() => {
         debouncedState.current = state

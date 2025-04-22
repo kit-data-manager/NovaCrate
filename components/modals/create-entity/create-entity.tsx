@@ -215,18 +215,18 @@ export function CreateEntity({
             {hasFileUpload ? (
                 <div>
                     <Tabs
-                        className="flex justify-center mb-2"
+                        className="mb-4"
                         value={forceWithoutFile ? "without-file" : "with-file"}
                         onValueChange={(v) => {
                             setForceWithoutFile(v === "without-file")
                         }}
                     >
-                        <TabsList className="flex">
+                        <TabsList className="flex self-center">
                             <TabsTrigger value="with-file">
-                                <HardDriveUpload className="w-4 h-4 mr-2" /> Upload File
+                                <HardDriveUpload className="size-4 mr-2" /> Upload File
                             </TabsTrigger>
                             <TabsTrigger value="without-file">
-                                <FileX2 className="w-4 h-4 mr-2" /> Without Data
+                                <FileX2 className="size-4 mr-2" /> Without Data
                             </TabsTrigger>
                         </TabsList>
                     </Tabs>
@@ -235,7 +235,7 @@ export function CreateEntity({
                             <Label>File</Label>
                             <div>
                                 <Button variant="outline" onClick={openFilePicker}>
-                                    <File className="w-4 h-4 mr-2" />
+                                    <File className="size-4 mr-2" />
                                     {plainFiles.length == 0 ? "Select File" : plainFiles[0].name}
                                 </Button>
                                 <span className="ml-2 text-muted-foreground">
@@ -250,18 +250,18 @@ export function CreateEntity({
             {hasFolderUpload ? (
                 <div>
                     <Tabs
-                        className="flex justify-center mb-2"
+                        className="mb-4"
                         value={forceWithoutFile ? "without-file" : "with-file"}
                         onValueChange={(v) => {
                             setForceWithoutFile(v === "without-file")
                         }}
                     >
-                        <TabsList className="flex">
+                        <TabsList className="flex self-center">
                             <TabsTrigger value="with-file">
-                                <HardDriveUpload className="w-4 h-4 mr-2" /> Upload Folder
+                                <HardDriveUpload className="size-4 mr-2" /> Upload Folder
                             </TabsTrigger>
                             <TabsTrigger value="without-file">
-                                <FileX2 className="w-4 h-4 mr-2" /> Without Data
+                                <FileX2 className="size-4 mr-2" /> Without Data
                             </TabsTrigger>
                         </TabsList>
                     </Tabs>
@@ -271,7 +271,7 @@ export function CreateEntity({
                             <div className="flex items-center">
                                 {!emptyFolder ? (
                                     <Button variant="outline" onClick={openFolderPicker}>
-                                        <Folder className="w-4 h-4 mr-2" />
+                                        <Folder className="size-4 mr-2" />
                                         {folderFiles.length == 0
                                             ? "Select Folder"
                                             : folderFiles[0].webkitRelativePath.split("/")[0]}
@@ -285,7 +285,7 @@ export function CreateEntity({
                                         variant={emptyFolder ? "default" : "outline"}
                                         onClick={() => setEmptyFolder((v) => !v)}
                                     >
-                                        <FolderDot className="w-4 h-4 mr-2" />
+                                        <FolderDot className="size-4 mr-2" />
                                         Empty Folder
                                     </Button>
                                 )}
@@ -349,10 +349,10 @@ export function CreateEntity({
 
             <div className="mt-2 flex justify-between">
                 <Button variant="secondary" onClick={() => onBackClick()}>
-                    <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                    <ArrowLeft className="size-4 mr-2" /> Back
                 </Button>
                 <Button onClick={() => localOnCreateClick()} disabled={createDisabled}>
-                    <Plus className="w-4 h-4 mr-2" />
+                    <Plus className="size-4 mr-2" />
                     Create
                 </Button>
             </div>

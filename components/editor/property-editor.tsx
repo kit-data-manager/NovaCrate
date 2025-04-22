@@ -47,7 +47,7 @@ export function mapEntityToProperties(
 
     return Object.keys(data)
         .map((key) => {
-            let value = data[key]
+            const value = data[key]
             let arrValue: EntitySinglePropertyTypes[]
             if (!Array.isArray(value)) {
                 arrValue = [value]
@@ -247,7 +247,7 @@ export const PropertyEditor = memo(function PropertyEditor({
                 />
                 {isDeleted ? (
                     <div className="flex items-center text-muted-foreground">
-                        <Trash className="w-4 h-4 mr-2" /> Empty Property will be deleted on save
+                        <Trash className="size-4 mr-2" /> Empty Property will be deleted on save
                     </div>
                 ) : null}
                 <div className="flex flex-col gap-4">

@@ -35,6 +35,7 @@ export function Hint({
         return (
             <Alert className={className}>
                 {children}
+                <div />
                 <div className="flex justify-end items-center space-x-4 mt-2">
                     <div className="flex items-center space-x-2">
                         <Checkbox

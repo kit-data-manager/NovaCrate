@@ -59,13 +59,13 @@ export function FolderEntry(props: {
                         onClick={() => toggle()}
                     >
                         <ChevronDown
-                            className="w-4 h-4 text-foreground shrink-0 aria-disabled:-rotate-90"
+                            className="size-4 text-foreground shrink-0 aria-disabled:-rotate-90"
                             aria-disabled={!isOpen}
                         />
                         {isMock ? (
-                            <FolderX className="w-4 h-4 text-muted-foreground shrink-0" />
+                            <FolderX className="size-4 text-muted-foreground shrink-0" />
                         ) : (
-                            <Folder className="w-4 h-4 shrink-0" />
+                            <Folder className="size-4 shrink-0" />
                         )}
 
                         <div className="truncate">
@@ -126,11 +126,11 @@ export function FileEntry(props: { filePath: string }) {
                     variant="list-entry"
                     onClick={() => setPreviewingFilePath(props.filePath)}
                 >
-                    <div className="w-4 h-4 shrink-0" />
+                    <div className="size-4 shrink-0" />
                     {isMock ? (
-                        <FileX className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <FileX className="size-4 text-muted-foreground shrink-0" />
                     ) : (
-                        <File className="w-4 h-4 shrink-0" />
+                        <File className="size-4 shrink-0" />
                     )}
 
                     <div className="truncate">
@@ -145,7 +145,7 @@ export function FileEntry(props: { filePath: string }) {
                             {entity ? getEntityDisplayName(entity, false) : ""}
                         </span>
                     </div>
-                    {isBeingPreviewed ? <Eye className="w-4 h-4 ml-2 shrink-0" /> : null}
+                    {isBeingPreviewed ? <Eye className="size-4 ml-2 shrink-0" /> : null}
                 </Button>
             </ContextMenuTrigger>
             <EntryContextMenu

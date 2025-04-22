@@ -39,7 +39,7 @@ function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>)
     )
 }
 
-export function NavSidebar({ children }: PropsWithChildren<{}>) {
+export function NavSidebar({ children }: PropsWithChildren) {
     const { showDocumentationModal } = useContext(GlobalModalContext)
 
     return (
@@ -48,30 +48,30 @@ export function NavSidebar({ children }: PropsWithChildren<{}>) {
                 <div className="relative h-full flex flex-col">
                     <div className="flex flex-col gap-2 p-2 pt-0 min-w-40 pb-4 grow">
                         <NavSidebarLink page="entities">
-                            <PackageSearch className="h-4 w-4 mr-2" />
+                            <PackageSearch className="size-4 mr-2" />
                             Entities
                         </NavSidebarLink>
                         <NavSidebarLink page="file-explorer">
-                            <Folder className="h-4 w-4 mr-2" />
+                            <Folder className="size-4 mr-2" />
                             File Explorer
                         </NavSidebarLink>
                         <NavSidebarLink page="graph">
-                            <GitFork className="h-4 w-4 mr-2" />
+                            <GitFork className="size-4 mr-2" />
                             Graph
                         </NavSidebarLink>
                         <NavSidebarLink page="json-editor">
-                            <Braces className="h-4 w-4 mr-2" />
+                            <Braces className="size-4 mr-2" />
                             JSON Editor
                         </NavSidebarLink>
                         <NavSidebarLink page="context">
-                            <Library className="h-4 w-4 mr-2" />
+                            <Library className="size-4 mr-2" />
                             Context
                         </NavSidebarLink>
 
                         <div className="grow"></div>
 
                         <Button variant="link" className={`justify-start w-full`} disabled>
-                            <Bug className="h-4 w-4 mr-2" />
+                            <Bug className="size-4 mr-2" />
                             Validation
                         </Button>
 
@@ -80,7 +80,7 @@ export function NavSidebar({ children }: PropsWithChildren<{}>) {
                             className={`justify-start w-full`}
                             onClick={showDocumentationModal}
                         >
-                            <BookOpenText className="h-4 w-4 mr-2" />
+                            <BookOpenText className="size-4 mr-2" />
                             Documentation
                         </Button>
 

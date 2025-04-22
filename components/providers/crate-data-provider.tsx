@@ -174,7 +174,7 @@ export function CrateDataProvider({
     }, [healthTest])
 
     const [isSaving, setIsSaving] = useState(false)
-    const [saveError, setSaveError] = useState<Map<string, any>>(new Map())
+    const [saveError, setSaveError] = useState<Map<string, unknown>>(new Map())
 
     const clearSaveError = useCallback((id?: string) => {
         if (id) {
@@ -238,7 +238,7 @@ export function CrateDataProvider({
                     if (!updateResult)
                         toast(
                             <div className="flex items-center text-warn">
-                                <TriangleAlert className="w-4 h-4 mr-2" />
+                                <TriangleAlert className="size-4 mr-2" />
                                 Could not save changes to <EntityIcon entity={entityData} />{" "}
                                 {getEntityDisplayName(entityData)}
                             </div>
@@ -249,7 +249,7 @@ export function CrateDataProvider({
                     console.error("Error occurred while trying to update entity", e)
                     toast.warning(
                         <div>
-                            <TriangleAlert className="w-4 h-4 mr-1 inline-block text-warn" /> Could
+                            <TriangleAlert className="size-4 mr-1 inline-block text-warn" /> Could
                             not save changes to <EntityIcon entity={entityData} className="mr-1" />
                             {getEntityDisplayName(entityData)}
                         </div>

@@ -130,7 +130,7 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
                 {/*) : null}*/}
                 <div className="flex justify-between">
                     <Button variant="outline" onClick={onCloseClick} disabled={isDeleting}>
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                        <ArrowLeft className="size-4 mr-2" /> Back
                     </Button>
                     <Button
                         variant="destructive"
@@ -138,9 +138,9 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
                         disabled={isDeleting}
                     >
                         {isDeleting ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            <Loader2 className="size-4 mr-2 animate-spin" />
                         ) : (
-                            <Trash className="w-4 h-4 mr-2" />
+                            <Trash className="size-4 mr-2" />
                         )}{" "}
                         Delete
                     </Button>

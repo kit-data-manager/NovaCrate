@@ -128,10 +128,10 @@ export function CustomPairs() {
 
                     <div className="flex justify-between">
                         <Button variant="secondary" onClick={() => setAddPairModalOpen(false)}>
-                            <ArrowLeft className="w-4 h-4 mr-2" /> Abort
+                            <ArrowLeft className="size-4 mr-2" /> Abort
                         </Button>
                         <Button onClick={addPair} disabled={adding}>
-                            <Plus className="w-4 h-4 mr-2" /> Confirm
+                            <Plus className="size-4 mr-2" /> Confirm
                         </Button>
                     </div>
                 </DialogContent>
@@ -154,7 +154,7 @@ export function CustomPairs() {
                 </HelpTooltip>
                 <div className="grow" />
                 <Button variant="secondary" onClick={() => setAddPairModalOpen(true)}>
-                    <Plus className="w-4 h-4 mr-2" /> Add Pair
+                    <Plus className="size-4 mr-2" /> Add Pair
                 </Button>
             </div>
             <Error error={removePairError} title="Failed to remove pair" />
@@ -180,7 +180,7 @@ export function CustomPairs() {
                                     onClick={() => removePair(pair.key)}
                                     disabled={removing}
                                 >
-                                    <Trash className="w-4 h-4 mr-2" /> Delete
+                                    <Trash className="size-4 mr-2" /> Delete
                                 </Button>
                             </TableCell>
                         </TableRow>

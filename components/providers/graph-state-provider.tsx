@@ -7,7 +7,7 @@ import { createGraphState, GraphState } from "@/lib/state/graph-state"
 const GraphStateContext = createContext<StoreApi<GraphState> | null>(null)
 
 export function GraphStateProvider(props: PropsWithChildren) {
-    const storeRef = useRef<StoreApi<GraphState>>()
+    const storeRef = useRef<StoreApi<GraphState>>(undefined)
 
     if (!storeRef.current) {
         storeRef.current = createGraphState()

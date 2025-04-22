@@ -1,11 +1,11 @@
-import { MenubarItem, MenubarItemProps } from "@/components/ui/menubar"
+import { MenubarItem } from "@/components/ui/menubar"
 import { useAction, useActionsReady } from "@/lib/hooks"
-import { memo, useMemo } from "react"
+import { ComponentProps, memo, useMemo } from "react"
 import { KeyboardShortcut } from "@/components/actions/action-keyboard-shortcuts"
-import { Button, ButtonProps } from "@/components/ui/button"
-import { ContextMenuItem, ContextMenuItemProps } from "@/components/ui/context-menu"
-import { DropdownMenuItem, DropdownMenuItemProps } from "@/components/ui/dropdown-menu"
-import { CommandItem, CommandItemProps } from "@/components/ui/command"
+import { Button } from "@/components/ui/button"
+import { ContextMenuItem } from "@/components/ui/context-menu"
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { CommandItem } from "@/components/ui/command"
 import { Loader2 } from "lucide-react"
 
 export interface GenericActionContentProps {
@@ -23,12 +23,12 @@ function GenericActionContent(props: GenericActionContentProps) {
         return action.icon
     }, [action.icon])
 
-    if (!ready) return <Loader2 className="w-4 h-4 animate-spin" />
+    if (!ready) return <Loader2 className="size-4 animate-spin" />
 
     return (
         <>
             {Icon && (
-                <Icon className={`w-4 h-4 ${props.iconOnly || props.hideName ? "" : "mr-2"}`} />
+                <Icon className={`size-4 ${props.iconOnly || props.hideName ? "" : "mr-2"}`} />
             )}{" "}
             {props.iconOnly || props.hideName ? null : action.name}
             {!props.iconOnly && !props.noShortcut && action.keyboardShortcut ? (
@@ -41,7 +41,7 @@ function GenericActionContent(props: GenericActionContentProps) {
 }
 
 export const ActionMenubarItem = memo(function ActionMenubarItem(
-    props: MenubarItemProps & GenericActionContentProps
+    props: ComponentProps<typeof MenubarItem> & GenericActionContentProps
 ) {
     const action = useAction(props.actionId)
 
@@ -53,7 +53,7 @@ export const ActionMenubarItem = memo(function ActionMenubarItem(
 })
 
 export const ActionButton = memo(function ActionButton(
-    props: ButtonProps & GenericActionContentProps
+    props: ComponentProps<typeof Button> & GenericActionContentProps
 ) {
     const action = useAction(props.actionId)
 
@@ -70,7 +70,7 @@ export const ActionButton = memo(function ActionButton(
 })
 
 export const ActionDropdownMenuItem = memo(function ActionDropdownMenuItem(
-    props: DropdownMenuItemProps & GenericActionContentProps
+    props: ComponentProps<typeof DropdownMenuItem> & GenericActionContentProps
 ) {
     const action = useAction(props.actionId)
 
@@ -82,7 +82,7 @@ export const ActionDropdownMenuItem = memo(function ActionDropdownMenuItem(
 })
 
 export const ActionContextMenuItem = memo(function ActionContextMenuItem(
-    props: ContextMenuItemProps & GenericActionContentProps
+    props: ComponentProps<typeof ContextMenuItem> & GenericActionContentProps
 ) {
     const action = useAction(props.actionId)
 
@@ -94,7 +94,8 @@ export const ActionContextMenuItem = memo(function ActionContextMenuItem(
 })
 
 export const ActionCommandItem = memo(function ActionContextMenuItem(
-    props: CommandItemProps & GenericActionContentProps & { closeAnd?: (fn: () => void) => void }
+    props: ComponentProps<typeof CommandItem> &
+        GenericActionContentProps & { closeAnd?: (fn: () => void) => void }
 ) {
     const action = useAction(props.actionId)
 
@@ -109,16 +110,16 @@ export const ActionCommandItem = memo(function ActionContextMenuItem(
     )
 })
 
-function cleanProps<T extends Record<string, any>>(props: T) {
+function cleanProps<T extends object>(props: T) {
     const newData = {
         ...props
     }
 
-    delete newData.noShortcut
-    delete newData.actionId
-    delete newData.closeAnd
-    delete newData.iconOnly
-    delete newData.hideName
+    if ("noShortcut" in newData) delete newData.noShortcut
+    if ("actionId" in newData) delete newData.actionId
+    if ("closeAnd" in newData) delete newData.closeAnd
+    if ("iconOnly" in newData) delete newData.iconOnly
+    if ("hideName" in newData) delete newData.hideName
 
     return newData
 }

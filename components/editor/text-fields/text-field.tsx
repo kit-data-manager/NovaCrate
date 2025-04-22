@@ -27,7 +27,7 @@ export const TextField = memo(function TextField({
 
     return (
         <div className="flex w-full relative">
-            <TypeIcon className="w-4 h-4 absolute left-2.5 top-3 pointer-events-none text-muted-foreground" />
+            <TypeIcon className="size-4 absolute left-2.5 top-2.5 pointer-events-none text-muted-foreground" />
             <Input
                 value={value}
                 onChange={onInputChange}

@@ -73,7 +73,7 @@ function SaveEntityChangesModalInner({
                         Revert Changes
                     </Button>
                     <Button onClick={onSaveEntityClick}>
-                        <Save className="w-4 h-4 mr-2" /> Save
+                        <Save className="size-4 mr-2" /> Save
                     </Button>
                 </div>
             </DialogContent>

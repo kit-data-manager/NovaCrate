@@ -23,49 +23,49 @@ export default function TypeSelectDropdown(props: {
                 <DropdownMenuItem
                     onClick={() => props.onPropertyTypeSelect(PropertyEditorTypes.Text)}
                 >
-                    <Type className="w-4 h-4 mr-2" /> Text
+                    <Type className="size-4 mr-2" /> Text
                 </DropdownMenuItem>
             ) : null}
             {props.propertyCanBe.canBeNumber ? (
                 <DropdownMenuItem
                     onClick={() => props.onPropertyTypeSelect(PropertyEditorTypes.Number)}
                 >
-                    <Diff className="w-4 h-4 mr-2" /> Number
+                    <Diff className="size-4 mr-2" /> Number
                 </DropdownMenuItem>
             ) : null}
             {props.propertyCanBe.canBeBoolean ? (
                 <DropdownMenuItem
                     onClick={() => props.onPropertyTypeSelect(PropertyEditorTypes.Boolean)}
                 >
-                    <Binary className="w-4 h-4 mr-2" /> Boolean
+                    <Binary className="size-4 mr-2" /> Boolean
                 </DropdownMenuItem>
             ) : null}
             {props.propertyCanBe.canBeTime ? (
                 <DropdownMenuItem
                     onClick={() => props.onPropertyTypeSelect(PropertyEditorTypes.Time)}
                 >
-                    <Clock9 className="w-4 h-4 mr-2" /> Time
+                    <Clock9 className="size-4 mr-2" /> Time
                 </DropdownMenuItem>
             ) : null}
             {props.propertyCanBe.canBeDate ? (
                 <DropdownMenuItem
                     onClick={() => props.onPropertyTypeSelect(PropertyEditorTypes.Date)}
                 >
-                    <Calendar className="w-4 h-4 mr-2" /> Date
+                    <Calendar className="size-4 mr-2" /> Date
                 </DropdownMenuItem>
             ) : null}
             {props.propertyCanBe.canBeDateTime ? (
                 <DropdownMenuItem
                     onClick={() => props.onPropertyTypeSelect(PropertyEditorTypes.DateTime)}
                 >
-                    <CalendarClock className="w-4 h-4 mr-2" /> Date and Time
+                    <CalendarClock className="size-4 mr-2" /> Date and Time
                 </DropdownMenuItem>
             ) : null}
             {props.propertyCanBe.canBeReference ? (
                 <DropdownMenuItem
                     onClick={() => props.onPropertyTypeSelect(PropertyEditorTypes.Reference)}
                 >
-                    <LinkIcon className="w-4 h-4 mr-2" /> Reference
+                    <LinkIcon className="size-4 mr-2" /> Reference
                 </DropdownMenuItem>
             ) : null}
         </Content>

@@ -54,7 +54,7 @@ function EntityMenu() {
         <MenubarMenu>
             <MenubarTrigger>
                 Entity
-                <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
+                <ChevronDown className="size-4 ml-1 text-muted-foreground" />
             </MenubarTrigger>
             <MenubarContent>
                 <MenubarLabel className="max-w-[300px] truncate flex">
@@ -149,14 +149,14 @@ export function NavHeader() {
                 <Menubar>
                     <MenubarMenu>
                         <MenubarTrigger>
-                            Editor <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
+                            Editor <ChevronDown className="size-4 ml-1 text-muted-foreground" />
                         </MenubarTrigger>
                         <MenubarContent>
                             <ActionMenubarItem actionId="editor.global-search" />
                             <MenubarSeparator />
                             <MenubarSub>
                                 <MenubarSubTrigger>
-                                    <Palette className="w-4 h-4 mr-2" /> Theme
+                                    <Palette className="size-4 mr-2" /> Theme
                                 </MenubarSubTrigger>
                                 <MenubarSubContent>
                                     <MenubarCheckboxItem
@@ -175,7 +175,7 @@ export function NavHeader() {
                             </MenubarSub>
                             <ActionMenubarItem actionId="editor.settings" />
                             <MenubarItem disabled>
-                                <Info className="w-4 h-4 mr-2" /> Info
+                                <Info className="size-4 mr-2" /> Info
                             </MenubarItem>
                             <MenubarSeparator />
                             <ActionMenubarItem actionId="editor.close" />
@@ -183,16 +183,16 @@ export function NavHeader() {
                     </MenubarMenu>
                     <MenubarMenu>
                         <MenubarTrigger>
-                            Crate <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
+                            Crate <ChevronDown className="size-4 ml-1 text-muted-foreground" />
                         </MenubarTrigger>
                         <MenubarContent>
                             <ActionMenubarItem actionId="crate.add-entity" />
                             <MenubarSeparator />
                             <MenubarItem onClick={() => showUploadFileModal()}>
-                                <FileUp className="w-4 h-4 mr-2" /> Upload File
+                                <FileUp className="size-4 mr-2" /> Upload File
                             </MenubarItem>
                             <MenubarItem onClick={() => showUploadFolderModal()}>
-                                <FolderUp className="w-4 h-4 mr-2" /> Upload Folder
+                                <FolderUp className="size-4 mr-2" /> Upload Folder
                             </MenubarItem>
                             <MenubarSeparator />
                             <ActionMenubarItem
@@ -208,27 +208,27 @@ export function NavHeader() {
                             <MenubarSeparator />
                             <MenubarSub>
                                 <MenubarSubTrigger>
-                                    <Copy className="w-4 h-4 mr-2" /> Copy Crate...
+                                    <Copy className="size-4 mr-2" /> Copy Crate...
                                 </MenubarSubTrigger>
                                 <MenubarSubContent>
                                     <MenubarItem onClick={() => copy(crateId || "")}>
-                                        <Copy className="w-4 h-4 mr-2" /> Copy Crate ID
+                                        <Copy className="size-4 mr-2" /> Copy Crate ID
                                     </MenubarItem>
                                     <MenubarItem onClick={() => copy(crateName)}>
-                                        <Copy className="w-4 h-4 mr-2" /> Copy Crate Name
+                                        <Copy className="size-4 mr-2" /> Copy Crate Name
                                     </MenubarItem>
                                 </MenubarSubContent>
                             </MenubarSub>
                             <MenubarSub>
                                 <MenubarSubTrigger>
-                                    <Download className="w-4 h-4 mr-2" /> Export
+                                    <Download className="size-4 mr-2" /> Export
                                 </MenubarSubTrigger>
                                 <MenubarSubContent>
                                     <MenubarItem onClick={downloadCrateZip}>
-                                        <FolderArchive className="w-4 h-4 mr-2" /> As .zip Archive
+                                        <FolderArchive className="size-4 mr-2" /> As .zip Archive
                                     </MenubarItem>
                                     <MenubarItem onClick={downloadRoCrateMetadataFile}>
-                                        <File className="w-4 h-4 mr-2" /> ro-crate-metadata.json
+                                        <File className="size-4 mr-2" /> ro-crate-metadata.json
                                     </MenubarItem>
                                 </MenubarSubContent>
                             </MenubarSub>
@@ -238,11 +238,11 @@ export function NavHeader() {
                 </Menubar>
                 {/* Disabled until a proper implementation is done */}
                 {/*<Button size="sm" variant="ghost" className="mx-2 text-sm" onClick={() => undo()}>*/}
-                {/*    <Undo className="w-4 h-4 mr-2" />*/}
+                {/*    <Undo className="size-4 mr-2" />*/}
                 {/*    Undo*/}
                 {/*</Button>*/}
                 {/*<Button size="sm" variant="ghost" className="text-sm" onClick={() => redo()}>*/}
-                {/*    <Redo className="w-4 h-4 mr-2" />*/}
+                {/*    <Redo className="size-4 mr-2" />*/}
                 {/*    Redo*/}
                 {/*</Button>*/}
             </div>
@@ -251,14 +251,14 @@ export function NavHeader() {
 
             <div className="flex justify-end items-center gap-2">
                 {/*<div className="flex items-center mr-2 text-green-500">*/}
-                {/*    <Check className="w-4 h-4 mr-2" /> No Issues detected*/}
+                {/*    <Check className="size-4 mr-2" /> No Issues detected*/}
                 {/*</div>*/}
                 {error || saveError.size > 0 || healthTestError ? (
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button size="icon" variant="destructive" className="relative">
-                                <CircleAlert className="w-4 h-4" />
-                                <CircleAlert className="w-4 h-4 absolute animate-ping top-[11px] left-[11px]" />
+                                <CircleAlert className="size-4" />
+                                <CircleAlert className="size-4 absolute animate-ping top-[11px] left-[11px]" />
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[400px] flex flex-col gap-2">

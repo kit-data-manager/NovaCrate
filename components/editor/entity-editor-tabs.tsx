@@ -86,7 +86,7 @@ function Tab({
                     }}
                     className="ml-2 shrink-0 hover:bg-background p-1 text-xs rounded transition cursor-pointer"
                 >
-                    <XIcon className="w-4 h-4" />
+                    <XIcon className="size-4" />
                 </div>
             </Button>
         )
@@ -113,20 +113,20 @@ function Tab({
                             }}
                             className="ml-2 shrink-0 hover:bg-background p-1 text-xs rounded transition cursor-pointer"
                         >
-                            <XIcon className="w-4 h-4" />
+                            <XIcon className="size-4" />
                         </div>
                     ) : null}
                 </Button>
             </ContextMenuTrigger>
             <ContextMenuContent>
                 <ContextMenuItem onClick={close}>
-                    <XIcon className="w-4 h-4 mr-2" /> Close Tab
+                    <XIcon className="size-4 mr-2" /> Close Tab
                 </ContextMenuItem>
                 <ContextMenuItem onClick={closeAllTabs}>
-                    <XIcon className="w-4 h-4 mr-2" /> Close All
+                    <XIcon className="size-4 mr-2" /> Close All
                 </ContextMenuItem>
                 <ContextMenuItem onClick={() => closeOtherTabs(tab.entityId)}>
-                    <XIcon className="w-4 h-4 mr-2" /> Close Others
+                    <XIcon className="size-4 mr-2" /> Close Others
                 </ContextMenuItem>
             </ContextMenuContent>
         </ContextMenu>
@@ -140,7 +140,7 @@ function Tabs({ tabs, currentTab }: { tabs: IEntityEditorTab[]; currentTab?: IEn
     return (
         <div
             ref={container}
-            className="flex overflow-x-auto shrink-0 no-scrollbar"
+            className="flex overflow-x-auto shrink-0 no-scrollbar h-10"
             onWheel={(s) => {
                 if (s.deltaY !== 0 && container.current) {
                     // noinspection JSSuspiciousNameCombination
@@ -187,7 +187,7 @@ export function EntityEditorTabs({
                     variant="secondary"
                     onClick={toggleEntityBrowserPanel}
                 >
-                    <PanelLeftClose className="w-4 h-4" />
+                    <PanelLeftClose className="size-4" />
                 </Button>
                 <Package className="w-52 h-52 mb-20 text-muted" />
                 <div>Select an Entity on the left</div>
