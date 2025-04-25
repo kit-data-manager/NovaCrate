@@ -4,6 +4,7 @@ import { opfsFunctions } from "@/lib/opfs-worker/functions"
 import fileDownload from "js-file-download"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { CrateServiceBase } from "@/lib/backend/CrateServiceBase"
+import { encodeFilePath } from "@/lib/utils"
 
 const template: (name: string, description: string) => ICrate = (
     name: string,
@@ -95,14 +96,16 @@ export class BrowserBasedCrateService extends CrateServiceBase {
     }
 
     async createFileEntity(crateId: string, entityData: IEntity, file: Blob) {
+        const localEntityData = structuredClone(entityData)
+        localEntityData["@id"] = encodeFilePath(localEntityData["@id"])
         const entityCreated = await this.createEntity(crateId, {
-            ...entityData,
+            ...localEntityData,
             contentSize: file.size + "",
             encodingFormat: file.type
         })
 
         if (entityCreated) {
-            await this.worker.execute("writeFile", crateId, entityData["@id"], file)
+            await this.worker.execute("writeFile", crateId, localEntityData["@id"], file)
             return true
         } else throw "Could not create entity"
     }

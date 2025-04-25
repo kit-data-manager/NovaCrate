@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, Eye, File, FileX, Folder, FolderX } from "lucide-react"
-import { encodeFilePath, getEntityDisplayName } from "@/lib/utils"
+import { getEntityDisplayName } from "@/lib/utils"
 import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { FolderContent } from "@/components/file-explorer/content"
 import { DefaultSectionOpen } from "@/components/file-explorer/explorer"
@@ -30,7 +30,9 @@ export function FolderEntry(props: {
     defaultSectionOpen: DefaultSectionOpen
     onSectionOpenChange(): void
 }) {
-    const entity = useEditorState((state) => state.entities.get(encodeFilePath(props.filePath)))
+    const entity = useEditorState(
+        (state) => state.entities.get(props.filePath) ?? state.entities.get("./" + props.filePath)
+    )
     const [isOpen, setIsOpen] = useState(
         props.defaultSectionOpen !== "indeterminate" ? props.defaultSectionOpen : false
     )
@@ -105,7 +107,9 @@ export function FolderEntry(props: {
 }
 
 export function FileEntry(props: { filePath: string }) {
-    const entity = useEditorState((state) => state.entities.get(props.filePath))
+    const entity = useEditorState(
+        (state) => state.entities.get(props.filePath) ?? state.entities.get("./" + props.filePath)
+    )
     const setPreviewingFilePath = useFileExplorerState((store) => store.setPreviewingFilePath)
     const previewingFilePath = useFileExplorerState((store) => store.previewingFilePath)
     const goToEntity = useGoToEntityEditor(entity)
