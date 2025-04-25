@@ -42,10 +42,10 @@ export default function DefaultActions() {
         if (!crateData.crateData) return
         const result = await generateCratePreview(crateData.crateData)
         const entity: IEntity = {
-            "@id": "./ro-crate-html",
+            "@id": "./ro-crate-preview.html",
             "@type": "File",
-            name: "HTML Preview",
-            description: "A HTML Preview for this Crate generated with ro-crate-html"
+            name: "RO-Crate HTML Preview",
+            description: "A HTML Preview for this RO-Crate generated with ro-crate-html"
         }
         // @ts-expect-error Blob is used as a File, but it works
         await crateData.createFileEntity(entity, result, true)

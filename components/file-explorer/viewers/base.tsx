@@ -3,6 +3,7 @@ import { ImageViewer } from "@/components/file-explorer/viewers/image"
 import { TextViewer } from "@/components/file-explorer/viewers/text"
 import { PreviewNotSupported } from "@/components/file-explorer/viewers/not-supported"
 import { Eye } from "lucide-react"
+import { IFrameViewer } from "@/components/file-explorer/viewers/iframe"
 
 export interface ViewerProps {
     data?: Blob
@@ -23,6 +24,7 @@ const IMAGE_TYPES = [
     "image/apng"
 ]
 const TEXT_TYPES = ["text/plain", "application/json"]
+const IFRAME_TYPES = ["text/html"]
 
 export function BaseViewer(props: ViewerProps) {
     if (!props.data)
@@ -38,6 +40,8 @@ export function BaseViewer(props: ViewerProps) {
 
     if (UNSUPPORTED.includes(props.data.type)) {
         return <PreviewNotSupported />
+    } else if (IFRAME_TYPES.includes(props.data.type)) {
+        return <IFrameViewer {...props} />
     } else if (IMAGE_TYPES.includes(props.data.type)) {
         return <ImageViewer {...props} />
     } else if (TEXT_TYPES.includes(props.data.type)) {
