@@ -3,7 +3,6 @@
 import { useMemo } from "react"
 import { FileEntry, FolderEntry } from "@/components/file-explorer/entries"
 import { DefaultSectionOpen } from "@/components/file-explorer/explorer"
-import { useEditorState } from "@/lib/state/editor-state"
 
 export function FolderContent(props: {
     path: string
@@ -43,8 +42,6 @@ export function FolderContent(props: {
             )
         })
     }, [props.filePaths, props.path])
-
-    console.log(contents, useEditorState.getState().entities.keys())
 
     return (
         <div>
