@@ -125,6 +125,13 @@ declare interface CrateServiceAdapter {
     downloadCrateZip(id: string): Promise<void>
 
     /**
+     * Get the crate archive in the ELN format. This function should initiate a download or save dialog (or similar)
+     * @param id ID of the target crate
+     * @returns Promise<void> - Resolves on success
+     */
+    downloadCrateEln(id: string): Promise<void>
+
+    /**
      * Get the `ro-crate-metadata.json`. This function should initiate a download or save dialog (or similar)
      * @param id ID of the target crate
      * @returns Promise<void> - Resolves on success

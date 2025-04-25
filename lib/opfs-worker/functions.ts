@@ -88,6 +88,16 @@ export async function createCrateZip(crateId: string) {
     }
 }
 
+export async function createCrateEln(crateId: string) {
+    const result = await fs.zip(resolveCratePath(crateId), { preserveRoot: true })
+    if (result.isOk()) {
+        const zip = result.unwrap()
+        return new Blob([zip], { type: "application/vnd.eln+zip" })
+    } else {
+        throw result.unwrapErr()
+    }
+}
+
 export async function createCrateFromZip(zip: Blob) {
     const id = crypto.randomUUID()
 
@@ -155,5 +165,6 @@ export const opfsFunctions = {
     getStorageInfo,
     createCrateZip,
     createCrateFromZip,
-    deleteFileOrFolder
+    deleteFileOrFolder,
+    createCrateEln
 }

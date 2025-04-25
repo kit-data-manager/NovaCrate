@@ -137,6 +137,19 @@ export class BrowserBasedCrateService extends CrateServiceBase {
         }
     }
 
+    async downloadCrateEln(id: string) {
+        const crate = await this.getCrate(id)
+        const root = crate["@graph"].find((n) => n["@id"] === "./")
+        const name = root?.name ?? "crate-export"
+
+        const blob = await this.worker.execute("createCrateEln", id)
+        if (blob) {
+            fileDownload(blob, `${name}.eln`, "application/vnd.eln+zip")
+        } else {
+            throw "ELN file was not created"
+        }
+    }
+
     async downloadFile(crateId: string, filePath: string) {
         const data = await opfsFunctions.readFile(crateId, filePath)
         fileDownload(data, filePath.split("/").pop() ?? "unnamed")
