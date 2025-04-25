@@ -3,12 +3,16 @@ import { GlobalModalContext } from "@/components/providers/global-modals-provide
 import { useGoToMainMenu, useRegisterAction, useSaveAllEntities } from "@/lib/hooks"
 import { useEditorState } from "@/lib/state/editor-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { ArrowLeft, Cog, Plus, RefreshCw, SaveAll, Search, Undo2 } from "lucide-react"
+import { ArrowLeft, Cog, Plus, RefreshCw, SaveAll, Search, Undo2, File } from "lucide-react"
+import { generateCratePreview } from "@/lib/ro-crate-preview"
+import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 
 export default function DefaultActions() {
     const { showCreateEntityModal, showGlobalSearchModal, showSettingsModal } =
         useContext(GlobalModalContext)
+    const crateData = useContext(CrateDataContext)
     const revertAllEntities = useEditorState.useRevertAllEntities()
+    const openTab = useEntityEditorTabs((s) => s.openTab)
     const saveAllEntities = useSaveAllEntities()
     const { reload } = useContext(CrateDataContext)
     const gotToMainMenu = useGoToMainMenu()
@@ -33,6 +37,24 @@ export default function DefaultActions() {
         keyboardShortcut: ["command", "r"],
         icon: RefreshCw
     })
+
+    const generateHTMLPreview = useCallback(async () => {
+        if (!crateData.crateData) return
+        const result = await generateCratePreview(crateData.crateData)
+        const entity: IEntity = {
+            "@id": "./ro-crate-html",
+            "@type": "File",
+            name: "HTML Preview",
+            description: "A HTML Preview for this Crate generated with ro-crate-html"
+        }
+        // @ts-expect-error Blob is used as a File, but it works
+        await crateData.createFileEntity(entity, result, true)
+        openTab(createEntityEditorTab(entity), true)
+    }, [crateData, openTab])
+    useRegisterAction("crate.generate-html-preview", "Generate HTML Preview", generateHTMLPreview, {
+        icon: File
+    })
+
     useRegisterAction("editor.global-search", "Search", showGlobalSearchModal, {
         keyboardShortcut: ["command", "k"],
         icon: Search

@@ -23,7 +23,7 @@ export interface ICrateDataProvider {
     crateDataIsLoading: boolean
     saveEntity(entity: IEntity): Promise<boolean>
     saveAllEntities(entities: IEntity[]): Promise<void>
-    createFileEntity(entity: IEntity, file: File): Promise<boolean>
+    createFileEntity(entity: IEntity, file: File, overwrite?: false): Promise<boolean>
     createFolderEntity(
         entity: IEntity,
         files: IEntityWithFile[],
@@ -281,13 +281,18 @@ export function CrateDataProvider({
     )
 
     const createFileEntity = useCallback(
-        async (entity: IEntity, file: File) => {
+        async (entity: IEntity, file: File, overwrite = false) => {
             if (crateId) {
                 setIsSaving(true)
                 try {
-                    const result = await serviceProvider.createFileEntity(crateId, entity, file)
+                    const result = await serviceProvider.createFileEntity(
+                        crateId,
+                        entity,
+                        file,
+                        overwrite
+                    )
                     setIsSaving(false)
-                    mutate().then()
+                    await mutate()
 
                     return result
                 } catch (e) {

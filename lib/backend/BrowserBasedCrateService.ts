@@ -81,11 +81,13 @@ export class BrowserBasedCrateService extends CrateServiceBase {
         return this.worker.execute("createCrateFromZip", zip)
     }
 
-    async createEntity(crateId: string, entityData: IEntity) {
+    async createEntity(crateId: string, entityData: IEntity, overwrite = false) {
         const crate = await this.getCrate(crateId)
-        const existing = crate["@graph"].find((n) => n["@id"] === entityData["@id"])
-        if (existing) {
-            return false
+        const existing = crate["@graph"].findIndex((n) => n["@id"] === entityData["@id"])
+        if (existing != -1) {
+            if (overwrite) {
+                crate["@graph"].splice(existing, 1)
+            } else return false
         }
 
         crate["@graph"].push(entityData)
@@ -94,12 +96,16 @@ export class BrowserBasedCrateService extends CrateServiceBase {
         return true
     }
 
-    async createFileEntity(crateId: string, entityData: IEntity, file: Blob) {
-        const entityCreated = await this.createEntity(crateId, {
-            ...entityData,
-            contentSize: file.size + "",
-            encodingFormat: file.type
-        })
+    async createFileEntity(crateId: string, entityData: IEntity, file: Blob, overwrite = false) {
+        const entityCreated = await this.createEntity(
+            crateId,
+            {
+                ...entityData,
+                contentSize: file.size + "",
+                encodingFormat: file.type
+            },
+            overwrite
+        )
 
         if (entityCreated) {
             await this.worker.execute("writeFile", crateId, entityData["@id"], file)

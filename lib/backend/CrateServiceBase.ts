@@ -43,9 +43,18 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
         return id
     }
 
-    abstract createEntity(crateId: string, entityData: IEntity): Promise<boolean>
+    abstract createEntity(
+        crateId: string,
+        entityData: IEntity,
+        overwrite?: boolean
+    ): Promise<boolean>
 
-    abstract createFileEntity(crateId: string, entityData: IEntity, file: Blob): Promise<boolean>
+    abstract createFileEntity(
+        crateId: string,
+        entityData: IEntity,
+        file: Blob,
+        overwrite?: boolean
+    ): Promise<boolean>
 
     abstract deleteCrate(id: string): Promise<boolean>
 
