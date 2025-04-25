@@ -56,11 +56,16 @@ export async function getCrateDirContents(crateId: string) {
     const contents: string[] = []
 
     for await (const entry of iterator) {
-        if (entry.handle.kind === "directory") continue
-        contents.push(entry.path)
+        if (entry.path === crateId) continue
+        if (entry.handle.kind === "directory") {
+            contents.push(entry.path + "/")
+        } else {
+            contents.push(entry.path)
+        }
     }
 
-    return contents
+    // OPFS scrambles some UTF-8 names, so we normalize them here
+    return contents.map((s) => s.normalize())
 }
 
 export async function getCrates() {
