@@ -205,7 +205,7 @@ export function camelCaseReadable(str: string) {
  * @param filePath Path of the file
  */
 export function encodeFilePath(filePath: string) {
-    return filePath.replaceAll("\\", "/").split("/").map(encodeURIComponent).join("/")
+    return filePath.replaceAll("\\", "/").replaceAll("%", "%25").replaceAll(" ", "%20")
 }
 
 /**

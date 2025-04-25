@@ -4,7 +4,7 @@ import { opfsFunctions } from "@/lib/opfs-worker/functions"
 import fileDownload from "js-file-download"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { CrateServiceBase } from "@/lib/backend/CrateServiceBase"
-import { encodeFilePath } from "@/lib/utils"
+import { encodeFilePath, isDataEntity, isFolderDataEntity } from "@/lib/utils"
 
 const template: (name: string, description: string) => ICrate = (
     name: string,
@@ -91,8 +91,57 @@ export class BrowserBasedCrateService extends CrateServiceBase {
 
         crate["@graph"].push(entityData)
 
+        if (isDataEntity(entityData)) {
+            this.addToHasPart(crate, entityData["@id"])
+        }
+
+        if (isFolderDataEntity(entityData)) {
+            // This is a bit out of place here, but necessary for explicitly creating empty folders.
+            // Previously folders were just created implicitly when creating a file.
+            await this.worker.execute("createFolder", crateId, entityData["@id"])
+        }
+
         await this.saveRoCrateMetadataJSON(crateId, JSON.stringify(crate))
         return true
+    }
+
+    private addToHasPart(crate: ICrate, referencedEntityId: string) {
+        const root = crate["@graph"].find((e) => e["@id"] === "./")
+        if (!root)
+            return console.warn(
+                "Failed to add data entity to hasPart because root entity could not be found"
+            )
+        if ("hasPart" in root) {
+            if (Array.isArray(root.hasPart)) {
+                root.hasPart.push({ "@id": referencedEntityId })
+            } else {
+                console.warn(
+                    "Failed to add data entity to hasPart because root entity has malformed hasPart property"
+                )
+            }
+        } else {
+            root.hasPart = [{ "@id": referencedEntityId }]
+        }
+    }
+
+    private removeFromHasPart(crate: ICrate, referencedEntityId: string) {
+        const root = crate["@graph"].find((e) => e["@id"] === "./")
+        if (!root)
+            return console.warn(
+                "Failed to add data entity to hasPart because root entity could not be found"
+            )
+        if ("hasPart" in root) {
+            if (Array.isArray(root.hasPart)) {
+                const index = root.hasPart.findIndex(
+                    (e) => typeof e !== "string" && e["@id"] === referencedEntityId
+                )
+                if (index >= 0) root.hasPart.splice(index, 1)
+            } else {
+                console.warn(
+                    "Failed to add data entity to hasPart because root entity has malformed hasPart property"
+                )
+            }
+        }
     }
 
     async createFileEntity(crateId: string, entityData: IEntity, file: Blob) {
@@ -122,6 +171,7 @@ export class BrowserBasedCrateService extends CrateServiceBase {
             crate["@graph"].splice(existing, 1)
         }
 
+        this.removeFromHasPart(crate, entityData["@id"])
         await this.saveRoCrateMetadataJSON(crateId, JSON.stringify(crate))
         await this.worker.execute("deleteFileOrFolder", crateId, entityData["@id"])
         return true
