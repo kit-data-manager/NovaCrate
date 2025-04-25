@@ -53,6 +53,8 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
 
     abstract downloadCrateZip(id: string): Promise<void>
 
+    abstract downloadCrateEln(id: string): Promise<void>
+
     abstract downloadFile(crateId: string, filePath: string): Promise<void>
 
     abstract downloadRoCrateMetadataJSON(id: string): Promise<void>

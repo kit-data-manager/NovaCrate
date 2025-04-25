@@ -7,9 +7,11 @@ import {
     Clock,
     FolderOpen,
     HardDrive,
+    LinkIcon,
     Loader,
     LoaderCircle,
     Moon,
+    Notebook,
     Package,
     PackageOpen,
     PackagePlus,
@@ -53,7 +55,7 @@ export default function EditorLandingPage() {
         healthTestError: error
     } = useContext(CrateDataContext)
     const { openFilePicker: openZipFilePicker, plainFiles: zipFiles } = useFilePicker({
-        accept: ".zip"
+        accept: [".zip", ".eln"]
     })
     const { showDocumentationModal } = useContext(GlobalModalContext)
     const demoLoader = useDemoCrateLoader()
@@ -235,7 +237,15 @@ export default function EditorLandingPage() {
                             className="border-r-0 rounded-r-none h-12"
                             onClick={() => openZipFilePicker()}
                         >
-                            <PackageOpen className="w-6 h-6 mr-3" /> Import existing Crate
+                            <PackageOpen className="w-6 h-6 mr-3" /> Import Crate (.zip)
+                        </Button>
+                        <Button
+                            size="lg"
+                            variant="link"
+                            className="border-r-0 rounded-r-none h-12"
+                            onClick={() => openZipFilePicker()}
+                        >
+                            <Notebook className="w-6 h-6 mr-3" /> Import ELN (.eln)
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -346,6 +356,17 @@ export default function EditorLandingPage() {
                                 >
                                     <CirclePlay className="size-4 mr-2" />
                                     RO-Crate Specification Crate
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        window.open(
+                                            "https://www.researchobject.org/ro-crate/eln",
+                                            "_blank"
+                                        )
+                                    }
+                                >
+                                    <LinkIcon className="size-4 mr-2" />
+                                    Download ELNs
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

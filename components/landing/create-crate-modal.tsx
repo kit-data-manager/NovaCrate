@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from "react"
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
 import {
     Dialog,
     DialogContent,
@@ -100,8 +100,11 @@ export function CreateCrateModal({
         }
     }, [serviceProvider, name, description, openEditor])
 
+    const createFromZipLocked = useRef(false)
     const createCrateFromCrateZip = useCallback(() => {
-        if (fromZip && serviceProvider) {
+        if (fromZip && serviceProvider && !createFromZipLocked.current) {
+            createFromZipLocked.current = true
+
             setUploading(true)
             setCurrentProgress(0)
             setMaxProgress(1)
@@ -122,6 +125,12 @@ export function CreateCrateModal({
     useEffect(() => {
         createCrateFromCrateZip()
     }, [createCrateFromCrateZip])
+
+    useEffect(() => {
+        if (!open) {
+            createFromZipLocked.current = false
+        }
+    }, [open])
 
     useEffect(() => {
         setName((old) => {
