@@ -6,6 +6,7 @@ const CRATE_STORAGE = "crate-storage" as const
 function resolveCratePath(crateId: string, path?: string) {
     if (path?.startsWith("./")) path = path.slice(2)
     if (path?.startsWith("/")) path = path.slice(1)
+    if (path?.endsWith("/")) path = path.substring(0, path.length - 1)
 
     return `/${CRATE_STORAGE}/${crateId}` + (path ? `/${path}` : "")
 }
@@ -28,6 +29,12 @@ export async function readFile(crateId: string, filePath: string) {
     } else {
         throw result.unwrapErr()
     }
+}
+
+export async function createFolder(crateId: string, path: string) {
+    const result = await fs.mkdir(resolveCratePath(crateId, path))
+
+    if (result.isErr()) throw result.unwrapErr()
 }
 
 export async function deleteFileOrFolder(crateId: string, filePath: string) {
@@ -171,5 +178,6 @@ export const opfsFunctions = {
     createCrateZip,
     createCrateFromZip,
     deleteFileOrFolder,
-    createCrateEln
+    createCrateEln,
+    createFolder
 }

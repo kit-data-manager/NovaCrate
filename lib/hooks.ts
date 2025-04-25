@@ -4,7 +4,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { usePathname, useRouter } from "next/navigation"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { isEqual, isRootEntity } from "@/lib/utils"
+import { encodeFilePath, isEqual, isRootEntity } from "@/lib/utils"
 import { useGraphState } from "@/components/providers/graph-state-provider"
 import { Action, notFoundAction } from "@/lib/state/actions"
 import { useActionsStore } from "@/components/providers/actions-provider"
@@ -143,7 +143,7 @@ export function useAutoId(name: string) {
 
     return useMemo(() => {
         if (name == "") return ""
-        let generated = "#" + encodeURIComponent(name.toLowerCase().trim().replaceAll(" ", "-"))
+        let generated = "#" + encodeFilePath(name.trim().toLowerCase())
         let maxIterations = 10
         while (entities.has(generated)) {
             if (maxIterations-- < 0) throw "Could not generate a unique id after 10 attempts"
