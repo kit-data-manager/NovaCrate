@@ -26,7 +26,6 @@ import { ActionButton } from "@/components/actions/action-buttons"
 import { useGoToFileExplorer, useGoToGraph } from "@/lib/hooks"
 import { EntityBadge } from "../entity-badge"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
-import { Button } from "@/components/ui/button"
 
 export function EntityEditor({
     entityId,
@@ -44,7 +43,6 @@ export function EntityEditor({
     const removePropertyEntry = useEditorState.useRemovePropertyEntry()
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
-    const crateData = useContext(CrateDataContext)
 
     const isDataEntity = useMemo(() => {
         if (!entity) return false
@@ -138,18 +136,6 @@ export function EntityEditor({
         clearSaveError(entityId)
     }, [clearSaveError, entityId])
 
-    const generatePreview = useCallback(async () => {
-        const { ROCrate } = await import("ro-crate")
-        const html = await import("ro-crate-html")
-
-        const crate = new ROCrate(crateData.crateData)
-        const preview = new html.Preview(crate)
-
-        const blob = new Blob([preview.templateParams().html], { type: "text/html;charset=utf-8" })
-        const url = URL.createObjectURL(blob)
-        window.open(url, "_blank")
-    }, [crateData.crateData])
-
     if (!entity) {
         return (
             <div>
@@ -197,9 +183,6 @@ export function EntityEditor({
                     </h2>
                     <div className="gap-2 flex"></div>
                 </div>
-
-                <Button onClick={generatePreview}>Hello</Button>
-                <div id={"htmlContainer"}></div>
 
                 <WebWorkerWarning />
                 <UnknownTypeWarning entityType={entity?.["@type"] || []} />

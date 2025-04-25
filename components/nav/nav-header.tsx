@@ -232,6 +232,9 @@ export function NavHeader() {
                                     </MenubarItem>
                                 </MenubarSubContent>
                             </MenubarSub>
+                            <MenubarItem>
+                                <File className="size-4 mr-2" /> Generate Preview
+                            </MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     <EntityMenu />
