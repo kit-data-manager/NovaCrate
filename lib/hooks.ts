@@ -106,10 +106,7 @@ export function useAsync<I, O>(
                     setInternalState(output)
                     setError(undefined)
                 })
-                .catch((e) => {
-                    console.error("Error in useAsync", e)
-                    setError(e)
-                })
+                .catch(setError)
                 .finally(() => {
                     setPending(false)
                 })

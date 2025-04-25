@@ -15,12 +15,12 @@ import { SinglePropertyEditor } from "@/components/editor/single-property-editor
 import { camelCaseReadable } from "@/lib/utils"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
-import { handleSpringError } from "@/lib/spring-error-handling"
 import { useAsync } from "@/lib/hooks"
-import { Trash } from "lucide-react"
+import { Trash, TriangleAlert } from "lucide-react"
 import { MarkdownComment } from "@/components/markdown-comment"
 import { getDefaultDate } from "@/components/editor/text-fields/date-field"
 import { Pagination } from "@/components/pagination"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export interface EntityEditorProperty {
     propertyName: string
@@ -64,25 +64,6 @@ export function mapEntityToProperties(
         .flat()
         .concat(deletedProperties)
         .sort((a, b) => sortByPropertyName(a.propertyName, b.propertyName))
-}
-
-export function mapPropertiesToEntity(data: EntityEditorProperty[]): IEntity {
-    const result: Record<string, EntityPropertyTypes> = {}
-
-    function autoUnpack(value: EntitySinglePropertyTypes[]) {
-        if (value.length === 1) return value[0]
-        else return value
-    }
-
-    for (const property of data) {
-        if (property.values.length === 0) continue
-        result[property.propertyName] = autoUnpack(property.values)
-    }
-
-    if (!("@id" in result)) throw "Mapping properties to entity failed, no @id property"
-    if (!("@type" in result)) throw "Mapping properties to entity failed, no @id property"
-
-    return result as IEntity
 }
 
 export enum PropertyEditorTypes {
@@ -211,7 +192,23 @@ export const PropertyEditor = memo(function PropertyEditor({
         if (commentIsPending) {
             return <Skeleton className="h-3 w-4/12 mt-1" />
         } else if (commentError) {
-            return <span className="text-destructive">{handleSpringError(commentError)}</span>
+            console.warn(
+                "Error encountered while resolving comment for property " + property.propertyName,
+                commentError
+            )
+            return (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="text-warn inline-flex items-center gap-2">
+                            <TriangleAlert className="size-4" /> Unresolved property
+                        </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        This property could not be found in the crate context. Comment and type can
+                        not be determined.
+                    </TooltipContent>
+                </Tooltip>
+            )
         } else if (comment !== undefined) {
             return (
                 <span className={expandComment ? "" : "line-clamp-3"} onClick={toggleExpandComment}>
@@ -219,7 +216,14 @@ export const PropertyEditor = memo(function PropertyEditor({
                 </span>
             )
         } else return null
-    }, [comment, commentError, commentIsPending, expandComment, toggleExpandComment])
+    }, [
+        comment,
+        commentError,
+        commentIsPending,
+        expandComment,
+        property.propertyName,
+        toggleExpandComment
+    ])
 
     return (
         <div
@@ -237,14 +241,26 @@ export const PropertyEditor = memo(function PropertyEditor({
                 >
                     <Comment />
                 </div>
+                {!!propertyRangeError && !commentError && (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="text-warn inline-flex items-center gap-2 text-sm">
+                                <TriangleAlert className="size-4" /> Error encountered while
+                                resolving property type
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <Error
+                                className="mb-2"
+                                error={propertyRangeError}
+                                title="Error while determining type range"
+                            />
+                        </TooltipContent>
+                    </Tooltip>
+                )}
             </div>
 
             <div className="truncate p-1">
-                <Error
-                    className="mb-2"
-                    error={propertyRangeError}
-                    title="Error while determining type range"
-                />
                 {isDeleted ? (
                     <div className="flex items-center text-muted-foreground mb-4">
                         <Trash className="size-4 mr-2" /> This empty property will be deleted on

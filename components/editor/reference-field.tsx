@@ -1,7 +1,7 @@
 import { memo, useCallback, useContext, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { SelectReferenceModal } from "@/components/editor/select-reference-modal"
-import { Eye, LinkIcon, Plus } from "lucide-react"
+import { ExternalLink, Eye, LinkIcon, Plus, PlusIcon } from "lucide-react"
 import { getEntityDisplayName } from "@/lib/utils"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
@@ -11,6 +11,12 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { EntityIcon } from "@/components/entity-icon"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+
+function undefinedIfEmpty<T>(arr?: T[]) {
+    if (arr?.length === 0) {
+        return undefined
+    } else return arr
+}
 
 export const ReferenceField = memo(function ReferenceField({
     entityId,
@@ -38,7 +44,7 @@ export const ReferenceField = memo(function ReferenceField({
     const [selectModalOpen, setSelectModalOpen] = useState(false)
 
     const onCreateClick = useCallback(() => {
-        showCreateEntityModal(propertyRange, {
+        showCreateEntityModal(undefinedIfEmpty(propertyRange), {
             entityId,
             propertyName,
             valueIdx
@@ -74,7 +80,7 @@ export const ReferenceField = memo(function ReferenceField({
         if (referencedEntityName) {
             return <span className="truncate">{referencedEntityName}</span>
         } else {
-            return <span className="text-root">Unresolved</span>
+            return <span className="text-root">Unlinked</span>
         }
     }, [referencedEntityName])
 
@@ -84,7 +90,7 @@ export const ReferenceField = memo(function ReferenceField({
                 open={selectModalOpen}
                 onSelect={onSelect}
                 onOpenChange={setSelectModalOpen}
-                propertyRange={propertyRange}
+                propertyRange={undefinedIfEmpty(propertyRange)}
             />
 
             {isEmpty ? (
@@ -138,20 +144,49 @@ export const ReferenceField = memo(function ReferenceField({
                                 {value["@id"]}
                             </span>
                             <div className="flex items-center self-center grow justify-end">
-                                <Eye className="size-4" />
+                                {referencedEntity ? (
+                                    <Eye className="size-4" />
+                                ) : (
+                                    <ExternalLink className="size-4" />
+                                )}
                             </div>
                         </div>
                     </Button>
-                    <Button
-                        onClick={() => {
-                            setSelectModalOpen(true)
-                        }}
-                        size="icon"
-                        variant="outline"
-                        className="rounded-none border-l-0 shrink-0"
-                    >
-                        <LinkIcon className="size-4" />
-                    </Button>
+                    {!referencedEntity && (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className="rounded-none border-l-0"
+                                    size="icon"
+                                    onClick={onCreateClick}
+                                >
+                                    <PlusIcon className="size-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                Create a new Entity that will be added to the Crate and reference by
+                                this property.
+                            </TooltipContent>
+                        </Tooltip>
+                    )}
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                onClick={() => {
+                                    setSelectModalOpen(true)
+                                }}
+                                size="icon"
+                                variant="outline"
+                                className="rounded-none border-l-0 shrink-0"
+                            >
+                                <LinkIcon className="size-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            Reference an Entity that already exists in the Crate
+                        </TooltipContent>
+                    </Tooltip>
                 </>
             )}
 
