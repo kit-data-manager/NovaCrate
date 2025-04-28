@@ -72,9 +72,10 @@ declare interface CrateServiceAdapter {
      * exists
      * @param crateId ID of the target crate
      * @param entityData Data of the new entity
+     * @param overwrite Set to true to override existing entity with the same identifier
      * @returns Promise - resolves on success
      */
-    createEntity(crateId: string, entityData: IEntity): Promise<boolean>
+    createEntity(crateId: string, entityData: IEntity, overwrite?: boolean): Promise<boolean>
 
     /**
      * Import an entity from orcid.org.
@@ -92,7 +93,12 @@ declare interface CrateServiceAdapter {
      */
     importOrganizationFromRor(crateId: string, url: string): Promise<string>
 
-    createFileEntity(crateId: string, entityData: IEntity, file: File): Promise<boolean>
+    createFileEntity(
+        crateId: string,
+        entityData: IEntity,
+        file: File,
+        overwrite?: boolean
+    ): Promise<boolean>
 
     /**
      * Remove an entity from the crate and also remove all references. If this is a data entity, it will also remove
