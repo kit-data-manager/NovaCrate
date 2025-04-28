@@ -19,8 +19,8 @@
     }
   ],
   "name": "novacrate",
-  "description": "Web-based interactive editor for creating, editing and visualising research object crates.",
-  "version": "0.1.1",
+  "description": "Web-based interactive editor for creating, editing and visualizing research object crates.",
+  "version": "1.0.1",
   "keywords": [
     "ro-crate",
     "ro",
