@@ -269,7 +269,7 @@ export function NavHeader() {
                         <PopoverTrigger asChild>
                             <Button size="icon" variant="destructive" className="relative">
                                 <CircleAlert className="size-4" />
-                                <CircleAlert className="size-4 absolute animate-ping top-[11px] left-[11px]" />
+                                <CircleAlert className="size-4 absolute animate-ping top-[9px] left-[9px]" />
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[400px] flex flex-col gap-2">

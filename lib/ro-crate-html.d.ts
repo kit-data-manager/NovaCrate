@@ -1,4 +1,4 @@
-declare module "ro-crate-html" {
+declare module "ro-crate-html/lib/ro-crate-preview.js" {
     import { ROCrate } from "ro-crate"
 
     type TemplateParams = {
@@ -8,7 +8,7 @@ declare module "ro-crate-html" {
         render_script: string
     }
 
-    export class Preview {
+    export default class Preview {
         constructor(crate: ROCrate)
         templateParams(): TemplateParams
     }

@@ -1,12 +1,13 @@
 export async function generateCratePreview(crateData: ICrate) {
-    const { ROCrate } = await import("ro-crate")
-    const { Preview } = await import("ro-crate-html")
+    try {
+        const { ROCrate } = await import("ro-crate")
+        const { default: Preview } = await import("ro-crate-html/lib/ro-crate-preview.js")
 
-    const crate = new ROCrate(structuredClone(crateData))
-    const preview = new Preview(crate)
+        const crate = new ROCrate(structuredClone(crateData))
+        const preview = new Preview(crate)
 
-    const templateParams = preview.templateParams()
-    const previewPage = `
+        const templateParams = preview.templateParams()
+        const previewPage = `
 <html lang="en">
 <head>
     <script type="application/ld+json"> 
@@ -50,5 +51,9 @@ export async function generateCratePreview(crateData: ICrate) {
 </html>
        `
 
-    return new Blob([previewPage], { type: "text/html;charset=utf-8" })
+        return new Blob([previewPage], { type: "text/html;charset=utf-8" })
+    } catch (error) {
+        console.error(error)
+        alert("Preview generation failed: " + error)
+    }
 }
