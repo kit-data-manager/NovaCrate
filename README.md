@@ -32,6 +32,7 @@ NovaCrate currently does not include mechanisms for authentication, access contr
 - ✅ Automatic recommendation of fitting entity types and properties
 - ✅ Focused on good usability
 - ✅ Support RO-Crate Specification v1.1
+- ✅ Support for importing and exporting the ELN format
 - ✅ Generate HTML preview file in crate
 - ❌ Validation of RO-Crates
 - ❌ Support for RO-Crate Profiles

@@ -81,8 +81,7 @@ export function SelectReferenceModal({
     const possibleEntities = useMemo(() => {
         if (!open || crateDataIsLoading || !crateData) return []
 
-        if (onlyShowAllowed) {
-            if (!propertyRangeIds) return []
+        if (onlyShowAllowed && propertyRangeIds) {
             return crateData["@graph"]
                 .filter((e) => !isRootEntity(e))
                 .filter((e) => !isRoCrateMetadataEntity(e))
@@ -141,20 +140,22 @@ export function SelectReferenceModal({
                     </CommandList>
                 </Command>
 
-                <div className="flex gap-2 items-center">
-                    <Checkbox
-                        checked={onlyShowAllowed}
-                        onCheckedChange={onCheckOnlyShowAllowed}
-                        id="onlyShowMatching-reference"
-                    />
-                    <label htmlFor="onlyShowMatching-reference">
-                        Only show Entities of matching type{" "}
-                        <HelpTooltip>
-                            Only Entities that can be used in the current property will be shown.
-                            Should only be deactivated by experts.
-                        </HelpTooltip>
-                    </label>
-                </div>
+                {propertyRangeIds && (
+                    <div className="flex gap-2 items-center">
+                        <Checkbox
+                            checked={onlyShowAllowed}
+                            onCheckedChange={onCheckOnlyShowAllowed}
+                            id="onlyShowMatching-reference"
+                        />
+                        <label htmlFor="onlyShowMatching-reference">
+                            Only show Entities of matching type{" "}
+                            <HelpTooltip>
+                                Only Entities that can be used in the current property will be
+                                shown. Should only be deactivated by experts.
+                            </HelpTooltip>
+                        </label>
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
     )

@@ -29,6 +29,7 @@ import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { useAsync } from "@/lib/hooks"
 import { ActionButton } from "@/components/actions/action-buttons"
+import { Button } from "@/components/ui/button"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -100,10 +101,18 @@ export function FileExplorer() {
                     </div>
                 </HelpTooltip>
                 <div className="grow" />
-                <ActionButton variant="header" noShortcut actionId={"crate.add-entity"} />
+                <ActionButton
+                    variant="outline"
+                    className="text-xs"
+                    size={"sm"}
+                    noShortcut
+                    actionId={"crate.add-entity"}
+                />
                 <DropdownMenu>
-                    <DropdownMenuTrigger className="px-1">
-                        <EllipsisVertical className="size-4 shrink-0" />
+                    <DropdownMenuTrigger className="px-1" asChild>
+                        <Button variant="header" size="sm">
+                            <EllipsisVertical className="size-4 shrink-0" />
+                        </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuLabel>File Explorer Settings</DropdownMenuLabel>

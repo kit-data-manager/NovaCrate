@@ -10,6 +10,7 @@ import {
     FolderArchive,
     FolderUp,
     Info,
+    Notebook,
     Package,
     Palette
 } from "lucide-react"
@@ -124,6 +125,12 @@ export function NavHeader() {
         }
     }, [crateId, serviceProvider])
 
+    const downloadCrateEln = useCallback(() => {
+        if (serviceProvider && crateId) {
+            serviceProvider.downloadCrateEln(crateId).then()
+        }
+    }, [crateId, serviceProvider])
+
     const downloadRoCrateMetadataFile = useCallback(() => {
         if (serviceProvider && crateId) {
             serviceProvider.downloadRoCrateMetadataJSON(crateId).then()
@@ -226,6 +233,9 @@ export function NavHeader() {
                                 <MenubarSubContent>
                                     <MenubarItem onClick={downloadCrateZip}>
                                         <FolderArchive className="size-4 mr-2" /> As .zip Archive
+                                    </MenubarItem>
+                                    <MenubarItem onClick={downloadCrateEln}>
+                                        <Notebook className="size-4 mr-2" /> As ELN
                                     </MenubarItem>
                                     <MenubarItem onClick={downloadRoCrateMetadataFile}>
                                         <File className="size-4 mr-2" /> ro-crate-metadata.json

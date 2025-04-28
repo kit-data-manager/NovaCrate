@@ -1,10 +1,12 @@
 import * as fs from "happy-opfs"
+import { collectAsyncIterator } from "./helpers"
 
 const CRATE_STORAGE = "crate-storage" as const
 
 function resolveCratePath(crateId: string, path?: string) {
     if (path?.startsWith("./")) path = path.slice(2)
     if (path?.startsWith("/")) path = path.slice(1)
+    if (path?.endsWith("/")) path = path.substring(0, path.length - 1)
 
     return `/${CRATE_STORAGE}/${crateId}` + (path ? `/${path}` : "")
 }
@@ -27,6 +29,12 @@ export async function readFile(crateId: string, filePath: string) {
     } else {
         throw result.unwrapErr()
     }
+}
+
+export async function createFolder(crateId: string, path: string) {
+    const result = await fs.mkdir(resolveCratePath(crateId, path))
+
+    if (result.isErr()) throw result.unwrapErr()
 }
 
 export async function deleteFileOrFolder(crateId: string, filePath: string) {
@@ -56,11 +64,16 @@ export async function getCrateDirContents(crateId: string) {
     const contents: string[] = []
 
     for await (const entry of iterator) {
-        if (entry.handle.kind === "directory") continue
-        contents.push(entry.path)
+        if (entry.path === crateId) continue
+        if (entry.handle.kind === "directory") {
+            contents.push(entry.path + "/")
+        } else {
+            contents.push(entry.path)
+        }
     }
 
-    return contents
+    // OPFS scrambles some UTF-8 names, so we normalize them here
+    return contents.map((s) => s.normalize())
 }
 
 export async function getCrates() {
@@ -87,6 +100,16 @@ export async function createCrateZip(crateId: string) {
     }
 }
 
+export async function createCrateEln(crateId: string) {
+    const result = await fs.zip(resolveCratePath(crateId), { preserveRoot: true })
+    if (result.isOk()) {
+        const zip = result.unwrap()
+        return new Blob([zip], { type: "application/vnd.eln+zip" })
+    } else {
+        throw result.unwrapErr()
+    }
+}
+
 export async function createCrateFromZip(zip: Blob) {
     const id = crypto.randomUUID()
 
@@ -105,7 +128,33 @@ export async function createCrateFromZip(zip: Blob) {
 
     fs.pruneTemp(new Date()).then()
 
-    return id
+    const readDirResult = await fs.readDir(resolveCratePath(id))
+    if (!readDirResult.isOk()) throw readDirResult.unwrapErr()
+
+    const files = await collectAsyncIterator(readDirResult.unwrap())
+    if (files.length === 0) throw "Crate archive is empty"
+
+    if (files.find((file) => file.path === "ro-crate-metadata.json")) {
+        return id
+    } else if (
+        files.length === 1 &&
+        files.filter((f) => f.handle.kind === "directory").length === 1
+    ) {
+        // ELN Format has one single folder in root that contains the crate
+        const subFolder = files.find((f) => f.handle.kind === "directory")
+        if (!subFolder) throw "Could not find subFolder"
+
+        const moveResult = await fs.move(
+            resolveCratePath(id) + "/" + subFolder.path,
+            resolveCratePath(id),
+            { overwrite: true }
+        )
+        if (!moveResult.isOk()) throw moveResult.unwrapErr()
+
+        return id
+    } else {
+        throw "Could not find crate root. Make sure the ro-crate-metadata.json file is in the root directory."
+    }
 }
 
 export async function getStorageInfo(): Promise<{
@@ -128,5 +177,7 @@ export const opfsFunctions = {
     getStorageInfo,
     createCrateZip,
     createCrateFromZip,
-    deleteFileOrFolder
+    deleteFileOrFolder,
+    createCrateEln,
+    createFolder
 }

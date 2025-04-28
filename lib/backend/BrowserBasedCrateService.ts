@@ -4,6 +4,7 @@ import { opfsFunctions } from "@/lib/opfs-worker/functions"
 import fileDownload from "js-file-download"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { CrateServiceBase } from "@/lib/backend/CrateServiceBase"
+import { encodeFilePath, isDataEntity, isFolderDataEntity } from "@/lib/utils"
 
 const template: (name: string, description: string) => ICrate = (
     name: string,
@@ -92,15 +93,66 @@ export class BrowserBasedCrateService extends CrateServiceBase {
 
         crate["@graph"].push(entityData)
 
+        if (isDataEntity(entityData)) {
+            this.addToHasPart(crate, entityData["@id"])
+        }
+
+        if (isFolderDataEntity(entityData)) {
+            // This is a bit out of place here, but necessary for explicitly creating empty folders.
+            // Previously folders were just created implicitly when creating a file.
+            await this.worker.execute("createFolder", crateId, entityData["@id"])
+        }
+
         await this.saveRoCrateMetadataJSON(crateId, JSON.stringify(crate))
         return true
     }
 
+    private addToHasPart(crate: ICrate, referencedEntityId: string) {
+        const root = crate["@graph"].find((e) => e["@id"] === "./")
+        if (!root)
+            return console.warn(
+                "Failed to add data entity to hasPart because root entity could not be found"
+            )
+        if ("hasPart" in root) {
+            if (Array.isArray(root.hasPart)) {
+                root.hasPart.push({ "@id": referencedEntityId })
+            } else {
+                console.warn(
+                    "Failed to add data entity to hasPart because root entity has malformed hasPart property"
+                )
+            }
+        } else {
+            root.hasPart = [{ "@id": referencedEntityId }]
+        }
+    }
+
+    private removeFromHasPart(crate: ICrate, referencedEntityId: string) {
+        const root = crate["@graph"].find((e) => e["@id"] === "./")
+        if (!root)
+            return console.warn(
+                "Failed to add data entity to hasPart because root entity could not be found"
+            )
+        if ("hasPart" in root) {
+            if (Array.isArray(root.hasPart)) {
+                const index = root.hasPart.findIndex(
+                    (e) => typeof e !== "string" && e["@id"] === referencedEntityId
+                )
+                if (index >= 0) root.hasPart.splice(index, 1)
+            } else {
+                console.warn(
+                    "Failed to add data entity to hasPart because root entity has malformed hasPart property"
+                )
+            }
+        }
+    }
+
     async createFileEntity(crateId: string, entityData: IEntity, file: Blob, overwrite = false) {
+        const localEntityData = structuredClone(entityData)
+        localEntityData["@id"] = encodeFilePath(localEntityData["@id"])
         const entityCreated = await this.createEntity(
             crateId,
             {
-                ...entityData,
+                ...localEntityData,
                 contentSize: file.size + "",
                 encodingFormat: file.type
             },
@@ -108,7 +160,7 @@ export class BrowserBasedCrateService extends CrateServiceBase {
         )
 
         if (entityCreated) {
-            await this.worker.execute("writeFile", crateId, entityData["@id"], file)
+            await this.worker.execute("writeFile", crateId, localEntityData["@id"], file)
             return true
         } else throw "Could not create entity"
     }
@@ -125,6 +177,7 @@ export class BrowserBasedCrateService extends CrateServiceBase {
             crate["@graph"].splice(existing, 1)
         }
 
+        this.removeFromHasPart(crate, entityData["@id"])
         await this.saveRoCrateMetadataJSON(crateId, JSON.stringify(crate))
         await this.worker.execute("deleteFileOrFolder", crateId, entityData["@id"])
         return true
@@ -140,6 +193,19 @@ export class BrowserBasedCrateService extends CrateServiceBase {
             fileDownload(blob, `${name}.zip`, "application/zip")
         } else {
             throw "Zip file was not created"
+        }
+    }
+
+    async downloadCrateEln(id: string) {
+        const crate = await this.getCrate(id)
+        const root = crate["@graph"].find((n) => n["@id"] === "./")
+        const name = root?.name ?? "crate-export"
+
+        const blob = await this.worker.execute("createCrateEln", id)
+        if (blob) {
+            fileDownload(blob, `${name}.eln`, "application/vnd.eln+zip")
+        } else {
+            throw "ELN file was not created"
         }
     }
 
