@@ -11,7 +11,7 @@ export default function DefaultActions() {
     const { showCreateEntityModal, showGlobalSearchModal, showSettingsModal } =
         useContext(GlobalModalContext)
     const crateData = useContext(CrateDataContext)
-    const revertAllEntities = useEditorState.useRevertAllEntities()
+    const revertAllEntities = useEditorState((store) => store.revertAllEntities)
     const openTab = useEntityEditorTabs((s) => s.openTab)
     const saveAllEntities = useSaveAllEntities()
     const { reload } = useContext(CrateDataContext)

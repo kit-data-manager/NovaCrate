@@ -70,7 +70,7 @@ export function SelectProperty({
     onlyReferences: boolean
 }) {
     const [open, setOpen] = useState(_open)
-    const crateContext = useEditorState.useCrateContext()
+    const crateContext = useEditorState((store) => store.crateContext)
     const { isReady: crateVerifyReady, worker } = useContext(CrateVerifyContext)
     const [bypassRestrictions, setBypassRestrictions] = useState(false)
 

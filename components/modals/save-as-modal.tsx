@@ -34,7 +34,7 @@ function SaveAsModalInner({
     onOpenChange: (open: boolean) => void
     entityId: string
 }) {
-    const addEntity = useEditorState.useAddEntity()
+    const addEntity = useEditorState((store) => store.addEntity)
     const entity = useEditorState((store) => store.entities.get(entityId))
     const { saveEntity } = useContext(CrateDataContext)
 

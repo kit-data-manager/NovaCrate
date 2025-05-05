@@ -139,7 +139,7 @@ export function useAsync<I, O>(
  * @param name Name of the entity
  */
 export function useAutoId(name: string) {
-    const entities = useEditorState.useEntities()
+    const entities = useEditorState((store) => store.entities)
 
     return useMemo(() => {
         if (name == "") return ""
@@ -269,7 +269,7 @@ export function useGoToMainMenu() {
  */
 export function useSaveAllEntities() {
     const { saveAllEntities } = useContext(CrateDataContext)
-    const getChangedEntities = useEditorState.useGetChangedEntities()
+    const getChangedEntities = useEditorState((store) => store.getChangedEntities)
 
     return useCallback(() => {
         return saveAllEntities(getChangedEntities())

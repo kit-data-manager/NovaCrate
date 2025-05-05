@@ -1,6 +1,6 @@
 "use client"
 
-import { useEditorState } from "@/lib/state/editor-state"
+import { editorState } from "@/lib/state/editor-state"
 import { Diff } from "@/lib/utils"
 import { create } from "zustand"
 import { immer } from "zustand/middleware/immer"
@@ -71,7 +71,7 @@ export const useEntityEditorTabs = create<IEntityEditorTabsState>()(
             }
         },
         closeOtherTabs(id: string) {
-            const changelist = useEditorState.getState().getEntitiesChangelist()
+            const changelist = editorState.getState().getEntitiesChangelist()
             set((store) => {
                 store.tabs = store.tabs.filter(
                     (tab) => tab.entityId === id || changelist.get(tab.entityId) !== Diff.None
@@ -81,7 +81,7 @@ export const useEntityEditorTabs = create<IEntityEditorTabsState>()(
         },
         closeAllTabs() {
             set((store) => {
-                const changelist = useEditorState.getState().getEntitiesChangelist()
+                const changelist = editorState.getState().getEntitiesChangelist()
                 store.tabs = store.tabs.filter((tab) => changelist.get(tab.entityId) !== Diff.None)
                 if (store.tabs.length > 0) {
                     get().focusTab(store.tabs[0].entityId)

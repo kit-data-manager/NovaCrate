@@ -19,9 +19,9 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
     entityId: string
 }) {
     const entity = useEditorState((store) => store.entities.get(entityId))
-    const context = useEditorState.useCrateContext()
+    const context = useEditorState((store) => store.crateContext)
     const { deleteEntity, serviceProvider, crateId } = useContext(CrateDataContext)
-    const removeEntity = useEditorState.useRemoveEntity()
+    const removeEntity = useEditorState((store) => store.removeEntity)
     const [isDeleting, setIsDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState<unknown>()
     // const [deleteContent, setDeleteContent] = useState(false)

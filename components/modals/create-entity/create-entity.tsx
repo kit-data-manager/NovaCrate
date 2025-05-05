@@ -41,7 +41,7 @@ export function CreateEntity({
     onUploadFile(id: string, name: string, file: File): void
     onUploadFolder(id: string, name: string, files: File[]): void
 }) {
-    const context = useEditorState.useCrateContext()
+    const context = useEditorState((store) => store.crateContext)
 
     const [forceWithoutFile, setForceWithoutFile] = useState(false)
     const [path, setPath] = useState("")

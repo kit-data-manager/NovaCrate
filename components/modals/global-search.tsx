@@ -43,7 +43,7 @@ function GlobalSearchInner({
     open: boolean
     onOpenChange(open: boolean): void
 }) {
-    const entities = useEditorState.useEntities()
+    const entities = useEditorState((store) => store.entities)
     const actions = useActionsStore((store) => store.getAllActions())
 
     const goToEntity = useGoToEntityEditor()

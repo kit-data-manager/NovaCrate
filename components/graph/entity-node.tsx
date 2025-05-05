@@ -47,7 +47,7 @@ export default function EntityNode({
     const entityHasChanges = useEditorState(
         useShallow((store) => store.getEntitiesChangelist().get(data.entityId) !== Diff.None)
     )
-    const revertEntity = useEditorState.useRevertEntity()
+    const revertEntity = useEditorState((store) => store.revertEntity)
     const { saveEntity } = useContext(CrateDataContext)
     const { showDeleteEntityModal } = useContext(GlobalModalContext)
 

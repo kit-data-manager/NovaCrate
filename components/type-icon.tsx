@@ -39,7 +39,7 @@ export const CommonIcons: Record<string, LucideIcon> = {
  * @param type Type, either the name (e.g. Person) or the full URL (e.g. https://schema.org/Person)
  */
 export function useTypeIcon(type: string) {
-    const context = useEditorState.useCrateContext()
+    const context = useEditorState((state) => state.crateContext)
 
     const icon = CommonIcons[type.startsWith("http") ? type : context.resolve(type) || type]
     if (icon) {

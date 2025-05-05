@@ -30,11 +30,11 @@ export function CreateEntityModal({
     forceId?: string
     basePath?: string
 }) {
-    const addEntity = useEditorState.useAddEntity()
+    const addEntity = useEditorState((store) => store.addEntity)
     const focusTab = useEntityEditorTabs((store) => store.focusTab)
     const openTab = useEntityEditorTabs((store) => store.openTab)
     const { createFileEntity, createFolderEntity } = useContext(CrateDataContext)
-    const context = useEditorState.useCrateContext()
+    const context = useEditorState((store) => store.crateContext)
 
     const [fullTypeBrowser, setFullTypeBrowser] = useState(false)
     const [selectedType, setSelectedType] = useState("")

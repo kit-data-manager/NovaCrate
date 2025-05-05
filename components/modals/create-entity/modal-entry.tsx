@@ -15,7 +15,7 @@ export function CreateEntityModalEntry({
     onSelect: (value: string) => void
     common?: boolean
 }) {
-    const crateContext = useEditorState.useCrateContext()
+    const crateContext = useEditorState((store) => store.crateContext)
 
     const readableName = useMemo(() => {
         return camelCaseReadable(crateContext.reverse(slimClass["@id"]) || slimClass["@id"])

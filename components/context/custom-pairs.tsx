@@ -26,7 +26,7 @@ import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Error } from "@/components/error"
 
 export function CustomPairs() {
-    const context = useEditorState.useCrateContext()
+    const context = useEditorState((store) => store.crateContext)
     const [addPairModalOpen, setAddPairModalOpen] = useState(false)
     const { crateDataIsLoading } = useContext(CrateDataContext)
 

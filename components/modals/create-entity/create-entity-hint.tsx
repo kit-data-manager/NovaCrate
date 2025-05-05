@@ -10,7 +10,7 @@ import { ExternalLink } from "lucide-react"
 import { CollapsibleHint } from "@/components/collapsible-hint"
 
 export function CreateEntityHint({ selectedType }: { selectedType: string }) {
-    const context = useEditorState.useCrateContext()
+    const context = useEditorState((store) => store.crateContext)
 
     const showPlaceHint = useMemo(() => {
         return context.resolve(selectedType) === SCHEMA_ORG_PLACE

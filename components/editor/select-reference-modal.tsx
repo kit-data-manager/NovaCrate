@@ -66,7 +66,7 @@ export function SelectReferenceModal({
     propertyRange?: SlimClass[]
 }) {
     const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
-    const crateContext = useEditorState.useCrateContext()
+    const crateContext = useEditorState((store) => store.crateContext)
 
     const [onlyShowAllowed, setOnlyShowAllowed] = useState(true)
 

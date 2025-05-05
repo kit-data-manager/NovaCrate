@@ -27,7 +27,7 @@ export function OrganizationImport({
     const [creating, setCreating] = useState(false)
     const [error, setError] = useState<unknown>()
     const { importOrganizationFromRor } = useContext(CrateDataContext)
-    const setPropertyValue = useEditorState.useSetPropertyValue()
+    const setPropertyValue = useEditorState((store) => store.setPropertyValue)
 
     const onImportPress = useCallback(async () => {
         try {

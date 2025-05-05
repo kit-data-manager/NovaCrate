@@ -136,10 +136,10 @@ function propertyEntryExists(entity: IEntity, propertyName: string, targetId: st
 }
 
 export function EntityGraph() {
-    const entities = useEditorState.useEntities()
-    const addProperty = useEditorState.useAddProperty()
-    const addPropertyEntry = useEditorState.useAddPropertyEntry()
-    const removePropertyEntry = useEditorState.useRemovePropertyEntry()
+    const entities = useEditorState((store) => store.entities)
+    const addProperty = useEditorState((store) => store.addProperty)
+    const addPropertyEntry = useEditorState((store) => store.addPropertyEntry)
+    const removePropertyEntry = useEditorState((store) => store.removePropertyEntry)
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const { showDeleteEntityModal, showAddPropertyModal } = useContext(GlobalModalContext)
     const { saveError, crateDataIsLoading, crateId, isSaving, clearSaveError } =

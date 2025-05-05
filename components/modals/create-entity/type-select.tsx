@@ -32,7 +32,7 @@ export function TypeSelect({
     onTypeSelect: (value: string) => void
     setFullTypeBrowser(open: boolean): void
 }) {
-    const crateContext = useEditorState.useCrateContext()
+    const crateContext = useEditorState((store) => store.crateContext)
     const { worker } = useContext(CrateVerifyContext)
     const [bypassRestrictions, setBypassRestrictions] = useState(false)
 

@@ -100,11 +100,11 @@ export function CrateDataProvider({
     children
 }: PropsWithChildren<{ serviceProvider: CrateServiceAdapter }>) {
     const [crateId, setCrateId] = useState<string | undefined>(undefined)
-    const getEntities = useEditorState.useGetEntities()
-    const setEntities = useEditorState.useSetEntities()
-    const setCrateContext = useEditorState.useSetCrateContext()
-    const setInitialCrateContext = useEditorState.useSetInitialCrateContext()
-    const setInitialEntities = useEditorState.useSetInitialEntities()
+    const getEntities = useEditorState((store) => store.getEntities)
+    const setEntities = useEditorState((store) => store.setEntities)
+    const setCrateContext = useEditorState((store) => store.setCrateContext)
+    const setInitialCrateContext = useEditorState((store) => store.setInitialCrateContext)
+    const setInitialEntities = useEditorState((store) => store.setInitialEntities)
     const { data, error, isLoading, mutate } = useSWR<ICrate>(crateId, serviceProvider.getCrate)
     const lastCrateData = useRef<ICrate | undefined>(undefined)
     const router = useRouter()

@@ -81,7 +81,7 @@ export function FindReferencesModalInner({
     onOpenChange: (open: boolean) => void
     entityId: string
 }) {
-    const entities = useEditorState.useEntities()
+    const entities = useEditorState((store) => store.entities)
     const goToEntityEditor = useGoToEntityEditor()
     const openTab = useEntityEditorTabs((store) => store.openTab)
     const focusProperty = useEntityEditorTabs((store) => store.focusProperty)
