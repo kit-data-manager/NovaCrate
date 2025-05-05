@@ -55,7 +55,10 @@ export default function EditorLandingPage() {
         healthTestError: error
     } = useContext(CrateDataContext)
     const { openFilePicker: openZipFilePicker, plainFiles: zipFiles } = useFilePicker({
-        accept: [".zip", ".eln"]
+        accept: [".zip", ".eln"],
+        initializeWithCustomParameters: (el) => {
+            el.dataset.testid = "create-upload-input"
+        }
     })
     const { showDocumentationModal } = useContext(GlobalModalContext)
     const demoLoader = useDemoCrateLoader()
