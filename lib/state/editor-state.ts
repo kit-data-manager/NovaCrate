@@ -1,7 +1,6 @@
 import { AutoReference } from "@/components/providers/global-modals-provider"
 import { immer } from "zustand/middleware/immer"
 import { Draft, enableMapSet } from "immer"
-import { createSelectorHooks, ZustandHookSelectors } from "auto-zustand-selectors-hook"
 import {
     getPropertyTypeDefaultValue,
     PropertyEditorTypes
@@ -10,10 +9,11 @@ import { Diff, isEntityEqual } from "@/lib/utils"
 import { temporal } from "zundo"
 import { CrateContext } from "@/lib/crate-context"
 import { createWithEqualityFn } from "zustand/traditional"
+import { useStore } from "zustand/index"
 
 enableMapSet()
 
-export interface ICrateEditorContext {
+export interface EditorState {
     initialCrateContext: CrateContext
     crateContext: CrateContext
 
@@ -88,9 +88,9 @@ function setPropertyValue(
     }
 }
 
-const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
+export const editorState = createWithEqualityFn<EditorState>()(
     temporal(
-        immer<ICrateEditorContext>((setState, getState) => ({
+        immer<EditorState>((setState, getState) => ({
             initialCrateContext: new CrateContext([]),
             crateContext: new CrateContext([]),
             initialEntities: new Map<string, IEntity>(),
@@ -339,5 +339,6 @@ const editorStateBase = createWithEqualityFn<ICrateEditorContext>()(
     )
 )
 
-export const useEditorState = createSelectorHooks(editorStateBase) as typeof editorStateBase &
-    ZustandHookSelectors<ICrateEditorContext>
+export function useEditorState<T>(selector: (store: EditorState) => T): T {
+    return useStore(editorState, selector)
+}

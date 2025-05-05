@@ -16,6 +16,7 @@ import { useGoToEntityEditor } from "@/lib/hooks"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { useGraphSettings } from "@/components/providers/graph-settings-provider"
+import { useShallow } from "zustand/react/shallow"
 
 export const NEW_PROP_HANDLE = "__special__newProp"
 
@@ -44,7 +45,7 @@ export default function EntityNode({
 }) {
     const entity = useEditorState((store) => store.getEntities().get(data.entityId))
     const entityHasChanges = useEditorState(
-        (store) => store.getEntitiesChangelist().get(data.entityId) !== Diff.None
+        useShallow((store) => store.getEntitiesChangelist().get(data.entityId) !== Diff.None)
     )
     const revertEntity = useEditorState.useRevertEntity()
     const { saveEntity } = useContext(CrateDataContext)

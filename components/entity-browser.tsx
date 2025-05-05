@@ -28,7 +28,7 @@ import {
 } from "lucide-react"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { EntityIcon } from "./entity-icon"
-import { useEditorState } from "@/lib/state/editor-state"
+import { editorState, useEditorState } from "@/lib/state/editor-state"
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -51,6 +51,7 @@ import {
     ContextMenuTrigger
 } from "@/components/ui/context-menu"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { useStoreWithEqualityFn } from "zustand/traditional"
 
 type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -61,7 +62,7 @@ export function EntityBrowserItem(props: { entityId: string }) {
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
     const entity = useEditorState((state) => state.entities.get(props.entityId))
     const { saveEntity } = useContext(CrateDataContext)
-    const revertEntity = useEditorState.useRevertEntity()
+    const revertEntity = useEditorState((store) => store.revertEntity)
     const { showDeleteEntityModal } = useContext(GlobalModalContext)
     const diff = useEditorState((state) => state.getEntityDiff(props.entityId))
 
@@ -151,7 +152,8 @@ export function EntityBrowserSection(props: {
     defaultSectionOpen: DefaultSectionOpen
     onSectionOpenChange(): void
 }) {
-    const entities = useEditorState(
+    const entities = useStoreWithEqualityFn(
+        editorState,
         (store) => {
             return Array.from(store.entities.entries())
                 .map(([key, item]) => [key, item] as [string, IEntity])

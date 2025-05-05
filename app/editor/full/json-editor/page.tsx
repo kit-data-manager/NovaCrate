@@ -25,7 +25,7 @@ import fileDownload from "js-file-download"
 
 export default function JSONEditorPage() {
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
-    const revertAllEntities = useEditorState.useRevertAllEntities()
+    const revertAllEntities = useEditorState((store) => store.revertAllEntities)
     const { crateData, saveRoCrateMetadataJSON, isSaving } = useContext(CrateDataContext)
     const [crateDataProxy, setCrateDataProxy] = useState(crateData)
     const theme = useTheme()
