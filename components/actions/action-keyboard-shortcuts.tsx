@@ -2,9 +2,10 @@ import { Action } from "@/lib/state/actions"
 import React, { useCallback, useEffect, useMemo } from "react"
 import { useActionsStore } from "@/components/providers/actions-provider"
 import { ArrowBigUp } from "lucide-react"
+import { useShallow } from "zustand/react/shallow"
 
 export function ActionKeyboardShortcuts() {
-    const actions = useActionsStore((store) => store.getAllActions())
+    const actions = useActionsStore(useShallow((store) => store.getAllActions()))
 
     return (
         <>
