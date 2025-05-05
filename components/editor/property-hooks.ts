@@ -49,10 +49,15 @@ export function usePropertyCanBe(
 
     const canBeNumber = useMemo(() => {
         return propertyRange
-            ? propertyRange.includes(SCHEMA_ORG_NUMBER) ||
-                  SCHEMA_ORG_NUMBERLIKE.find((s) => propertyRange.includes(s)) !== undefined
+            ? (propertyRange.includes(SCHEMA_ORG_NUMBER) ||
+                  SCHEMA_ORG_NUMBERLIKE.find((s) => propertyRange.includes(s)) !== undefined) &&
+                  textValueGuard(
+                      value,
+                      (v) => !isNaN(parseFloat(v)) && parseFloat(v) + "" === v,
+                      true
+                  )
             : undefined
-    }, [propertyRange])
+    }, [propertyRange, value])
 
     const canBeDate = useMemo(() => {
         return (
