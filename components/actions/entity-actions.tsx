@@ -15,8 +15,8 @@ export default function EntityActions() {
 
 function Handler({ entity }: { entity: IEntity }) {
     const { saveEntity } = useContext(CrateDataContext)
-    const revertEntity = useEditorState.useRevertEntity()
-    const addPropertyEntry = useEditorState.useAddPropertyEntry()
+    const revertEntity = useEditorState((store) => store.revertEntity)
+    const addPropertyEntry = useEditorState((store) => store.addPropertyEntry)
     const {
         showAddPropertyModal,
         showFindReferencesModal,

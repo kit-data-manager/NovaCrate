@@ -115,7 +115,7 @@ export const PropertyEditor = memo(function PropertyEditor({
     const { isReady: crateVerifyReady, worker } = useContext(CrateVerifyContext)
     const focusedProperty = useEntityEditorTabs((store) => store.focusedProperty)
     const unFocusProperty = useEntityEditorTabs((store) => store.unFocusProperty)
-    const crateContext = useEditorState.useCrateContext()
+    const crateContext = useEditorState((store) => store.crateContext)
     const container = createRef<HTMLDivElement>()
 
     const isFocused = useMemo(() => {

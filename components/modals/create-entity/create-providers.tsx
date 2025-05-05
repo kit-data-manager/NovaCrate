@@ -18,7 +18,7 @@ export function CreateProviders({
     autoReference?: AutoReference
     fallback: React.ReactNode
 }) {
-    const context = useEditorState.useCrateContext()
+    const context = useEditorState((store) => store.crateContext)
     const [manualCreation, setManualCreation] = useState(true)
 
     const canUsePersonProvider = useMemo(() => {

@@ -4,10 +4,11 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { useEffect, useRef } from "react"
 import { Diff } from "@/lib/utils"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
+import { useShallow } from "zustand/react/shallow"
 
 export function EntityEditorTabsSupervisor() {
-    const entitiesChangelist = useEditorState((store) => store.getEntitiesChangelist())
-    const entities = useEditorState.useEntities()
+    const entitiesChangelist = useEditorState(useShallow((store) => store.getEntitiesChangelist()))
+    const entities = useEditorState((store) => store.entities)
     const tabs = useEntityEditorTabs((store) => store.tabs)
     const openTab = useEntityEditorTabs((store) => store.openTab)
 

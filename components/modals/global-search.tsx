@@ -13,6 +13,7 @@ import { EntityIcon } from "@/components/entity-icon"
 import { useGoToEntityEditor, useGoToPage } from "@/lib/hooks"
 import { useActionsStore } from "@/components/providers/actions-provider"
 import { ActionCommandItem } from "@/components/actions/action-buttons"
+import { useShallow } from "zustand/react/shallow"
 
 export const GlobalSearch = memo(function GlobalSearch({
     open,
@@ -43,8 +44,8 @@ function GlobalSearchInner({
     open: boolean
     onOpenChange(open: boolean): void
 }) {
-    const entities = useEditorState.useEntities()
-    const actions = useActionsStore((store) => store.getAllActions())
+    const entities = useEditorState((store) => store.entities)
+    const actions = useActionsStore(useShallow((store) => store.getAllActions()))
 
     const goToEntity = useGoToEntityEditor()
 

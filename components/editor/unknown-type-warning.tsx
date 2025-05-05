@@ -4,7 +4,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { Error } from "@/components/error"
 
 export function UnknownTypeWarning({ entityType }: { entityType: string | string[] }) {
-    const crateContext = useEditorState.useCrateContext()
+    const crateContext = useEditorState((store) => store.crateContext)
 
     const notResolvable = useMemo(() => {
         const arr = toArray(entityType)

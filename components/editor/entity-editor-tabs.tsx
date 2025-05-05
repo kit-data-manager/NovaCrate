@@ -18,6 +18,7 @@ import {
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ActionButton } from "@/components/actions/action-buttons"
+import { useShallow } from "zustand/react/shallow"
 
 function Tab({
     tab,
@@ -134,7 +135,7 @@ function Tab({
 }
 
 function Tabs({ tabs, currentTab }: { tabs: IEntityEditorTab[]; currentTab?: IEntityEditorTab }) {
-    const entitiesChangelist = useEditorState((store) => store.getEntitiesChangelist())
+    const entitiesChangelist = useEditorState(useShallow((store) => store.getEntitiesChangelist()))
     const container = useRef<HTMLDivElement>(null)
 
     return (

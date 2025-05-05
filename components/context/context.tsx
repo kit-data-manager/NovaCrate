@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Metadata } from "@/components/Metadata"
 
 export function ContextPage() {
-    const context = useEditorState.useCrateContext()
+    const context = useEditorState((store) => store.crateContext)
     const { crateDataIsLoading, crateId } = useContext(CrateDataContext)
 
     const [specificationModalOpen, setSpecificationModalOpen] = useState(false)

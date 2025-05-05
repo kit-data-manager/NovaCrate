@@ -35,7 +35,7 @@ export type DefaultSectionOpen = boolean | "indeterminate"
 
 export function FileExplorer() {
     const crateData = useContext(CrateDataContext)
-    const entities = useEditorState.useEntities()
+    const entities = useEditorState((store) => store.entities)
     const downloadError = useFileExplorerState((store) => store.downloadError)
 
     const filesListResolver = useCallback(

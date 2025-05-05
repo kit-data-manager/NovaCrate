@@ -26,6 +26,7 @@ import { ActionButton } from "@/components/actions/action-buttons"
 import { useGoToFileExplorer, useGoToGraph } from "@/lib/hooks"
 import { EntityBadge } from "../entity-badge"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
+import { useShallow } from "zustand/react/shallow"
 
 export function EntityEditor({
     entityId,
@@ -37,10 +38,10 @@ export function EntityEditor({
     const { isSaving, saveError, clearSaveError } = useContext(CrateDataContext)
     const entity = useEditorState((store) => store.entities.get(entityId))
     const originalEntity = useEditorState((store) => store.initialEntities.get(entityId))
-    const entitiesChangelist = useEditorState((store) => store.getEntitiesChangelist())
-    const addPropertyEntry = useEditorState.useAddPropertyEntry()
-    const modifyPropertyEntry = useEditorState.useModifyPropertyEntry()
-    const removePropertyEntry = useEditorState.useRemovePropertyEntry()
+    const entitiesChangelist = useEditorState(useShallow((store) => store.getEntitiesChangelist()))
+    const addPropertyEntry = useEditorState((store) => store.addPropertyEntry)
+    const modifyPropertyEntry = useEditorState((store) => store.modifyPropertyEntry)
+    const removePropertyEntry = useEditorState((store) => store.removePropertyEntry)
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
 

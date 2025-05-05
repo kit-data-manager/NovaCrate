@@ -1,6 +1,6 @@
 import { CircleHelp, LucideIcon } from "lucide-react"
-import { createStore } from "zustand/vanilla"
 import { immer } from "zustand/middleware/immer"
+import { create } from "zustand"
 
 export interface Action {
     id: string
@@ -21,7 +21,7 @@ export interface ActionStore {
 }
 
 export const createActionStore = () =>
-    createStore<ActionStore>()(
+    create<ActionStore>()(
         immer((set, get) => ({
             actions: new Map(),
             getAllActions(): Action[] {

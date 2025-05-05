@@ -34,7 +34,7 @@ function SaveEntityChangesModalInner({
     onOpenChange: (isOpen: boolean) => void
     entityId: string
 }) {
-    const revertEntity = useEditorState.useRevertEntity()
+    const revertEntity = useEditorState((store) => store.revertEntity)
     const entity = useEditorState((store) => store.entities.get(entityId))
     const { saveEntity } = useContext(CrateDataContext)
 

@@ -20,7 +20,7 @@ function TypeBadge({
     restrictToClasses?: SlimClass[]
 }) {
     const Icon = useTypeIcon(type)
-    const context = useEditorState.useCrateContext()
+    const context = useEditorState((store) => store.crateContext)
 
     const resolvedType = useMemo(() => {
         return context.resolve(type)
