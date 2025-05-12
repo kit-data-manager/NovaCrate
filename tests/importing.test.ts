@@ -133,295 +133,56 @@ test("Import Folder", async ({ page }) => {
     await page.getByRole("button", { name: "New Crate" }).click()
     await page.getByRole("menuitem", { name: "Start with Data" }).click()
     await page.getByRole("button", { name: "Select Folder" }).click()
-    await page
-        .getByRole("button", { name: "Select Folder" })
-        .setInputFiles([
-            ".DS_Store",
-            "thesis.pdf",
-            "pc-win-de-keyboard.dmg",
-            "Bachelorarbeit_Inckmann_TypgebundeneOperationen-FDOs.pdf",
-            "CodeResources",
-            "Info.plist",
-            "PkgInfo",
-            "welcome-LogiOptionsPlus@2x.png",
-            "privacy-policy-ja-jp.html",
-            "welcome-LogiOptionsPlus.png",
-            "privacy-policy-zh-cn.html",
-            "eula-pl-pl.html",
-            "DeviceImage1@2x.png",
-            "privacy-policy-ko-kr.html",
-            "privacy-policy-es-es.html",
-            "eula-nb-no.html",
-            "DeviceImage3@2x.png",
-            "privacy-policy-pt-pt.html",
-            "eula-da-dk.html",
-            "CloseIcon.png",
-            "privacy-policy-sv-se.html",
-            "eula-de-de.html",
-            "error@2x.png",
-            "eula-pt-br.html",
-            "styles.css",
-            "BrownPro-Light.woff2",
-            "eula-zh-tw.html",
-            "eula-sr-sp.html",
-            "eula-fr-fr.html",
-            "IconWarning.png",
-            "ExpanderUp.png",
-            "logo.mp4",
-            "DeviceImage5.png",
-            "eula-ru-ru.html",
-            "eula-nl-nl.html",
-            "SendErrorLogsDialog.nib",
-            "DeviceImage4.png",
-            "eula-fi-fi.html",
-            "eula-en-us.html",
-            "privacy-policy-it-it.html",
-            "DeviceImage1.tiff",
-            "DeviceImage1.png",
-            "DeviceImage3.png",
-            "welcome-LogiOptionsPlus.tiff",
-            "privacy-policy-el-gr.html",
-            "DeviceImage5@2x.png",
-            "DeviceImage2.png",
-            "error.tiff",
-            "privacy-policy-ru-ru.html",
-            "MainMenu.nib",
-            "privacy-policy-nl-nl.html",
-            "DeviceImage2.tiff",
-            "icon_kiros.icns",
-            "ExpanderDown.png",
-            "error.png",
-            "app-installed.gif",
-            "Unsupported-OS.gif",
-            "DeviceImage3.tiff",
-            "eula-el-gr.html",
-            "privacy-policy-en-us.html",
-            "eula-it-it.html",
-            "privacy-policy-fi-fi.html",
-            "DeviceImage2@2x.png",
-            "EndUserModal.nib",
-            "eula-ko-kr.html",
-            "CrashReportDialog.nib",
-            "BrownPro-Bold.woff2",
-            "DeviceImage4.tiff",
-            "eula-es-es.html",
-            "spinner.png",
-            "eula-ja-jp.html",
-            "eula-zh-cn.html",
-            "privacy-policy-pl-pl.html",
-            "KIROSAlert.nib",
-            "privacy-policy-pt-br.html",
-            "DeviceImage4@2x.png",
-            "privacy-policy-de-de.html",
-            "privacy-policy-sr-sp.html",
-            "privacy-policy-fr-fr.html",
-            "privacy-policy-zh-tw.html",
-            "privacy-policy-da-dk.html",
-            "privacy-policy-nb-no.html",
-            "eula-pt-pt.html",
-            "DeviceImage5.tiff",
-            "eula-sv-se.html",
-            "BrownPro-Regular.woff2",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "BrownLogitechPan-Black.otf",
-            "BrownLogitechPan-Italic.otf",
-            "BrownPro-Light.otf",
-            "BrownPro-Regular.otf",
-            "BrownLogitechPan-Bold.otf",
-            "BrownPro-Bold.otf",
-            "BrownPro-Thin.otf",
-            "BrownLogitechPan-Thin.otf",
-            "BrownLogitechPan-Medium.otf",
-            "BrownLogitechPan-Regular.otf",
-            "BrownLogitechPan-Light.otf",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "Localizable.strings",
-            "InfoPlist.strings",
-            "logioptionsplus_installer",
-            "CodeResources"
-        ])
+    await page.getByTestId("create-crate-modal-upload-input").setInputFiles("tests/data/TestFolder")
+    await page.getByRole("textbox", { name: "Description" }).click()
+    await page.getByRole("textbox", { name: "Description" }).fill("Custom Description Text")
     await page.getByRole("textbox", { name: "Name" }).click()
-    await page.getByRole("textbox", { name: "Name" }).fill("My Test Crate")
-    await page.getByRole("textbox", { name: "Name" }).press("Tab")
-    await page.getByRole("textbox", { name: "Description" }).fill("My Test Description")
-    await page.getByRole("textbox", { name: "Description" }).press("Enter")
+    await page.getByRole("textbox", { name: "Name" }).fill("Uploaded from Folder")
     await page.getByRole("button", { name: "Create" }).click()
-    await expect(page.getByRole("heading").getByText("My Test Crate")).toBeVisible()
     await expect(page.locator("body")).toMatchAriaSnapshot(`
-    - button "F .DS_StoreFile"
-    - button "F app-installed.gifFile"
-    - button "F Bachelorarbeit_Inckmann_TypgebundeneOperationen-FDOs.pdfFile"
-    - button "F BrownLogitechPan-Black.otfFile"
-    - button "F BrownLogitechPan-Bold.otfFile"
-    - button "F BrownLogitechPan-Italic.otfFile"
-    - button "F BrownLogitechPan-Light.otfFile"
-    - button "F BrownLogitechPan-Medium.otfFile"
-    - button "F BrownLogitechPan-Regular.otfFile"
-    - button "F BrownLogitechPan-Thin.otfFile"
-    - button "F BrownPro-Bold.otfFile"
-    - button "F BrownPro-Bold.woff2File"
-    - button "F BrownPro-Light.otfFile"
-    - button "F BrownPro-Light.woff2File"
-    - button "F BrownPro-Regular.otfFile"
-    - button "F BrownPro-Regular.woff2File"
-    - button "F BrownPro-Thin.otfFile"
-    - button "F CloseIcon.pngFile"
-    - button "F CodeResourcesFile"
-    - button "F CodeResourcesFile"
-    - button "F CrashReportDialog.nibFile"
-    - button "F DeviceImage1.pngFile"
-    - button "F DeviceImage1.tiffFile"
-    - button "F DeviceImage1@2x.pngFile"
-    - button "F DeviceImage2.pngFile"
-    - button "F DeviceImage2.tiffFile"
-    - button "F DeviceImage2@2x.pngFile"
-    - button "F DeviceImage3.pngFile"
-    - button "F DeviceImage3.tiffFile"
-    - button "F DeviceImage3@2x.pngFile"
-    - button "F DeviceImage4.pngFile"
-    - button "F DeviceImage4.tiffFile"
-    - button "F DeviceImage4@2x.pngFile"
-    - button "F DeviceImage5.pngFile"
-    - button "F DeviceImage5.tiffFile"
-    - button "F DeviceImage5@2x.pngFile"
-    - button "F EndUserModal.nibFile"
-    - button "F error.pngFile"
-    - button "F error.tiffFile"
-    - button "F error@2x.pngFile"
-    - button "F eula-da-dk.htmlFile"
-    - button "F eula-de-de.htmlFile"
-    - button "F eula-el-gr.htmlFile"
-    - button "F eula-en-us.htmlFile"
-    - button "F eula-es-es.htmlFile"
-    - button "F eula-fi-fi.htmlFile"
-    - button "F eula-fr-fr.htmlFile"
-    - button "F eula-it-it.htmlFile"
-    - button "F eula-ja-jp.htmlFile"
-    - button "F eula-ko-kr.htmlFile"
-    - button "F eula-nb-no.htmlFile"
-    - button "F eula-nl-nl.htmlFile"
-    - button "F eula-pl-pl.htmlFile"
-    - button "F eula-pt-br.htmlFile"
-    - button "F eula-pt-pt.htmlFile"
-    - button "F eula-ru-ru.htmlFile"
-    - button "F eula-sr-sp.htmlFile"
-    - button "F eula-sv-se.htmlFile"
-    - button "F eula-zh-cn.htmlFile"
-    - button "F eula-zh-tw.htmlFile"
-    - button "F ExpanderDown.pngFile"
-    - button "F ExpanderUp.pngFile"
-    - button "F icon_kiros.icnsFile"
-    - button "F IconWarning.pngFile"
-    - button "F Info.plistFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F InfoPlist.stringsFile"
-    - button "F KIROSAlert.nibFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F Localizable.stringsFile"
-    - button "F logioptionsplus_installerFile"
-    - button "F logo.mp4File"
-    - button "F MainMenu.nibFile"
-    - button "F pc-win-de-keyboard.dmgFile"
-    - button "F PkgInfoFile"
-    - button "F privacy-policy-da-dk.htmlFile"
-    - button "F privacy-policy-de-de.htmlFile"
-    - button "F privacy-policy-el-gr.htmlFile"
-    - button "F privacy-policy-en-us.htmlFile"
-    - button "F privacy-policy-es-es.htmlFile"
-    - button "F privacy-policy-fi-fi.htmlFile"
-    - button "F privacy-policy-fr-fr.htmlFile"
-    - button "F privacy-policy-it-it.htmlFile"
-    - button "F privacy-policy-ja-jp.htmlFile"
-    - button "F privacy-policy-ko-kr.htmlFile"
-    - button "F privacy-policy-nb-no.htmlFile"
-    - button "F privacy-policy-nl-nl.htmlFile"
-    - button "F privacy-policy-pl-pl.htmlFile"
-    - button "F privacy-policy-pt-br.htmlFile"
-    - button "F privacy-policy-pt-pt.htmlFile"
-    - button "F privacy-policy-ru-ru.htmlFile"
-    - button "F privacy-policy-sr-sp.htmlFile"
-    - button "F privacy-policy-sv-se.htmlFile"
-    - button "F privacy-policy-zh-cn.htmlFile"
-    - button "F privacy-policy-zh-tw.htmlFile"
-    - button "F SendErrorLogsDialog.nibFile"
-    - button "F spinner.pngFile"
-    - button "F styles.cssFile"
-    - button "F thesis.pdfFile"
-    - button "F Unsupported-OS.gifFile"
-    - button "F welcome-LogiOptionsPlus.pngFile"
-    - button "F welcome-LogiOptionsPlus.tiffFile"
-    - button "F welcome-LogiOptionsPlus@2x.pngFile"
+    - button "R Uploaded from FolderDataset"
+    - button "Data Entities":
+      - img
+    - button "F candles-9247498_1280.jpgFile"
+    - button "F description.txtFile"
+    - button "F empty-fileFile"
+    - button "F example.jsonFile"
+    - button "Contextual Entities":
+      - img
     `)
+    await expect(page.getByRole("textbox").first()).toHaveValue("Uploaded from Folder")
+    await expect(page.getByRole("textbox").nth(1)).toHaveValue("Custom Description Text")
+    await expect(page.locator("body")).toMatchAriaSnapshot(`
+    - button "F example.json example.json"
+    - button
+    - button
+    - button "F empty-file empty-file"
+    - button
+    - button
+    - button "F description.txt description.txt"
+    - button
+    - button
+    - button "F candles-9247498_1280.jpg img/candles-9247498_1280.jpg"
+    - button
+    - button
+    - button "Add another entry"
+    `)
+    await page.getByRole("button", { name: "File Explorer" }).click()
+    await expect(page.locator("body")).toMatchAriaSnapshot(`
+    - button "img":
+      - img
+    - button "candles-9247498_1280.jpgcandles-9247498_1280.jpg"
+    - button "ro-crate-metadata.json"
+    - button "example.jsonexample.json"
+    - button "empty-fileempty-file"
+    - button "description.txtdescription.txt"
+    `)
+    await page.getByRole("button", { name: "candles-9247498_1280." }).click()
+    await expect(page.locator("body")).toMatchAriaSnapshot(`- text: img/candles-9247498_1280.jpg`)
+    await page.getByRole("button", { name: "example.jsonexample.json" }).click()
+    await expect(page.getByRole("code")).toContainText(
+        '{ "file": "example.json", "contains": "nothing"}'
+    )
+    await page.getByRole("button", { name: "description.txtdescription.txt" }).click()
+    await expect(page.getByRole("code")).toContainText("This is the Test Folder Crate")
 })
