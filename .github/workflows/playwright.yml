@@ -7,6 +7,8 @@ on:
 jobs:
   playwright:
     name: 'Playwright Tests'
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.52.0-noble
