@@ -19,6 +19,15 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
         const id = await this.createCrate(name, description)
         progressCallback?.(0, files.length, errors)
 
+        const nameFromPath = (path: string): string => {
+            const parts = path.split("/").filter((p) => p !== "")
+            return parts[parts.length - 1]
+        }
+
+        // Stable order of import for simplified testing
+        files.sort((a, b) =>
+            nameFromPath(a.relativePath).localeCompare(nameFromPath(b.relativePath))
+        )
         for (const file of files) {
             const pathSplit = file.relativePath.split("/")
             if (pathSplit.length > 1) pathSplit[0] = "."

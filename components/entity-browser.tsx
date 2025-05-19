@@ -237,7 +237,7 @@ export function EntityBrowserContent({
         )
 
     return (
-        <div className="flex flex-col p-2 overflow-y-auto">
+        <div id="entity-browser-content" className="flex flex-col p-2 overflow-y-auto">
             <EntityBrowserItem entityId={"./"} />
             <EntityBrowserSection
                 section={"Data"}

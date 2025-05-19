@@ -43,6 +43,7 @@ export function CreateCrateModal({
     const { openFilePicker: openFolderPicker, plainFiles: files } = useFilePicker({
         initializeWithCustomParameters(input) {
             input.setAttribute("webkitdirectory", "")
+            input.dataset.testid = "create-crate-modal-upload-input"
         }
     })
 
