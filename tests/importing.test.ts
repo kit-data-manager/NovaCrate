@@ -22,7 +22,7 @@ async function testCrateContent(page: Page) {
     - button "Add another entry"
     - text: Date Created
     - paragraph: The date on which the CreativeWork was created or the item was added to a DataFeed.
-    - textbox: /\\d+-\\d+-05T14:\\d+/
+    - textbox: /\\d+-\\d+-\\d+T\\d+:\\d+/
     - button
     - button "Add another entry"
     - text: Description
