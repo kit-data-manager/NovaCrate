@@ -3,7 +3,7 @@ import { loadTestFolder } from "@/tests/common"
 
 test("Edit Properties", async ({ page }) => {
     await loadTestFolder(page)
-    await expect(page.locator("body")).toMatchAriaSnapshot(`
+    await expect(page.locator("#entity-browser-content")).toMatchAriaSnapshot(`
     - button "R Testing FolderDataset"
     - button "Data Entities":
       - img

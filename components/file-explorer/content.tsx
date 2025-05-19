@@ -27,20 +27,22 @@ export function FolderContent(props: {
                 const pathSplit = props.path.split("/")
                 set.add(fileSplit.slice(0, pathSplit.length).join("/") + "/")
             })
-        return Array.from(set)
+        return Array.from(set).sort((a, b) => a.localeCompare(b))
     }, [props.filePaths, props.path])
 
     const contents = useMemo(() => {
-        return props.filePaths.filter((file) => {
-            const fileSplit = file.split("/")
-            const pathSplit = props.path.split("/")
-            return (
-                fileSplit.length === pathSplit.length &&
-                fileSplit.slice(0, fileSplit.length - 1).join() ===
-                    pathSplit.slice(0, pathSplit.length - 1).join() &&
-                !file.endsWith("/")
-            )
-        })
+        return props.filePaths
+            .filter((file) => {
+                const fileSplit = file.split("/")
+                const pathSplit = props.path.split("/")
+                return (
+                    fileSplit.length === pathSplit.length &&
+                    fileSplit.slice(0, fileSplit.length - 1).join() ===
+                        pathSplit.slice(0, pathSplit.length - 1).join() &&
+                    !file.endsWith("/")
+                )
+            })
+            .sort((a, b) => a.localeCompare(b))
     }, [props.filePaths, props.path])
 
     return (

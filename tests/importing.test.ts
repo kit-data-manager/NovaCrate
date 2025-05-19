@@ -153,16 +153,16 @@ test("Import Folder", async ({ page }) => {
     await expect(page.getByRole("textbox").first()).toHaveValue("Uploaded from Folder")
     await expect(page.getByRole("textbox").nth(1)).toHaveValue("Custom Description Text")
     await expect(page.locator("body")).toMatchAriaSnapshot(`
-    - button "F example.json example.json"
-    - button
-    - button
-    - button "F empty-file empty-file"
+    - button "F candles-9247498_1280.jpg img/candles-9247498_1280.jpg"
     - button
     - button
     - button "F description.txt description.txt"
     - button
     - button
-    - button "F candles-9247498_1280.jpg img/candles-9247498_1280.jpg"
+    - button "F empty-file empty-file"
+    - button
+    - button
+    - button "F example.json example.json"
     - button
     - button
     - button "Add another entry"
@@ -172,10 +172,10 @@ test("Import Folder", async ({ page }) => {
     - button "img":
       - img
     - button "candles-9247498_1280.jpgcandles-9247498_1280.jpg"
-    - button "ro-crate-metadata.json"
-    - button "example.jsonexample.json"
-    - button "empty-fileempty-file"
     - button "description.txtdescription.txt"
+    - button "empty-fileempty-file"
+    - button "example.jsonexample.json"
+    - button "ro-crate-metadata.json"
     `)
     await page.getByRole("button", { name: "candles-9247498_1280." }).click()
     await expect(page.locator("body")).toMatchAriaSnapshot(`- text: img/candles-9247498_1280.jpg`)

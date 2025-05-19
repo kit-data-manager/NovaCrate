@@ -44,6 +44,7 @@ public/opfs-worker
 public/opfs-worker.js
 
 test-results
+playwright-report
 
 # legacy
 public/crate-verify
