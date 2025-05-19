@@ -43,6 +43,8 @@ public/schema-worker.js
 public/opfs-worker
 public/opfs-worker.js
 
+test-results
+
 # legacy
 public/crate-verify
 public/crate-verify-worker.js
