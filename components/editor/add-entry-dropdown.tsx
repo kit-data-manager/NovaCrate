@@ -28,6 +28,7 @@ export const AddEntryDropdown = memo(function AddEntryDropdown(props: {
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="link"
+                    id="add-property-dropdown-trigger"
                     className="flex text items-center text-muted-foreground p-1 pb-0 mb-0 h-[30px]"
                 >
                     <Plus className="w-3 h-3 mr-1" />
