@@ -107,6 +107,10 @@ export class ROCrateJavaCrateService extends CrateServiceBase {
         }
     }
 
+    renameEntity(): Promise<boolean> {
+        throw "Not implemented"
+    }
+
     async deleteEntity(crateId: string, entityData: IEntity): Promise<boolean> {
         const request = await fetch(this.getEntityRoute(crateId, entityData), {
             method: "DELETE"

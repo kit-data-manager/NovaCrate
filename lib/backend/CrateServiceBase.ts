@@ -69,6 +69,12 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
 
     abstract deleteEntity(crateId: string, entityData: IEntity): Promise<boolean>
 
+    abstract renameEntity(
+        crateId: string,
+        entityData: IEntity,
+        newEntityId: string
+    ): Promise<boolean>
+
     abstract downloadCrateZip(id: string): Promise<void>
 
     abstract downloadCrateEln(id: string): Promise<void>

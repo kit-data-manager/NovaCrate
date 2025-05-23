@@ -41,11 +41,32 @@ export async function deleteFileOrFolder(crateId: string, filePath: string) {
     const exists = await fs.exists(resolveCratePath(crateId, filePath))
     if (!exists.isOk()) throw exists.unwrapErr()
 
-    // Fail silently if file does not exist
+    // Fail silently if the file does not exist
     if (!exists.unwrap()) return
 
     const result = await fs.remove(resolveCratePath(crateId, filePath))
     if (!result.isOk()) throw result.unwrapErr()
+}
+
+export async function moveFileOrFolder(crateId: string, filePath: string, newFilePath: string) {
+    const existsSource = await fs.exists(resolveCratePath(crateId, filePath))
+    if (!existsSource.isOk()) throw existsSource.unwrapErr()
+
+    // Fail silently if the source file does not exist
+    if (!existsSource.unwrap()) return
+
+    const existsTarget = await fs.exists(resolveCratePath(crateId, newFilePath))
+    if (!existsTarget.isOk()) throw existsTarget.unwrapErr()
+
+    // Fail if the target file does not exist
+    if (existsTarget.unwrap()) throw `A file with name ${newFilePath} already exists`
+
+    const move = await fs.move(
+        resolveCratePath(crateId, filePath),
+        resolveCratePath(crateId, newFilePath),
+        { overwrite: false }
+    )
+    if (!move.isOk()) throw move.unwrapErr()
 }
 
 export async function getCrateDirContents(crateId: string) {
@@ -178,6 +199,7 @@ export const opfsFunctions = {
     createCrateZip,
     createCrateFromZip,
     deleteFileOrFolder,
+    moveFileOrFolder,
     createCrateEln,
     createFolder
 }
