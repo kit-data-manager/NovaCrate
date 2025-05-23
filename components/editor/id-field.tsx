@@ -56,11 +56,11 @@ export function IDField({ value }: { value: string }) {
             <span className="truncate grow">{value}</span>
             <DropdownMenu>
                 <DropdownMenuTrigger className="p-2" asChild>
-                    <Button variant={"outline"}>
+                    <Button variant={"outline"} id={"id-dropdown-trigger"}>
                         <EllipsisVertical className="size-4" />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent id={"id-dropdown"}>
                     <DropdownMenuItem onClick={() => setRenameEntityModalOpen(true)}>
                         <Pencil className="size-4 mr-2" /> Edit
                     </DropdownMenuItem>
