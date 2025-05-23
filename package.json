@@ -9,8 +9,9 @@
     "build": "npm-run-all --parallel build-next build-webworker",
     "build-next": "next build",
     "build-webworker": "webpack --config webpack.config.webworker.js --mode=production",
-    "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "playwright test",
+    "serve": "serve out"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
@@ -81,6 +82,7 @@
     "eslint-plugin-immer": "^0.0.1",
     "npm-run-all": "^4.1.5",
     "postcss": "^8",
+    "serve": "^14.2.4",
     "tailwindcss": "^4.1.4",
     "ts-loader": "^9.5.1",
     "tw-animate-css": "^1.2.5",
