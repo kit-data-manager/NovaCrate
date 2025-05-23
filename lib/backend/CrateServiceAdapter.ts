@@ -109,6 +109,8 @@ declare interface CrateServiceAdapter {
      */
     deleteEntity(crateId: string, entityData: IEntity): Promise<boolean>
 
+    renameEntity(crateId: string, entityData: IEntity, newEntityId: string): Promise<boolean>
+
     /**
      * Get a complete list of file names in the crate archive
      * @param crateId ID of the target crate
