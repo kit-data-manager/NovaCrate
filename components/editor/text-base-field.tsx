@@ -67,7 +67,7 @@ export const TextBaseField = memo(function TextBaseField({
     )
 
     const canBe = usePropertyCanBe(propertyRange, value)
-    const propertyRangeRef = useRef(propertyRange)
+    const propertyRangeLoaded = useRef(false)
 
     const [inputType, setInputType] = useState(propertyCanBeToInputType(canBe))
 
@@ -81,12 +81,13 @@ export const TextBaseField = memo(function TextBaseField({
 
     useEffect(() => {
         if (
-            (!propertyRangeRef.current && propertyRange) || // propertyRange just became available
+            (!propertyRangeLoaded.current && propertyRange) || // propertyRange just became available
             shouldResetInputType(canBe, inputType) // Current input type no longer sensible (may happen on revert)
         ) {
             setInputType(propertyCanBeToInputType(canBe))
         }
-        propertyRangeRef.current = propertyRange
+
+        if (propertyRange) propertyRangeLoaded.current = true
     }, [canBe, inputType, propertyRange])
 
     const onLocalChangeType = useCallback(

@@ -20,8 +20,10 @@ jobs:
           node-version: lts/*
       - name: Install dependencies
         run: npm ci
-      - name: Run your tests
-        run: npx playwright test
+      - name: Build NovaCrate
+        run: npm run build
+      - name: Run playwright tests
+        run: npm run test
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4
         with:
