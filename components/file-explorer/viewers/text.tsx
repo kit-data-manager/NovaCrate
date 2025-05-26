@@ -1,16 +1,20 @@
 import { ViewerProps } from "@/components/file-explorer/viewers/base"
 import { Editor } from "@monaco-editor/react"
-import { useAsync } from "@/lib/hooks"
 import { useTheme } from "next-themes"
 import { useHandleMonacoMount } from "@/lib/monaco"
+import { useEffect, useState } from "react"
 
 async function blobAsText(blob: Blob) {
     return await blob.text()
 }
 
 export function TextViewer(props: ViewerProps) {
-    const { data } = useAsync(props.data ?? null, blobAsText)
+    const [data, setData] = useState<string>()
     const theme = useTheme()
+
+    useEffect(() => {
+        if (props.data) blobAsText(props.data).then(setData)
+    }, [props.data])
 
     const handleMount = useHandleMonacoMount()
 

@@ -2,7 +2,6 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { CrateVerifyContext } from "@/components/providers/crate-verify-provider"
 import { CheckedState } from "@radix-ui/react-checkbox"
-import { useAsync } from "@/lib/hooks"
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Error } from "@/components/error"
 import {
@@ -20,6 +19,7 @@ import { usePropertyCanBe } from "@/components/editor/property-hooks"
 import { camelCaseReadable } from "@/lib/utils"
 import { MarkdownComment } from "@/components/markdown-comment"
 import HelpTooltip from "@/components/help-tooltip"
+import useSWR from "swr"
 
 const AddPropertyModalEntry = memo(function AddPropertyModalEntry({
     property,
@@ -84,35 +84,34 @@ export function SelectProperty({
         }
     }, [_open])
 
-    const possiblePropertiesResolver = useCallback(
-        async (types: string[]) => {
-            if (crateVerifyReady) {
-                const data = bypassRestrictions
-                    ? await worker.execute("getAllProperties", { onlyReferences })
-                    : await worker.execute(
-                          "getPossibleEntityProperties",
-                          types
-                              .map((type) => crateContext.resolve(type))
-                              .filter((s) => typeof s === "string") as string[],
-                          { onlyReferences }
-                      )
-                return data
-                    .map((s) => {
-                        return {
-                            ...s,
-                            range: s.range.map((r) => r["@id"]),
-                            rangeReadable: s.range
-                                .map((r) => r["@id"])
-                                .map((r) => crateContext.reverse(r))
-                                .filter((r) => typeof r === "string"),
-                            propertyName: crateContext.reverse(s["@id"])
-                        }
-                    })
-                    .filter((s) => typeof s.propertyName === "string") as PossibleProperty[]
-            }
-        },
-        [bypassRestrictions, crateContext, crateVerifyReady, onlyReferences, worker]
-    )
+    const possiblePropertiesResolver = useCallback(async () => {
+        const types = bypassRestrictions ? ["*"] : typeArray
+
+        if (crateVerifyReady) {
+            const data = bypassRestrictions
+                ? await worker.execute("getAllProperties", { onlyReferences })
+                : await worker.execute(
+                      "getPossibleEntityProperties",
+                      types
+                          .map((type) => crateContext.resolve(type))
+                          .filter((s) => typeof s === "string") as string[],
+                      { onlyReferences }
+                  )
+            return data
+                .map((s) => {
+                    return {
+                        ...s,
+                        range: s.range.map((r) => r["@id"]),
+                        rangeReadable: s.range
+                            .map((r) => r["@id"])
+                            .map((r) => crateContext.reverse(r))
+                            .filter((r) => typeof r === "string"),
+                        propertyName: crateContext.reverse(s["@id"])
+                    }
+                })
+                .filter((s) => typeof s.propertyName === "string") as PossibleProperty[]
+        }
+    }, [bypassRestrictions, crateContext, crateVerifyReady, onlyReferences, typeArray, worker])
 
     const handleBypassCheckedChange = useCallback((s: CheckedState) => {
         if (!s) {
@@ -123,9 +122,11 @@ export function SelectProperty({
     const {
         data: possibleProperties,
         error: possiblePropertiesError,
-        isPending: possiblePropertiesPending
-    } = useAsync(
-        crateVerifyReady ? (bypassRestrictions ? ["*"] : typeArray) : null,
+        isLoading: possiblePropertiesPending
+    } = useSWR(
+        crateVerifyReady
+            ? `possible-properties-${bypassRestrictions}-${typeArray.join(",")}`
+            : null,
         possiblePropertiesResolver
     )
 

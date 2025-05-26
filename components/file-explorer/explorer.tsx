@@ -27,9 +27,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
-import { useAsync } from "@/lib/hooks"
 import { ActionButton } from "@/components/actions/action-buttons"
 import { Button } from "@/components/ui/button"
+import useSWR from "swr"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -38,19 +38,18 @@ export function FileExplorer() {
     const entities = useEditorState((store) => store.entities)
     const downloadError = useFileExplorerState((store) => store.downloadError)
 
-    const filesListResolver = useCallback(
-        async (crateId: string) => {
-            if (crateData.serviceProvider) {
-                return await crateData.serviceProvider.getCrateFilesList(crateId)
-            }
-        },
-        [crateData.serviceProvider]
-    )
+    const filesListResolver = useCallback(async () => {
+        if (crateData.serviceProvider && crateData.crateId) {
+            return await crateData.serviceProvider.getCrateFilesList(crateData.crateId)
+        }
+    }, [crateData.crateId, crateData.serviceProvider])
 
-    const { data, error, isPending, revalidate } = useAsync(
-        crateData.crateId || null,
-        filesListResolver
-    )
+    const {
+        data,
+        error,
+        isLoading: isPending,
+        mutate: revalidate
+    } = useSWR(crateData.crateId ? "files-list-" + crateData.crateId : null, filesListResolver)
 
     const revalidateRef = useRef(revalidate)
     useEffect(() => {
@@ -123,7 +122,7 @@ export function FileExplorer() {
                             <ChevronsUpDown className={"size-4 mr-2"} /> Expand All
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem disabled={isPending} onClick={revalidate}>
+                        <DropdownMenuItem disabled={isPending} onClick={() => revalidate()}>
                             <RefreshCw
                                 className={`size-4 mr-2 ${isPending ? "animate-spin" : ""}`}
                             />{" "}

@@ -33,7 +33,7 @@ import { useRouter } from "next/navigation"
 import { CrateEntry } from "@/components/landing/crate-entry"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useAsync, useDemoCrateLoader, useRecentCrates } from "@/lib/hooks"
+import { useDemoCrateLoader, useRecentCrates } from "@/lib/hooks"
 import { DeleteCrateModal } from "@/components/landing/delete-crate-modal"
 import { CreateCrateModal } from "@/components/landing/create-crate-modal"
 import { Error } from "@/components/error"
@@ -42,6 +42,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
+import useSWR from "swr"
 
 export default function EditorLandingPage() {
     const router = useRouter()
@@ -188,8 +189,8 @@ export default function EditorLandingPage() {
     const {
         data: storedCrates,
         error: storedCratesError,
-        revalidate
-    } = useAsync("", storedCratesResolver)
+        mutate: revalidate
+    } = useSWR("stored-crates", storedCratesResolver)
 
     const searchInfo = useMemo(() => {
         return search ? (
