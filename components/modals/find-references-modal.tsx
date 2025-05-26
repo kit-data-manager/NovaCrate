@@ -10,11 +10,10 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { memo, useCallback, useEffect, useMemo, useState } from "react"
 import { camelCaseReadable, getEntityDisplayName } from "@/lib/utils"
-import { Error } from "@/components/error"
 import { useEditorState } from "@/lib/state/editor-state"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { EntityIcon } from "@/components/entity-icon"
-import { useAsync, useGoToEntityEditor } from "@/lib/hooks"
+import { useGoToEntityEditor } from "@/lib/hooks"
 
 interface ReferencingEntity extends IEntity {
     "@propertyNameReadable": string
@@ -97,9 +96,9 @@ export function FindReferencesModalInner({
     )
 
     const referencesResolver = useCallback(
-        async (entities: Map<string, IEntity>) => {
+        (entities: Map<string, IEntity>) => {
             const result = new Set<ReferencingEntity>()
-            for (const [_, entity] of entities) {
+            for (const [, entity] of entities) {
                 for (const [propertyName, prop] of Object.entries(entity)) {
                     function handleEntry(prop: EntitySinglePropertyTypes, index?: number) {
                         if (typeof prop === "object" && "@id" in prop && prop["@id"] === entityId) {
@@ -123,11 +122,10 @@ export function FindReferencesModalInner({
         [entityId]
     )
 
-    const {
-        data: referencingEntities,
-        error: referencingEntitiesError,
-        isPending: referencingEntitiesPending
-    } = useAsync(open ? entities : null, referencesResolver)
+    const referencingEntities = useMemo(() => {
+        if (!open) return null
+        return referencesResolver(entities)
+    }, [entities, open, referencesResolver])
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -136,18 +134,12 @@ export function FindReferencesModalInner({
                     <DialogTitle>References</DialogTitle>
                 </DialogHeader>
 
-                <Error
-                    className="mt-4"
-                    title="Error while searching for references"
-                    error={referencingEntitiesError}
-                />
-
                 <Command className="py-2">
                     <CommandInput placeholder="Search..." />
                     <CommandList>
                         <CommandEmpty>No results found.</CommandEmpty>
                         <CommandGroup>
-                            {open && referencingEntities && !referencingEntitiesPending ? (
+                            {open && referencingEntities ? (
                                 referencingEntities.map((referencingEntity) => {
                                     return (
                                         <FindReferencesModalEntry

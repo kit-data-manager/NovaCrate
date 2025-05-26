@@ -4,7 +4,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { usePathname, useRouter } from "next/navigation"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { encodeFilePath, isEqual, isRootEntity } from "@/lib/utils"
+import { encodeFilePath, isRootEntity } from "@/lib/utils"
 import { useGraphState } from "@/components/providers/graph-state-provider"
 import { Action, notFoundAction } from "@/lib/state/actions"
 import { useActionsStore } from "@/components/providers/actions-provider"
@@ -78,59 +78,6 @@ export function useRecentCrates() {
     }, [])
 
     return { recentCrates, addRecentCrate, removeFromRecentCrates }
-}
-
-/**
- * Wrapper to evaluate an asynchronous function and provide its output
- * Will automatically rerun the function when the input changes.
- * When input is null, the resolver will not be executed
- * @param input Input for the resolver. Will trigger rerun when changed. When set to null, the resolver will not be executed
- * @param resolver Asynchronous function to run with the input
- */
-export function useAsync<I, O>(
-    input: I | null,
-    resolver: (input: I) => Promise<O>
-): { data: O | undefined; error: unknown; isPending: boolean; revalidate(): void } {
-    const [internalState, setInternalState] = useState<O | undefined>(undefined)
-    const [pending, setPending] = useState(false)
-    const [error, setError] = useState<unknown>()
-
-    const lastInput = useRef<I | null>(null)
-
-    const action = useCallback(
-        (input: I) => {
-            setPending(true)
-
-            resolver(input)
-                .then((output) => {
-                    setInternalState(output)
-                    setError(undefined)
-                })
-                .catch(setError)
-                .finally(() => {
-                    setPending(false)
-                })
-        },
-        [resolver]
-    )
-
-    useEffect(() => {
-        if (isEqual(input, lastInput.current)) return
-        lastInput.current = input
-
-        if (input !== null) {
-            action(input)
-        }
-    }, [action, input, resolver])
-
-    return {
-        data: internalState,
-        error,
-        isPending: pending,
-        revalidate: () => {
-            if (lastInput.current !== null) action(lastInput.current)
-        }
-    }
 }
 
 /**

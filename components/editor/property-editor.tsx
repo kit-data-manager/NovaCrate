@@ -15,12 +15,12 @@ import { SinglePropertyEditor } from "@/components/editor/single-property-editor
 import { camelCaseReadable } from "@/lib/utils"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useAsync } from "@/lib/hooks"
 import { Trash, TriangleAlert } from "lucide-react"
 import { MarkdownComment } from "@/components/markdown-comment"
 import { getDefaultDate } from "@/components/editor/text-fields/date-field"
 import { Pagination } from "@/components/pagination"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import useSWR from "swr"
 
 export interface EntityEditorProperty {
     propertyName: string
@@ -146,42 +146,39 @@ export const PropertyEditor = memo(function PropertyEditor({
         [onAddPropertyEntry, property.propertyName]
     )
 
-    const referenceTypeRangeResolver = useCallback(
-        async (propertyName: string) => {
-            if (propertyName.startsWith("@")) return []
-            if (crateVerifyReady) {
-                const resolved = crateContext.resolve(propertyName)
-                if (!resolved) throw "Property not defined in context"
-                return await worker.execute("getPropertyRange", resolved)
-            }
-        },
-        [crateContext, crateVerifyReady, worker]
-    )
+    const referenceTypeRangeResolver = useCallback(async () => {
+        if (property.propertyName.startsWith("@")) return []
+        if (crateVerifyReady) {
+            const resolved = crateContext.resolve(property.propertyName)
+            if (!resolved) throw "Property not defined in context"
+            return await worker.execute("getPropertyRange", resolved)
+        }
+    }, [crateContext, crateVerifyReady, property.propertyName, worker])
 
-    const { data: propertyRange, error: propertyRangeError } = useAsync(
-        crateVerifyReady ? property.propertyName : null,
+    const { data: propertyRange, error: propertyRangeError } = useSWR(
+        crateVerifyReady ? "property-type-range-" + property.propertyName : null,
         referenceTypeRangeResolver
     )
 
-    const propertyCommentResolver = useCallback(
-        async (propertyId: string) => {
-            if (propertyId === "@id") return "The unique identifier of the entity"
-            if (propertyId === "@type")
-                return "The type defines which properties can occur on the entity"
-            const resolved = crateContext.resolve(propertyId)
-            if (!resolved) throw "Property not defined in context"
-            const comment = await worker.execute("getPropertyComment", resolved)
-            if (!comment) throw "Could not find comment"
-            return comment
-        },
-        [crateContext, worker]
-    )
+    const propertyCommentResolver = useCallback(async () => {
+        if (property.propertyName === "@id") return "The unique identifier of the entity"
+        if (property.propertyName === "@type")
+            return "The type defines which properties can occur on the entity"
+        const resolved = crateContext.resolve(property.propertyName)
+        if (!resolved) throw "Property not defined in context"
+        const comment = await worker.execute("getPropertyComment", resolved)
+        if (!comment) throw "Could not find comment"
+        return comment
+    }, [crateContext, property.propertyName, worker])
 
     const {
         data: comment,
         error: commentError,
-        isPending: commentIsPending
-    } = useAsync(crateVerifyReady ? property.propertyName : null, propertyCommentResolver)
+        isLoading: commentIsPending
+    } = useSWR(
+        crateVerifyReady ? "property-comment-" + property.propertyName : null,
+        propertyCommentResolver
+    )
 
     const [expandComment, setExpandComment] = useState(false)
 
