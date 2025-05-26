@@ -14,6 +14,7 @@ import DefaultActions from "@/components/actions/default-actions"
 import { ActionKeyboardShortcuts } from "@/components/actions/action-keyboard-shortcuts"
 import EntityActions from "@/components/actions/entity-actions"
 import { EntityEditorTabsSupervisor } from "@/components/editor/entity-editor-tabs-supervisor"
+import "@/lib/debug-tools"
 
 export default function EditorLayout(props: PropsWithChildren) {
     return (
