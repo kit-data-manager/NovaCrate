@@ -95,7 +95,13 @@ export function EntityBrowserItem(props: { entityId: string }) {
         if (entity) setPreviewingFilePath(entity["@id"])
     }, [entity, setPreviewingFilePath])
 
-    if (!entity) return null
+    if (!entity) {
+        console.warn(
+            "EntityBrowserItem could not be rendered because the entity does not exist:",
+            props.entityId
+        )
+        return null
+    }
 
     return (
         <ContextMenu>
@@ -157,8 +163,8 @@ export function EntityBrowserSection(props: {
         (store) => {
             return Array.from(store.entities.entries())
                 .map(([key, item]) => [key, item] as [string, IEntity])
-                .filter(([_, item]) => !isRootEntity(item) && !isRoCrateMetadataEntity(item))
-                .filter(([_, item]) =>
+                .filter(([, item]) => !isRootEntity(item) && !isRoCrateMetadataEntity(item))
+                .filter(([, item]) =>
                     props.section === "Data" ? isDataEntity(item) : isContextualEntity(item)
                 )
                 .sort((a, b) =>
@@ -167,9 +173,9 @@ export function EntityBrowserSection(props: {
         },
         (a, b) => {
             if (a.length !== b.length) return false
-            a.forEach((self, i) => {
-                if (self[0] !== b[i][0] || self[1] !== b[i][1]) return false
-            })
+            for (let i = 0; i < a.length; i++) {
+                if (a[i][0] !== b[i][0] || a[i][1] !== b[i][1]) return false
+            }
             return true
         }
     )

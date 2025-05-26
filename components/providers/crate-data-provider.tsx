@@ -8,7 +8,7 @@ import { applyServerDifferences } from "@/lib/ensure-sync"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { TriangleAlert } from "lucide-react"
-import { getEntityDisplayName } from "@/lib/utils"
+import { changeEntityId, getEntityDisplayName } from "@/lib/utils"
 import { EntityIcon } from "@/components/entity-icon"
 import { useInterval } from "usehooks-ts"
 
@@ -30,6 +30,7 @@ export interface ICrateDataProvider {
         progressCallback?: (current: number, max: number, errors: unknown[]) => void
     ): Promise<boolean>
     deleteEntity(entity: IEntity): Promise<boolean>
+    renameEntity(entityData: IEntity, newEntityId: string): Promise<boolean>
     addCustomContextPair(key: string, value: string): Promise<void>
     removeCustomContextPair(key: string): Promise<void>
     saveRoCrateMetadataJSON(json: string): Promise<void>
@@ -53,6 +54,9 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     deleteEntity: () => {
+        return Promise.reject("Crate Data Provider not mounted yet")
+    },
+    renameEntity: () => {
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     createFileEntity(): Promise<boolean> {
@@ -392,6 +396,39 @@ export function CrateDataProvider({
         [data, mutate, crateId, serviceProvider]
     )
 
+    const renameEntity = useCallback(
+        async (entityData: IEntity, newEntityId: string) => {
+            if (crateId) {
+                try {
+                    const renameResult = await serviceProvider.renameEntity(
+                        crateId,
+                        entityData,
+                        newEntityId
+                    )
+
+                    if (data) {
+                        const newData = produce<ICrate>(data, (newData: Draft<ICrate>) => {
+                            changeEntityId(newData["@graph"], entityData["@id"], newEntityId)
+                        })
+
+                        await mutate(newData)
+                    }
+
+                    return renameResult
+                } catch (e) {
+                    console.error("Error occurred while trying to rename entity", e)
+                    setSaveError(
+                        produce((draft) => {
+                            draft.set(entityData["@id"], e)
+                        })
+                    )
+                    return false
+                }
+            } else return false
+        },
+        [data, mutate, crateId, serviceProvider]
+    )
+
     const addCustomContextPair = useCallback(
         async (key: string, value: string) => {
             if (crateId) {
@@ -480,6 +517,7 @@ export function CrateDataProvider({
                 createFileEntity,
                 createFolderEntity,
                 deleteEntity,
+                renameEntity,
                 isSaving,
                 reload: mutate,
                 importEntityFromOrcid,
