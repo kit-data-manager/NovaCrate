@@ -142,10 +142,7 @@ export function EntityBrowserItem(props: { entityId: string }) {
                     <Undo2 className="size-4 mr-2" /> Revert Changes
                 </ContextMenuItem>
                 <ContextMenuSeparator />
-                <ContextMenuItem
-                    className="bg-destructive text-destructive-foreground"
-                    onClick={onDeleteClick}
-                >
+                <ContextMenuItem variant={"destructive"} onClick={onDeleteClick}>
                     <Trash className="size-4 mr-2" /> Delete
                 </ContextMenuItem>
             </ContextMenuContent>

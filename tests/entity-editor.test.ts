@@ -268,7 +268,10 @@ test("Add Reference and follow it", async ({ page }) => {
     - button
     - text: Type
     - paragraph: The type defines which properties can occur on the entity
-    - text: File Name
+    - button "File"
+    - button
+    - button "Add another type"
+    - text: Name
     - paragraph: The name of the item.
     - textbox: JSON Result File
     - button

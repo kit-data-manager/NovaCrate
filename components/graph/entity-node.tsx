@@ -163,7 +163,7 @@ export default function EntityNode({
                         </ContextMenuItem>
                         <ContextMenuSeparator />
                         <ContextMenuItem
-                            className="bg-destructive text-destructive-foreground"
+                            variant={"destructive"}
                             onClick={() => showDeleteEntityModal(data.entityId)}
                         >
                             <Trash className="size-4 mr-2" />

@@ -17,9 +17,9 @@ import { Error } from "@/components/error"
 import { Button } from "@/components/ui/button"
 import { Blocks } from "lucide-react"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useAsync } from "@/lib/hooks"
 import { COMMON_PROPERTIES } from "@/lib/constants"
 import HelpTooltip from "@/components/help-tooltip"
+import useSWR from "swr"
 
 export function TypeSelect({
     open,
@@ -30,7 +30,7 @@ export function TypeSelect({
     open: boolean
     restrictToClasses?: SlimClass[]
     onTypeSelect: (value: string) => void
-    setFullTypeBrowser(open: boolean): void
+    setFullTypeBrowser?: (open: boolean) => void
 }) {
     const crateContext = useEditorState((store) => store.crateContext)
     const { worker } = useContext(CrateVerifyContext)
@@ -55,9 +55,12 @@ export function TypeSelect({
 
     const {
         data: types,
-        isPending,
+        isLoading,
         error
-    } = useAsync([bypassRestrictions, restrictToClasses], typesResolver)
+    } = useSWR(
+        `type-select-${restrictToClasses?.map((c) => c["@id"]).join(",") || "full"}-${bypassRestrictions}`,
+        typesResolver
+    )
 
     useEffect(() => {
         if (types && types.length === 1) {
@@ -91,7 +94,7 @@ export function TypeSelect({
                     <CommandEmpty>No results found.</CommandEmpty>
                     {!commonTypes || commonTypes.length > 0 ? (
                         <CommandGroup heading="Common Types">
-                            {open && !isPending && commonTypes ? (
+                            {open && !isLoading && commonTypes ? (
                                 commonTypes.map((e) => (
                                     <CreateEntityModalEntry
                                         key={e["@id"]}
@@ -109,7 +112,7 @@ export function TypeSelect({
                         </CommandGroup>
                     ) : null}
                     <CommandGroup heading="All Types">
-                        {open && !isPending && allTypes ? (
+                        {open && !isLoading && allTypes ? (
                             allTypes.map((e) => (
                                 <CreateEntityModalEntry
                                     key={e["@id"]}
@@ -146,9 +149,11 @@ export function TypeSelect({
                     ) : null}
                 </div>
 
-                <Button variant="secondary" onClick={() => setFullTypeBrowser(false)}>
-                    <Blocks className="size-4 mr-2" /> Quick Select
-                </Button>
+                {setFullTypeBrowser && (
+                    <Button variant="secondary" onClick={() => setFullTypeBrowser(false)}>
+                        <Blocks className="size-4 mr-2" /> Quick Select
+                    </Button>
+                )}
             </div>
         </>
     )

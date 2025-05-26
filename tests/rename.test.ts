@@ -18,7 +18,10 @@ test("Rename Contextual Entity", async ({ page }) => {
     - button
     - text: Type
     - paragraph: The type defines which properties can occur on the entity
-    - text: Place Name
+    - button "Place"
+    - button
+    - button "Add another type"
+    - text: Name
     - paragraph: The name of the item.
     - button
     - textbox: Karlsruhe
