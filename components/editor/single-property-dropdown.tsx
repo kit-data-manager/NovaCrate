@@ -92,7 +92,7 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem variant="destructive" onClick={() => onRemoveEntry()}>
-                    <Trash className="size-4 mr-2" /> Delete Entry
+                    <Trash className="size-4 mr-2" /> Remove Entry
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

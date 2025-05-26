@@ -27,15 +27,8 @@ export const SinglePropertyEditor = memo(function SinglePropertyEditor({
     value,
     onRemovePropertyEntry
 }: SinglePropertyEditorProps) {
-    const onReferenceChange = useCallback(
-        (newValue: IReference) => {
-            onModifyProperty(propertyName, valueIndex, newValue)
-        },
-        [onModifyProperty, propertyName, valueIndex]
-    )
-
-    const onTextChange = useCallback(
-        (newValue: string) => {
+    const onChange = useCallback(
+        (newValue: EntitySinglePropertyTypes) => {
             onModifyProperty(propertyName, valueIndex, newValue)
         },
         [onModifyProperty, propertyName, valueIndex]
@@ -57,7 +50,10 @@ export const SinglePropertyEditor = memo(function SinglePropertyEditor({
         [onModifyProperty, propertyName, value, valueIndex]
     )
 
-    if (propertyName === "@type") return <TypeField value={value as string} onChange={() => {}} />
+    if (propertyName === "@type")
+        return (
+            <TypeField value={value as string} onChange={onChange} onRemoveEntry={onRemoveEntry} />
+        )
 
     if (propertyName === "@id") return <IDField value={value as string} />
 
@@ -66,7 +62,7 @@ export const SinglePropertyEditor = memo(function SinglePropertyEditor({
             <ReferenceField
                 entityId={entityId}
                 value={value}
-                onChange={onReferenceChange}
+                onChange={onChange}
                 onChangeType={onChangeType}
                 propertyName={propertyName}
                 valueIdx={valueIndex}
@@ -84,7 +80,7 @@ export const SinglePropertyEditor = memo(function SinglePropertyEditor({
         return (
             <TextBaseField
                 value={value}
-                onChange={onTextChange}
+                onChange={onChange}
                 onChangeType={onChangeType}
                 propertyRange={propertyRange}
                 onRemoveEntry={onRemoveEntry}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useContext, useMemo } from "react"
+import { useCallback, useContext, useMemo, useState } from "react"
 import {
     mapEntityToProperties,
     PropertyEditor,
@@ -27,6 +27,7 @@ import { useGoToFileExplorer, useGoToGraph } from "@/lib/hooks"
 import { EntityBadge } from "../entity-badge"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useShallow } from "zustand/react/shallow"
+import { TypeSelectModal } from "@/components/modals/type-select-modal"
 
 export function EntityEditor({
     entityId,
@@ -44,6 +45,17 @@ export function EntityEditor({
     const removePropertyEntry = useEditorState((store) => store.removePropertyEntry)
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
+
+    // Type selection for @type fields
+    const [typeSelectModalOpen, setTypeSelectModalOpen] = useState(false)
+
+    const onTypeFieldTypeSelect = useCallback(
+        (type: string) => {
+            setTypeSelectModalOpen(false)
+            addPropertyEntry(entityId, "@type", type)
+        },
+        [addPropertyEntry, entityId]
+    )
 
     const isDataEntity = useMemo(() => {
         if (!entity) return false
@@ -80,7 +92,11 @@ export function EntityEditor({
 
     const onPropertyAddEntry = useCallback(
         (propertyName: string, type: PropertyEditorTypes) => {
-            addPropertyEntry(entityId, propertyName, type)
+            if (propertyName === "@type") {
+                setTypeSelectModalOpen(true)
+            } else {
+                addPropertyEntry(entityId, propertyName, type)
+            }
         },
         [addPropertyEntry, entityId]
     )
@@ -165,6 +181,12 @@ export function EntityEditor({
 
     return (
         <div className="w-full h-full flex flex-col">
+            <TypeSelectModal
+                onOpenChange={setTypeSelectModalOpen}
+                open={typeSelectModalOpen}
+                onTypeSelect={onTypeFieldTypeSelect}
+            />
+
             <EntityEditorHeader
                 hasUnsavedChanges={hasUnsavedChanges}
                 isSaving={isSaving}

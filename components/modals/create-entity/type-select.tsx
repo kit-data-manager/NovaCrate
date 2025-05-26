@@ -30,7 +30,7 @@ export function TypeSelect({
     open: boolean
     restrictToClasses?: SlimClass[]
     onTypeSelect: (value: string) => void
-    setFullTypeBrowser(open: boolean): void
+    setFullTypeBrowser?: (open: boolean) => void
 }) {
     const crateContext = useEditorState((store) => store.crateContext)
     const { worker } = useContext(CrateVerifyContext)
@@ -146,9 +146,11 @@ export function TypeSelect({
                     ) : null}
                 </div>
 
-                <Button variant="secondary" onClick={() => setFullTypeBrowser(false)}>
-                    <Blocks className="size-4 mr-2" /> Quick Select
-                </Button>
+                {setFullTypeBrowser && (
+                    <Button variant="secondary" onClick={() => setFullTypeBrowser(false)}>
+                        <Blocks className="size-4 mr-2" /> Quick Select
+                    </Button>
+                )}
             </div>
         </>
     )

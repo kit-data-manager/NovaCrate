@@ -73,7 +73,8 @@ export enum PropertyEditorTypes {
     Number,
     Text,
     Date,
-    Reference
+    Reference,
+    Type // for @type property
 }
 
 export function getPropertyTypeDefaultValue(type: PropertyEditorTypes): EntitySinglePropertyTypes {
