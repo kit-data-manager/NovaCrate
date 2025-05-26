@@ -68,10 +68,7 @@ function EntityMenu() {
                 <ActionMenubarItem actionId="entity.add-property" />
                 <ActionMenubarItem actionId="entity.find-references" />
                 <MenubarSeparator />
-                <ActionMenubarItem
-                    actionId="entity.delete"
-                    className="bg-destructive text-destructive-foreground"
-                />
+                <ActionMenubarItem actionId="entity.delete" variant={"destructive"} />
             </MenubarContent>
         </MenubarMenu>
     ) : null
@@ -92,7 +89,7 @@ export function NavHeader() {
         healthTestError
     } = useContext(CrateDataContext)
     // const { undo, redo } = useEditorState.temporal.getState()
-    const [_, copyFn] = useCopyToClipboard()
+    const [, copyFn] = useCopyToClipboard()
 
     const copy = useCallback(
         (text: string) => {

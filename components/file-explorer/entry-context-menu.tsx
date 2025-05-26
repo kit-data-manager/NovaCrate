@@ -36,7 +36,7 @@ export function EntryContextMenu({
     const { serviceProvider, crateId } = useContext(CrateDataContext)
     const setDownloadError = useFileExplorerState((store) => store.setDownloadError)
     const { showCreateEntityModal, showDeleteEntityModal } = useContext(GlobalModalContext)
-    const [_, copy] = useCopyToClipboard()
+    const [, copy] = useCopyToClipboard()
 
     const copyText = useCallback(
         (text: string) => {
@@ -160,7 +160,7 @@ export function EntryContextMenu({
 
             {entity || filePath ? (
                 <ContextMenuItem
-                    className="bg-destructive text-destructive-foreground"
+                    variant={"destructive"}
                     onClick={() => showDeleteEntityModal(entity?.["@id"] || filePath!)}
                 >
                     <Trash className="size-4 mr-2" /> Delete

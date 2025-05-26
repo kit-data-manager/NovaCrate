@@ -50,7 +50,7 @@ export function CrateEntry({
     const { serviceProvider } = useContext(CrateDataContext)
     const [crateDetails, setCrateDetails] = useState<CrateDetails | undefined>()
     const [error, setError] = useState<unknown>()
-    const [_, copyText] = useCopyToClipboard()
+    const [, copyText] = useCopyToClipboard()
 
     useEffect(() => {
         const content = window.localStorage.getItem(crateDetailsKey(crateId))
@@ -184,7 +184,7 @@ export function CrateEntry({
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            className="bg-destructive text-destructive-foreground"
+                            variant={"destructive"}
                             onClick={() => {
                                 deleteCrate(crateId)
                             }}
