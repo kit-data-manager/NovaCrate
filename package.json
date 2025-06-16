@@ -61,7 +61,7 @@
     "ro-crate-html": "^0.1.5",
     "sonner": "^2.0.5",
     "swr": "^2.2.5",
-    "tailwind-merge": "^3.2.0",
+    "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
     "use-file-picker": "^2.1.2",
     "use-sync-external-store": "^1.5.0",
