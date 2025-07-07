@@ -9,7 +9,6 @@ import {
     getEntityDisplayName,
     isContextualEntity,
     isDataEntity,
-    isFileDataEntity,
     isRoCrateMetadataEntity,
     isRootEntity,
     toArray
@@ -19,15 +18,11 @@ import {
     ChevronsDownUp,
     ChevronsUpDown,
     EllipsisVertical,
-    Eye,
     LayoutGrid,
-    PackageSearch,
-    Save,
-    Trash,
-    Undo2
+    PackageSearch
 } from "lucide-react"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
-import { EntityIcon } from "./entity-icon"
+import { EntityIcon } from "./entity/entity-icon"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
 import {
     DropdownMenu,
@@ -43,15 +38,8 @@ import { ActionButton, ActionDropdownMenuItem } from "@/components/actions/actio
 import { PropertyOverview } from "@/components/editor/property-overview"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import {
-    ContextMenu,
-    ContextMenuContent,
-    ContextMenuItem,
-    ContextMenuSeparator,
-    ContextMenuTrigger
-} from "@/components/ui/context-menu"
-import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { useStoreWithEqualityFn } from "zustand/traditional"
+import { EntityContextMenu } from "@/components/entity/entity-context-menu"
 
 type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -59,16 +47,8 @@ export function EntityBrowserItem(props: { entityId: string }) {
     const showEntityType = useEntityBrowserSettings((store) => store.showEntityType)
     const showIdInsteadOfName = useEntityBrowserSettings((store) => store.showIdInsteadOfName)
     const openTab = useEntityEditorTabs((store) => store.openTab)
-    const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
     const entity = useEditorState((state) => state.entities.get(props.entityId))
-    const { saveEntity } = useContext(CrateDataContext)
-    const revertEntity = useEditorState((store) => store.revertEntity)
-    const { showDeleteEntityModal } = useContext(GlobalModalContext)
     const diff = useEditorState((state) => state.getEntityDiff(props.entityId))
-
-    const canHavePreview = useMemo(() => {
-        return entity ? isFileDataEntity(entity) : false
-    }, [entity])
 
     const hasUnsavedChanges = useMemo(() => {
         return entity ? diff !== Diff.None : false
@@ -79,22 +59,6 @@ export function EntityBrowserItem(props: { entityId: string }) {
         openTab(createEntityEditorTab(entity), true)
     }, [openTab, entity])
 
-    const onSaveClick = useCallback(() => {
-        if (entity) saveEntity(entity).then()
-    }, [entity, saveEntity])
-
-    const onRevertClick = useCallback(() => {
-        if (entity) revertEntity(entity["@id"])
-    }, [entity, revertEntity])
-
-    const onDeleteClick = useCallback(() => {
-        if (entity) showDeleteEntityModal(entity["@id"])
-    }, [entity, showDeleteEntityModal])
-
-    const onPreviewClick = useCallback(() => {
-        if (entity) setPreviewingFilePath(entity["@id"])
-    }, [entity, setPreviewingFilePath])
-
     if (!entity) {
         console.warn(
             "EntityBrowserItem could not be rendered because the entity does not exist:",
@@ -104,49 +68,26 @@ export function EntityBrowserItem(props: { entityId: string }) {
     }
 
     return (
-        <ContextMenu>
-            <ContextMenuTrigger asChild>
-                <Button
-                    size="sm"
-                    variant="list-entry"
-                    className="group/entityBrowserItem shrink-0"
-                    onClick={openSelf}
-                >
-                    <EntityIcon entity={entity} unsavedChanges={hasUnsavedChanges} />
-                    <div className="truncate">
-                        <span className="group-hover/entityBrowserItem:underline underline-offset-2">
-                            {showIdInsteadOfName ? props.entityId : getEntityDisplayName(entity)}
+        <EntityContextMenu entity={entity} asChild>
+            <Button
+                size="sm"
+                variant="list-entry"
+                className="group/entityBrowserItem shrink-0"
+                onClick={openSelf}
+            >
+                <EntityIcon entity={entity} unsavedChanges={hasUnsavedChanges} />
+                <div className="truncate">
+                    <span className="group-hover/entityBrowserItem:underline underline-offset-2">
+                        {showIdInsteadOfName ? props.entityId : getEntityDisplayName(entity)}
+                    </span>
+                    {showEntityType ? (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                            {toArray(entity["@type"]).join(", ")}
                         </span>
-                        {showEntityType ? (
-                            <span className="ml-2 text-xs text-muted-foreground">
-                                {toArray(entity["@type"]).join(", ")}
-                            </span>
-                        ) : null}
-                    </div>
-                </Button>
-            </ContextMenuTrigger>
-            <ContextMenuContent>
-                <ContextMenuItem onClick={openSelf}>
-                    <EntityIcon entity={entity} size="sm" /> Open Tab
-                </ContextMenuItem>
-                {canHavePreview ? (
-                    <ContextMenuItem onClick={onPreviewClick}>
-                        <Eye className="size-4 mr-2" /> Preview
-                    </ContextMenuItem>
-                ) : null}
-                <ContextMenuSeparator />
-                <ContextMenuItem onClick={onSaveClick} disabled={!hasUnsavedChanges}>
-                    <Save className="size-4 mr-2" /> Save Entity
-                </ContextMenuItem>
-                <ContextMenuItem onClick={onRevertClick} disabled={!hasUnsavedChanges}>
-                    <Undo2 className="size-4 mr-2" /> Revert Changes
-                </ContextMenuItem>
-                <ContextMenuSeparator />
-                <ContextMenuItem variant={"destructive"} onClick={onDeleteClick}>
-                    <Trash className="size-4 mr-2" /> Delete
-                </ContextMenuItem>
-            </ContextMenuContent>
-        </ContextMenu>
+                    ) : null}
+                </div>
+            </Button>
+        </EntityContextMenu>
     )
 }
 

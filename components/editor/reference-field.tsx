@@ -8,7 +8,7 @@ import { GlobalModalContext } from "@/components/providers/global-modals-provide
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
-import { EntityIcon } from "@/components/entity-icon"
+import { EntityIcon } from "@/components/entity/entity-icon"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 

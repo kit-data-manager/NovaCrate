@@ -12,7 +12,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from "react"
 import { camelCaseReadable, getEntityDisplayName } from "@/lib/utils"
 import { useEditorState } from "@/lib/state/editor-state"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
-import { EntityIcon } from "@/components/entity-icon"
+import { EntityIcon } from "@/components/entity/entity-icon"
 import { useGoToEntityEditor } from "@/lib/hooks"
 
 interface ReferencingEntity extends IEntity {

@@ -7,7 +7,7 @@ import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { getEntityDisplayName } from "@/lib/utils"
 import { Error } from "@/components/error"
 import { RO_CRATE_FILE } from "@/lib/constants"
-import { EntityIcon } from "@/components/entity-icon"
+import { EntityIcon } from "@/components/entity/entity-icon"
 
 export const DeleteEntityModal = memo(function DeleteEntityModal({
     open,

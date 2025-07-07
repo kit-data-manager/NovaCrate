@@ -1,7 +1,7 @@
 import { Handle, Position } from "reactflow"
 import React, { useContext, useMemo } from "react"
 import { camelCaseReadable, Diff, getEntityDisplayName, toArray } from "@/lib/utils"
-import { EntityIcon } from "@/components/entity-icon"
+import { EntityIcon } from "@/components/entity/entity-icon"
 import { Delete, Plus, Save, Trash, Undo2 } from "lucide-react"
 import {
     ContextMenu,
