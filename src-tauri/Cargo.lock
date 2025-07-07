@@ -1382,17 +1382,6 @@ dependencies = [
 
 [[package]]
 name = "json-patch"
-version = "1.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec9ad60d674508f3ca8f380a928cfe7b096bc729c4e2dbfe3852bc45da3ab30b"
-dependencies = [
- "serde",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
-name = "json-patch"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b1fb8864823fad91877e6caea0baca82e49e8db50f8e5c9f9a453e27d3330fc"
@@ -2674,15 +2663,15 @@ dependencies = [
 
 [[package]]
 name = "tauri-build"
-version = "1.5.2"
+version = "1.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab30cba12974d0f9b09794f61e72cad6da2142d3ceb81e519321bab86ce53312"
+checksum = "2db08694eec06f53625cfc6fff3a363e084e5e9a238166d2989996413c346453"
 dependencies = [
  "anyhow",
  "cargo_toml",
  "dirs-next",
  "heck 0.5.0",
- "json-patch 1.4.0",
+ "json-patch",
  "semver",
  "serde",
  "serde_json",
@@ -2700,7 +2689,7 @@ dependencies = [
  "base64 0.21.7",
  "brotli",
  "ico",
- "json-patch 2.0.0",
+ "json-patch",
  "plist",
  "png",
  "proc-macro2",
@@ -2784,7 +2773,7 @@ dependencies = [
  "heck 0.5.0",
  "html5ever",
  "infer",
- "json-patch 2.0.0",
+ "json-patch",
  "kuchikiki",
  "log",
  "memchr",
