@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { TriangleAlert } from "lucide-react"
 import { changeEntityId, getEntityDisplayName } from "@/lib/utils"
-import { EntityIcon } from "@/components/entity-icon"
+import { EntityIcon } from "@/components/entity/entity-icon"
 import { useInterval } from "usehooks-ts"
 
 const CRATE_ID_STORAGE_KEY = "crate-id"

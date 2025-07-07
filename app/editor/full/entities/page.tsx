@@ -1,7 +1,7 @@
 "use client"
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
-import { EntityBrowser } from "@/components/entity-browser"
+import { EntityBrowser } from "@/components/entity-browser/entity-browser"
 import { EntityEditorTabs } from "@/components/editor/entity-editor-tabs"
 import { createRef, PropsWithChildren, useCallback } from "react"
 import { ImperativePanelHandle } from "react-resizable-panels"

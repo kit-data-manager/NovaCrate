@@ -2,7 +2,16 @@
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Button } from "@/components/ui/button"
-import { BookOpenText, Braces, Bug, Folder, GitFork, Library, PackageSearch } from "lucide-react"
+import {
+    BookOpenText,
+    Braces,
+    Bug,
+    Folder,
+    GitFork,
+    Library,
+    MessageSquare,
+    PackageSearch
+} from "lucide-react"
 import { PropsWithChildren, useContext, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -74,6 +83,13 @@ export function NavSidebar({ children }: PropsWithChildren) {
                             <Bug className="size-4 mr-2" />
                             Validation
                         </Button>
+
+                        <Link href={"mailto:christopher.raquet@kit.edu"}>
+                            <Button variant="link" className={`justify-start w-full`}>
+                                <MessageSquare className="size-4 mr-2" />
+                                Send Feedback
+                            </Button>
+                        </Link>
 
                         <Button
                             variant="link"

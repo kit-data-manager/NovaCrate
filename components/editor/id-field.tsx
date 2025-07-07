@@ -1,8 +1,9 @@
-import { Copy, EllipsisVertical, Eye, Pencil, ScanBarcode } from "lucide-react"
+import { Copy, EllipsisVertical, Eye, Folder, Pencil, ScanBarcode } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useCopyToClipboard } from "usehooks-ts"
@@ -12,33 +13,30 @@ import { canHavePreview as canHavePreviewUtil } from "@/lib/utils"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { Button } from "@/components/ui/button"
 import { RenameEntityModal } from "@/components/modals/rename-entity-modal"
+import { useGoToFileExplorer } from "@/lib/hooks"
 
 export function IDField({ value }: { value: string }) {
     const [, copy] = useCopyToClipboard()
-    const type = useEditorState((state) => state.entities.get(value)?.["@type"])
+    const entity = useEditorState((state) => state.entities.get(value))
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
     const [renameEntityModalOpen, setRenameEntityModalOpen] = useState(false)
 
     const canHavePreview = useMemo(() => {
-        return type
-            ? canHavePreviewUtil({
-                  // Dirty hack but should be perfectly fine, since we have no access to the full entity here
-                  "@id": value,
-                  "@type": type
-              })
-            : false
-    }, [type, value])
+        return entity ? canHavePreviewUtil(entity) : false
+    }, [entity])
+
+    const showInFileExplorer = useGoToFileExplorer(entity)
 
     const togglePreview = useCallback(() => {
-        if (type) {
+        if (entity?.["@type"]) {
             if (previewingFilePath === value) {
                 setPreviewingFilePath("")
             } else {
                 setPreviewingFilePath(value)
             }
         }
-    }, [previewingFilePath, setPreviewingFilePath, type, value])
+    }, [entity, previewingFilePath, setPreviewingFilePath, value])
 
     const copyFn = useCallback(() => {
         copy(value).then()
@@ -62,16 +60,22 @@ export function IDField({ value }: { value: string }) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent id={"id-dropdown"}>
                     <DropdownMenuItem onClick={() => setRenameEntityModalOpen(true)}>
-                        <Pencil className="size-4 mr-2" /> Edit
+                        <Pencil className="size-4 mr-2" /> Edit Identifier
                     </DropdownMenuItem>
-                    {canHavePreview ? (
-                        <DropdownMenuItem onClick={togglePreview}>
-                            <Eye className="size-4 mr-2" /> Preview File
-                        </DropdownMenuItem>
-                    ) : null}
                     <DropdownMenuItem onClick={copyFn}>
                         <Copy className="size-4 mr-2" /> Copy Identifier
                     </DropdownMenuItem>
+                    {canHavePreview ? (
+                        <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={togglePreview}>
+                                <Eye className="size-4 mr-2" /> Preview File
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => showInFileExplorer()}>
+                                <Folder className="size-4 mr-2" /> Show in File Explorer
+                            </DropdownMenuItem>
+                        </>
+                    ) : null}
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>

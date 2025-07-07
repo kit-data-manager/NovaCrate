@@ -7,7 +7,7 @@ import {
     ContextMenuSubTrigger
 } from "@/components/ui/context-menu"
 import { Copy, CurlyBraces, Download, FileIcon, FolderOpen, Plus, Trash } from "lucide-react"
-import { EntityIcon } from "@/components/entity-icon"
+import { EntityIcon } from "@/components/entity/entity-icon"
 import HelpTooltip from "@/components/help-tooltip"
 import { useCallback, useContext } from "react"
 import { useCopyToClipboard } from "usehooks-ts"

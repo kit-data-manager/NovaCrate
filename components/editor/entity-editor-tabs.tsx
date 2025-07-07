@@ -5,7 +5,7 @@ import { IEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor
 import { Diff, getEntityDisplayName } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Package, PanelLeftClose, XIcon } from "lucide-react"
-import { EntityIcon } from "@/components/entity-icon"
+import { EntityIcon } from "@/components/entity/entity-icon"
 import { EntityEditor } from "@/components/editor/entity-editor"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { useEditorState } from "@/lib/state/editor-state"
