@@ -152,7 +152,10 @@ export async function createCrateFromZip(zip: Blob) {
     const readDirResult = await fs.readDir(resolveCratePath(id))
     if (!readDirResult.isOk()) throw readDirResult.unwrapErr()
 
-    const files = await collectAsyncIterator(readDirResult.unwrap())
+    const ignore = ["__MACOSX", ".DS_Store"]
+    const rawFiles = await collectAsyncIterator(readDirResult.unwrap())
+
+    const files = rawFiles.filter((f) => !ignore.includes(f.path))
     if (files.length === 0) throw "Crate archive is empty"
 
     if (files.find((file) => file.path === "ro-crate-metadata.json")) {
