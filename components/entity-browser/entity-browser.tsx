@@ -65,6 +65,15 @@ export function EntityBrowser() {
                         noShortcut
                     />
                     <div className="grow"></div>
+
+                    <ActionButton
+                        actionId={"editor.global-search"}
+                        variant={"outline"}
+                        size={"sm"}
+                        noShortcut
+                        iconOnly
+                    />
+
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button variant="outline" size="sm" onClick={togglePropertyOverview}>
