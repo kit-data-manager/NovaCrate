@@ -6,7 +6,7 @@ import {
     ContextMenuTrigger
 } from "@/components/ui/context-menu"
 import { EntityIcon } from "@/components/entity/entity-icon"
-import { Diff, isFileDataEntity } from "@/lib/utils"
+import { Diff, canHavePreview as canHavePreviewUtil } from "@/lib/utils"
 import { Eye, Folder, Save, Trash, Undo2 } from "lucide-react"
 import { PropsWithChildren, useCallback, useContext, useMemo } from "react"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
@@ -28,7 +28,7 @@ export function EntityContextMenu({
     const diff = useEditorState((state) => (entity ? state.getEntityDiff(entity["@id"]) : null))
 
     const canHavePreview = useMemo(() => {
-        return entity ? isFileDataEntity(entity) : false
+        return entity ? canHavePreviewUtil(entity) : false
     }, [entity])
 
     const hasUnsavedChanges = useMemo(() => {
