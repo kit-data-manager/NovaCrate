@@ -1,6 +1,6 @@
 # 📦 NovaCrate
 
-Web-based interactive editor for **creating, editing and visualising** research object crates. The editor can be extended to work with any local or 
+Web-based interactive editor for **creating, editing and visualising** research object crates. The editor can be extended to work with any local or
 remote backend.
 
 ## [▶️ Demo](https://kit-data-manager.github.io/NovaCrate/)
@@ -11,11 +11,13 @@ remote backend.
 
 NovaCrate can be used and deployed in multiple different ways. Currently, the following editions (conceptually) exist:
 
-| Name               | Status                 | Description                                                                                                                                                                                                             | Notes                                                                                                      |
-|--------------------|------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
-| Standalone Web App | Active                 | Standalone Web App without a backend. Stores Crates in the local origin-private file system of the browser                                                                                                              | [Access here](https://kit-data-manager.github.io/NovaCrate/)                                               |
-| Desktop App        | Not maintained         | Tauri App with a local backend. Has full access to file system and can make use of arbitrary backend software.                                                                                                          | See `src-tauri`                                                                                            |
-| Cloud Frontend     | Currently out of scope | NovaCrate is a frontend that can be used with any compatible backend solution, for example a cloud based service that hosts RO-Crates. This approach has not been explored yet due to lack of viable backend solutions. | See `src/lib/backend/CrateServiceAdapter.ts` for a list of methods that a backend adapter should implement |
+> 💡 If you have a special interest in the Desktop App or the Cloud Frontend, please get in contact with us.
+
+| Name               | Status  | Description                                                                                                                                                                                                             | Notes                                                                                                      |
+|--------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| Standalone Web App | Active  | Standalone Web App without a backend. Stores Crates in the local origin-private file system of the browser                                                                                                              | [Access here](https://kit-data-manager.github.io/NovaCrate/)                                               |
+| Desktop App        | Concept | Tauri App with a local backend. Has full access to file system and can make use of arbitrary backend software.                                                                                                          | Suitable backend already implemented.                                                                      |
+| Cloud Frontend     | Concept | NovaCrate is a frontend that can be used with any compatible backend solution, for example a cloud based service that hosts RO-Crates. This approach has not been explored yet due to lack of viable backend solutions. | See `src/lib/backend/CrateServiceAdapter.ts` for a list of methods that a backend adapter should implement |
 
 ### ℹ️ How To: Custom Backend
 
