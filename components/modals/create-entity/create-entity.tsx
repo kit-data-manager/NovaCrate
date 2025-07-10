@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react"
+import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,6 @@ import {
     HardDriveUpload,
     Plus
 } from "lucide-react"
-import { useFilePicker } from "use-file-picker"
 import { camelCaseReadable, encodeFilePath, fileNameWithoutEnding } from "@/lib/utils"
 import { Error } from "@/components/error"
 import prettyBytes from "pretty-bytes"
@@ -63,12 +62,32 @@ export function CreateEntity({
     const [name, setName] = useState(defaultName || "")
     const [identifier, setIdentifier] = useState<string>("")
     const [emptyFolder, setEmptyFolder] = useState(false)
-    const { plainFiles, openFilePicker } = useFilePicker({})
-    const { plainFiles: folderFiles, openFilePicker: openFolderPicker } = useFilePicker({
-        initializeWithCustomParameters(input: HTMLInputElement) {
-            input.setAttribute("webkitdirectory", "")
+    const createEntityFileUploadRef = useRef<HTMLInputElement>(null)
+    const createEntityFolderUploadRef = useRef<HTMLInputElement>(null)
+
+    const [plainFiles, setPlainFiles] = useState<File[]>([])
+    const [folderFiles, setFolderFiles] = useState<File[]>([])
+
+    const openFilePicker = useCallback(() => {
+        if (createEntityFileUploadRef.current) {
+            createEntityFileUploadRef.current.click()
         }
-    })
+    }, [])
+
+    const openFolderPicker = useCallback(() => {
+        if (createEntityFolderUploadRef.current) {
+            createEntityFolderUploadRef.current.setAttribute("webkitdirectory", "")
+            createEntityFolderUploadRef.current.click()
+        }
+    }, [])
+
+    const onFileInputChange = useCallback(() => {
+        setPlainFiles([...(createEntityFileUploadRef.current?.files ?? [])])
+    }, [])
+
+    const onFolderInputChange = useCallback(() => {
+        setFolderFiles([...(createEntityFolderUploadRef.current?.files ?? [])])
+    }, [])
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         setName(e.target.value)
@@ -356,6 +375,22 @@ export function CreateEntity({
                     Create
                 </Button>
             </div>
+
+            <input
+                type="file"
+                className="hidden"
+                data-testid="create-entity-file-upload"
+                ref={createEntityFileUploadRef}
+                onChange={onFileInputChange}
+            />
+
+            <input
+                type="file"
+                className="hidden"
+                data-testid="create-entity-folder-upload"
+                ref={createEntityFolderUploadRef}
+                onChange={onFolderInputChange}
+            />
         </div>
     )
 }
