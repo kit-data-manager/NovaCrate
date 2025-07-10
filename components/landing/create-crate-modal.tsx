@@ -9,7 +9,6 @@ import {
 import { Error } from "../error"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
-import { useFilePicker } from "use-file-picker"
 import { Button } from "../ui/button"
 import { ArrowLeft, Folder, PackagePlus } from "lucide-react"
 import { CrateDataContext } from "../providers/crate-data-provider"
@@ -40,12 +39,8 @@ export function CreateCrateModal({
     const [currentProgress, setCurrentProgress] = useState(0)
     const [maxProgress, setMaxProgress] = useState(0)
     const [uploadErrors, setUploadErrors] = useState<string[]>([])
-    const { openFilePicker: openFolderPicker, plainFiles: files } = useFilePicker({
-        initializeWithCustomParameters(input) {
-            input.setAttribute("webkitdirectory", "")
-            input.dataset.testid = "create-crate-modal-upload-input"
-        }
-    })
+    const createFolderUploadInputRef = useRef<HTMLInputElement>(null)
+    const [files, setFiles] = useState<File[]>([])
 
     const localOnOpenChange = useCallback(
         (isOpen: boolean) => {
@@ -57,6 +52,10 @@ export function CreateCrateModal({
         [onOpenChange, uploading]
     )
 
+    const onCreateFolderUploadInputChange = useCallback(() => {
+        setFiles([...(createFolderUploadInputRef.current?.files ?? [])])
+    }, [])
+
     const createCrateFromCrateFiles = useCallback(() => {
         if (files.length > 0 && serviceProvider) {
             setUploading(true)
@@ -65,7 +64,10 @@ export function CreateCrateModal({
                 .createCrateFromFiles(
                     name,
                     description,
-                    files.map((file) => ({ relativePath: file.webkitRelativePath, data: file })),
+                    [...files].map((file) => ({
+                        relativePath: file.webkitRelativePath,
+                        data: file
+                    })),
                     (current, max, errors) => {
                         setCurrentProgress(current)
                         setMaxProgress(max)
@@ -148,6 +150,13 @@ export function CreateCrateModal({
         }
     }, [createCrateFromCrateFiles, createEmptyCrate, fromFolder])
 
+    const openFolderPicker = useCallback(() => {
+        if (createFolderUploadInputRef.current) {
+            createFolderUploadInputRef.current.setAttribute("webkitdirectory", "true")
+            createFolderUploadInputRef.current.click()
+        }
+    }, [])
+
     return (
         <Dialog open={open} onOpenChange={localOnOpenChange}>
             <DialogContent>
@@ -179,7 +188,7 @@ export function CreateCrateModal({
                                     </Button>
                                     <span className="ml-2 text-muted-foreground">
                                         {files.length > 0
-                                            ? `${files.length} file${files.length === 1 ? "" : "s"} selected (${prettyBytes(files.map((f) => f.size).reduce(sum))} total)`
+                                            ? `${files.length} file${files.length === 1 ? "" : "s"} selected (${prettyBytes([...files].map((f) => f.size).reduce(sum))} total)`
                                             : "No files selected"}
                                     </span>
                                 </div>
@@ -221,6 +230,15 @@ export function CreateCrateModal({
                         </div>
                     </>
                 )}
+
+                <input
+                    type="file"
+                    className="hidden"
+                    multiple={true}
+                    data-testid="create-folder-upload-input"
+                    ref={createFolderUploadInputRef}
+                    onChange={onCreateFolderUploadInputChange}
+                />
             </DialogContent>
         </Dialog>
     )
