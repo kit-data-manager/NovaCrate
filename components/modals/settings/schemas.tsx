@@ -2,9 +2,24 @@ import { useStore } from "zustand/index"
 import { RegisteredSchema, schemaResolverStore } from "@/lib/state/schema-resolver"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ChevronDownIcon, MinusIcon, PencilIcon, PlusIcon, SaveIcon, TrashIcon } from "lucide-react"
-import { ChangeEvent, useCallback, useMemo, useState } from "react"
+import {
+    CheckIcon,
+    ChevronDownIcon,
+    CircleCheck,
+    CircleDashed,
+    CloudDownload,
+    MinusIcon,
+    OctagonAlert,
+    PencilIcon,
+    PlusIcon,
+    RotateCw,
+    SaveIcon,
+    TrashIcon
+} from "lucide-react"
+import { ChangeEvent, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { SchemaWorker } from "@/components/providers/schema-worker-provider"
+import { Error } from "@/components/error"
 
 export function SchemaSettingsPage() {
     const registeredSchemas = useStore(schemaResolverStore, (s) => s.registeredSchemas)
@@ -216,6 +231,8 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
                 </div>
             </div>
 
+            <SchemaStatus schema={schema} />
+
             {hasChanges && (
                 <div className="flex justify-end">
                     <Button onClick={saveSelf}>
@@ -223,6 +240,73 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
                     </Button>
                 </div>
             )}
+        </div>
+    )
+}
+
+function SchemaStatus({ schema }: { schema: RegisteredSchema }) {
+    const schemaWorker = useContext(SchemaWorker)
+    const [schemaStatus, setSchemaStatus] = useState<"loaded" | "not loaded" | "error">(
+        "not loaded"
+    )
+    const [schemaError, setSchemaError] = useState<unknown>()
+
+    const getSchemaStatus = useCallback(async () => {
+        const status = await schemaWorker.worker.execute("getWorkerStatus")
+        if (status.schemaStatus.loadedSchemas.includes(schema.id)) {
+            setSchemaStatus("loaded")
+            setSchemaError(undefined)
+        } else if (status.schemaStatus.schemaIssues.get(schema.id)) {
+            setSchemaStatus("error")
+            setSchemaError(status.schemaStatus.schemaIssues.get(schema.id))
+        } else {
+            setSchemaStatus("not loaded")
+            setSchemaError(undefined)
+        }
+    }, [schema.id, schemaWorker.worker])
+
+    const mappedStatus = useMemo(() => {
+        switch (schemaStatus) {
+            case "loaded":
+                return (
+                    <span className="text-success inline-flex items-center gap-2">
+                        <CircleCheck className="size-4" /> Loaded
+                    </span>
+                )
+            case "error":
+                return (
+                    <span className="text-error inline-flex items-center gap-2">
+                        <OctagonAlert className="size-4" /> Load failed
+                    </span>
+                )
+            case "not loaded":
+                return (
+                    <span className="text-muted-foreground inline-flex items-center gap-2">
+                        <CircleDashed className="size-4" /> Not loaded
+                    </span>
+                )
+        }
+    }, [schemaStatus])
+
+    useEffect(() => {
+        getSchemaStatus().then()
+    }, [getSchemaStatus])
+
+    return (
+        <div className="">
+            <div className="flex items-center gap-2">
+                {mappedStatus}{" "}
+                {schemaStatus !== "loaded" && (
+                    <Button className="ml-2" title={"Reload"} variant="ghost" size="icon">
+                        {schemaStatus !== "not loaded" ? (
+                            <RotateCw className="size-4" />
+                        ) : (
+                            <CloudDownload className="size-4" />
+                        )}
+                    </Button>
+                )}
+            </div>
+            <Error error={schemaError} title={"Failed to load schema"} className="mt-2" />
         </div>
     )
 }

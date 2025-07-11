@@ -83,18 +83,18 @@ export function SettingsModal({
                             <FileJson2 className="size-4 mr-2" /> Schemas
                         </SettingsPageButton>
                         <SettingsPageButton
-                            page={SettingsPages.STORAGE}
-                            currentPage={page}
-                            setPage={setPage}
-                        >
-                            <HardDrive className="size-4 mr-2" /> Storage
-                        </SettingsPageButton>
-                        <SettingsPageButton
                             page={SettingsPages.WORKERS}
                             currentPage={page}
                             setPage={setPage}
                         >
                             <HardHat className="size-4 mr-2" /> Workers
+                        </SettingsPageButton>
+                        <SettingsPageButton
+                            page={SettingsPages.STORAGE}
+                            currentPage={page}
+                            setPage={setPage}
+                        >
+                            <HardDrive className="size-4 mr-2" /> Storage
                         </SettingsPageButton>
                     </div>
                     <div />
