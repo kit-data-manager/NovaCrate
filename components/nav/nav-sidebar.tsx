@@ -84,7 +84,7 @@ export function NavSidebar({ children }: PropsWithChildren) {
                             Validation
                         </Button>
 
-                        <Link href={"mailto:christopher.raquet@kit.edu"}>
+                        <Link href={"https://github.com/kit-data-manager/NovaCrate/issues"}>
                             <Button variant="link" className={`justify-start w-full`}>
                                 <MessageSquare className="size-4 mr-2" />
                                 Send Feedback
