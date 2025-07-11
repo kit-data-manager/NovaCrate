@@ -27,8 +27,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { useFilePicker } from "use-file-picker"
-import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { Fragment, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { CrateEntry } from "@/components/landing/crate-entry"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
@@ -55,12 +54,7 @@ export default function EditorLandingPage() {
         unsetCrateId,
         healthTestError: error
     } = useContext(CrateDataContext)
-    const { openFilePicker: openZipFilePicker, plainFiles: zipFiles } = useFilePicker({
-        accept: [".zip", ".eln"],
-        initializeWithCustomParameters: (el) => {
-            el.dataset.testid = "create-upload-input"
-        }
-    })
+    const createUploadInputRef = useRef<HTMLInputElement>(null)
     const { showDocumentationModal } = useContext(GlobalModalContext)
     const demoLoader = useDemoCrateLoader()
     const [demoLoaderError, setDemoLoaderError] = useState<unknown>()
@@ -154,15 +148,19 @@ export default function EditorLandingPage() {
         [demoLoader, router, serviceProvider, setCrateId]
     )
 
-    useEffect(() => {
-        if (zipFiles.length > 0) {
+    const createUploadInputChangeHandler = useCallback(() => {
+        if (
+            createUploadInputRef.current &&
+            createUploadInputRef.current.files &&
+            createUploadInputRef.current.files.length > 0
+        ) {
             setCreateCrateModalState({
                 fromFolder: false,
-                fromZip: zipFiles[0],
+                fromZip: createUploadInputRef.current.files[0],
                 open: true
             })
         }
-    }, [zipFiles])
+    }, [])
 
     const openEditor = useCallback(
         (id: string) => {
@@ -191,6 +189,10 @@ export default function EditorLandingPage() {
         error: storedCratesError,
         mutate: revalidate
     } = useSWR("stored-crates", storedCratesResolver)
+
+    const openZipFilePicker = useCallback(() => {
+        createUploadInputRef.current?.click()
+    }, [])
 
     const searchInfo = useMemo(() => {
         return search ? (
@@ -535,6 +537,15 @@ export default function EditorLandingPage() {
                     </Tabs>
                 </div>
             </div>
+
+            <input
+                type="file"
+                className="hidden"
+                accept=".zip,.eln"
+                data-testid="create-upload-input"
+                ref={createUploadInputRef}
+                onChange={() => createUploadInputChangeHandler()}
+            />
         </div>
     )
 }

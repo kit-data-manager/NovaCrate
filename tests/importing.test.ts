@@ -136,7 +136,7 @@ test("Import Folder", async ({ page }) => {
     await page.getByRole("button", { name: "New Crate" }).click()
     await page.getByRole("menuitem", { name: "Start with Data" }).click()
     await page.getByRole("button", { name: "Select Folder" }).click()
-    await page.getByTestId("create-crate-modal-upload-input").setInputFiles("tests/data/TestFolder")
+    await page.getByTestId("create-folder-upload-input").setInputFiles("tests/data/TestFolder")
     await page.getByRole("textbox", { name: "Description" }).click()
     await page.getByRole("textbox", { name: "Description" }).fill("Custom Description Text")
     await page.getByRole("textbox", { name: "Name" }).click()
