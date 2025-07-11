@@ -1,11 +1,11 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react"
-import { ProvisioningStatus } from "@/lib/schema-worker/SchemaGraph"
-import { SchemaWorker } from "@/components/providers/crate-verify-provider"
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { Error } from "@/components/error"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Check, HardHat, Loader, Loader2, XIcon } from "lucide-react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { BrowserBasedCrateService } from "@/lib/backend/BrowserBasedCrateService"
+import { SchemaStatus } from "@/lib/schema-worker/SchemaGraph"
 
 function ProvisioningStatusDisplay({ isLoaded, error }: { isLoaded?: boolean; error: unknown }) {
     if (typeof isLoaded === "undefined" && !error)
@@ -57,9 +57,7 @@ export function SuccessDisplay({ success }: { success?: boolean }) {
 
 export function WorkerSettings() {
     const [isSchemaWorkerActive, setIsSchemaWorkerActive] = useState<boolean | undefined>(undefined)
-    const [provisioningStatus, setProvisioningStatus] = useState<ProvisioningStatus | undefined>(
-        undefined
-    )
+    const [schemaStatus, setSchemaStatus] = useState<SchemaStatus | undefined>(undefined)
     const [schemaWorkerError, setSchemaWorkerError] = useState<unknown>()
     const { worker, isUsingWebWorker } = useContext(SchemaWorker)
 
@@ -76,9 +74,9 @@ export function WorkerSettings() {
     }, [serviceProvider])
 
     const fetchData = useCallback(async () => {
-        const { workerActive, provisionStatus } = await worker.execute("getProvisioningStatus")
+        const { workerActive, schemaStatus } = await worker.execute("getWorkerStatus")
         setIsSchemaWorkerActive(workerActive)
-        setProvisioningStatus(provisionStatus)
+        setSchemaStatus(schemaStatus)
     }, [worker])
 
     useEffect(() => {
@@ -86,45 +84,44 @@ export function WorkerSettings() {
     }, [fetchData])
 
     return (
-        <div>
+        <div className="overflow-auto min-h-0 max-h-full">
             <h3 className="font-semibold text-2xl leading-none p-2 pl-0 pt-0 mb-2">Workers</h3>
-            <div className="p-4 border rounded mb-4">
+            <div className="p-4 border rounded mb-4 overflow-auto min-h-0">
                 <Error title="Failed to get worker status" error={schemaWorkerError} />
                 <div>
-                    <h4 className="mb-2 text-lg font-bold flex items-center">
+                    <h4 className="text-lg font-bold flex items-center">
                         <HardHat className="w-5 h-5 mr-2" /> Schema Worker
                     </h4>
+                    <div className="text-sm text-muted-foreground mb-2">
+                        Responsible for loading the schemas used in the crate context. Enables type
+                        matching, comments, and autocomplete.
+                    </div>
                     <div className="flex gap-2">
                         Worker Healthy: <SuccessDisplay success={isSchemaWorkerActive} />
                     </div>
                     <div className="flex gap-2">
                         Worker in Use: <SuccessDisplay success={isUsingWebWorker} />
                     </div>
-                    <h4 className="mt-8 mb-2 text-lg font-medium">Provisioning Status</h4>
-                    <div className="grid grid-cols-[1fr_3fr] gap-2">
-                        <div>Schema.org:</div>
-                        <ProvisioningStatusDisplay
-                            isLoaded={provisioningStatus?.schemaOrgLoaded}
-                            error={provisioningStatus?.schemaOrgError}
-                        />
+                    <h4 className="mt-8 mb-2 text-lg font-medium">Schema Provisioning Status</h4>
+                    <div className="grid grid-cols-[1fr_3fr] gap-2 ml-4">
+                        <div className="text-sm text-muted-foreground">Name</div>
+                        <div className="text-sm text-muted-foreground">Status</div>
 
-                        <div>Bioschemas.org:</div>
-                        <ProvisioningStatusDisplay
-                            isLoaded={provisioningStatus?.bioSchemaLoaded}
-                            error={provisioningStatus?.bioSchemaError}
-                        />
+                        {schemaStatus?.loadedSchemas?.map((schema, i) => (
+                            <Fragment key={i}>
+                                <div>{schema}</div>
+                                <ProvisioningStatusDisplay isLoaded={true} error={undefined} />
+                            </Fragment>
+                        ))}
 
-                        <div>Purl.org:</div>
-                        <ProvisioningStatusDisplay
-                            isLoaded={provisioningStatus?.purlLoaded}
-                            error={provisioningStatus?.purlError}
-                        />
-
-                        <div>w3.org:</div>
-                        <ProvisioningStatusDisplay
-                            isLoaded={provisioningStatus?.w3Loaded}
-                            error={provisioningStatus?.w3Error}
-                        />
+                        {[...(schemaStatus?.schemaIssues.entries() ?? [])].map(
+                            ([key, error], i) => (
+                                <Fragment key={i}>
+                                    <div>{key}</div>
+                                    <ProvisioningStatusDisplay isLoaded={false} error={error} />
+                                </Fragment>
+                            )
+                        )}
                     </div>
                 </div>
             </div>
@@ -132,9 +129,12 @@ export function WorkerSettings() {
             {hasServiceProviderWorker ? (
                 <div className="p-4 border rounded">
                     <div>
-                        <h4 className="mb-2 text-lg font-bold flex items-center">
+                        <h4 className="text-lg font-bold flex items-center">
                             <HardHat className="w-5 h-5 mr-2" /> OPFS Worker
                         </h4>
+                        <div className="text-sm text-muted-foreground mb-2">
+                            Manages the virtual file system of the crate.
+                        </div>
                         <div className="flex gap-2">
                             Worker Healthy:{" "}
                             <SuccessDisplay success={isServiceProviderWorkerHealthy} />

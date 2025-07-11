@@ -1,5 +1,5 @@
 import { useContext } from "react"
-import { SchemaWorker } from "@/components/providers/crate-verify-provider"
+import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { ExternalLink } from "lucide-react"
 import { Error } from "@/components/error"
 import Link from "next/link"

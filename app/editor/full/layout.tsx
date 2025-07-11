@@ -4,7 +4,7 @@ import { PropsWithChildren, useContext, useEffect } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Nav } from "@/components/nav/nav"
 import { usePathname } from "next/navigation"
-import { CrateVerifyProvider } from "@/components/providers/crate-verify-provider"
+import { SchemaWorkerProvider } from "@/components/providers/schema-worker-provider"
 import { GlobalModalProvider } from "@/components/providers/global-modals-provider"
 import { useCrateName, useRecentCrates } from "@/lib/hooks"
 import { GraphStateProvider } from "@/components/providers/graph-state-provider"
@@ -18,7 +18,7 @@ import { EntityEditorTabsSupervisor } from "@/components/editor/entity-editor-ta
 export default function EditorLayout(props: PropsWithChildren) {
     return (
         <ActionsProvider>
-            <CrateVerifyProvider>
+            <SchemaWorkerProvider>
                 <GlobalModalProvider>
                     <GraphStateProvider>
                         <GraphSettingsProvider>
@@ -31,7 +31,7 @@ export default function EditorLayout(props: PropsWithChildren) {
                         </GraphSettingsProvider>
                     </GraphStateProvider>
                 </GlobalModalProvider>
-            </CrateVerifyProvider>
+            </SchemaWorkerProvider>
         </ActionsProvider>
     )
 }

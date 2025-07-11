@@ -4,9 +4,7 @@ import { SchemaGraph } from "./SchemaGraph"
 import { SchemaResolver } from "./SchemaResolver"
 import type { SchemaResolverStore } from "@/lib/state/schema-resolver"
 
-const schemaResolver = new SchemaResolver({
-    registeredSchemas: new Map()
-})
+const schemaResolver = new SchemaResolver(new Map())
 const schemaGraph = new SchemaGraph(schemaResolver)
 
 export async function getPropertyComment(propertyId: string) {
@@ -136,16 +134,15 @@ export async function getAllComments(types: string[]): Promise<SlimClass[]> {
     return result
 }
 
-export function getProvisioningStatus() {
+export function getWorkerStatus() {
     const workerActive =
         typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope
-    const provisionStatus = {}
 
-    return { workerActive, provisionStatus }
+    return { workerActive, schemaStatus: schemaGraph.getSchemaStatus() }
 }
 
-export function updateSchemaResolverState(state: SchemaResolverStore) {
-    schemaResolver.updateState(state)
+export function updateRegisteredSchemas(state: SchemaResolverStore["registeredSchemas"]) {
+    schemaResolver.updateRegisteredSchemas(state)
 }
 
 export const schemaWorkerFunctions = {
@@ -156,6 +153,6 @@ export const schemaWorkerFunctions = {
     getAllComments,
     getAllProperties,
     getPossibleEntityProperties,
-    getProvisioningStatus,
-    updateSchemaResolverState
+    getWorkerStatus,
+    updateRegisteredSchemas
 }

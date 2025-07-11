@@ -7,7 +7,7 @@ import React, {
     useMemo,
     useState
 } from "react"
-import { SchemaWorker } from "@/components/providers/crate-verify-provider"
+import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"

@@ -1,6 +1,6 @@
 import { useEditorState } from "@/lib/state/editor-state"
 import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react"
-import { SchemaWorker } from "@/components/providers/crate-verify-provider"
+import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { CheckedState } from "@radix-ui/react-checkbox"
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Error } from "@/components/error"

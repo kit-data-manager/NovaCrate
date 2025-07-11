@@ -19,7 +19,7 @@ export const SchemaWorker = createContext<ISchemaWorkerContext>({
     }
 })
 
-export function CrateVerifyProvider(props: PropsWithChildren) {
+export function SchemaWorkerProvider(props: PropsWithChildren) {
     const { worker, isUsingWebWorker, isReady } = useFunctionWorker(
         schemaWorkerFunctions,
         addBasePath("/schema-worker.js")
@@ -27,10 +27,15 @@ export function CrateVerifyProvider(props: PropsWithChildren) {
 
     useEffect(() => {
         if (isReady) {
-            worker.execute("updateSchemaResolverState", schemaResolverStore.getState()).then()
+            worker
+                .execute(
+                    "updateRegisteredSchemas",
+                    schemaResolverStore.getState().registeredSchemas
+                )
+                .then()
 
             return schemaResolverStore.subscribe((newState) => {
-                worker.execute("updateSchemaResolverState", newState).then()
+                worker.execute("updateRegisteredSchemas", newState.registeredSchemas).then()
             })
         }
     }, [isReady, worker])

@@ -42,7 +42,7 @@ export class SchemaGraph {
      * @private
      */
     private getExcludedSchemasForAutoload() {
-        return [...this.loadedSchemas, ...Object.keys(this.schemaIssues)]
+        return [...this.loadedSchemas, ...this.schemaIssues.keys()]
     }
 
     getAllNodes() {
@@ -197,4 +197,13 @@ export class SchemaGraph {
     addNode(entry: SchemaNode) {
         this.graph.set(entry["@id"], entry)
     }
+
+    /**
+     * For the user interface
+     */
+    getSchemaStatus() {
+        return { loadedSchemas: this.loadedSchemas, schemaIssues: this.schemaIssues }
+    }
 }
+
+export type SchemaStatus = ReturnType<InstanceType<typeof SchemaGraph>["getSchemaStatus"]>

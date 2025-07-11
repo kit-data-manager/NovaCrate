@@ -2,7 +2,7 @@ import { SchemaFile, schemaFileSchema } from "./types"
 import type { SchemaResolverStore } from "../state/schema-resolver"
 
 export class SchemaResolver {
-    constructor(private schemaResolverState: SchemaResolverStore) {}
+    constructor(private registeredSchemas: SchemaResolverStore["registeredSchemas"]) {}
 
     async autoload(exclude: string[]) {
         // Load schemas on demand? Currently, all schemas are always loaded
@@ -12,23 +12,23 @@ export class SchemaResolver {
     async loadRegisteredSchemas(exclude: string[]) {
         const loadedSchemas: Map<string, { schema?: SchemaFile; error?: unknown }> = new Map()
 
-        for (const [key, registeredSchema] of this.schemaResolverState.registeredSchemas) {
-            if (exclude.includes(key)) continue
+        for (const registeredSchema of this.registeredSchemas) {
+            if (exclude.includes(registeredSchema.id)) continue
 
             try {
                 const schema = await this.fetchSchema(registeredSchema.schemaUrl)
-                loadedSchemas.set(key, { schema })
+                loadedSchemas.set(registeredSchema.id, { schema })
             } catch (e) {
-                console.error(`Failed to get schema with key ${key}:`, e)
-                loadedSchemas.set(key, { error: e })
+                console.error(`Failed to get schema with key ${registeredSchema.id}:`, e)
+                loadedSchemas.set(registeredSchema.id, { error: e })
             }
         }
 
         return loadedSchemas
     }
 
-    updateState(state: SchemaResolverStore) {
-        this.schemaResolverState = state
+    updateRegisteredSchemas(state: SchemaResolverStore["registeredSchemas"]) {
+        this.registeredSchemas = state
     }
 
     private async fetchSchema(url: string): Promise<SchemaFile> {
