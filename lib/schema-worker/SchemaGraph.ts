@@ -16,17 +16,25 @@ export class SchemaGraph {
     constructor(private schemaResolver: SchemaResolver) {}
 
     async getNode(id: string) {
-        const result = await this.schemaResolver.autoload(this.getExcludedSchemasForAutoload())
+        const firstAttempt = this.graph.get(id)
 
-        for (const [key, schema] of result) {
-            if (schema.schema) {
-                this.addSchemaFromFile(key, schema.schema)
-            } else {
-                this.schemaIssues.set(key, schema.error)
+        if (firstAttempt) {
+            return firstAttempt
+        } else {
+            // Try autoloading required schemas to get this node
+            const result = await this.schemaResolver.autoload(this.getExcludedSchemasForAutoload())
+
+            for (const [key, schema] of result) {
+                if (schema.schema) {
+                    this.addSchemaFromFile(key, schema.schema)
+                } else {
+                    this.schemaIssues.set(key, schema.error)
+                }
             }
-        }
 
-        return this.graph.get(id)
+            // If the second attempt fails, return undefined
+            return this.graph.get(id)
+        }
     }
 
     /**
