@@ -45,6 +45,15 @@ export class SchemaGraph {
         return [...this.loadedSchemas, ...this.schemaIssues.keys()]
     }
 
+    async forceSchemaLoad(schemaId: string) {
+        try {
+            const schema = await this.schemaResolver.forceLoad(schemaId)
+            if (schema) this.addSchemaFromFile(schemaId, schema)
+        } catch (err) {
+            this.schemaIssues.set(schemaId, err)
+        }
+    }
+
     getAllNodes() {
         return Array.from(this.graph.values())
     }
@@ -174,9 +183,9 @@ export class SchemaGraph {
         return false
     }
 
-    addSchemaFromFile(name: string, schema: SchemaFile) {
-        if (!this.loadedSchemas.includes(name)) {
-            this.loadedSchemas.push(name)
+    addSchemaFromFile(id: string, schema: SchemaFile) {
+        if (!this.loadedSchemas.includes(id)) {
+            this.loadedSchemas.push(id)
         }
 
         if ("@context" in schema) {

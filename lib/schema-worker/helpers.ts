@@ -4,7 +4,7 @@ import { SchemaGraph } from "./SchemaGraph"
 import { SchemaResolver } from "./SchemaResolver"
 import type { SchemaResolverStore } from "@/lib/state/schema-resolver"
 
-const schemaResolver = new SchemaResolver(new Map())
+const schemaResolver = new SchemaResolver([])
 const schemaGraph = new SchemaGraph(schemaResolver)
 
 export async function getPropertyComment(propertyId: string) {
@@ -145,6 +145,10 @@ export function updateRegisteredSchemas(state: SchemaResolverStore["registeredSc
     schemaResolver.updateRegisteredSchemas(state)
 }
 
+export function forceSchemaLoad(schemaId: string) {
+    return schemaGraph.forceSchemaLoad(schemaId)
+}
+
 export const schemaWorkerFunctions = {
     getAllClasses,
     getPropertyRange,
@@ -154,5 +158,6 @@ export const schemaWorkerFunctions = {
     getAllProperties,
     getPossibleEntityProperties,
     getWorkerStatus,
-    updateRegisteredSchemas
+    updateRegisteredSchemas,
+    forceSchemaLoad
 }

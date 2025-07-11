@@ -3,7 +3,6 @@ import { RegisteredSchema, schemaResolverStore } from "@/lib/state/schema-resolv
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
-    CheckIcon,
     ChevronDownIcon,
     CircleCheck,
     CircleDashed,
@@ -135,6 +134,11 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
         })
     }, [downloadURL, matchesPrefixes, schema, updateSchema])
 
+    const revertSelf = useCallback(() => {
+        setDownloadURL(schema.schemaUrl)
+        setMatchesPrefixes(schema.matchesUrls)
+    }, [schema.matchesUrls, schema.schemaUrl])
+
     const changeName = useCallback(() => {
         updateSchema(schema.id, {
             ...schema,
@@ -231,14 +235,17 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
                 </div>
             </div>
 
-            <SchemaStatus schema={schema} />
-
-            {hasChanges && (
-                <div className="flex justify-end">
+            {hasChanges ? (
+                <div className="flex justify-end gap-2 mt-4">
+                    <Button variant="outline" onClick={revertSelf}>
+                        Revert
+                    </Button>
                     <Button onClick={saveSelf}>
                         <SaveIcon className="size-4 mr-2" /> Save
                     </Button>
                 </div>
+            ) : (
+                <SchemaStatus schema={schema} />
             )}
         </div>
     )
@@ -246,6 +253,7 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
 
 function SchemaStatus({ schema }: { schema: RegisteredSchema }) {
     const schemaWorker = useContext(SchemaWorker)
+    const [schemaLoading, setSchemaLoading] = useState(false)
     const [schemaStatus, setSchemaStatus] = useState<"loaded" | "not loaded" | "error">(
         "not loaded"
     )
@@ -264,6 +272,14 @@ function SchemaStatus({ schema }: { schema: RegisteredSchema }) {
             setSchemaError(undefined)
         }
     }, [schema.id, schemaWorker.worker])
+
+    const forceSchemaLoad = useCallback(async () => {
+        setSchemaLoading(true)
+        setSchemaError(undefined)
+        await schemaWorker.worker.execute("forceSchemaLoad", schema.id)
+        setSchemaLoading(false)
+        getSchemaStatus().then()
+    }, [getSchemaStatus, schema.id, schemaWorker.worker])
 
     const mappedStatus = useMemo(() => {
         switch (schemaStatus) {
@@ -297,7 +313,14 @@ function SchemaStatus({ schema }: { schema: RegisteredSchema }) {
             <div className="flex items-center gap-2">
                 {mappedStatus}{" "}
                 {schemaStatus !== "loaded" && (
-                    <Button className="ml-2" title={"Reload"} variant="ghost" size="icon">
+                    <Button
+                        className="ml-2"
+                        title={"Reload"}
+                        variant="ghost"
+                        size="icon"
+                        onClick={forceSchemaLoad}
+                        disabled={schemaLoading}
+                    >
                         {schemaStatus !== "not loaded" ? (
                             <RotateCw className="size-4" />
                         ) : (

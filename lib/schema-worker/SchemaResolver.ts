@@ -31,6 +31,12 @@ export class SchemaResolver {
         this.registeredSchemas = state
     }
 
+    async forceLoad(schemaId: string) {
+        const schema = this.registeredSchemas.find((schema) => schema.id === schemaId)
+        if (!schema) return
+        return this.fetchSchema(schema.schemaUrl)
+    }
+
     private async fetchSchema(url: string): Promise<SchemaFile> {
         const req = await fetch(url)
         const data = await req.json()
