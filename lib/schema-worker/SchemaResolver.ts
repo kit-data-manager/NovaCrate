@@ -2,6 +2,8 @@ import { SchemaFile, schemaFileSchema } from "./types"
 import type { SchemaResolverStore } from "../state/schema-resolver"
 
 export class SchemaResolver {
+    private runningFetches: Map<string, Promise<SchemaFile>> = new Map()
+
     constructor(private registeredSchemas: SchemaResolverStore["registeredSchemas"]) {}
 
     async autoload(exclude: string[]) {
@@ -37,9 +39,18 @@ export class SchemaResolver {
         return this.fetchSchema(schema.schemaUrl)
     }
 
-    private async fetchSchema(url: string): Promise<SchemaFile> {
-        const req = await fetch(url)
-        const data = await req.json()
-        return schemaFileSchema.parse(data)
+    private fetchSchema(url: string): Promise<SchemaFile> {
+        const existing = this.runningFetches.get(url)
+        if (existing) {
+            return existing
+        } else {
+            const promise = fetch(url).then(async (req) => {
+                const data = await req.json()
+                this.runningFetches.delete(url)
+                return schemaFileSchema.parse(data)
+            })
+            this.runningFetches.set(url, promise)
+            return promise
+        }
     }
 }
