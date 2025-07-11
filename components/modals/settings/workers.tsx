@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { ProvisioningStatus } from "@/lib/schema-worker/SchemaGraph"
-import { CrateVerifyContext } from "@/components/providers/crate-verify-provider"
+import { SchemaWorker } from "@/components/providers/crate-verify-provider"
 import { Error } from "@/components/error"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Check, HardHat, Loader, Loader2, XIcon } from "lucide-react"
@@ -61,7 +61,7 @@ export function WorkerSettings() {
         undefined
     )
     const [schemaWorkerError, setSchemaWorkerError] = useState<unknown>()
-    const { worker, isUsingWebWorker } = useContext(CrateVerifyContext)
+    const { worker, isUsingWebWorker } = useContext(SchemaWorker)
 
     const { serviceProvider } = useContext(CrateDataContext)
 

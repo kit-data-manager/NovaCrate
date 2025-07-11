@@ -1,6 +1,6 @@
 import { useEditorState } from "@/lib/state/editor-state"
 import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react"
-import { CrateVerifyContext } from "@/components/providers/crate-verify-provider"
+import { SchemaWorker } from "@/components/providers/crate-verify-provider"
 import { CheckedState } from "@radix-ui/react-checkbox"
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Error } from "@/components/error"
@@ -71,7 +71,7 @@ export function SelectProperty({
 }) {
     const [open, setOpen] = useState(_open)
     const crateContext = useEditorState((store) => store.crateContext)
-    const { isReady: crateVerifyReady, worker } = useContext(CrateVerifyContext)
+    const { isReady: crateVerifyReady, worker } = useContext(SchemaWorker)
     const [bypassRestrictions, setBypassRestrictions] = useState(false)
 
     useEffect(() => {

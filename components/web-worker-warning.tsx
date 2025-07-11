@@ -1,11 +1,11 @@
 import { useContext } from "react"
-import { CrateVerifyContext } from "@/components/providers/crate-verify-provider"
+import { SchemaWorker } from "@/components/providers/crate-verify-provider"
 import { ExternalLink } from "lucide-react"
 import { Error } from "@/components/error"
 import Link from "next/link"
 
 export function WebWorkerWarning() {
-    const { isReady, isUsingWebWorker } = useContext(CrateVerifyContext)
+    const { isReady, isUsingWebWorker } = useContext(SchemaWorker)
 
     if (isReady && !isUsingWebWorker) {
         return (

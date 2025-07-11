@@ -1,5 +1,13 @@
-import { schemaGraph, SchemaNode } from "./SchemaGraph"
 import { referenceCheck, toArray } from "../utils"
+import { SchemaNode } from "./SchemaNode"
+import { SchemaGraph } from "./SchemaGraph"
+import { SchemaResolver } from "./SchemaResolver"
+import type { SchemaResolverStore } from "@/lib/state/schema-resolver"
+
+const schemaResolver = new SchemaResolver({
+    registeredSchemas: new Map()
+})
+const schemaGraph = new SchemaGraph(schemaResolver)
 
 export async function getPropertyComment(propertyId: string) {
     return (await schemaGraph.getNode(propertyId))?.comment
@@ -30,13 +38,11 @@ export async function getPropertyRange(propertyId: string) {
 
     for (const ref of refs) {
         range.add({
-            "@id": schemaGraph.expandCompactIRI(ref["@id"]),
+            "@id": ref["@id"],
             comment: await getPropertyComment(ref["@id"])
         })
 
-        const subClasses = (await schemaGraph.getSubClasses(ref["@id"])).map((s) =>
-            schemaGraph.expandCompactIRI(s)
-        )
+        const subClasses = await schemaGraph.getSubClasses(ref["@id"])
         for (const subClass of subClasses) {
             range.add({ "@id": subClass, comment: await getPropertyComment(subClass) })
         }
@@ -61,11 +67,11 @@ export async function getPossibleEntityProperties(types: string[], opt?: Propert
     for (const type of types) {
         const properties = (await schemaGraph.getClassProperties(type)).map((node) => {
             return {
-                "@id": schemaGraph.expandCompactIRI(node["@id"]),
+                "@id": node["@id"],
                 range: node.range
                     ? toArray(node.range).map((r) => {
                           return {
-                              "@id": schemaGraph.expandCompactIRI(r["@id"])
+                              "@id": r["@id"]
                           }
                       })
                     : [],
@@ -90,7 +96,7 @@ export function getAllClasses(): SlimClass[] {
         .filter((n) => n.isClass())
         .map((c) => {
             return {
-                "@id": schemaGraph.expandCompactIRI(c["@id"]),
+                "@id": c["@id"],
                 comment: c.comment
             }
         })
@@ -102,12 +108,12 @@ export function getAllProperties(opt?: Partial<PropertyOptions>): SlimProperty[]
         .filter((n) => n.isProperty())
         .map((p) => {
             return {
-                "@id": schemaGraph.expandCompactIRI(p["@id"]),
+                "@id": p["@id"],
                 comment: p.comment,
                 range: p.range
                     ? toArray(p.range).map((r) => {
                           return {
-                              "@id": schemaGraph.expandCompactIRI(r["@id"])
+                              "@id": r["@id"]
                           }
                       })
                     : []
@@ -122,7 +128,7 @@ export async function getAllComments(types: string[]): Promise<SlimClass[]> {
         const node = await schemaGraph.getNode(id)
         if (node) {
             result.push({
-                "@id": schemaGraph.expandCompactIRI(node["@id"]),
+                "@id": node["@id"],
                 comment: node.comment
             })
         }
@@ -133,9 +139,13 @@ export async function getAllComments(types: string[]): Promise<SlimClass[]> {
 export function getProvisioningStatus() {
     const workerActive =
         typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope
-    const provisionStatus = schemaGraph.provisioningManager.status
+    const provisionStatus = {}
 
     return { workerActive, provisionStatus }
+}
+
+export function updateSchemaResolverState(state: SchemaResolverStore) {
+    schemaResolver.updateState(state)
 }
 
 export const schemaWorkerFunctions = {
@@ -146,5 +156,6 @@ export const schemaWorkerFunctions = {
     getAllComments,
     getAllProperties,
     getPossibleEntityProperties,
-    getProvisioningStatus
+    getProvisioningStatus,
+    updateSchemaResolverState
 }

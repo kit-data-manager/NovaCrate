@@ -7,7 +7,7 @@ import React, {
     useMemo,
     useState
 } from "react"
-import { CrateVerifyContext } from "@/components/providers/crate-verify-provider"
+import { SchemaWorker } from "@/components/providers/crate-verify-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
@@ -113,7 +113,7 @@ export const PropertyEditor = memo(function PropertyEditor({
     isDeleted,
     onRemovePropertyEntry
 }: PropertyEditorProps) {
-    const { isReady: crateVerifyReady, worker } = useContext(CrateVerifyContext)
+    const { isReady: crateVerifyReady, worker } = useContext(SchemaWorker)
     const focusedProperty = useEntityEditorTabs((store) => store.focusedProperty)
     const unFocusProperty = useEntityEditorTabs((store) => store.unFocusProperty)
     const crateContext = useEditorState((store) => store.crateContext)
