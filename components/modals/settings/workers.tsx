@@ -107,7 +107,7 @@ export function WorkerSettings() {
                         <div className="text-sm text-muted-foreground">Name</div>
                         <div className="text-sm text-muted-foreground">Status</div>
 
-                        {schemaStatus?.loadedSchemas?.map((schema, i) => (
+                        {[...(schemaStatus?.loadedSchemas.entries() ?? [])].map(([schema], i) => (
                             <Fragment key={i}>
                                 <div>{schema}</div>
                                 <ProvisioningStatusDisplay isLoaded={true} error={undefined} />

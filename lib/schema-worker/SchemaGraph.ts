@@ -6,11 +6,16 @@ import { SchemaFile } from "./types"
 
 // ! currently only works on rdf:Property and rdfs:Class but not on class/property instances
 
+export interface LoadedSchemaInfos {
+    contextEntries: number
+    nodes: number
+}
+
 export class SchemaGraph {
     private context: Map<string, string> = new Map<string, string>()
     private graph: Map<string, SchemaNode> = new Map<string, SchemaNode>()
 
-    private loadedSchemas: string[] = []
+    private loadedSchemas: Map<string, LoadedSchemaInfos> = new Map()
     private schemaIssues: Map<string, unknown> = new Map()
 
     constructor(private schemaResolver: SchemaResolver) {}
@@ -22,7 +27,10 @@ export class SchemaGraph {
             return firstAttempt
         } else {
             // Try autoloading required schemas to get this node
-            const result = await this.schemaResolver.autoload(this.getExcludedSchemasForAutoload())
+            const result = await this.schemaResolver.autoload(
+                id,
+                this.getExcludedSchemasForAutoload()
+            )
 
             for (const [key, schema] of result) {
                 if (schema.schema) {
@@ -42,7 +50,7 @@ export class SchemaGraph {
      * @private
      */
     private getExcludedSchemasForAutoload() {
-        return [...this.loadedSchemas, ...this.schemaIssues.keys()]
+        return [...this.loadedSchemas.keys(), ...this.schemaIssues.keys()]
     }
 
     async forceSchemaLoad(schemaId: string) {
@@ -184,14 +192,14 @@ export class SchemaGraph {
     }
 
     addSchemaFromFile(id: string, schema: SchemaFile) {
-        if (!this.loadedSchemas.includes(id)) {
-            this.loadedSchemas.push(id)
-        }
+        let loadedContextEntries = 0
+        let loadedNodes = 0
 
         if ("@context" in schema) {
             for (const [key, value] of Object.entries(schema["@context"])) {
                 if (typeof value === "string") {
                     this.context.set(key, value)
+                    loadedContextEntries += 1
                 }
             }
         }
@@ -199,8 +207,14 @@ export class SchemaGraph {
         if ("@graph" in schema) {
             for (const node of schema["@graph"]) {
                 this.addNode(SchemaNode.createWithContext(node, this.context))
+                loadedNodes += 1
             }
         }
+
+        this.loadedSchemas.set(id, {
+            contextEntries: loadedContextEntries,
+            nodes: loadedNodes
+        })
     }
 
     addNode(entry: SchemaNode) {

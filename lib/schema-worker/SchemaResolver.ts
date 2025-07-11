@@ -6,15 +6,13 @@ export class SchemaResolver {
 
     constructor(private registeredSchemas: SchemaResolverStore["registeredSchemas"]) {}
 
-    async autoload(exclude: string[]) {
-        // Load schemas on demand? Currently, all schemas are always loaded
-        return await this.loadRegisteredSchemas(exclude)
-    }
-
-    async loadRegisteredSchemas(exclude: string[]) {
+    async autoload(nodeId: string, exclude: string[]) {
         const loadedSchemas: Map<string, { schema?: SchemaFile; error?: unknown }> = new Map()
 
-        for (const registeredSchema of this.registeredSchemas) {
+        const matched = this.registeredSchemas.filter((schema) =>
+            schema.matchesUrls.some((prefix) => nodeId.startsWith(prefix))
+        )
+        for (const registeredSchema of matched) {
             if (exclude.includes(registeredSchema.id)) continue
 
             try {

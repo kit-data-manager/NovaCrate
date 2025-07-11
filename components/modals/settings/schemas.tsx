@@ -19,6 +19,9 @@ import { ChangeEvent, useCallback, useContext, useEffect, useMemo, useState } fr
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { Error } from "@/components/error"
+import { LoadedSchemaInfos } from "@/lib/schema-worker/SchemaGraph"
+import { Badge } from "@/components/ui/badge"
+import HelpTooltip from "@/components/help-tooltip"
 
 export function SchemaSettingsPage() {
     const registeredSchemas = useStore(schemaResolverStore, (s) => s.registeredSchemas)
@@ -64,7 +67,14 @@ export function SchemaSettingsPage() {
                         <div className="font-bold">New Schema</div>
 
                         <div>
-                            <div className="text-sm">Identifier</div>
+                            <div className="text-sm">
+                                Identifier{" "}
+                                <HelpTooltip>
+                                    Must be unique, but can be any value. Does not have to be
+                                    related to the schema name or the representation in the crate
+                                    context.
+                                </HelpTooltip>
+                            </div>
                             <Input
                                 value={newSchemaID}
                                 onChange={(event) => setNewSchemaID(event.target.value)}
@@ -72,7 +82,10 @@ export function SchemaSettingsPage() {
                         </div>
 
                         <div>
-                            <div className="text-sm">Display Name</div>
+                            <div className="text-sm">
+                                Display Name
+                                <HelpTooltip>How the schema will appear in NovaCrate.</HelpTooltip>
+                            </div>
                             <Input
                                 value={newSchemaDisplayName}
                                 onChange={(event) => setNewSchemaDisplayName(event.target.value)}
@@ -176,7 +189,7 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
                         </div>
 
                         <div>
-                            <div className="text-sm">Name</div>
+                            <div className="text-sm">Display Name</div>
                             <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
                         </div>
 
@@ -206,7 +219,14 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
 
             <div className={"grid grid-cols-2 gap-4"}>
                 <div className="space-y-1">
-                    <div className="text-sm">Matches Prefixes</div>
+                    <div className="text-sm">
+                        Matches Prefixes{" "}
+                        <HelpTooltip>
+                            Any Entity or Property that is prefixed by one of the strings in this
+                            list will trigger this schema to be downloaded. An empty input will
+                            always load this schema.
+                        </HelpTooltip>
+                    </div>
                     {matchesPrefixes.map((url, i) => (
                         <Input
                             value={url}
@@ -230,7 +250,12 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
                 </div>
 
                 <div className="space-y-1">
-                    <div className="text-sm">Download URL</div>
+                    <div className="text-sm">
+                        Download URL{" "}
+                        <HelpTooltip>
+                            Should point to a valid JSON-LD file that contains the schema.
+                        </HelpTooltip>
+                    </div>
                     <Input value={downloadURL} onChange={(e) => setDownloadURL(e.target.value)} />
                 </div>
             </div>
@@ -257,19 +282,23 @@ function SchemaStatus({ schema }: { schema: RegisteredSchema }) {
     const [schemaStatus, setSchemaStatus] = useState<"loaded" | "not loaded" | "error">(
         "not loaded"
     )
+    const [schemaInfos, setSchemaInfos] = useState<LoadedSchemaInfos | undefined>()
     const [schemaError, setSchemaError] = useState<unknown>()
 
     const getSchemaStatus = useCallback(async () => {
         const status = await schemaWorker.worker.execute("getWorkerStatus")
-        if (status.schemaStatus.loadedSchemas.includes(schema.id)) {
+        if (status.schemaStatus.loadedSchemas.has(schema.id)) {
             setSchemaStatus("loaded")
             setSchemaError(undefined)
+            setSchemaInfos(status.schemaStatus.loadedSchemas.get(schema.id))
         } else if (status.schemaStatus.schemaIssues.get(schema.id)) {
             setSchemaStatus("error")
             setSchemaError(status.schemaStatus.schemaIssues.get(schema.id))
+            setSchemaInfos(undefined)
         } else {
             setSchemaStatus("not loaded")
             setSchemaError(undefined)
+            setSchemaInfos(undefined)
         }
     }, [schema.id, schemaWorker.worker])
 
@@ -286,7 +315,10 @@ function SchemaStatus({ schema }: { schema: RegisteredSchema }) {
             case "loaded":
                 return (
                     <span className="text-success inline-flex items-center gap-2">
-                        <CircleCheck className="size-4" /> Loaded
+                        <CircleCheck className="size-4" /> Loaded{" "}
+                        <span className="text-muted-foreground text-sm">
+                            <Badge variant="secondary">Nodes: {schemaInfos?.nodes}</Badge>
+                        </span>
                     </span>
                 )
             case "error":
@@ -302,7 +334,7 @@ function SchemaStatus({ schema }: { schema: RegisteredSchema }) {
                     </span>
                 )
         }
-    }, [schemaStatus])
+    }, [schemaInfos?.nodes, schemaStatus])
 
     useEffect(() => {
         getSchemaStatus().then()
