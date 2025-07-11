@@ -13,7 +13,6 @@ export const AddEntryDropdown = memo(function AddEntryDropdown(props: {
     onAddEntry(type: PropertyEditorTypes): void
     another: boolean
 }) {
-    console.log(props.propertyName, props.propertyRange)
     const propertyCanBe = usePropertyCanBe(props.propertyRange)
 
     if (props.propertyName === "@id") return null

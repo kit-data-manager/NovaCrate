@@ -1,5 +1,4 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { SchemaNode } from "@/lib/schema-worker/SchemaGraph"
 import { useCallback, useEffect, useState } from "react"
 import {
     getPropertyTypeDefaultValue,
@@ -8,6 +7,7 @@ import {
 import { SelectProperty } from "@/components/modals/add-property/select-property"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
 import { SelectType } from "@/components/modals/add-property/select-type"
+import { SchemaNode } from "@/lib/schema-worker/SchemaNode"
 
 export interface PossibleProperty {
     propertyName: string

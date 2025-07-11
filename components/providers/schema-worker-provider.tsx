@@ -1,16 +1,17 @@
 import { schemaWorkerFunctions } from "@/lib/schema-worker/helpers"
-import { createContext, PropsWithChildren } from "react"
+import { createContext, PropsWithChildren, useEffect } from "react"
 import { FunctionWorker } from "@/lib/function-worker"
 import { useFunctionWorker } from "@/lib/use-function-worker"
 import { addBasePath } from "next/dist/client/add-base-path"
+import { schemaResolverStore } from "@/lib/state/schema-resolver"
 
-export interface ICrateVerifyContext {
+export interface ISchemaWorkerContext {
     isReady: boolean
     isUsingWebWorker: boolean
     worker: FunctionWorker<typeof schemaWorkerFunctions>
 }
 
-export const CrateVerifyContext = createContext<ICrateVerifyContext>({
+export const SchemaWorker = createContext<ISchemaWorkerContext>({
     isReady: false,
     isUsingWebWorker: false,
     get worker(): FunctionWorker<typeof schemaWorkerFunctions> {
@@ -18,14 +19,29 @@ export const CrateVerifyContext = createContext<ICrateVerifyContext>({
     }
 })
 
-export function CrateVerifyProvider(props: PropsWithChildren) {
+export function SchemaWorkerProvider(props: PropsWithChildren) {
     const { worker, isUsingWebWorker, isReady } = useFunctionWorker(
         schemaWorkerFunctions,
         addBasePath("/schema-worker.js")
     )
 
+    useEffect(() => {
+        if (isReady) {
+            worker
+                .execute(
+                    "updateRegisteredSchemas",
+                    schemaResolverStore.getState().registeredSchemas
+                )
+                .then()
+
+            return schemaResolverStore.subscribe((newState) => {
+                worker.execute("updateRegisteredSchemas", newState.registeredSchemas).then()
+            })
+        }
+    }, [isReady, worker])
+
     return (
-        <CrateVerifyContext.Provider
+        <SchemaWorker.Provider
             value={{
                 isReady,
                 isUsingWebWorker,
@@ -33,6 +49,6 @@ export function CrateVerifyProvider(props: PropsWithChildren) {
             }}
         >
             {props.children}
-        </CrateVerifyContext.Provider>
+        </SchemaWorker.Provider>
     )
 }

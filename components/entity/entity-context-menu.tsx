@@ -13,7 +13,7 @@ import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-e
 import { useEditorState } from "@/lib/state/editor-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
-import { useGoToFileExplorer } from "@/lib/hooks"
+import { useGoToEntityEditor, useGoToFileExplorer } from "@/lib/hooks"
 
 export function EntityContextMenu({
     entity,
@@ -35,10 +35,13 @@ export function EntityContextMenu({
         return entity ? diff !== Diff.None : false
     }, [diff, entity])
 
+    const openEditor = useGoToEntityEditor()
+
     const openSelf = useCallback(() => {
         if (!entity) return
         openTab(createEntityEditorTab(entity), true)
-    }, [openTab, entity])
+        openEditor()
+    }, [entity, openTab, openEditor])
 
     const onSaveClick = useCallback(() => {
         if (entity) saveEntity(entity).then()
