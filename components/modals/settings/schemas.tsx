@@ -84,6 +84,9 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
     const [matchesPrefixes, setMatchesPrefixes] = useState(schema.matchesUrls)
     const [downloadURL, setDownloadURL] = useState(schema.schemaUrl)
 
+    const [newID, setNewID] = useState(schema.id)
+    const [newName, setNewName] = useState(schema.displayName)
+
     const onMatchesPrefixesChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>, i: number) => {
             const copy = [...matchesPrefixes]
@@ -117,6 +120,14 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
         })
     }, [downloadURL, matchesPrefixes, schema, updateSchema])
 
+    const changeName = useCallback(() => {
+        updateSchema(schema.id, {
+            ...schema,
+            displayName: newName,
+            id: newID
+        })
+    }, [newID, newName, schema, updateSchema])
+
     const hasChanges = useMemo(() => {
         return (
             downloadURL !== schema.schemaUrl ||
@@ -131,9 +142,30 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
                 <span className="text-sm ml-2 mr-2 bg-muted p-1 rounded font-mono">
                     {schema.id}
                 </span>
-                <Button variant="ghost" size="sm">
-                    <PencilIcon className="size-3" />
-                </Button>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                            <PencilIcon className="size-3" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="space-y-2">
+                        <div className="font-bold">Change Name</div>
+
+                        <div>
+                            <div className="text-sm">Identifier</div>
+                            <Input value={newID} onChange={(e) => setNewID(e.target.value)} />
+                        </div>
+
+                        <div>
+                            <div className="text-sm">Name</div>
+                            <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
+                        </div>
+
+                        <div className="flex justify-end">
+                            <Button onClick={changeName}>Done</Button>
+                        </div>
+                    </PopoverContent>
+                </Popover>
                 <Popover>
                     <PopoverTrigger asChild>
                         <Button variant="ghost" size="sm" className="ml-1 hover:text-destructive">
