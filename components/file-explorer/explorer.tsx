@@ -2,15 +2,7 @@
 
 import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import {
-    ChevronsDownUp,
-    ChevronsUpDown,
-    EllipsisVertical,
-    FileX,
-    Folder,
-    FolderX,
-    RefreshCw
-} from "lucide-react"
+import { ChevronsDownUp, ChevronsUpDown, EllipsisVertical, Folder, RefreshCw } from "lucide-react"
 import { Error } from "@/components/error"
 import { FolderContent } from "@/components/file-explorer/content"
 import HelpTooltip from "@/components/help-tooltip"
@@ -30,6 +22,10 @@ import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { ActionButton } from "@/components/actions/action-buttons"
 import { Button } from "@/components/ui/button"
 import useSWR from "swr"
+import { useStore } from "zustand/index"
+import { fileExplorerSettings } from "@/lib/state/file-explorer-settings"
+import { EntityIcon } from "@/components/entity/entity-icon"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -37,6 +33,8 @@ export function FileExplorer() {
     const crateData = useContext(CrateDataContext)
     const entities = useEditorState((store) => store.entities)
     const downloadError = useFileExplorerState((store) => store.downloadError)
+    const showEntities = useStore(fileExplorerSettings, (s) => s.showEntities)
+    const toggleShowEntities = useStore(fileExplorerSettings, (s) => s.toggleShowEntities)
 
     const filesListResolver = useCallback(async () => {
         if (crateData.serviceProvider && crateData.crateId) {
@@ -81,11 +79,7 @@ export function FileExplorer() {
                 <HelpTooltip>
                     <div>
                         <div className="text-wrap">
-                            The File Explorer lists all files and folders in the RO-Crate. Files
-                            that are not described by a Data Entity are marked by{" "}
-                            <FolderX className="inline-flex size-4 text-muted-foreground" />
-                            {" or "}
-                            <FileX className="inline-flex size-4 text-muted-foreground" />.
+                            The File Explorer lists all files and folders in the RO-Crate.
                         </div>
                         <div className="mt-6">
                             <b>Double-Left-Click:</b> Edit/Create Data Entity
@@ -100,6 +94,22 @@ export function FileExplorer() {
                     </div>
                 </HelpTooltip>
                 <div className="grow" />
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className={`px-0`}
+                            onClick={toggleShowEntities}
+                        >
+                            <EntityIcon
+                                className={`ml-2  ${showEntities ? "" : "grayscale"}`}
+                                entity={{ "@id": "", "@type": "File" }}
+                            />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Show entities next to file names</TooltipContent>
+                </Tooltip>
                 <ActionButton
                     variant="outline"
                     className="text-xs"
