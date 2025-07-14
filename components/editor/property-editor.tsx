@@ -147,6 +147,8 @@ export const PropertyEditor = memo(function PropertyEditor({
     )
 
     const resolvedPropertyName = useMemo(() => {
+        if (property.propertyName === "@id" || property.propertyName === "@type")
+            return property.propertyName
         return crateContext.resolve(property.propertyName)
     }, [crateContext, property.propertyName])
 
