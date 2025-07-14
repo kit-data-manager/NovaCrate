@@ -1,7 +1,8 @@
 import { toArray } from "../utils"
 
 /**
- * Generic schema node from Schema.org or BioSchemas etc.
+ * Generic schema node from Schema.org or BioSchemas etc. For easier handling, should be used to
+ * construct a {@link SchemaNode}
  */
 export interface ISchemaNode {
     "@id": string
@@ -16,6 +17,10 @@ export interface ISchemaNode {
     [key: string]: unknown
 }
 
+/**
+ * Represents an entry in the @graph array of a JSON-LD schema file used in the context of a RO-Crates.
+ * Provides many helper methods and properties to make working with the SchemaNode easier.
+ */
 export class SchemaNode {
     private readonly node: ISchemaNode
 
@@ -85,7 +90,21 @@ export class SchemaNode {
         }
     }
 
+    /**
+     * Create a new SchemaNode and expand all compact IRIs anywhere in the SchemaNode using the context of the schema file. ⚠ Property names are not changed.
+     * @param node SchemaNode from a schema file
+     * @param context Context of the schema file
+     */
     static createWithContext(node: ISchemaNode, context: Map<string, string>) {
+        if (!node || typeof node !== "object") {
+            throw new Error(`invalid node of type ${typeof node} in SchemaNode.createWithContext`)
+        }
+        if (!context) {
+            throw new Error(
+                `invalid context of type ${typeof context} in SchemaNode.createWithContext`
+            )
+        }
+
         function handleString(str: string): string {
             const match = /^([a-z]+):.+$/.exec(str)
             if (match != null) {
@@ -105,7 +124,7 @@ export class SchemaNode {
                 return handleString(value)
             } else if (Array.isArray(value)) {
                 return value.map(handleEntry)
-            } else if (typeof value === "object") {
+            } else if (typeof value === "object" && value !== null) {
                 return handleObject(value as { [index: string]: unknown })
             } else {
                 return value

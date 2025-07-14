@@ -31,7 +31,7 @@ export function SchemaSettingsPage() {
     const [newSchemaDisplayName, setNewSchemaDisplayName] = useState("")
 
     const canCreateNewSchema = useMemo(() => {
-        return newSchemaID != "" && newSchemaDisplayName != ""
+        return newSchemaID.trim() !== "" && newSchemaDisplayName.trim() !== ""
     }, [newSchemaDisplayName, newSchemaID])
 
     const createNewSchema = useCallback(() => {
