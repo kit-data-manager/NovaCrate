@@ -7,7 +7,7 @@ import React, {
     useMemo,
     useState
 } from "react"
-import { CrateVerifyContext } from "@/components/providers/crate-verify-provider"
+import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
@@ -113,7 +113,7 @@ export const PropertyEditor = memo(function PropertyEditor({
     isDeleted,
     onRemovePropertyEntry
 }: PropertyEditorProps) {
-    const { isReady: crateVerifyReady, worker } = useContext(CrateVerifyContext)
+    const { isReady: crateVerifyReady, worker } = useContext(SchemaWorker)
     const focusedProperty = useEntityEditorTabs((store) => store.focusedProperty)
     const unFocusProperty = useEntityEditorTabs((store) => store.unFocusProperty)
     const crateContext = useEditorState((store) => store.crateContext)
@@ -146,14 +146,20 @@ export const PropertyEditor = memo(function PropertyEditor({
         [onAddPropertyEntry, property.propertyName]
     )
 
+    const resolvedPropertyName = useMemo(() => {
+        if (property.propertyName === "@id" || property.propertyName === "@type")
+            return property.propertyName
+        return crateContext.resolve(property.propertyName)
+    }, [crateContext, property.propertyName])
+
     const referenceTypeRangeResolver = useCallback(async () => {
         if (property.propertyName.startsWith("@")) return []
         if (crateVerifyReady) {
-            const resolved = crateContext.resolve(property.propertyName)
-            if (!resolved) throw "Property not defined in context"
-            return await worker.execute("getPropertyRange", resolved)
+            if (!resolvedPropertyName)
+                throw `Property ${property.propertyName} not defined in context`
+            return await worker.execute("getPropertyRange", resolvedPropertyName)
         }
-    }, [crateContext, crateVerifyReady, property.propertyName, worker])
+    }, [crateVerifyReady, property.propertyName, resolvedPropertyName, worker])
 
     const { data: propertyRange, error: propertyRangeError } = useSWR(
         crateVerifyReady ? "property-type-range-" + property.propertyName : null,
@@ -164,12 +170,11 @@ export const PropertyEditor = memo(function PropertyEditor({
         if (property.propertyName === "@id") return "The unique identifier of the entity"
         if (property.propertyName === "@type")
             return "The type defines which properties can occur on the entity"
-        const resolved = crateContext.resolve(property.propertyName)
-        if (!resolved) throw "Property not defined in context"
-        const comment = await worker.execute("getPropertyComment", resolved)
-        if (!comment) throw "Could not find comment"
+        if (!resolvedPropertyName) throw `Property ${property.propertyName} not defined in context`
+        const comment = await worker.execute("getPropertyComment", resolvedPropertyName)
+        if (!comment) throw `Could not find comment for property ${resolvedPropertyName}`
         return comment
-    }, [crateContext, property.propertyName, worker])
+    }, [property.propertyName, resolvedPropertyName, worker])
 
     const {
         data: comment,
@@ -189,6 +194,25 @@ export const PropertyEditor = memo(function PropertyEditor({
     const Comment = useCallback(() => {
         if (commentIsPending) {
             return <Skeleton className="h-3 w-4/12 mt-1" />
+        } else if (resolvedPropertyName === null) {
+            console.warn(
+                "Error encountered while resolving comment for property " + property.propertyName,
+                commentError
+            )
+            return (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="text-warn inline-flex items-center gap-2">
+                            <TriangleAlert className="size-4" /> Unresolved property (not in
+                            context)
+                        </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        This property ({property.propertyName}) is not defined in the crate context.
+                        Comment and type can not be determined.
+                    </TooltipContent>
+                </Tooltip>
+            )
         } else if (commentError) {
             console.warn(
                 "Error encountered while resolving comment for property " + property.propertyName,
@@ -198,12 +222,14 @@ export const PropertyEditor = memo(function PropertyEditor({
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <span className="text-warn inline-flex items-center gap-2">
-                            <TriangleAlert className="size-4" /> Unresolved property
+                            <TriangleAlert className="size-4" /> Unresolved property (no matching
+                            schema)
                         </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                        This property could not be found in the crate context. Comment and type can
-                        not be determined.
+                        This property ({resolvedPropertyName ?? property.propertyName}) could not be
+                        found in one of the registered schemas. Comment and type can not be
+                        determined. Please add the required schema in the settings.
                     </TooltipContent>
                 </Tooltip>
             )
@@ -220,6 +246,7 @@ export const PropertyEditor = memo(function PropertyEditor({
         commentIsPending,
         expandComment,
         property.propertyName,
+        resolvedPropertyName,
         toggleExpandComment
     ])
 

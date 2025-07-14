@@ -153,7 +153,6 @@ export function CrateDataProvider({
 
     const healthTest = useCallback(async () => {
         try {
-            console.log("running health test")
             await serviceProvider.healthCheck()
             setHealthTestError((prev: unknown) => {
                 if (prev !== undefined) {

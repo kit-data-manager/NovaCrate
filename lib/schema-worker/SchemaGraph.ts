@@ -1,192 +1,65 @@
 "use client"
 
-import SchemaOrg from "./assets/schemaorg-current-https.json"
-import { toArray } from "../utils"
+import { SchemaNode } from "./SchemaNode"
+import { SchemaResolver } from "./SchemaResolver"
+import { SchemaFile } from "./types"
 
-// TODO currently only works on rdf:Property and rdfs:Class but not on class/property instances
+// ! currently only works on rdf:Property and rdfs:Class but not on class/property instances
 
-/**
- * Generic schema node from Schema.org or BioSchemas etc.
- */
-interface ISchemaNode {
-    "@id": string
-    "@type": string | string[]
-    "rdfs:comment"?: string | { "@language": string; "@value": string }
-    "rdfs:label"?: string | { "@language": string; "@value": string }
-    "rdfs:subClassOf"?: IReference | IReference[]
-    "rdfs:subPropertyOf"?: IReference | IReference[]
-    "schema:domainIncludes"?: IReference | IReference[]
-    "schema:rangeIncludes"?: IReference | IReference[]
-    $validation?: unknown // For validation with AJV outside of schema graph
+export interface LoadedSchemaInfos {
+    contextEntries: number
+    nodes: number
 }
-
-export class SchemaNode {
-    private readonly node: ISchemaNode
-
-    constructor(node: ISchemaNode) {
-        this.node = node
-    }
-
-    get "@id"() {
-        return this.node["@id"]
-    }
-
-    get parentClass() {
-        return this.node["rdfs:subClassOf"]
-    }
-
-    get parentProperty() {
-        return this.node["rdfs:subPropertyOf"]
-    }
-
-    get comment() {
-        return this.node["rdfs:comment"]
-    }
-
-    get domain() {
-        return this.node["schema:domainIncludes"]
-    }
-
-    get range() {
-        return this.node["schema:rangeIncludes"]
-    }
-
-    isProperty() {
-        return this.node["@type"] === "rdf:Property"
-    }
-
-    isClass() {
-        return toArray(this.node["@type"]).includes("rdfs:Class")
-    }
-
-    isDirectPropertyOfClass(classId: string) {
-        if (!this.node["schema:domainIncludes"]) return false
-
-        if (Array.isArray(this.node["schema:domainIncludes"])) {
-            return this.node["schema:domainIncludes"].map((ref) => ref["@id"]).includes(classId)
-        } else {
-            return this.node["schema:domainIncludes"]["@id"] === classId
-        }
-    }
-
-    isDirectSubClassOf(classId: string) {
-        if (!this.parentClass) return false
-
-        if (Array.isArray(this.parentClass)) {
-            return this.parentClass.map((ref) => ref["@id"]).includes(classId)
-        } else {
-            return this.parentClass["@id"] === classId
-        }
-    }
-
-    isDirectSubPropertyOf(propertyId: string) {
-        if (!this.parentProperty) return false
-
-        if (Array.isArray(this.parentProperty)) {
-            return this.parentProperty.map((ref) => ref["@id"]).includes(propertyId)
-        } else {
-            return this.parentProperty["@id"] === propertyId
-        }
-    }
-}
-
-class SchemaProvisionManager {
-    private schemaGraph: SchemaGraph
-    private schemaOrgLoaded = false
-    private schemaOrgError: unknown
-    private bioSchemaLoaded = false
-    private bioSchemaError: unknown = "Not supported yet"
-    private purlLoaded = false
-    private purlError: unknown = "Not supported yet"
-    private w3Loaded = false
-    private w3Error: unknown = "Not supported yet"
-
-    constructor(schemaGraph: SchemaGraph) {
-        this.schemaGraph = schemaGraph
-    }
-
-    async provision(id: string) {
-        if (id.startsWith("schema:") && !this.schemaOrgLoaded) {
-            await this.provisionSchemaOrg()
-        }
-    }
-
-    private provisionSchemaOrgPromise: Promise<void> | undefined = undefined
-    private async provisionSchemaOrg() {
-        const fn = async () => {
-            const response = await fetch(process.env.BASE_PATH + "/schema/schemaorg-adapted.json")
-            if (!response.ok)
-                throw "Provisioning of Schema.org failed. Cannot continue with resolving."
-
-            try {
-                const data = await response.json()
-                this.schemaGraph.addSchemaFromFile(data)
-                this.schemaOrgLoaded = true
-                this.provisionSchemaOrgPromise = undefined
-            } catch (e) {
-                console.error("Failed to parse Schema.org schema", e)
-                this.schemaOrgError = e
-                this.provisionSchemaOrgPromise = undefined
-                throw "Failed to parse Schema.org schema"
-            }
-        }
-
-        if (this.provisionSchemaOrgPromise) {
-            return this.provisionSchemaOrgPromise
-        } else {
-            this.provisionSchemaOrgPromise = fn()
-            return this.provisionSchemaOrgPromise
-        }
-    }
-
-    get status() {
-        return {
-            schemaOrgLoaded: this.schemaOrgLoaded,
-            schemaOrgError: this.schemaOrgError,
-            bioSchemaLoaded: this.bioSchemaLoaded,
-            bioSchemaError: this.bioSchemaError,
-            purlLoaded: this.purlLoaded,
-            purlError: this.purlError,
-            w3Loaded: this.w3Loaded,
-            w3Error: this.w3Error
-        }
-    }
-}
-
-export type ProvisioningStatus = typeof SchemaProvisionManager.prototype.status
 
 export class SchemaGraph {
     private context: Map<string, string> = new Map<string, string>()
     private graph: Map<string, SchemaNode> = new Map<string, SchemaNode>()
-    readonly provisioningManager = new SchemaProvisionManager(this)
+
+    private loadedSchemas: Map<string, LoadedSchemaInfos> = new Map()
+    private schemaIssues: Map<string, unknown> = new Map()
+
+    constructor(private schemaResolver: SchemaResolver) {}
 
     async getNode(id: string) {
-        // Should in the future be replaced with a more robust implementation that actually
-        // takes the @context of schema.org (or any other) into account
+        const firstAttempt = this.graph.get(id)
 
-        if (id.startsWith("https://schema.org/")) {
-            id = id.replace("https://schema.org/", "schema:")
-        }
-        if (id.startsWith("https://bioschemas.org/")) {
-            console.warn("SchemaGraph: Missing schema for bioschemas.org")
-            return undefined
-        }
-        if (id.startsWith("http://purl.org/")) {
-            console.warn("SchemaGraph: Missing schema for purl.org")
-            return undefined
-        }
-        if (id.startsWith("http://www.w3.org/")) {
-            console.warn("SchemaGraph: Missing schema for www.w3.org")
-            return undefined
-        }
-        if (/https?:\/\//.test(id)) {
-            console.warn("SchemaGraph: Unrecognized schema " + id)
-            return undefined
-        }
+        if (firstAttempt) {
+            return firstAttempt
+        } else {
+            // Try autoloading required schemas to get this node
+            const result = await this.schemaResolver.autoload(
+                id,
+                this.getExcludedSchemasForAutoload()
+            )
 
-        await this.provisioningManager.provision(id)
+            for (const [key, schema] of result) {
+                if (schema.schema) {
+                    this.addSchemaFromFile(key, schema.schema)
+                } else {
+                    this.schemaIssues.set(key, schema.error)
+                }
+            }
 
-        return this.graph.get(id)
+            // If the second attempt fails, return undefined
+            return this.graph.get(id)
+        }
+    }
+
+    /**
+     * Exclude all already loaded and all failed schemas from the next autoload
+     * @private
+     */
+    private getExcludedSchemasForAutoload() {
+        return [...this.loadedSchemas.keys(), ...this.schemaIssues.keys()]
+    }
+
+    async forceSchemaLoad(schemaId: string) {
+        try {
+            const schema = await this.schemaResolver.forceLoad(schemaId)
+            if (schema) this.addSchemaFromFile(schemaId, schema)
+        } catch (err) {
+            this.schemaIssues.set(schemaId, err)
+        }
     }
 
     getAllNodes() {
@@ -198,7 +71,7 @@ export class SchemaGraph {
         if (!self) throw new ReferenceError("classId not specified or invalid")
 
         const nodes: SchemaNode[] = []
-        for (const [_, node] of this.graph.entries()) {
+        for (const [, node] of this.graph.entries()) {
             if (node.isProperty() && node.isDirectPropertyOfClass(self["@id"])) {
                 nodes.push(node)
             }
@@ -270,7 +143,7 @@ export class SchemaGraph {
         if (!self) throw new ReferenceError("classId not specified or invalid")
         if (!self.isClass()) throw new Error(`Node ${self["@id"]} is not a class`)
 
-        for (const [_, node] of this.graph.entries()) {
+        for (const [, node] of this.graph.entries()) {
             if (node.isClass() && node.isDirectSubClassOf(self["@id"])) {
                 childrenIds.add(node["@id"])
                 const subChildren = await this.getSubClasses(node["@id"])
@@ -289,7 +162,7 @@ export class SchemaGraph {
         if (!self) throw new ReferenceError("propertyId not specified or invalid")
         if (!self.isProperty()) throw new Error("Node is not a property")
 
-        for (const [_, node] of this.graph.entries()) {
+        for (const [, node] of this.graph.entries()) {
             if (node.isProperty() && node.isDirectSubPropertyOf(self["@id"])) {
                 childrenIds.add(node["@id"])
                 const subChildren = await this.getSubProperties(node["@id"])
@@ -318,30 +191,42 @@ export class SchemaGraph {
         return false
     }
 
-    addSchemaFromFile(schema: typeof SchemaOrg) {
-        if ("@graph" in schema) {
-            for (const node of schema["@graph"]) {
-                this.addNode(new SchemaNode(node))
-            }
-        }
+    addSchemaFromFile(id: string, schema: SchemaFile) {
+        let loadedContextEntries = 0
+        let loadedNodes = 0
+
         if ("@context" in schema) {
             for (const [key, value] of Object.entries(schema["@context"])) {
-                this.context.set(key, value)
+                if (typeof value === "string") {
+                    this.context.set(key, value)
+                    loadedContextEntries += 1
+                }
             }
         }
+
+        if ("@graph" in schema) {
+            for (const node of schema["@graph"]) {
+                this.addNode(SchemaNode.createWithContext(node, this.context))
+                loadedNodes += 1
+            }
+        }
+
+        this.loadedSchemas.set(id, {
+            contextEntries: loadedContextEntries,
+            nodes: loadedNodes
+        })
     }
 
     addNode(entry: SchemaNode) {
         this.graph.set(entry["@id"], entry)
     }
 
-    expandCompactIRI(IRI: string) {
-        const parts = IRI.split(":")
-        const match = this.context.get(parts[0])
-        if (match) {
-            return match + parts[1]
-        } else return parts[1]
+    /**
+     * For the user interface
+     */
+    getSchemaStatus() {
+        return { loadedSchemas: this.loadedSchemas, schemaIssues: this.schemaIssues }
     }
 }
 
-export const schemaGraph = new SchemaGraph()
+export type SchemaStatus = ReturnType<InstanceType<typeof SchemaGraph>["getSchemaStatus"]>
