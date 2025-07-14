@@ -96,9 +96,9 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                 </Button>
                 {canHavePreview ? (
                     <Button
-                        variant={"outline"}
+                        variant={isBeingPreviewed ? "default" : "outline"}
                         size={"sm"}
-                        className={`text-xs transition-colors ${isBeingPreviewed ? "bg-primary text-primary-foreground hover:bg-primary/70 hover:text-primary-foreground" : ""}`}
+                        className={`text-xs transition-colors`}
                         onClick={togglePreview}
                     >
                         <Eye className="size-4 mr-2" /> Preview File
