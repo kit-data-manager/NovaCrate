@@ -70,7 +70,7 @@
   "devDependencies": {
     "@playwright/test": "^1.52.0",
     "@tailwindcss/postcss": "^4.1.4",
-    "@types/node": "^22",
+    "@types/node": "^24",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.5",
     "eslint": "^9.24.0",
