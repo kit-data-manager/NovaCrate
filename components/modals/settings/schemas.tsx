@@ -36,14 +36,21 @@ export function SchemaSettingsPage() {
 
     const createNewSchema = useCallback(() => {
         addSchema({
-            id: newSchemaID,
-            displayName: newSchemaDisplayName,
+            id: newSchemaID.trim(),
+            displayName: newSchemaDisplayName.trim(),
             schemaUrl: "",
             matchesUrls: [""]
         })
         setNewSchemaID("")
         setNewSchemaDisplayName("")
     }, [addSchema, newSchemaDisplayName, newSchemaID])
+
+    const newSchemaIDAlreadyTaken = useMemo(() => {
+        return (
+            registeredSchemas.find((s) => s.id === newSchemaID) !== undefined ||
+            registeredSchemas.find((s) => s.id === newSchemaID.trim()) !== undefined
+        )
+    }, [newSchemaID, registeredSchemas])
 
     return (
         <div className={"flex flex-col max-h-full"}>
@@ -79,6 +86,11 @@ export function SchemaSettingsPage() {
                                 value={newSchemaID}
                                 onChange={(event) => setNewSchemaID(event.target.value)}
                             />
+                            {newSchemaIDAlreadyTaken && (
+                                <div className="text-xs text-error mt-1">
+                                    This Identifier is already in use
+                                </div>
+                            )}
                         </div>
 
                         <div>
@@ -93,7 +105,10 @@ export function SchemaSettingsPage() {
                         </div>
 
                         <div className="flex justify-end">
-                            <Button onClick={createNewSchema} disabled={!canCreateNewSchema}>
+                            <Button
+                                onClick={createNewSchema}
+                                disabled={!canCreateNewSchema || newSchemaIDAlreadyTaken}
+                            >
                                 Done
                             </Button>
                         </div>
@@ -107,6 +122,7 @@ export function SchemaSettingsPage() {
 function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
     const deleteSchema = useStore(schemaResolverStore, (s) => s.deleteSchema)
     const updateSchema = useStore(schemaResolverStore, (s) => s.updateSchema)
+    const registeredSchemas = useStore(schemaResolverStore, (s) => s.registeredSchemas)
 
     const [matchesPrefixes, setMatchesPrefixes] = useState(schema.matchesUrls)
     const [downloadURL, setDownloadURL] = useState(schema.schemaUrl)
@@ -142,8 +158,8 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
     const saveSelf = useCallback(() => {
         updateSchema(schema.id, {
             ...schema,
-            schemaUrl: downloadURL,
-            matchesUrls: matchesPrefixes
+            schemaUrl: downloadURL.trim(),
+            matchesUrls: matchesPrefixes.map((s) => s.trim())
         })
     }, [downloadURL, matchesPrefixes, schema, updateSchema])
 
@@ -155,10 +171,18 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
     const changeName = useCallback(() => {
         updateSchema(schema.id, {
             ...schema,
-            displayName: newName,
-            id: newID
+            displayName: newName.trim(),
+            id: newID.trim()
         })
     }, [newID, newName, schema, updateSchema])
+
+    const newIDAlreadyTaken = useMemo(() => {
+        return (
+            (registeredSchemas.find((s) => s.id === newID) !== undefined ||
+                registeredSchemas.find((s) => s.id === newID.trim()) !== undefined) &&
+            newID !== schema.id
+        )
+    }, [newID, registeredSchemas, schema.id])
 
     const hasChanges = useMemo(() => {
         return (
@@ -186,6 +210,11 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
                         <div>
                             <div className="text-sm">Identifier</div>
                             <Input value={newID} onChange={(e) => setNewID(e.target.value)} />
+                            {newIDAlreadyTaken && (
+                                <div className="text-xs text-error mt-1">
+                                    This Identifier is already in use
+                                </div>
+                            )}
                         </div>
 
                         <div>
@@ -194,7 +223,9 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
                         </div>
 
                         <div className="flex justify-end">
-                            <Button onClick={changeName}>Done</Button>
+                            <Button onClick={changeName} disabled={newIDAlreadyTaken}>
+                                Done
+                            </Button>
                         </div>
                     </PopoverContent>
                 </Popover>
