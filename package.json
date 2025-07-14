@@ -73,7 +73,7 @@
     "@types/node": "^22",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.5",
-    "eslint": "^9.24.0",
+    "eslint": "^9.31.0",
     "eslint-config-next": "^15.3.3",
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-immer": "^0.0.1",
