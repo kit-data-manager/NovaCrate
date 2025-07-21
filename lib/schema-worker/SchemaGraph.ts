@@ -33,12 +33,16 @@ export class SchemaGraph {
         if (firstAttempt) {
             return firstAttempt
         } else {
+            console.time("getNode-" + id)
             // Try autoloading required schemas to get this node
+            console.time("autoload-" + id)
             const result = await this.schemaResolver.autoload(
                 id,
                 this.getExcludedSchemasForAutoload()
             )
+            console.timeEnd("autoload-" + id)
 
+            console.time("addSchema-" + id)
             for (const [key, schema] of result) {
                 if (schema.schema) {
                     this.addSchemaFromFile(key, schema.schema)
@@ -47,8 +51,10 @@ export class SchemaGraph {
                     this.schemaIssues.set(key, schema.error)
                 }
             }
+            console.timeEnd("addSchema-" + id)
 
             // If the second attempt fails, return undefined
+            console.timeEnd("getNode-" + id)
             return this.graph.get(id)
         }
     }
@@ -203,11 +209,15 @@ export class SchemaGraph {
         let loadedContextEntries = 0
         let loadedNodes = 0
 
+        const sourceMapContextValues: string[] = []
+        const sourceMapSchemaNodes: string[] = []
+
         if ("@context" in schema) {
             for (const [key, value] of Object.entries(schema["@context"])) {
                 if (typeof value === "string") {
                     this.context.set(key, value)
-                    this.addToContextSourceMap(id, key)
+
+                    sourceMapContextValues.push(value)
                     loadedContextEntries += 1
                 }
             }
@@ -217,7 +227,8 @@ export class SchemaGraph {
             for (const node of schema["@graph"]) {
                 const schemaNode = SchemaNode.createWithContext(node, this.context)
                 this.addNode(schemaNode)
-                this.addToGraphNodeSourceMap(id, schemaNode)
+
+                sourceMapSchemaNodes.push(schemaNode["@id"])
                 loadedNodes += 1
             }
         }
@@ -226,25 +237,8 @@ export class SchemaGraph {
             contextEntries: loadedContextEntries,
             nodes: loadedNodes
         })
-    }
-
-    private addToContextSourceMap(id: string, key: string) {
-        if (this.contextEntrySourceMap.has(id)) {
-            this.contextEntrySourceMap.set(id, [...this.contextEntrySourceMap.get(id)!, key])
-        } else {
-            this.contextEntrySourceMap.set(id, [key])
-        }
-    }
-
-    private addToGraphNodeSourceMap(id: string, schemaNode: SchemaNode) {
-        if (this.graphNodeSourceMap.has(id)) {
-            this.graphNodeSourceMap.set(id, [
-                ...this.graphNodeSourceMap.get(id)!,
-                schemaNode["@id"]
-            ])
-        } else {
-            this.graphNodeSourceMap.set(id, [schemaNode["@id"]])
-        }
+        this.contextEntrySourceMap.set(id, sourceMapContextValues)
+        this.graphNodeSourceMap.set(id, sourceMapSchemaNodes)
     }
 
     unloadSchema(id: string) {
