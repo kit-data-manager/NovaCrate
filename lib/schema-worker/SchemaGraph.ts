@@ -15,6 +15,13 @@ export class SchemaGraph {
     private context: Map<string, string> = new Map<string, string>()
     private graph: Map<string, SchemaNode> = new Map<string, SchemaNode>()
 
+    // Source maps for removing schema elements from the graph without resetting it completely.
+    // Maps schema id to context keys.
+    private contextEntrySourceMap: Map<string, string[]> = new Map<string, string[]>()
+    // Source maps for removing schema elements from the graph without resetting it completely.
+    // Maps schema id to node ids.
+    private graphNodeSourceMap: Map<string, string[]> = new Map<string, string[]>()
+
     private loadedSchemas: Map<string, LoadedSchemaInfos> = new Map()
     private schemaIssues: Map<string, unknown> = new Map()
 
@@ -26,21 +33,28 @@ export class SchemaGraph {
         if (firstAttempt) {
             return firstAttempt
         } else {
+            console.time("getNode-" + id)
             // Try autoloading required schemas to get this node
+            console.time("autoload-" + id)
             const result = await this.schemaResolver.autoload(
                 id,
                 this.getExcludedSchemasForAutoload()
             )
+            console.timeEnd("autoload-" + id)
 
+            console.time("addSchema-" + id)
             for (const [key, schema] of result) {
                 if (schema.schema) {
                     this.addSchemaFromFile(key, schema.schema)
                 } else {
+                    console.error("Encountered error while loading schema:", key, schema.error)
                     this.schemaIssues.set(key, schema.error)
                 }
             }
+            console.timeEnd("addSchema-" + id)
 
             // If the second attempt fails, return undefined
+            console.timeEnd("getNode-" + id)
             return this.graph.get(id)
         }
     }
@@ -195,10 +209,15 @@ export class SchemaGraph {
         let loadedContextEntries = 0
         let loadedNodes = 0
 
+        const sourceMapContextValues: string[] = []
+        const sourceMapSchemaNodes: string[] = []
+
         if ("@context" in schema) {
             for (const [key, value] of Object.entries(schema["@context"])) {
                 if (typeof value === "string") {
                     this.context.set(key, value)
+
+                    sourceMapContextValues.push(key)
                     loadedContextEntries += 1
                 }
             }
@@ -206,7 +225,10 @@ export class SchemaGraph {
 
         if ("@graph" in schema) {
             for (const node of schema["@graph"]) {
-                this.addNode(SchemaNode.createWithContext(node, this.context))
+                const schemaNode = SchemaNode.createWithContext(node, this.context)
+                this.addNode(schemaNode)
+
+                sourceMapSchemaNodes.push(schemaNode["@id"])
                 loadedNodes += 1
             }
         }
@@ -215,6 +237,28 @@ export class SchemaGraph {
             contextEntries: loadedContextEntries,
             nodes: loadedNodes
         })
+        this.contextEntrySourceMap.set(id, sourceMapContextValues)
+        this.graphNodeSourceMap.set(id, sourceMapSchemaNodes)
+    }
+
+    unloadSchema(id: string) {
+        const contextKeys = this.contextEntrySourceMap.get(id)
+        const graphNodeIds = this.graphNodeSourceMap.get(id)
+
+        if (contextKeys) {
+            for (const key of contextKeys) {
+                this.context.delete(key)
+            }
+        }
+
+        if (graphNodeIds) {
+            for (const nodeId of graphNodeIds) {
+                this.graph.delete(nodeId)
+            }
+        }
+
+        this.loadedSchemas.delete(id)
+        this.schemaIssues.delete(id)
     }
 
     addNode(entry: SchemaNode) {
