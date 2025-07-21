@@ -226,10 +226,15 @@ export const PropertyEditor = memo(function PropertyEditor({
                             schema)
                         </span>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent className="max-w-xl">
                         This property ({resolvedPropertyName ?? property.propertyName}) could not be
                         found in one of the registered schemas. Comment and type can not be
                         determined. Please add the required schema in the settings.
+                        <Error
+                            error={commentError}
+                            className="mt-2"
+                            title="Error while resolving property comment"
+                        />
                     </TooltipContent>
                 </Tooltip>
             )

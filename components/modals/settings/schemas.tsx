@@ -130,6 +130,40 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
     const [newID, setNewID] = useState(schema.id)
     const [newName, setNewName] = useState(schema.displayName)
 
+    const schemaWorker = useContext(SchemaWorker)
+    const [schemaLoading, setSchemaLoading] = useState(false)
+    const [schemaStatus, setSchemaStatus] = useState<"loaded" | "not loaded" | "error">(
+        "not loaded"
+    )
+    const [schemaInfos, setSchemaInfos] = useState<LoadedSchemaInfos | undefined>()
+    const [schemaError, setSchemaError] = useState<unknown>()
+
+    const getSchemaStatus = useCallback(async () => {
+        const status = await schemaWorker.worker.execute("getWorkerStatus")
+        if (status.schemaStatus.loadedSchemas.has(schema.id)) {
+            setSchemaStatus("loaded")
+            setSchemaError(undefined)
+            setSchemaInfos(status.schemaStatus.loadedSchemas.get(schema.id))
+        } else if (status.schemaStatus.schemaIssues.get(schema.id)) {
+            setSchemaStatus("error")
+            setSchemaError(status.schemaStatus.schemaIssues.get(schema.id))
+            setSchemaInfos(undefined)
+        } else {
+            setSchemaStatus("not loaded")
+            setSchemaError(undefined)
+            setSchemaInfos(undefined)
+        }
+    }, [schema.id, schemaWorker.worker])
+
+    const forceSchemaLoad = useCallback(async () => {
+        setSchemaLoading(true)
+        setSchemaError(undefined)
+        await schemaWorker.worker.execute("unloadSchema", schema.id)
+        await schemaWorker.worker.execute("forceSchemaLoad", schema.id)
+        setSchemaLoading(false)
+        getSchemaStatus().then()
+    }, [getSchemaStatus, schema.id, schemaWorker.worker])
+
     const onMatchesPrefixesChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>, i: number) => {
             const copy = [...matchesPrefixes]
@@ -161,7 +195,8 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
             schemaUrl: downloadURL.trim(),
             matchesUrls: matchesPrefixes.map((s) => s.trim())
         })
-    }, [downloadURL, matchesPrefixes, schema, updateSchema])
+        forceSchemaLoad().then()
+    }, [downloadURL, forceSchemaLoad, matchesPrefixes, schema, updateSchema])
 
     const revertSelf = useCallback(() => {
         setDownloadURL(schema.schemaUrl)
@@ -301,46 +336,34 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
                     </Button>
                 </div>
             ) : (
-                <SchemaStatus schema={schema} />
+                <SchemaStatus
+                    schemaStatus={schemaStatus}
+                    schemaInfos={schemaInfos}
+                    getSchemaStatus={getSchemaStatus}
+                    forceSchemaLoad={forceSchemaLoad}
+                    schemaLoading={schemaLoading}
+                    schemaError={schemaError}
+                />
             )}
         </div>
     )
 }
 
-function SchemaStatus({ schema }: { schema: RegisteredSchema }) {
-    const schemaWorker = useContext(SchemaWorker)
-    const [schemaLoading, setSchemaLoading] = useState(false)
-    const [schemaStatus, setSchemaStatus] = useState<"loaded" | "not loaded" | "error">(
-        "not loaded"
-    )
-    const [schemaInfos, setSchemaInfos] = useState<LoadedSchemaInfos | undefined>()
-    const [schemaError, setSchemaError] = useState<unknown>()
-
-    const getSchemaStatus = useCallback(async () => {
-        const status = await schemaWorker.worker.execute("getWorkerStatus")
-        if (status.schemaStatus.loadedSchemas.has(schema.id)) {
-            setSchemaStatus("loaded")
-            setSchemaError(undefined)
-            setSchemaInfos(status.schemaStatus.loadedSchemas.get(schema.id))
-        } else if (status.schemaStatus.schemaIssues.get(schema.id)) {
-            setSchemaStatus("error")
-            setSchemaError(status.schemaStatus.schemaIssues.get(schema.id))
-            setSchemaInfos(undefined)
-        } else {
-            setSchemaStatus("not loaded")
-            setSchemaError(undefined)
-            setSchemaInfos(undefined)
-        }
-    }, [schema.id, schemaWorker.worker])
-
-    const forceSchemaLoad = useCallback(async () => {
-        setSchemaLoading(true)
-        setSchemaError(undefined)
-        await schemaWorker.worker.execute("forceSchemaLoad", schema.id)
-        setSchemaLoading(false)
-        getSchemaStatus().then()
-    }, [getSchemaStatus, schema.id, schemaWorker.worker])
-
+function SchemaStatus({
+    schemaStatus,
+    schemaInfos,
+    getSchemaStatus,
+    forceSchemaLoad,
+    schemaLoading,
+    schemaError
+}: {
+    schemaStatus: "loaded" | "not loaded" | "error"
+    schemaInfos: LoadedSchemaInfos | undefined
+    getSchemaStatus: () => Promise<void>
+    forceSchemaLoad: () => Promise<void>
+    schemaLoading: boolean
+    schemaError?: unknown
+}) {
     const mappedStatus = useMemo(() => {
         switch (schemaStatus) {
             case "loaded":

@@ -15,6 +15,13 @@ export class SchemaGraph {
     private context: Map<string, string> = new Map<string, string>()
     private graph: Map<string, SchemaNode> = new Map<string, SchemaNode>()
 
+    // Source maps for removing schema elements from the graph without resetting it completely.
+    // Maps schema id to context keys.
+    private contextEntrySourceMap: Map<string, string[]> = new Map<string, string[]>()
+    // Source maps for removing schema elements from the graph without resetting it completely.
+    // Maps schema id to node ids.
+    private graphNodeSourceMap: Map<string, string[]> = new Map<string, string[]>()
+
     private loadedSchemas: Map<string, LoadedSchemaInfos> = new Map()
     private schemaIssues: Map<string, unknown> = new Map()
 
@@ -36,6 +43,7 @@ export class SchemaGraph {
                 if (schema.schema) {
                     this.addSchemaFromFile(key, schema.schema)
                 } else {
+                    console.error("Encountered error while loading schema:", key, schema.error)
                     this.schemaIssues.set(key, schema.error)
                 }
             }
@@ -199,6 +207,7 @@ export class SchemaGraph {
             for (const [key, value] of Object.entries(schema["@context"])) {
                 if (typeof value === "string") {
                     this.context.set(key, value)
+                    this.addToContextSourceMap(id, key)
                     loadedContextEntries += 1
                 }
             }
@@ -206,7 +215,9 @@ export class SchemaGraph {
 
         if ("@graph" in schema) {
             for (const node of schema["@graph"]) {
-                this.addNode(SchemaNode.createWithContext(node, this.context))
+                const schemaNode = SchemaNode.createWithContext(node, this.context)
+                this.addNode(schemaNode)
+                this.addToGraphNodeSourceMap(id, schemaNode)
                 loadedNodes += 1
             }
         }
@@ -215,6 +226,45 @@ export class SchemaGraph {
             contextEntries: loadedContextEntries,
             nodes: loadedNodes
         })
+    }
+
+    private addToContextSourceMap(id: string, key: string) {
+        if (this.contextEntrySourceMap.has(id)) {
+            this.contextEntrySourceMap.set(id, [...this.contextEntrySourceMap.get(id)!, key])
+        } else {
+            this.contextEntrySourceMap.set(id, [key])
+        }
+    }
+
+    private addToGraphNodeSourceMap(id: string, schemaNode: SchemaNode) {
+        if (this.graphNodeSourceMap.has(id)) {
+            this.graphNodeSourceMap.set(id, [
+                ...this.graphNodeSourceMap.get(id)!,
+                schemaNode["@id"]
+            ])
+        } else {
+            this.graphNodeSourceMap.set(id, [schemaNode["@id"]])
+        }
+    }
+
+    unloadSchema(id: string) {
+        const contextKeys = this.contextEntrySourceMap.get(id)
+        const graphNodeIds = this.graphNodeSourceMap.get(id)
+
+        if (contextKeys) {
+            for (const key of contextKeys) {
+                this.context.delete(key)
+            }
+        }
+
+        if (graphNodeIds) {
+            for (const nodeId of graphNodeIds) {
+                this.graph.delete(nodeId)
+            }
+        }
+
+        this.loadedSchemas.delete(id)
+        this.schemaIssues.delete(id)
     }
 
     addNode(entry: SchemaNode) {

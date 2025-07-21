@@ -2,12 +2,18 @@ import { SchemaFile, schemaFileSchema } from "./types"
 import type { SchemaResolverStore } from "../state/schema-resolver"
 
 export class SchemaResolver {
+    // SchemaResolver becomes ready with the first {@link SchemaResolver.updateRegisteredSchemas} call
+    private ready = false
+    private waitingForReady: Promise<void> | null = null
     private runningFetches: Map<string, Promise<SchemaFile>> = new Map()
 
     constructor(private registeredSchemas: SchemaResolverStore["registeredSchemas"]) {}
 
     async autoload(nodeId: string, exclude: string[]) {
         const loadedSchemas: Map<string, { schema?: SchemaFile; error?: unknown }> = new Map()
+
+        // Wait until the SchemaResolver becomes ready. Crucial to prevent errors on initial render
+        await this.waitForReady()
 
         const matched = this.registeredSchemas.filter((schema) =>
             schema.matchesUrls.some((prefix) => nodeId.startsWith(prefix))
@@ -27,7 +33,34 @@ export class SchemaResolver {
         return loadedSchemas
     }
 
+    private async waitForReady() {
+        if (!this.ready) {
+            if (!this.waitingForReady) {
+                this.waitingForReady = new Promise((resolve, reject) => {
+                    const interval = setInterval(() => {
+                        if (this.ready) {
+                            clearInterval(interval)
+                            clearTimeout(timeout)
+                            resolve()
+                        }
+                    }, 50)
+
+                    const timeout = setTimeout(() => {
+                        clearInterval(interval)
+                        clearTimeout(timeout)
+                        reject(
+                            new Error(
+                                "SchemaResolver timed out while waiting to become ready: did not receive updateRegisteredSchemas within 2 seconds"
+                            )
+                        )
+                    }, 2000)
+                })
+            } else return this.waitingForReady
+        }
+    }
+
     updateRegisteredSchemas(state: SchemaResolverStore["registeredSchemas"]) {
+        this.ready = true
         this.registeredSchemas = state
     }
 
