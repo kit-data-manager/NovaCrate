@@ -217,7 +217,7 @@ export class SchemaGraph {
                 if (typeof value === "string") {
                     this.context.set(key, value)
 
-                    sourceMapContextValues.push(value)
+                    sourceMapContextValues.push(key)
                     loadedContextEntries += 1
                 }
             }
