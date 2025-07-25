@@ -74,6 +74,9 @@ test("Edit different Property Types (no links), then save", async ({ page }) => 
     await expect(page.getByRole("spinbutton")).toHaveValue("22")
     await expect(page.getByRole("textbox").nth(3)).toHaveValue("v29.0.2")
     await page.getByRole("button", { name: "Save" }).click()
+    await expect(page.getByRole("listitem")).toMatchAriaSnapshot(
+        `- listitem: R Crate Root Name saved`
+    )
     await expect(page.getByRole("textbox").first()).toHaveValue("Crate Root Name")
     await expect(page.locator('input[type="datetime-local"]')).toHaveValue("2001-10-23T23:41")
     await expect(page.getByRole("textbox").nth(2)).toHaveValue("My Description of the Crate")

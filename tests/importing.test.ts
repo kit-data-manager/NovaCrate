@@ -174,18 +174,18 @@ test("Import Folder", async ({ page }) => {
     await expect(page.locator("body")).toMatchAriaSnapshot(`
     - button "img":
       - img
-    - button "candles-9247498_1280.jpgcandles-9247498_1280.jpg"
-    - button "description.txtdescription.txt"
-    - button "empty-fileempty-file"
-    - button "example.jsonexample.json"
+    - button "candles-9247498_1280.jpg"
+    - button "description.txt"
+    - button "empty-file"
+    - button "example.json"
     - button "ro-crate-metadata.json"
     `)
     await page.getByRole("button", { name: "candles-9247498_1280." }).click()
     await expect(page.locator("body")).toMatchAriaSnapshot(`- text: img/candles-9247498_1280.jpg`)
-    await page.getByRole("button", { name: "example.jsonexample.json" }).click()
+    await page.getByRole("button", { name: "example.json" }).click()
     await expect(page.getByRole("code")).toContainText(
         '{ "file": "example.json", "contains": "nothing"}'
     )
-    await page.getByRole("button", { name: "description.txtdescription.txt" }).click()
+    await page.getByRole("button", { name: "description.txt" }).click()
     await expect(page.getByRole("code")).toContainText("This is the Test Folder Crate")
 })

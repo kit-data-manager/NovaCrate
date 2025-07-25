@@ -62,7 +62,7 @@ test("Rename File", async ({ page }) => {
     await expect(page.locator("body")).toMatchAriaSnapshot(`
     - button "Subfolder":
       - img
-    - button "resultFile.txtJSON Result File"
+    - button "resultFile.txt"
     - button "ro-crate-metadata.json"
     `)
 })
