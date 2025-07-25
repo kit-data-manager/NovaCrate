@@ -3,7 +3,10 @@ import z from "zod"
 export const schemaFileSchema = z.object({
     "@context": z.any(),
     "@graph": z.array(
-        z.object({ "@id": z.string(), "@type": z.string().or(z.string().array()) }).passthrough()
+        z.intersection(
+            z.object({ "@id": z.string(), "@type": z.string().or(z.string().array()) }),
+            z.record(z.string(), z.unknown())
+        )
     )
 })
 
