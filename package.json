@@ -84,7 +84,7 @@
     "ts-loader": "^9.5.1",
     "tw-animate-css": "^1.3.4",
     "typescript": "^5",
-    "webpack": "^5.91.0",
+    "webpack": "^5.100.2",
     "webpack-cli": "^6.0.1"
   },
   "description": "Web-based interactive editor for creating, editing and visualising research object crates.",
