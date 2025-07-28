@@ -33,16 +33,12 @@ export class SchemaGraph {
         if (firstAttempt) {
             return firstAttempt
         } else {
-            console.time("getNode-" + id)
             // Try autoloading required schemas to get this node
-            console.time("autoload-" + id)
             const result = await this.schemaResolver.autoload(
                 id,
                 this.getExcludedSchemasForAutoload()
             )
-            console.timeEnd("autoload-" + id)
 
-            console.time("addSchema-" + id)
             for (const [key, schema] of result) {
                 if (schema.schema) {
                     this.addSchemaFromFile(key, schema.schema)
@@ -51,10 +47,8 @@ export class SchemaGraph {
                     this.schemaIssues.set(key, schema.error)
                 }
             }
-            console.timeEnd("addSchema-" + id)
 
             // If the second attempt fails, return undefined
-            console.timeEnd("getNode-" + id)
             return this.graph.get(id)
         }
     }

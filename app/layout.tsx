@@ -4,6 +4,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/sonner"
+import FaroMonitoring from "@/components/monitoring/faro"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -19,6 +20,7 @@ export default function RootLayout({
     return (
         <html lang="en" className="w-full h-full" suppressHydrationWarning>
             <body className={"w-full h-full " + inter.className}>
+                <FaroMonitoring />
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="dark"
