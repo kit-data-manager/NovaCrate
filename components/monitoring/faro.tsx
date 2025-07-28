@@ -1,6 +1,13 @@
 "use client"
 
-import { faro, getWebInstrumentations, initializeFaro } from "@grafana/faro-web-sdk"
+import {
+    ErrorsInstrumentation,
+    faro,
+    getWebInstrumentations,
+    initializeFaro,
+    SessionInstrumentation,
+    WebVitalsInstrumentation
+} from "@grafana/faro-web-sdk"
 import { TracingInstrumentation } from "@grafana/faro-web-tracing"
 import packageJson from "../../package.json"
 import { useEffect } from "react"
@@ -13,11 +20,11 @@ export default function FaroMonitoring() {
         }
 
         try {
-            const faro = initializeFaro({
+            initializeFaro({
                 url: "https://monitoring.datamanager.kit.edu/faro-receiver/collect", // process.env.NEXT_PUBLIC_FARO_URL,
                 app: {
-                    name: process.env.NEXT_PUBLIC_FARO_APP_NAME || "unknown_service:webjs",
-                    namespace: process.env.NEXT_PUBLIC_FARO_APP_NAMESPACE || undefined,
+                    name: "novacrate:webjs",
+                    namespace: "novacrate",
                     version: packageJson.version,
                     environment: process.env.NODE_ENV
                 },
@@ -27,7 +34,10 @@ export default function FaroMonitoring() {
                     ...getWebInstrumentations(),
 
                     // Tracing package to get end-to-end visibility for HTTP requests.
-                    new TracingInstrumentation()
+                    new TracingInstrumentation(),
+                    new ErrorsInstrumentation(),
+                    new WebVitalsInstrumentation(),
+                    new SessionInstrumentation()
                 ]
             })
         } catch (e) {
