@@ -239,7 +239,7 @@ test("Add Reference and follow it", async ({ page }) => {
         )
         .click()
     await page.getByRole("menuitem", { name: "Reference" }).click()
-    await page.getByRole("button", { name: "Select" }).click()
+    await page.getByRole("button", { name: "Link" }).click()
     await page.getByLabel("Suggestions").getByText("FJSON Result FileFile").click()
     await expect(page.locator("body")).toMatchAriaSnapshot(`
     - button "F JSON Result File result.json"
