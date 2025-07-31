@@ -1,17 +1,14 @@
 # 📦 NovaCrate
 
-Web-based interactive editor for **creating, editing and visualising** research object crates. The editor can be extended to work with any local or
-remote backend.
+Web-based fully-featured interactive editor for **creating, editing and visualising** research object crates.
 
-## [▶️ Demo](https://kit-data-manager.github.io/NovaCrate/)
-
-> If you can't access the demo, there are screenshots of NovaCrate at the bottom of this README
+## [▶️ Open NovaCrate](https://kit-data-manager.github.io/NovaCrate/)
 
 ## 🎨 Editions
 
 NovaCrate can be used and deployed in multiple different ways. Currently, the following editions (conceptually) exist:
 
-> 💡 If you have a special interest in the Desktop App or the Cloud Frontend, please get in contact with us.
+> 💡 If you have a special interest in the Desktop App or the Cloud Frontend, please get in contact.
 
 | Name               | Status  | Description                                                                                                                                                                                                             | Notes                                                                                                      |
 |--------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
@@ -30,12 +27,13 @@ NovaCrate currently does not include mechanisms for authentication, access contr
 
 - ✅ Create, read and edit RO-Crates
 - ✅ Visualize RO-Crates with a graph
+- ✅ Focused on usability and a modern architecture
 - ✅ Context-information and property descriptions
 - ✅ Automatic recommendation of fitting entity types and properties
-- ✅ Focused on good usability
-- ✅ Support RO-Crate Specification v1.1
+- ✅ Support for RO-Crate Specification v1.1
 - ✅ Support for importing and exporting the ELN format
-- ✅ Generate HTML preview file in crate
+- ✅ Easily extendable with custom schemas
+- ✅ Generate and view HTML preview file
 - ❌ Validation of RO-Crates (limited validation available in HTML preview file)
 - ❌ Support for RO-Crate Profiles
 
@@ -99,6 +97,8 @@ Most of the structure of the editor and many implementation and design details a
 To summarize: This is a Next.js app. Pages are located in /app, components in /components and anything else is probably in /lib.
 
 ## 📸 Screenshots
+
+> Note: These screenshots are out of date.
 
 ![](docs/teaser.png)
 ![](docs/teaser2.png)

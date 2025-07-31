@@ -1,6 +1,6 @@
 {
   "name": "novacrate",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "scripts": {
     "dev": "npm-run-all --parallel dev-next dev-webworker",
@@ -44,7 +44,7 @@
     "immer": "^10.0.4",
     "js-file-download": "^0.4.12",
     "jszip": "^3.10.1",
-    "lucide-react": "^0.525.0",
+    "lucide-react": "^0.535.0",
     "luxon": "^3.4.4",
     "monaco-editor": "^0.52.2",
     "next": "^15.3.0",
