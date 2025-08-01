@@ -32,7 +32,7 @@ async function testCrateContent(page: Page) {
     - button "Add another entry"
     - text: Has Part
     - paragraph: Indicates an item or CreativeWork that is part of this item, or CreativeWork (in some sense).
-    - button "F JSON Result File result.json"
+    - button "F JSON Result File"
     - button
     - button
     - button "Add another entry"
@@ -62,7 +62,7 @@ async function testCrateContent(page: Page) {
     - button "Is Family Friendly"
     - button "Version"
     `)
-    await page.getByRole("button", { name: "F JSON Result File result.json" }).click()
+    await page.getByRole("button", { name: "F JSON Result File", exact: true }).click()
     await expect(page.getByRole("heading").getByText("JSON Result File")).toBeVisible()
     await expect(page.locator("body")).toMatchAriaSnapshot(`
     - heading "File JSON Result File" [level=2]:
@@ -156,16 +156,16 @@ test("Import Folder", async ({ page }) => {
     await expect(page.getByRole("textbox").first()).toHaveValue("Uploaded from Folder")
     await expect(page.getByRole("textbox").nth(1)).toHaveValue("Custom Description Text")
     await expect(page.locator("body")).toMatchAriaSnapshot(`
-    - button "F candles-9247498_1280.jpg img/candles-9247498_1280.jpg"
+    - button "F candles-9247498_1280.jpg"
     - button
     - button
-    - button "F description.txt description.txt"
+    - button "F description.txt"
     - button
     - button
-    - button "F empty-file empty-file"
+    - button "F empty-file"
     - button
     - button
-    - button "F example.json example.json"
+    - button "F example.json"
     - button
     - button
     - button "Add another entry"

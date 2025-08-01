@@ -145,26 +145,29 @@ export const ReferenceField = memo(function ReferenceField({
                 </>
             ) : (
                 <>
-                    <Button
-                        className="shrink grow rounded-r-none justify-start pl-2 truncate min-w-0"
-                        variant="outline"
-                        onClick={openInNewTab}
-                    >
-                        {isExternalLink ? (
-                            <ExternalLink className="size-4 mr-1" />
-                        ) : (
-                            <EntityIcon className="mr-1" entity={referencedEntity} />
-                        )}
-                        <div className="flex items-end truncate grow">
-                            <ReferenceText />
-                            <span className="text-muted-foreground ml-1 text-xs truncate">
-                                {!isExternalLink && value["@id"]}
-                            </span>
-                            <div className="flex items-center self-center grow justify-end">
-                                {referencedEntity && <Eye className="size-4" />}
-                            </div>
-                        </div>
-                    </Button>
+                    <Tooltip delayDuration={1000}>
+                        <TooltipTrigger asChild>
+                            <Button
+                                className="shrink grow rounded-r-none justify-start pl-2 truncate min-w-0"
+                                variant="outline"
+                                onClick={openInNewTab}
+                            >
+                                {isExternalLink ? (
+                                    <ExternalLink className="size-4 mr-1" />
+                                ) : (
+                                    <EntityIcon className="mr-1" entity={referencedEntity} />
+                                )}
+                                <div className="flex items-end truncate grow">
+                                    <ReferenceText />
+                                    <div className="flex items-center self-center grow justify-end">
+                                        {referencedEntity && <Eye className="size-4" />}
+                                    </div>
+                                </div>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Identifier: {value["@id"]}</TooltipContent>
+                    </Tooltip>
+
                     {!referencedEntity && !isExternalLink && (
                         <Tooltip>
                             <TooltipTrigger asChild>
