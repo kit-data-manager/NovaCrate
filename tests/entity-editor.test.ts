@@ -242,10 +242,10 @@ test("Add Reference and follow it", async ({ page }) => {
     await page.getByRole("button", { name: "Link" }).click()
     await page.getByLabel("Suggestions").getByText("FJSON Result FileFile").click()
     await expect(page.locator("body")).toMatchAriaSnapshot(`
-    - button "F JSON Result File result.json"
+    - button "F JSON Result File"
     - button
     - button
-    - button "F JSON Result File result.json"
+    - button "F JSON Result File"
     - button
     - button
     - button "Add another entry"
@@ -253,15 +253,15 @@ test("Add Reference and follow it", async ({ page }) => {
     await expect(page.locator(".bg-info")).toBeVisible()
     await page.getByRole("button", { name: "Save" }).click()
     await expect(page.locator("body")).toMatchAriaSnapshot(`
-    - button "F JSON Result File result.json"
+    - button "F JSON Result File"
     - button
     - button
-    - button "F JSON Result File result.json"
+    - button "F JSON Result File"
     - button
     - button
     - button "Add another entry"
     `)
-    await page.getByRole("button", { name: "F JSON Result File result.json" }).nth(1).click()
+    await page.getByRole("button", { name: "F JSON Result File" }).nth(1).click()
     await expect(page.locator("body")).toMatchAriaSnapshot(`
     - heading "File JSON Result File" [level=2]:
       - button "File"
