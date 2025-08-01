@@ -11,6 +11,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import z from "zod"
 
 function undefinedIfEmpty<T>(arr?: T[]) {
     if (arr?.length === 0) {
@@ -76,13 +77,25 @@ export const ReferenceField = memo(function ReferenceField({
         if (referencedEntity) return getEntityDisplayName(referencedEntity)
     }, [referencedEntity])
 
+    const isExternalLink = useMemo(() => {
+        try {
+            z.url().parse(value["@id"])
+            return referencedEntity === undefined
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_) {
+            return false
+        }
+    }, [referencedEntity, value])
+
     const ReferenceText = useCallback(() => {
         if (referencedEntityName) {
             return <span className="truncate">{referencedEntityName}</span>
+        } else if (isExternalLink) {
+            return <span className="truncate">{value["@id"]}</span>
         } else {
             return <span className="text-root">Unlinked</span>
         }
-    }, [referencedEntityName])
+    }, [isExternalLink, referencedEntityName, value])
 
     return (
         <div className="flex w-full max-w-full min-w-0 overflow-none">
@@ -122,7 +135,7 @@ export const ReferenceField = memo(function ReferenceField({
                                 }}
                             >
                                 <LinkIcon className="size-4 mr-2" />
-                                Select
+                                Link
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -137,22 +150,22 @@ export const ReferenceField = memo(function ReferenceField({
                         variant="outline"
                         onClick={openInNewTab}
                     >
-                        <EntityIcon className="mr-1" entity={referencedEntity} />
+                        {isExternalLink ? (
+                            <ExternalLink className="size-4 mr-1" />
+                        ) : (
+                            <EntityIcon className="mr-1" entity={referencedEntity} />
+                        )}
                         <div className="flex items-end truncate grow">
                             <ReferenceText />
                             <span className="text-muted-foreground ml-1 text-xs truncate">
-                                {value["@id"]}
+                                {!isExternalLink && value["@id"]}
                             </span>
                             <div className="flex items-center self-center grow justify-end">
-                                {referencedEntity ? (
-                                    <Eye className="size-4" />
-                                ) : (
-                                    <ExternalLink className="size-4" />
-                                )}
+                                {referencedEntity && <Eye className="size-4" />}
                             </div>
                         </div>
                     </Button>
-                    {!referencedEntity && (
+                    {!referencedEntity && !isExternalLink && (
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button
@@ -183,9 +196,7 @@ export const ReferenceField = memo(function ReferenceField({
                                 <LinkIcon className="size-4" />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
-                            Reference an Entity that already exists in the Crate
-                        </TooltipContent>
+                        <TooltipContent>Change Reference</TooltipContent>
                     </Tooltip>
                 </>
             )}

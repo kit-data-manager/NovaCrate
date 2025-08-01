@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useState } from "react"
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
     Command,
@@ -17,6 +17,11 @@ import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useEditorState } from "@/lib/state/editor-state"
 import { CheckedState } from "@radix-ui/react-checkbox"
 import HelpTooltip from "@/components/help-tooltip"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import z from "zod"
+import { TriangleAlert } from "lucide-react"
 
 function SelectReferenceModalEntry({
     entity,
@@ -68,10 +73,27 @@ export function SelectReferenceModal({
     const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
     const crateContext = useEditorState((store) => store.crateContext)
 
+    const [isReferenceUrl, setIsReferenceUrl] = useState(false)
+    const [referenceUrl, setReferenceUrl] = useState("")
+    const [isValidReferenceUrl, setIsValidReferenceUrl] = useState(true)
     const [onlyShowAllowed, setOnlyShowAllowed] = useState(true)
+
+    useEffect(() => {
+        try {
+            z.url().parse(referenceUrl)
+            setIsValidReferenceUrl(true)
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_) {
+            setIsValidReferenceUrl(false)
+        }
+    }, [referenceUrl])
 
     const onCheckOnlyShowAllowed = useCallback((state: CheckedState) => {
         setOnlyShowAllowed(typeof state === "string" ? true : state)
+    }, [])
+
+    const onCheckIsReferenceUrl = useCallback((state: CheckedState) => {
+        setIsReferenceUrl(typeof state === "string" ? true : state)
     }, [])
 
     const propertyRangeIds = useMemo(() => {
@@ -107,6 +129,24 @@ export function SelectReferenceModal({
         [onOpenChange, onSelect]
     )
 
+    const confirmIsReference = useCallback(() => {
+        onSelectAndClose({
+            "@id": referenceUrl
+        })
+
+        setIsReferenceUrl(false)
+        setReferenceUrl("")
+    }, [onSelectAndClose, referenceUrl])
+
+    const handleReferenceUrlKeyDown = useCallback(
+        (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === "Enter") {
+                confirmIsReference()
+            }
+        },
+        [confirmIsReference]
+    )
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
@@ -114,31 +154,62 @@ export function SelectReferenceModal({
                     <DialogTitle>Select Entity to Reference</DialogTitle>
                 </DialogHeader>
 
-                <Command className="py-2">
-                    <CommandInput placeholder="Search all matching entities..." />
-                    <CommandList>
-                        <CommandEmpty>No results found.</CommandEmpty>
-                        <CommandGroup>
-                            {open ? (
-                                possibleEntities.map((e) => {
-                                    return (
-                                        <SelectReferenceModalEntry
-                                            key={e["@id"]}
-                                            entity={e}
-                                            onSelect={(r) => onSelectAndClose(r)}
-                                        />
-                                    )
-                                })
-                            ) : (
-                                <CommandItem className="flex flex-col gap-2">
-                                    <Skeleton className={"w-full h-8"} />
-                                    <Skeleton className={"w-full h-8"} />
-                                    <Skeleton className={"w-full h-8"} />
-                                </CommandItem>
-                            )}
-                        </CommandGroup>
-                    </CommandList>
-                </Command>
+                {isReferenceUrl ? (
+                    <div className="my-1">
+                        <Label>URL</Label>
+                        <Input
+                            placeholder={"https://..."}
+                            value={referenceUrl}
+                            onChange={(e) => setReferenceUrl(e.target.value)}
+                            onKeyDown={handleReferenceUrlKeyDown}
+                        />
+                        <div className="flex items-center justify-between mt-2">
+                            <div>
+                                {!isValidReferenceUrl && (
+                                    <span className="flex items-center text-warn">
+                                        <TriangleAlert className="size-4 mr-1" /> Invalid URL
+                                    </span>
+                                )}
+                            </div>
+                            <Button onClick={confirmIsReference}>Confirm</Button>
+                        </div>
+                    </div>
+                ) : (
+                    <Command className="py-2">
+                        <CommandInput placeholder="Search all matching entities..." />
+                        <CommandList>
+                            <CommandEmpty>No results found.</CommandEmpty>
+                            <CommandGroup>
+                                {open ? (
+                                    possibleEntities.map((e) => {
+                                        return (
+                                            <SelectReferenceModalEntry
+                                                key={e["@id"]}
+                                                entity={e}
+                                                onSelect={(r) => onSelectAndClose(r)}
+                                            />
+                                        )
+                                    })
+                                ) : (
+                                    <CommandItem className="flex flex-col gap-2">
+                                        <Skeleton className={"w-full h-8"} />
+                                        <Skeleton className={"w-full h-8"} />
+                                        <Skeleton className={"w-full h-8"} />
+                                    </CommandItem>
+                                )}
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                )}
+
+                <div className="flex gap-2 items-center">
+                    <Checkbox
+                        checked={isReferenceUrl}
+                        onCheckedChange={onCheckIsReferenceUrl}
+                        id="isReferenceUrl-reference"
+                    />
+                    <label htmlFor="isReferenceUrl-reference">Reference external resource</label>
+                </div>
 
                 {propertyRangeIds && (
                     <div className="flex gap-2 items-center">
