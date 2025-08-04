@@ -337,6 +337,7 @@ export const PropertyEditor = memo(function PropertyEditor({
                                     <SinglePropertyValidation
                                         entityId={entityId}
                                         propertyName={property.propertyName}
+                                        propertyIndex={i}
                                     />
                                 </div>
                             )

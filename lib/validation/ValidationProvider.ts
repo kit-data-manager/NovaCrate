@@ -93,14 +93,19 @@ export interface Validator {
     validateProperty(entity: IEntity, propertyName: string): ValidationResult[]
 }
 
-export type ValidationResultType = "error" | "warning" | "soft-warning" | "info"
+export enum ValidationResultSeverity {
+    error = 3,
+    warning = 2,
+    softWarning = 1,
+    info = 0
+}
 
 export interface ValidationResult {
     entityId?: string
     propertyName?: string
     propertyIndex?: number
 
-    resultType: ValidationResultType
+    resultSeverity: ValidationResultSeverity
     resultTitle: string
     resultDescription: string
 

@@ -1,4 +1,8 @@
-import { ValidationResult, Validator } from "@/lib/validation/ValidationProvider"
+import {
+    ValidationResult,
+    ValidationResultSeverity,
+    Validator
+} from "@/lib/validation/ValidationProvider"
 
 export class SampleValidator implements Validator {
     name = "SampleValidator"
@@ -16,7 +20,7 @@ export class SampleValidator implements Validator {
                     validatorName: this.name,
                     resultTitle: "Test result (Property)",
                     resultDescription: "This result is just a test",
-                    resultType: "warning"
+                    resultSeverity: ValidationResultSeverity.error
                 })
             }
         } else {
@@ -25,10 +29,11 @@ export class SampleValidator implements Validator {
                 entityId: entity["@id"],
                 propertyName,
                 validatorName: this.name,
-                resultTitle: "Test result (Property)",
+                resultTitle:
+                    "Linked entity does not match expected  gfdgf gfdgf gd gdfgd fd gfdg fdgfd gfd gfddfg fdg fd gfd gfdgfd gdf type",
                 resultDescription:
                     "This property should be linked to an entity of type Person, but it is linked to an entity of type Organization.",
-                resultType: "info",
+                resultSeverity: ValidationResultSeverity.info,
                 actions: [
                     {
                         name: "test",
@@ -58,7 +63,7 @@ export class SampleValidator implements Validator {
                 validatorName: this.name,
                 resultTitle: "Test result (Entity)",
                 resultDescription: "This result is just a test for entity validation",
-                resultType: "warning"
+                resultSeverity: ValidationResultSeverity.warning
             }
         ]
     }
@@ -69,7 +74,7 @@ export class SampleValidator implements Validator {
                 validatorName: this.name,
                 resultTitle: "Test result (Crate)",
                 resultDescription: "This result is just a test for crate validation",
-                resultType: "warning"
+                resultSeverity: ValidationResultSeverity.warning
             }
         ]
     }

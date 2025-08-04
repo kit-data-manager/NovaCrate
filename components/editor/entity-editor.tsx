@@ -28,8 +28,8 @@ import { EntityBadge } from "../entity/entity-badge"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useShallow } from "zustand/react/shallow"
 import { TypeSelectModal } from "@/components/modals/type-select-modal"
-import { useValidation, useValidationStore } from "@/lib/validation/ValidationProvider"
-import { useStore } from "zustand/index"
+import { useValidation } from "@/lib/validation/ValidationProvider"
+import { ValidationOverview } from "@/components/editor/validation-overview"
 
 export function EntityEditor({
     entityId,
@@ -48,15 +48,6 @@ export function EntityEditor({
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
     const validation = useValidation()
-    const validationStore = useValidationStore()
-    const validationResults = useStore(
-        validationStore,
-        useShallow((s) =>
-            s.results.filter((res) =>
-                entity ? res.entityId === entity["@id"] && res.propertyName === undefined : false
-            )
-        )
-    )
 
     useEffect(() => {
         if (entity) {
@@ -218,17 +209,15 @@ export function EntityEditor({
                 goToFileExplorer={canHavePreview ? showInFileExplorer : undefined}
             />
 
-            {validationResults.map((result, i) => (
-                <div key={i}>{result.resultTitle}</div>
-            ))}
-
             <div className="pt-12 p-4 pr-10 overflow-y-auto max-w-full">
                 <div className="flex justify-between items-center">
                     <h2 className="text-3xl font-bold flex items-center gap-4">
                         <EntityBadge entity={entity} size="lg" />
                         <span className="break-all">{displayName}</span>
                     </h2>
-                    <div className="gap-2 flex"></div>
+                    <div className="gap-2 flex">
+                        <ValidationOverview entityId={entityId} />
+                    </div>
                 </div>
 
                 <WebWorkerWarning />

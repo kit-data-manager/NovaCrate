@@ -1,44 +1,51 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
-import { CircleAlert, InfoIcon, TriangleAlert } from "lucide-react"
 import React, { useMemo } from "react"
-import { useValidationStore } from "@/lib/validation/ValidationProvider"
+import { useValidationStore, ValidationResultSeverity } from "@/lib/validation/ValidationProvider"
 import { useStore } from "zustand/index"
 import { useShallow } from "zustand/react/shallow"
+import { ValidationResultIcon } from "@/components/editor/validation/validation-result-icon"
+import { ValidationResultLine } from "@/components/editor/validation/validation-result-line"
 
 export function SinglePropertyValidation({
     propertyName,
-    entityId
+    entityId,
+    propertyIndex
 }: {
     propertyName: string
+    propertyIndex: number
     entityId: string
 }) {
     const validationStore = useValidationStore()
     const validationResults = useStore(
         validationStore,
         useShallow((s) =>
-            s.results.filter(
-                (res) => res.entityId === entityId && res.propertyName === propertyName
-            )
+            s.results
+                .filter(
+                    (res) =>
+                        res.entityId === entityId &&
+                        res.propertyName === propertyName &&
+                        (res.propertyIndex === propertyIndex ||
+                            (!res.propertyIndex && propertyIndex === 0))
+                )
+                .sort((a, b) => b.resultSeverity - a.resultSeverity)
         )
     )
 
     const highestResultType = useMemo(() => {
-        if (validationResults.find((res) => res.resultType === "error")) return "error"
-        if (validationResults.find((res) => res.resultType === "warning")) return "warning"
-        if (validationResults.find((res) => res.resultType === "soft-warning"))
-            return "soft-warning"
-        if (validationResults.find((res) => res.resultType === "info")) return "info"
+        return (
+            validationResults.find(
+                (res) => res.resultSeverity === ValidationResultSeverity.error
+            ) ??
+            validationResults.find(
+                (res) => res.resultSeverity === ValidationResultSeverity.warning
+            ) ??
+            validationResults.find(
+                (res) => res.resultSeverity === ValidationResultSeverity.softWarning
+            ) ??
+            validationResults.find((res) => res.resultSeverity === ValidationResultSeverity.info)
+        )
     }, [validationResults])
-
-    const icon = useMemo(() => {
-        if (highestResultType === "error") return <CircleAlert className="size-4 stroke-error" />
-        if (highestResultType === "warning") return <TriangleAlert className="size-4 stroke-warn" />
-        if (highestResultType === "soft-warning")
-            return <TriangleAlert className="size-4 stroke-warn opacity-40" />
-        if (highestResultType === "info") return <InfoIcon className="size-4 stroke-info" />
-        return <InfoIcon className="size-4 stroke-info" />
-    }, [highestResultType])
 
     return (
         <div
@@ -46,28 +53,14 @@ export function SinglePropertyValidation({
         >
             <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant={"ghost"}>{icon}</Button>
+                    <Button variant={"ghost"}>
+                        <ValidationResultIcon result={highestResultType} />
+                    </Button>
                 </PopoverTrigger>
-                <PopoverContent className="p-2">
+                <PopoverContent className="p-2 w-[600px] max-w-[600px]">
                     <div className="text-xs font-medium p-1 mb-1">Issues</div>
                     {validationResults.map((res, i) => (
-                        <div key={i} className="flex gap-2 p-1 text-sm hover:bg-muted rounded-sm">
-                            <div className="grow">{res.resultTitle}</div>
-                            <div className="flex gap-2">
-                                {res.actions
-                                    ?.filter((a) => "dispatch" in a)
-                                    .map((action, j) => (
-                                        <Button
-                                            className="p-0 m-0 h-auto"
-                                            variant="link"
-                                            key={j}
-                                            onClick={action.dispatch}
-                                        >
-                                            {action.displayName}
-                                        </Button>
-                                    ))}
-                            </div>
-                        </div>
+                        <ValidationResultLine result={res} key={i} />
                     ))}
                 </PopoverContent>
             </Popover>
