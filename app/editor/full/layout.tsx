@@ -1,6 +1,6 @@
 "use client"
 
-import { PropsWithChildren, useContext, useEffect } from "react"
+import { PropsWithChildren, useContext, useEffect, useRef } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Nav } from "@/components/nav/nav"
 import { usePathname } from "next/navigation"
@@ -14,20 +14,31 @@ import DefaultActions from "@/components/actions/default-actions"
 import { ActionKeyboardShortcuts } from "@/components/actions/action-keyboard-shortcuts"
 import EntityActions from "@/components/actions/entity-actions"
 import { EntityEditorTabsSupervisor } from "@/components/editor/entity-editor-tabs-supervisor"
+import { ValidationContext, ValidationProvider } from "@/lib/validation/ValidationProvider"
+import { editorState } from "@/lib/state/editor-state"
+import { SampleValidator } from "@/lib/validation/SampleValidator"
 
 export default function EditorLayout(props: PropsWithChildren) {
+    const validation = useRef<ValidationProvider>(null!)
+    if (!validation.current) {
+        validation.current = new ValidationProvider(editorState)
+        validation.current.addValidator(new SampleValidator())
+    }
+
     return (
         <ActionsProvider>
             <SchemaWorkerProvider>
                 <GlobalModalProvider>
                     <GraphStateProvider>
                         <GraphSettingsProvider>
-                            <DefaultActions />
-                            <EntityActions />
-                            <ActionKeyboardShortcuts />
-                            <RecentlyUsed />
-                            <EntityEditorTabsSupervisor />
-                            <Nav>{props.children}</Nav>
+                            <ValidationContext.Provider value={{ validation: validation.current }}>
+                                <DefaultActions />
+                                <EntityActions />
+                                <ActionKeyboardShortcuts />
+                                <RecentlyUsed />
+                                <EntityEditorTabsSupervisor />
+                                <Nav>{props.children}</Nav>
+                            </ValidationContext.Provider>
                         </GraphSettingsProvider>
                     </GraphStateProvider>
                 </GlobalModalProvider>

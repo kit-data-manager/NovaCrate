@@ -8,6 +8,7 @@ export type EntityId = string
 export interface ValidationResultStore {
     results: ValidationResult[]
     clearResults(entityId?: EntityId, propertyName?: string): void
+    clear(): void
     addResults(result: ValidationResult[]): void
 }
 
@@ -25,6 +26,9 @@ const store = create<ValidationResultStore>()(
                 )
             })
         },
+        clear() {
+            set({ results: [] })
+        },
         addResults(result: ValidationResult[]) {
             set((store) => {
                 store.results.push(...result)
@@ -37,7 +41,11 @@ export class ValidationProvider {
     validators: Validator[] = []
     resultStore = store
 
-    constructor(private editorState: UseBoundStore<StoreApi<EditorState>>) {}
+    constructor(private editorState: UseBoundStore<StoreApi<EditorState>>) {
+        // Only one validation provider can be operated at one time
+        // clear the store from previous crates
+        store.getState().clear()
+    }
 
     addValidator(validator: Validator) {
         this.validators.push(validator)
