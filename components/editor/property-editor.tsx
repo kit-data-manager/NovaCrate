@@ -21,11 +21,7 @@ import { getDefaultDate } from "@/components/editor/text-fields/date-field"
 import { Pagination } from "@/components/pagination"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import useSWR from "swr"
-import { useValidation, useValidationStore } from "@/lib/validation/ValidationProvider"
-import { useStore } from "zustand/index"
-import { useShallow } from "zustand/react/shallow"
-import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useValidation } from "@/lib/validation/ValidationProvider"
 import { SinglePropertyValidation } from "@/components/editor/single-property-validation"
 
 export interface EntityEditorProperty {
@@ -125,11 +121,13 @@ export const PropertyEditor = memo(function PropertyEditor({
     const crateContext = useEditorState((store) => store.crateContext)
     const container = createRef<HTMLDivElement>()
     const validation = useValidation()
-    const validationStore = useValidationStore()
+    const [validationRunning, setValidationRunning] = useState(false)
 
     useEffect(() => {
-        console.log("Running property validation", entityId, property.propertyName)
-        validation.validateProperty(entityId, property.propertyName)
+        setValidationRunning(true)
+        validation.validateProperty(entityId, property.propertyName).then(() => {
+            setValidationRunning(false)
+        })
     }, [entityId, property.propertyName, validation])
 
     const isFocused = useMemo(() => {
@@ -338,6 +336,7 @@ export const PropertyEditor = memo(function PropertyEditor({
                                         entityId={entityId}
                                         propertyName={property.propertyName}
                                         propertyIndex={i}
+                                        validationRunning={validationRunning}
                                     />
                                 </div>
                             )

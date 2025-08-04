@@ -21,7 +21,7 @@ const store = create<ValidationResultStore>()(
                         ? propertyName
                             ? result.entityId !== entityId || result.propertyName !== propertyName
                             : result.entityId !== entityId || result.propertyName !== undefined
-                        : false
+                        : result.entityId !== undefined
                 )
             })
         },
@@ -43,28 +43,45 @@ export class ValidationProvider {
         this.validators.push(validator)
     }
 
-    validateEntity(entityId: string) {
-        const entity = this.editorState.getState().getEntities().get(entityId)
-        // TODO: handle undefined entity
-        if (!entity) return
-        store.getState().clearResults(entity["@id"])
-        const results: ValidationResult[] = []
+    async validateCrate() {
+        const entities = this.editorState.getState().getEntities()
+        const context = this.editorState.getState().crateContext
+        store.getState().clearResults()
+        const promises: Promise<ValidationResult[]>[] = []
         for (const validator of this.validators) {
-            results.push(...validator.validateEntity(entity))
+            promises.push(
+                validator.validateCrate({
+                    "@graph": Array.from(entities.values()),
+                    "@context": context.context
+                })
+            )
         }
-        store.getState().addResults(results)
+        const results = await Promise.all(promises)
+        store.getState().addResults(results.flat())
     }
 
-    validateProperty(entityId: string, propertyName: string) {
+    async validateEntity(entityId: string) {
         const entity = this.editorState.getState().getEntities().get(entityId)
-        // TODO: handle undefined entity
-        if (!entity) return console.log("Entity not found", entityId)
-        store.getState().clearResults(entity["@id"], propertyName)
-        const results: ValidationResult[] = []
+        if (!entity) return console.warn("Entity not found during validation", entityId)
+        store.getState().clearResults(entity["@id"])
+        const promises: Promise<ValidationResult[]>[] = []
         for (const validator of this.validators) {
-            results.push(...validator.validateProperty(entity, propertyName))
+            promises.push(validator.validateEntity(entity))
         }
-        store.getState().addResults(results)
+        const results = await Promise.all(promises)
+        store.getState().addResults(results.flat())
+    }
+
+    async validateProperty(entityId: string, propertyName: string) {
+        const entity = this.editorState.getState().getEntities().get(entityId)
+        if (!entity) return console.warn("Entity not found during validation", entityId)
+        store.getState().clearResults(entity["@id"], propertyName)
+        const promises: Promise<ValidationResult[]>[] = []
+        for (const validator of this.validators) {
+            promises.push(validator.validateProperty(entity, propertyName))
+        }
+        const results = await Promise.all(promises)
+        store.getState().addResults(results.flat())
     }
 }
 
@@ -88,9 +105,9 @@ export const ValidationContext = createContext<ValidationContext>({ validation: 
 
 export interface Validator {
     name: string
-    validateCrate(crate: ICrate): ValidationResult[]
-    validateEntity(entity: IEntity): ValidationResult[]
-    validateProperty(entity: IEntity, propertyName: string): ValidationResult[]
+    validateCrate(crate: ICrate): Promise<ValidationResult[]>
+    validateEntity(entity: IEntity): Promise<ValidationResult[]>
+    validateProperty(entity: IEntity, propertyName: string): Promise<ValidationResult[]>
 }
 
 export enum ValidationResultSeverity {

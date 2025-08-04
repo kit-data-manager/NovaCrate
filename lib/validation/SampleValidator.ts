@@ -7,7 +7,7 @@ import {
 export class SampleValidator implements Validator {
     name = "SampleValidator"
 
-    validateProperty(entity: IEntity, propertyName: string): ValidationResult[] {
+    async validateProperty(entity: IEntity, propertyName: string): Promise<ValidationResult[]> {
         const values = entity[propertyName]
         const results: ValidationResult[] = []
 
@@ -24,7 +24,6 @@ export class SampleValidator implements Validator {
                 })
             }
         } else {
-            console.log("Returning validation for ", propertyName)
             results.push({
                 entityId: entity["@id"],
                 propertyName,
@@ -56,7 +55,7 @@ export class SampleValidator implements Validator {
         return results
     }
 
-    validateEntity(entity: IEntity): ValidationResult[] {
+    async validateEntity(entity: IEntity): Promise<ValidationResult[]> {
         return [
             {
                 entityId: entity["@id"],
@@ -68,7 +67,7 @@ export class SampleValidator implements Validator {
         ]
     }
 
-    validateCrate(): ValidationResult[] {
+    async validateCrate(): Promise<ValidationResult[]> {
         return [
             {
                 validatorName: this.name,

@@ -5,8 +5,8 @@ import { CrateDataProvider } from "@/components/providers/crate-data-provider"
 import { GlobalModalProvider } from "@/components/providers/global-modals-provider"
 import { BrowserBasedCrateService } from "@/lib/backend/BrowserBasedCrateService"
 import { ValidationContext, ValidationProvider } from "@/lib/validation/ValidationProvider"
-import { SampleValidator } from "@/lib/validation/SampleValidator"
 import { editorState } from "@/lib/state/editor-state"
+import { SampleValidator } from "@/lib/validation/SampleValidator"
 
 const serviceProvider = new BrowserBasedCrateService()
 

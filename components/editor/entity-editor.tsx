@@ -48,11 +48,12 @@ export function EntityEditor({
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
     const validation = useValidation()
+    const [validationRunning, setValidationRunning] = useState(false)
 
     useEffect(() => {
         if (entity) {
-            console.log("Running entity validation")
-            validation.validateEntity(entity["@id"])
+            setValidationRunning(true)
+            validation.validateEntity(entity["@id"]).then(() => setValidationRunning(false))
         }
     }, [entity, validation])
 
@@ -216,7 +217,10 @@ export function EntityEditor({
                         <span className="break-all">{displayName}</span>
                     </h2>
                     <div className="gap-2 flex">
-                        <ValidationOverview entityId={entityId} />
+                        <ValidationOverview
+                            entityId={entityId}
+                            validationRunning={validationRunning}
+                        />
                     </div>
                 </div>
 

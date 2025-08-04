@@ -9,7 +9,13 @@ import { ValidationResultLine } from "@/components/editor/validation/validation-
 import { sortValidationResultByName } from "@/lib/utils"
 import { useEditorState } from "@/lib/state/editor-state"
 
-export function ValidationOverview({ entityId }: { entityId?: string }) {
+export function ValidationOverview({
+    entityId,
+    validationRunning
+}: {
+    entityId?: string
+    validationRunning?: boolean
+}) {
     const validationStore = useValidationStore()
     const validationResults = useStore(
         validationStore,
@@ -44,7 +50,7 @@ export function ValidationOverview({ entityId }: { entityId?: string }) {
 
     return (
         <div
-            className={`p-1 ${validationResults.length > 0 ? "" : "opacity-0 pointer-events-none"}`}
+            className={`p-1 ${validationResults.length > 0 ? "" : "opacity-0 pointer-events-none"} ${validationRunning && validationResults.length > 0 ? "opacity-50" : ""} transition-opacity`}
         >
             <Popover>
                 <PopoverTrigger asChild>
