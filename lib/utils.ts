@@ -10,6 +10,7 @@ import {
     SCHEMA_ORG_TEXTLIKE,
     SCHEMA_ORG_TIME
 } from "./constants"
+import { ValidationResult } from "@/lib/validation/ValidationProvider"
 
 /**
  * Utility from shadcn/ui to merge multiple className strings into one
@@ -328,4 +329,15 @@ export function changeEntityId(entities: IEntity[], oldId: string, newId: string
             }
         }
     })
+}
+
+/**
+ * Sort a ValidationResult by propertyName, propertyIndex, entityId and resultTitle
+ * @param a
+ * @param b
+ */
+export function sortValidationResultByName(a: ValidationResult, b: ValidationResult) {
+    const strA = (a.propertyName ?? "undefined") + a.propertyIndex + a.entityId + a.resultTitle
+    const strB = (b.propertyName ?? "undefined") + b.propertyIndex + b.entityId + b.resultTitle
+    return strA.localeCompare(strB)
 }

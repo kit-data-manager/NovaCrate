@@ -1,0 +1,40 @@
+import { BugIcon, XIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { ValidationResultLine } from "@/components/editor/validation/validation-result-line"
+import React from "react"
+import { useValidationStore } from "@/lib/validation/ValidationProvider"
+import { useStore } from "zustand/index"
+import { useShallow } from "zustand/react/shallow"
+import { useEditorState } from "@/lib/state/editor-state"
+import { sortValidationResultByName } from "@/lib/utils"
+
+export function ValidationDrawer() {
+    const validationStore = useValidationStore()
+    const validationResults = useStore(
+        validationStore,
+        useShallow((s) =>
+            Array.from(s.results)
+                .sort(sortValidationResultByName)
+                .sort((a, b) => b.resultSeverity - a.resultSeverity)
+        )
+    )
+
+    const setShowValidationDrawer = useEditorState((store) => store.setShowValidationDrawer)
+
+    return (
+        <div className="flex flex-col max-h-full min-h-0">
+            <div className="pl-4 pr-2 bg-accent text-sm h-10 flex items-center gap-2 truncate shrink-0">
+                <BugIcon className="size-4 shrink-0" /> Validation
+                <div className="grow" />
+                <Button variant="header" size="sm" onClick={() => setShowValidationDrawer(false)}>
+                    <XIcon className="size-4" />
+                </Button>
+            </div>
+            <div className="overflow-y-auto p-2 grow">
+                {validationResults.map((res, i) => (
+                    <ValidationResultLine result={res} key={i} showPropertyName showEntityId />
+                ))}
+            </div>
+        </div>
+    )
+}

@@ -6,6 +6,9 @@ import { useStore } from "zustand/index"
 import { useShallow } from "zustand/react/shallow"
 import { ValidationResultIcon } from "@/components/editor/validation/validation-result-icon"
 import { ValidationResultLine } from "@/components/editor/validation/validation-result-line"
+import { sortValidationResultByName } from "@/lib/utils"
+import { PanelBottomOpen } from "lucide-react"
+import { useEditorState } from "@/lib/state/editor-state"
 
 export function SinglePropertyValidation({
     propertyName,
@@ -28,9 +31,11 @@ export function SinglePropertyValidation({
                         (res.propertyIndex === propertyIndex ||
                             (!res.propertyIndex && propertyIndex === 0))
                 )
+                .sort(sortValidationResultByName)
                 .sort((a, b) => b.resultSeverity - a.resultSeverity)
         )
     )
+    const setShowValidationDrawer = useEditorState((s) => s.setShowValidationDrawer)
 
     const highestResultType = useMemo(() => {
         return (
@@ -58,7 +63,17 @@ export function SinglePropertyValidation({
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="p-2 w-[600px] max-w-[600px]">
-                    <div className="text-xs font-medium p-1 mb-1">Issues</div>
+                    <div className="text-xs font-medium p-1 mb-1 flex justify-between">
+                        Property Issues
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-auto p-1"
+                            onClick={() => setShowValidationDrawer(true)}
+                        >
+                            <PanelBottomOpen className="size-3" />
+                        </Button>
+                    </div>
                     {validationResults.map((res, i) => (
                         <ValidationResultLine result={res} key={i} />
                     ))}

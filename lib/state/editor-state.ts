@@ -64,6 +64,9 @@ export interface EditorState {
     ): void
     revertEntity(entityId: string): void
     revertAllEntities(): void
+
+    showValidationDrawer: boolean
+    setShowValidationDrawer(show: boolean): void
 }
 
 function setPropertyValue(
@@ -317,6 +320,13 @@ export const editorState = createWithEqualityFn<EditorState>()(
         revertAllEntities() {
             setState((state) => {
                 state.entities = new Map(state.initialEntities)
+            })
+        },
+
+        showValidationDrawer: false,
+        setShowValidationDrawer(show: boolean) {
+            setState((state) => {
+                state.showValidationDrawer = show
             })
         }
     }))

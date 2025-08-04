@@ -12,11 +12,12 @@ import {
     MessageSquare,
     PackageSearch
 } from "lucide-react"
-import { PropsWithChildren, useContext, useMemo } from "react"
+import { PropsWithChildren, useCallback, useContext, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import packageJson from "@/package.json"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { useEditorState } from "@/lib/state/editor-state"
 
 function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>) {
     const pathname = usePathname()
@@ -50,6 +51,12 @@ function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>)
 
 export function NavSidebar({ children }: PropsWithChildren) {
     const { showDocumentationModal } = useContext(GlobalModalContext)
+    const showValidationDrawer = useEditorState((s) => s.showValidationDrawer)
+    const setShowValidationDrawer = useEditorState((s) => s.setShowValidationDrawer)
+
+    const toggleShowValidationDrawer = useCallback(() => {
+        setShowValidationDrawer(!showValidationDrawer)
+    }, [setShowValidationDrawer, showValidationDrawer])
 
     return (
         <ResizablePanelGroup direction="horizontal" autoSaveId="globalSidebarLayout">
@@ -79,7 +86,11 @@ export function NavSidebar({ children }: PropsWithChildren) {
 
                         <div className="grow"></div>
 
-                        <Button variant="link" className={`justify-start w-full`} disabled>
+                        <Button
+                            variant="link"
+                            className={`justify-start w-full ${showValidationDrawer && "bg-accent"}`}
+                            onClick={toggleShowValidationDrawer}
+                        >
                             <Bug className="size-4 mr-2" />
                             Validation
                         </Button>
