@@ -58,7 +58,7 @@
     "reactflow": "^11.11.3",
     "ro-crate": "^3.4.6",
     "ro-crate-html": "^0.1.5",
-    "sonner": "^2.0.5",
+    "sonner": "^2.0.7",
     "swr": "^2.2.5",
     "tailwind-merge": "^3.2.0",
     "tailwindcss-animate": "^1.0.7",
