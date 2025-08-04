@@ -21,6 +21,9 @@ import { getDefaultDate } from "@/components/editor/text-fields/date-field"
 import { Pagination } from "@/components/pagination"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import useSWR from "swr"
+import { useValidation, useValidationStore } from "@/lib/validation/ValidationProvider"
+import { useStore } from "zustand/index"
+import { useShallow } from "zustand/react/shallow"
 
 export interface EntityEditorProperty {
     propertyName: string
@@ -118,6 +121,21 @@ export const PropertyEditor = memo(function PropertyEditor({
     const unFocusProperty = useEntityEditorTabs((store) => store.unFocusProperty)
     const crateContext = useEditorState((store) => store.crateContext)
     const container = createRef<HTMLDivElement>()
+    const validation = useValidation()
+    const validationStore = useValidationStore()
+    const validationResults = useStore(
+        validationStore,
+        useShallow((s) =>
+            s.results.filter(
+                (res) => res.entityId === entityId && res.propertyName === property.propertyName
+            )
+        )
+    )
+
+    useEffect(() => {
+        console.log("Running property validation", entityId, property.propertyName)
+        validation.validateProperty(entityId, property.propertyName)
+    }, [entityId, property.propertyName, validation])
 
     const isFocused = useMemo(() => {
         return focusedProperty === property.propertyName
@@ -297,6 +315,9 @@ export const PropertyEditor = memo(function PropertyEditor({
                         save
                     </div>
                 ) : null}
+                {validationResults.map((res, i) => (
+                    <div key={i}>{res.resultTitle}</div>
+                ))}
                 <div className="flex flex-col gap-4">
                     <Pagination
                         leftContent={

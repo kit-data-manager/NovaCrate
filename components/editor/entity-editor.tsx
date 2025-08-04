@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useContext, useMemo, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import {
     mapEntityToProperties,
     PropertyEditor,
@@ -28,6 +28,8 @@ import { EntityBadge } from "../entity/entity-badge"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useShallow } from "zustand/react/shallow"
 import { TypeSelectModal } from "@/components/modals/type-select-modal"
+import { useValidation, useValidationStore } from "@/lib/validation/ValidationProvider"
+import { useStore } from "zustand/index"
 
 export function EntityEditor({
     entityId,
@@ -45,6 +47,23 @@ export function EntityEditor({
     const removePropertyEntry = useEditorState((store) => store.removePropertyEntry)
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
+    const validation = useValidation()
+    const validationStore = useValidationStore()
+    const validationResults = useStore(
+        validationStore,
+        useShallow((s) =>
+            s.results.filter((res) =>
+                entity ? res.entityId === entity["@id"] && res.propertyName === undefined : false
+            )
+        )
+    )
+
+    useEffect(() => {
+        if (entity) {
+            console.log("Running entity validation")
+            validation.validateEntity(entity["@id"])
+        }
+    }, [entity, validation])
 
     // Type selection for @type fields
     const [typeSelectModalOpen, setTypeSelectModalOpen] = useState(false)
@@ -198,6 +217,10 @@ export function EntityEditor({
                 goToGraph={showInGraph}
                 goToFileExplorer={canHavePreview ? showInFileExplorer : undefined}
             />
+
+            {validationResults.map((result, i) => (
+                <div key={i}>{result.resultTitle}</div>
+            ))}
 
             <div className="pt-12 p-4 pr-10 overflow-y-auto max-w-full">
                 <div className="flex justify-between items-center">
