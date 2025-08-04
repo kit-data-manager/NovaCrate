@@ -8,11 +8,13 @@ import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 export function ValidationResultLine({
     result,
     showPropertyName,
-    showEntityId
+    showEntityId,
+    showDetails
 }: {
     result: ValidationResult
     showPropertyName?: boolean
     showEntityId?: boolean
+    showDetails?: boolean
 }) {
     const goToEntityEditor = useGoToEntityEditor()
     const focusProperty = useEntityEditorTabs((store) => store.focusProperty)
@@ -28,33 +30,45 @@ export function ValidationResultLine({
     }, [focusProperty, goToEntityEditor, result.entityId, result.propertyName])
 
     return (
-        <div className="flex gap-3 p-1 text-sm hover:bg-muted rounded-sm" onClick={openTarget}>
-            <div className="flex items-center gap-1 grow truncate">
-                <ValidationResultIcon result={result} />
-                <div className="truncate">{result.resultTitle}</div>
-                {showEntityId && (
-                    <div className="text-muted-foreground text-xs self-end">{result.entityId}</div>
-                )}
-                {showPropertyName && (
-                    <div className="text-muted-foreground text-xs self-end">
-                        {result.propertyName}
-                        {result.propertyIndex !== undefined && `#${result.propertyIndex}`}
+        <div
+            className="flex gap-2 p-1 px-2 text-sm hover:bg-muted rounded-sm items-center"
+            onClick={openTarget}
+        >
+            <ValidationResultIcon result={result} />
+            <div className="flex flex-col grow">
+                <div className="flex items-center gap-1 grow truncate">
+                    <div className="truncate">{result.resultTitle}</div>
+                    {showEntityId && (
+                        <div className="text-muted-foreground text-xs self-end">
+                            {result.entityId}
+                        </div>
+                    )}
+                    {showPropertyName && (
+                        <div className="text-muted-foreground text-xs self-end">
+                            {result.propertyName}
+                            {result.propertyIndex !== undefined && `#${result.propertyIndex}`}
+                        </div>
+                    )}
+                </div>
+                {showDetails && (
+                    <div className="text-muted-foreground text-xs">
+                        {result.resultDescription} ({result.validatorName}
+                        {result.ruleName && ": " + result.ruleName})
                     </div>
                 )}
             </div>
+
             <div className="flex gap-2">
-                {result.actions
-                    ?.filter((a) => "dispatch" in a)
-                    .map((action, j) => (
-                        <Button
-                            className="p-0 m-0 h-auto"
-                            variant="link"
-                            key={j}
-                            onClick={action.dispatch}
-                        >
-                            {action.displayName}
-                        </Button>
-                    ))}
+                {result.actions?.map((action, j) => (
+                    <Button
+                        className="p-0 m-0 h-auto"
+                        variant="link"
+                        key={j}
+                        onClick={action.dispatch}
+                    >
+                        {action.displayName}
+                    </Button>
+                ))}
             </div>
         </div>
     )

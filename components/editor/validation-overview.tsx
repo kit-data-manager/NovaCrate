@@ -71,6 +71,11 @@ export function ValidationOverview({
                         </Button>
                     </div>
                     <div className="overflow-y-auto max-h-[400px] pr-2 pb-2">
+                        {validationResults.length === 0 && (
+                            <div className="flex justify-center text-muted-foreground text-xs p-2">
+                                No issues found.
+                            </div>
+                        )}
                         {validationResults.map((res, i) => (
                             <ValidationResultLine result={res} key={i} showPropertyName />
                         ))}

@@ -123,12 +123,21 @@ export const PropertyEditor = memo(function PropertyEditor({
     const validation = useValidation()
     const [validationRunning, setValidationRunning] = useState(false)
 
-    useEffect(() => {
+    const runValidation = useCallback(() => {
         setValidationRunning(true)
         validation.validateProperty(entityId, property.propertyName).then(() => {
             setValidationRunning(false)
         })
     }, [entityId, property.propertyName, validation])
+
+    useEffect(() => {
+        runValidation()
+    }, [runValidation])
+
+    useEffect(() => {
+        console.log("Values changed!")
+        runValidation()
+    }, [property.values, runValidation])
 
     const isFocused = useMemo(() => {
         return focusedProperty === property.propertyName

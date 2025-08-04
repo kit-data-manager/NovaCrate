@@ -31,8 +31,19 @@ export function ValidationDrawer() {
                 </Button>
             </div>
             <div className="overflow-y-auto p-2 grow">
+                {validationResults.length === 0 && (
+                    <div className="flex justify-center text-muted-foreground text-xs p-4">
+                        No issues found.
+                    </div>
+                )}
                 {validationResults.map((res, i) => (
-                    <ValidationResultLine result={res} key={i} showPropertyName showEntityId />
+                    <ValidationResultLine
+                        result={res}
+                        key={i}
+                        showPropertyName
+                        showEntityId
+                        showDetails
+                    />
                 ))}
             </div>
         </div>

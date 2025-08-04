@@ -135,20 +135,14 @@ export interface ValidationResult {
     resultTitle: string
     resultDescription: string
 
-    actions?: ValidationResultAction[] | ValidationResultActionSerializable[]
+    actions?: ValidationResultAction[]
 
     validatorName: string
-    profileName?: string
+    ruleName?: string
 }
 
 export interface ValidationResultAction {
     name: string
     displayName: string
     dispatch: () => void
-}
-
-export interface ValidationResultActionSerializable {
-    name: string
-    displayName: string
-    args: unknown[]
 }

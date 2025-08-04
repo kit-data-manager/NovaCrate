@@ -4,6 +4,9 @@ import {
     Validator
 } from "@/lib/validation/ValidationProvider"
 
+/**
+ * Example validator that returns issues for everything that is checked with it. Can be used to debug the validation UI
+ */
 export class SampleValidator implements Validator {
     name = "SampleValidator"
 
@@ -28,8 +31,7 @@ export class SampleValidator implements Validator {
                 entityId: entity["@id"],
                 propertyName,
                 validatorName: this.name,
-                resultTitle:
-                    "Linked entity does not match expected  gfdgf gfdgf gd gdfgd fd gfdg fdgfd gfd gfddfg fdg fd gfd gfdgfd gdf type",
+                resultTitle: "Linked entity does not match expected type",
                 resultDescription:
                     "This property should be linked to an entity of type Person, but it is linked to an entity of type Organization.",
                 resultSeverity: ValidationResultSeverity.info,

@@ -16,13 +16,13 @@ import EntityActions from "@/components/actions/entity-actions"
 import { EntityEditorTabsSupervisor } from "@/components/editor/entity-editor-tabs-supervisor"
 import { ValidationContext, ValidationProvider } from "@/lib/validation/ValidationProvider"
 import { editorState } from "@/lib/state/editor-state"
-import { SampleValidator } from "@/lib/validation/SampleValidator"
+import { SpecificationValidator } from "@/lib/validation/SpecificationValidator"
 
 export default function EditorLayout(props: PropsWithChildren) {
     const validation = useRef<ValidationProvider>(null!)
     if (!validation.current) {
         validation.current = new ValidationProvider(editorState)
-        validation.current.addValidator(new SampleValidator())
+        validation.current.addValidator(new SpecificationValidator())
     }
 
     return (

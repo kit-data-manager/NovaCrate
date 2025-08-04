@@ -4,7 +4,7 @@ import { CircleAlert, InfoIcon, TriangleAlert } from "lucide-react"
 
 export function ValidationResultIcon({ result }: { result: ValidationResult | undefined }) {
     return useMemo(() => {
-        if (!result) return null
+        if (!result) return <InfoIcon className="size-4 stroke-info shrink-0" />
         if (result.resultSeverity === ValidationResultSeverity.error)
             return <CircleAlert className="size-4 stroke-error shrink-0" />
         if (result.resultSeverity === ValidationResultSeverity.warning)
