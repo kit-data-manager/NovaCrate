@@ -46,7 +46,6 @@ export class ValidationProvider {
     async validateCrate() {
         const entities = this.editorState.getState().getEntities()
         const context = this.editorState.getState().crateContext
-        store.getState().clearResults()
         const promises: Promise<ValidationResult[]>[] = []
         for (const validator of this.validators) {
             promises.push(
@@ -57,30 +56,32 @@ export class ValidationProvider {
             )
         }
         const results = await Promise.all(promises)
+        store.getState().clearResults()
         store.getState().addResults(results.flat())
     }
 
     async validateEntity(entityId: string) {
         const entity = this.editorState.getState().getEntities().get(entityId)
         if (!entity) return console.warn("Entity not found during validation", entityId)
-        store.getState().clearResults(entity["@id"])
+
         const promises: Promise<ValidationResult[]>[] = []
         for (const validator of this.validators) {
             promises.push(validator.validateEntity(entity))
         }
         const results = await Promise.all(promises)
+        store.getState().clearResults(entity["@id"])
         store.getState().addResults(results.flat())
     }
 
     async validateProperty(entityId: string, propertyName: string) {
         const entity = this.editorState.getState().getEntities().get(entityId)
         if (!entity) return console.warn("Entity not found during validation", entityId)
-        store.getState().clearResults(entity["@id"], propertyName)
         const promises: Promise<ValidationResult[]>[] = []
         for (const validator of this.validators) {
             promises.push(validator.validateProperty(entity, propertyName))
         }
         const results = await Promise.all(promises)
+        store.getState().clearResults(entity["@id"], propertyName)
         store.getState().addResults(results.flat())
     }
 }
