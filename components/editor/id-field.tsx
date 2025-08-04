@@ -43,7 +43,7 @@ export function IDField({ value }: { value: string }) {
     }, [copy, value])
 
     return (
-        <div className="flex grow justify-start pl-3 items-center rounded-lg p-2 pr-0">
+        <div className="flex grow justify-start pl-3 items-center rounded-lg">
             <RenameEntityModal
                 entityId={value}
                 onOpenChange={setRenameEntityModalOpen}

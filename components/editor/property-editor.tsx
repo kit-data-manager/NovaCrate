@@ -24,6 +24,9 @@ import useSWR from "swr"
 import { useValidation, useValidationStore } from "@/lib/validation/ValidationProvider"
 import { useStore } from "zustand/index"
 import { useShallow } from "zustand/react/shallow"
+import { Button } from "@/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { SinglePropertyValidation } from "@/components/editor/single-property-validation"
 
 export interface EntityEditorProperty {
     propertyName: string
@@ -123,14 +126,6 @@ export const PropertyEditor = memo(function PropertyEditor({
     const container = createRef<HTMLDivElement>()
     const validation = useValidation()
     const validationStore = useValidationStore()
-    const validationResults = useStore(
-        validationStore,
-        useShallow((s) =>
-            s.results.filter(
-                (res) => res.entityId === entityId && res.propertyName === property.propertyName
-            )
-        )
-    )
 
     useEffect(() => {
         console.log("Running property validation", entityId, property.propertyName)
@@ -275,7 +270,7 @@ export const PropertyEditor = memo(function PropertyEditor({
 
     return (
         <div
-            className={`grid grid-cols-[12px_1fr_1fr] w-full transition-colors ${isFocused ? "bg-secondary" : ""} py-3 px-1 rounded-lg`}
+            className={`grid grid-cols-[12px_4fr_5fr] w-full transition-colors ${isFocused ? "bg-secondary" : ""} py-3 px-1 rounded-lg`}
             ref={container}
         >
             <div
@@ -315,9 +310,7 @@ export const PropertyEditor = memo(function PropertyEditor({
                         save
                     </div>
                 ) : null}
-                {validationResults.map((res, i) => (
-                    <div key={i}>{res.resultTitle}</div>
-                ))}
+
                 <div className="flex flex-col gap-4">
                     <Pagination
                         leftContent={
@@ -331,16 +324,21 @@ export const PropertyEditor = memo(function PropertyEditor({
                     >
                         {property.values.map((v, i) => {
                             return (
-                                <SinglePropertyEditor
-                                    key={i}
-                                    entityId={entityId}
-                                    valueIndex={i}
-                                    propertyName={property.propertyName}
-                                    value={v}
-                                    onModifyProperty={onModifyPropertyEntry}
-                                    propertyRange={propertyRange}
-                                    onRemovePropertyEntry={onRemovePropertyEntry}
-                                />
+                                <div key={i} className="flex items-center">
+                                    <SinglePropertyEditor
+                                        entityId={entityId}
+                                        valueIndex={i}
+                                        propertyName={property.propertyName}
+                                        value={v}
+                                        onModifyProperty={onModifyPropertyEntry}
+                                        propertyRange={propertyRange}
+                                        onRemovePropertyEntry={onRemovePropertyEntry}
+                                    />
+                                    <SinglePropertyValidation
+                                        entityId={entityId}
+                                        propertyName={property.propertyName}
+                                    />
+                                </div>
                             )
                         })}
                     </Pagination>

@@ -35,7 +35,7 @@ export const BooleanField = memo(function DateField({
                 onModifyTextLikeProperty={onChange}
                 onRemoveEntry={onRemoveEntry}
                 onChangeType={onChangeType}
-                triggerClassName="border-none rounded-md"
+                triggerClassName="border-l rounded-md"
                 propertyType={PropertyEditorTypes.Boolean}
             />
         </div>

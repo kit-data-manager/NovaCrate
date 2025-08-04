@@ -26,8 +26,25 @@ export class SampleValidator implements Validator {
                 propertyName,
                 validatorName: this.name,
                 resultTitle: "Test result (Property)",
-                resultDescription: "This result is just a test",
-                resultType: "warning"
+                resultDescription:
+                    "This property should be linked to an entity of type Person, but it is linked to an entity of type Organization.",
+                resultType: "info",
+                actions: [
+                    {
+                        name: "test",
+                        displayName: "Test",
+                        dispatch: () => {
+                            alert("Hello")
+                        }
+                    },
+                    {
+                        name: "test",
+                        displayName: "Test",
+                        dispatch: () => {
+                            alert("Hello")
+                        }
+                    }
+                ]
             })
         }
 
