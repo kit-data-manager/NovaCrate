@@ -24,9 +24,9 @@ import { EntityBadge } from "../entity/entity-badge"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useShallow } from "zustand/react/shallow"
 import { TypeSelectModal } from "@/components/modals/type-select-modal"
-import { useValidation } from "@/lib/validation/ValidationProvider"
 import { ValidationOverview } from "@/components/editor/validation-overview"
 import { mapEntityToProperties, PropertyType } from "@/lib/property"
+import { useValidation } from "@/lib/validation/hooks"
 
 export function EntityEditor({
     entityId,

@@ -10,7 +10,7 @@ import {
     SCHEMA_ORG_TEXTLIKE,
     SCHEMA_ORG_TIME
 } from "./constants"
-import { ValidationResult } from "@/lib/validation/ValidationProvider"
+import { ValidationResult } from "@/lib/validation/validation-result"
 
 /**
  * Utility from shadcn/ui to merge multiple className strings into one

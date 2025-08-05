@@ -20,9 +20,9 @@ import { MarkdownComment } from "@/components/markdown-comment"
 import { Pagination } from "@/components/pagination"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import useSWR from "swr"
-import { useValidation } from "@/lib/validation/ValidationProvider"
 import { SinglePropertyValidation } from "@/components/editor/single-property-validation"
 import { EntityEditorProperty, PropertyType } from "@/lib/property"
+import { useValidation } from "@/lib/validation/hooks"
 
 export interface PropertyEditorProps {
     entityId: string

@@ -1,7 +1,6 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import React, { useMemo } from "react"
-import { useValidationStore, ValidationResultSeverity } from "@/lib/validation/ValidationProvider"
 import { useStore } from "zustand/index"
 import { useShallow } from "zustand/react/shallow"
 import { ValidationResultIcon } from "@/components/editor/validation/validation-result-icon"
@@ -9,6 +8,8 @@ import { ValidationResultLine } from "@/components/editor/validation/validation-
 import { sortValidationResultByName } from "@/lib/utils"
 import { PanelBottomOpen } from "lucide-react"
 import { useEditorState } from "@/lib/state/editor-state"
+import { useValidationStore } from "@/lib/validation/hooks"
+import { ValidationResultSeverity } from "@/lib/validation/validation-result"
 
 export function SinglePropertyValidation({
     propertyName,

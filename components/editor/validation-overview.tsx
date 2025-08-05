@@ -2,12 +2,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button"
 import { CircleAlert, InfoIcon, PanelBottomOpen, TriangleAlert } from "lucide-react"
 import React, { useMemo } from "react"
-import { useValidationStore, ValidationResultSeverity } from "@/lib/validation/ValidationProvider"
 import { useStore } from "zustand/index"
 import { useShallow } from "zustand/react/shallow"
 import { ValidationResultLine } from "@/components/editor/validation/validation-result-line"
 import { sortValidationResultByName } from "@/lib/utils"
 import { useEditorState } from "@/lib/state/editor-state"
+import { useValidationStore } from "@/lib/validation/hooks"
+import { ValidationResultSeverity } from "@/lib/validation/validation-result"
 
 export function ValidationOverview({
     entityId,

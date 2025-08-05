@@ -1,8 +1,5 @@
-import {
-    ValidationResult,
-    ValidationResultSeverity,
-    Validator
-} from "@/lib/validation/ValidationProvider"
+import { ValidationResult, ValidationResultSeverity } from "../validation-result"
+import { Validator } from "../validator"
 
 /**
  * Example validator that returns issues for everything that is checked with it. Can be used to debug the validation UI

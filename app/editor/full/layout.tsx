@@ -14,9 +14,10 @@ import DefaultActions from "@/components/actions/default-actions"
 import { ActionKeyboardShortcuts } from "@/components/actions/action-keyboard-shortcuts"
 import EntityActions from "@/components/actions/entity-actions"
 import { EntityEditorTabsSupervisor } from "@/components/editor/entity-editor-tabs-supervisor"
-import { ValidationContext, ValidationProvider } from "@/lib/validation/ValidationProvider"
+import { ValidationProvider } from "@/lib/validation/validation-provider"
 import { editorState } from "@/lib/state/editor-state"
-import { SpecificationValidator } from "@/lib/validation/SpecificationValidator"
+import { SpecificationValidator } from "@/lib/validation/validators/specification-validator"
+import { ValidationContext } from "@/components/providers/validation-context"
 
 export default function EditorLayout(props: PropsWithChildren) {
     const validation = useRef<ValidationProvider>(null!)

@@ -1,10 +1,7 @@
-import {
-    ValidationResult,
-    ValidationResultSeverity,
-    Validator
-} from "@/lib/validation/ValidationProvider"
 import { isRootEntity } from "@/lib/utils"
 import { editorState } from "@/lib/state/editor-state"
+import { ValidationResult, ValidationResultSeverity } from "@/lib/validation/validation-result"
+import { Validator } from "@/lib/validation/validator"
 
 const entityRules: EntityRule[] = [
     async (entity) => {

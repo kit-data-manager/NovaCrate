@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button"
 import React, { useCallback } from "react"
-import { ValidationResult } from "@/lib/validation/ValidationProvider"
 import { ValidationResultIcon } from "@/components/editor/validation/validation-result-icon"
 import { useGoToEntityEditor } from "@/lib/hooks"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
+import { ValidationResult } from "@/lib/validation/validation-result"
 
 export function ValidationResultLine({
     result,

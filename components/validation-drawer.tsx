@@ -2,11 +2,11 @@ import { BugIcon, XIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ValidationResultLine } from "@/components/editor/validation/validation-result-line"
 import React from "react"
-import { useValidationStore } from "@/lib/validation/ValidationProvider"
 import { useStore } from "zustand/index"
 import { useShallow } from "zustand/react/shallow"
 import { useEditorState } from "@/lib/state/editor-state"
 import { sortValidationResultByName } from "@/lib/utils"
+import { useValidationStore } from "@/lib/validation/hooks"
 
 export function ValidationDrawer() {
     const validationStore = useValidationStore()

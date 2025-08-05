@@ -1,6 +1,6 @@
-import { ValidationResult, ValidationResultSeverity } from "@/lib/validation/ValidationProvider"
 import React, { useMemo } from "react"
 import { CircleAlert, InfoIcon, TriangleAlert } from "lucide-react"
+import { ValidationResult, ValidationResultSeverity } from "@/lib/validation/validation-result"
 
 export function ValidationResultIcon({ result }: { result: ValidationResult | undefined }) {
     return useMemo(() => {
