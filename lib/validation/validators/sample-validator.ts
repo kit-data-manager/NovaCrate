@@ -4,7 +4,7 @@ import { Validator } from "../validator"
 /**
  * Example validator that returns issues for everything that is checked with it. Can be used to debug the validation UI
  */
-export class SampleValidator implements Validator {
+export class SampleValidator extends Validator {
     name = "SampleValidator"
 
     async validateProperty(entity: IEntity, propertyName: string): Promise<ValidationResult[]> {
