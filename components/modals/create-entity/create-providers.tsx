@@ -1,9 +1,9 @@
 import { PersonImport } from "@/components/modals/create-entity/person-import"
 import React, { useMemo, useState } from "react"
-import { AutoReference } from "@/components/providers/global-modals-provider"
 import { useEditorState } from "@/lib/state/editor-state"
 import { SCHEMA_ORG_ORGANIZATION, SCHEMA_ORG_PERSON } from "@/lib/constants"
 import { OrganizationImport } from "@/components/modals/create-entity/organization-import"
+import { AutoReference } from "@/lib/utils"
 
 export function CreateProviders({
     selectedType,

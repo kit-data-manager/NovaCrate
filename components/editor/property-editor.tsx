@@ -17,78 +17,12 @@ import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Trash, TriangleAlert } from "lucide-react"
 import { MarkdownComment } from "@/components/markdown-comment"
-import { getDefaultDate } from "@/components/editor/text-fields/date-field"
 import { Pagination } from "@/components/pagination"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import useSWR from "swr"
 import { useValidation } from "@/lib/validation/ValidationProvider"
 import { SinglePropertyValidation } from "@/components/editor/single-property-validation"
-
-export interface EntityEditorProperty {
-    propertyName: string
-    values: EntitySinglePropertyTypes[]
-    deleted: boolean
-}
-
-export function sortByPropertyName(a: string, b: string) {
-    if (a === "name" && b === "name") return 0
-    if (a === "name" && !b.startsWith("@")) return -1
-    if (b === "name" && !a.startsWith("@")) return 1
-    if (a === b) return 0
-    return a > b ? 1 : -1
-}
-
-// TODO maybe get rid of this, causes problems with re-rendering
-export function mapEntityToProperties(
-    data: IEntity,
-    initialData?: IEntity
-): EntityEditorProperty[] {
-    const deletedProperties: EntityEditorProperty[] = Object.keys(initialData || {})
-        .filter((key) => !(key in data))
-        .map((key) => ({ propertyName: key, values: [], deleted: true }))
-
-    return Object.keys(data)
-        .map((key) => {
-            const value = data[key]
-            let arrValue: EntitySinglePropertyTypes[]
-            if (!Array.isArray(value)) {
-                arrValue = [value]
-            } else {
-                arrValue = value.slice()
-            }
-
-            return {
-                propertyName: key,
-                values: arrValue,
-                deleted: false
-            }
-        })
-        .flat()
-        .concat(deletedProperties)
-        .sort((a, b) => sortByPropertyName(a.propertyName, b.propertyName))
-}
-
-export enum PropertyEditorTypes {
-    Time,
-    Boolean,
-    DateTime,
-    Number,
-    Text,
-    Date,
-    Reference,
-    Type // for @type property
-}
-
-export function getPropertyTypeDefaultValue(type: PropertyEditorTypes): EntitySinglePropertyTypes {
-    if (type === PropertyEditorTypes.Text) return ""
-    if (type === PropertyEditorTypes.Reference) return { "@id": "" }
-    if (type === PropertyEditorTypes.Date) return getDefaultDate()
-    if (type === PropertyEditorTypes.Number) return "0"
-    if (type === PropertyEditorTypes.Boolean) return "true"
-    if (type === PropertyEditorTypes.DateTime) return getDefaultDate() + "T08:00"
-    if (type === PropertyEditorTypes.Time) return "08:00"
-    return ""
-}
+import { EntityEditorProperty, PropertyType } from "@/lib/property"
 
 export interface PropertyEditorProps {
     entityId: string
@@ -98,7 +32,7 @@ export interface PropertyEditorProps {
         valueIdx: number,
         value: EntitySinglePropertyTypes
     ) => void
-    onAddPropertyEntry: (propertyName: string, type: PropertyEditorTypes) => void
+    onAddPropertyEntry: (propertyName: string, type: PropertyType) => void
     onRemovePropertyEntry: (propertyName: string, index: number) => void
     isNew?: boolean
     hasChanges?: boolean
@@ -160,7 +94,7 @@ export const PropertyEditor = memo(function PropertyEditor({
     }, [property.propertyName])
 
     const onAddEntry = useCallback(
-        (type: PropertyEditorTypes) => {
+        (type: PropertyType) => {
             onAddPropertyEntry(property.propertyName, type)
         },
         [onAddPropertyEntry, property.propertyName]

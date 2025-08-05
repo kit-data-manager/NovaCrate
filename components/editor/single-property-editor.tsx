@@ -4,9 +4,10 @@ import { IDField } from "@/components/editor/id-field"
 import { isReference } from "@/lib/utils"
 import { ReferenceField } from "@/components/editor/reference-field"
 import { TextBaseField } from "@/components/editor/text-base-field"
-import { PropertyEditorProps, PropertyEditorTypes } from "@/components/editor/property-editor"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { Error } from "@/components/error"
+import { PropertyEditorProps } from "@/components/editor/property-editor"
+import { PropertyType } from "@/lib/property"
 
 export interface SinglePropertyEditorProps {
     entityId: string
@@ -39,8 +40,8 @@ export const SinglePropertyEditor = memo(function SinglePropertyEditor({
     }, [onRemovePropertyEntry, propertyName, valueIndex])
 
     const onChangeType = useCallback(
-        (type: PropertyEditorTypes) => {
-            if (type === PropertyEditorTypes.Reference) {
+        (type: PropertyType) => {
+            if (type === PropertyType.Reference) {
                 if (!isReference(value))
                     onModifyProperty(propertyName, valueIndex, { "@id": value })
             } else {

@@ -1,14 +1,10 @@
-import { AutoReference } from "@/components/providers/global-modals-provider"
 import { immer } from "zustand/middleware/immer"
 import { Draft, enableMapSet } from "immer"
-import {
-    getPropertyTypeDefaultValue,
-    PropertyEditorTypes
-} from "@/components/editor/property-editor"
-import { Diff, isEntityEqual } from "@/lib/utils"
+import { AutoReference, Diff, isEntityEqual } from "@/lib/utils"
 import { CrateContext } from "@/lib/crate-context"
 import { createWithEqualityFn } from "zustand/traditional"
 import { useStore } from "zustand/index"
+import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
 
 enableMapSet()
 
@@ -43,7 +39,7 @@ export interface EditorState {
     addPropertyEntry(
         entityId: string,
         propertyName: string,
-        typeOrValue: PropertyEditorTypes | EntitySinglePropertyTypes
+        typeOrValue: PropertyType | EntitySinglePropertyTypes
     ): void
     setPropertyValue(
         entityId: string,
@@ -222,7 +218,7 @@ export const editorState = createWithEqualityFn<EditorState>()(
         addPropertyEntry(
             entityId: string,
             propertyName: string,
-            typeOrValue: PropertyEditorTypes | EntitySinglePropertyTypes
+            typeOrValue: PropertyType | EntitySinglePropertyTypes
         ) {
             if (getState().entities.get(entityId)) {
                 setState((state) => {

@@ -1,6 +1,5 @@
 import { useCurrentEntity } from "@/lib/hooks"
 import { useCallback, useMemo, useState } from "react"
-import { sortByPropertyName } from "@/components/editor/property-editor"
 import { AtSign, LayoutGrid, Minus, SearchIcon, XIcon } from "lucide-react"
 import { camelCaseReadable, isRootEntity } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -8,6 +7,7 @@ import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
+import { sortByPropertyName } from "@/lib/property"
 
 export function PropertyOverview() {
     const currentEntity = useCurrentEntity()

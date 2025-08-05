@@ -3,14 +3,14 @@ import { Plus } from "lucide-react"
 import { memo } from "react"
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import TypeSelectDropdown from "@/components/editor/type-select-dropdown"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
 import { SlimClass } from "@/lib/schema-worker/helpers"
+import { PropertyType } from "@/lib/property"
 
 export const AddEntryDropdown = memo(function AddEntryDropdown(props: {
     propertyName: string
     propertyRange?: SlimClass[]
-    onAddEntry(type: PropertyEditorTypes): void
+    onAddEntry(type: PropertyType): void
     another: boolean
 }) {
     const propertyCanBe = usePropertyCanBe(props.propertyRange)
@@ -23,7 +23,7 @@ export const AddEntryDropdown = memo(function AddEntryDropdown(props: {
                 variant="link"
                 id="add-property-dropdown-trigger"
                 className="flex text items-center text-muted-foreground p-1 pb-0 mb-0 h-[30px]"
-                onClick={() => props.onAddEntry(PropertyEditorTypes.Type)}
+                onClick={() => props.onAddEntry(PropertyType.Type)}
             >
                 <Plus className="w-3 h-3 mr-1" />
                 <span className="text-xs">Add {props.another ? "another" : ""} type</span>

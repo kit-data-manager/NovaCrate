@@ -10,9 +10,9 @@ import {
     SCHEMA_ORG_TIME
 } from "@/lib/constants"
 import { SlimClass } from "@/lib/schema-worker/helpers"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { DateTime } from "luxon"
 import { referenceCheck } from "@/lib/utils"
+import { PropertyType } from "@/lib/property"
 
 export function usePropertyCanBe(
     _propertyRange?: SlimClass[] | string[],
@@ -88,14 +88,14 @@ export function usePropertyCanBe(
     }, [propertyRange])
 
     const possiblePropertyTypes = useMemo(() => {
-        const types: PropertyEditorTypes[] = []
-        if (canBeTime) types.push(PropertyEditorTypes.Time)
-        if (canBeNumber) types.push(PropertyEditorTypes.Number)
-        if (canBeDate) types.push(PropertyEditorTypes.Date)
-        if (canBeDateTime) types.push(PropertyEditorTypes.DateTime)
-        if (canBeText) types.push(PropertyEditorTypes.Text)
-        if (canBeBoolean) types.push(PropertyEditorTypes.Boolean)
-        if (canBeReference) types.push(PropertyEditorTypes.Reference)
+        const types: PropertyType[] = []
+        if (canBeTime) types.push(PropertyType.Time)
+        if (canBeNumber) types.push(PropertyType.Number)
+        if (canBeDate) types.push(PropertyType.Date)
+        if (canBeDateTime) types.push(PropertyType.DateTime)
+        if (canBeText) types.push(PropertyType.Text)
+        if (canBeBoolean) types.push(PropertyType.Boolean)
+        if (canBeReference) types.push(PropertyType.Reference)
         return types
     }, [canBeBoolean, canBeDate, canBeDateTime, canBeNumber, canBeReference, canBeText, canBeTime])
 

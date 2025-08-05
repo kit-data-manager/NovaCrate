@@ -341,3 +341,9 @@ export function sortValidationResultByName(a: ValidationResult, b: ValidationRes
     const strB = (b.propertyName ?? "undefined") + b.propertyIndex + b.entityId + b.resultTitle
     return strA.localeCompare(strB)
 }
+
+export interface AutoReference {
+    entityId: string
+    propertyName: string
+    valueIdx: number
+}

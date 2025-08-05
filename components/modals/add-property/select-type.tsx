@@ -8,7 +8,6 @@ import {
     CommandList
 } from "@/components/ui/command"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import {
     ArrowLeft,
     Binary,
@@ -20,13 +19,14 @@ import {
     TypeIcon
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { PropertyType } from "@/lib/property"
 
 export function SelectType({
     onTypeSelect,
     possibleTypes,
     onBackClick
 }: {
-    onTypeSelect: (type: PropertyEditorTypes) => void
+    onTypeSelect: (type: PropertyType) => void
     possibleTypes: ReturnType<typeof usePropertyCanBe>
     onBackClick(): void
 }) {
@@ -44,7 +44,7 @@ export function SelectType({
                         {possibleTypes.canBeText ? (
                             <CommandItem
                                 value="text"
-                                onSelect={() => onTypeSelect(PropertyEditorTypes.Text)}
+                                onSelect={() => onTypeSelect(PropertyType.Text)}
                             >
                                 <TypeIcon className="size-4 mr-2" /> Text
                             </CommandItem>
@@ -52,7 +52,7 @@ export function SelectType({
                         {possibleTypes.canBeNumber ? (
                             <CommandItem
                                 value="number"
-                                onSelect={() => onTypeSelect(PropertyEditorTypes.Number)}
+                                onSelect={() => onTypeSelect(PropertyType.Number)}
                             >
                                 <Diff className="size-4 mr-2" /> Number
                             </CommandItem>
@@ -60,7 +60,7 @@ export function SelectType({
                         {possibleTypes.canBeBoolean ? (
                             <CommandItem
                                 value="boolean"
-                                onSelect={() => onTypeSelect(PropertyEditorTypes.Boolean)}
+                                onSelect={() => onTypeSelect(PropertyType.Boolean)}
                             >
                                 <Binary className="size-4 mr-2" /> Boolean
                             </CommandItem>
@@ -68,7 +68,7 @@ export function SelectType({
                         {possibleTypes.canBeTime ? (
                             <CommandItem
                                 value="time"
-                                onSelect={() => onTypeSelect(PropertyEditorTypes.Time)}
+                                onSelect={() => onTypeSelect(PropertyType.Time)}
                             >
                                 <Clock9 className="size-4 mr-2" /> Time
                             </CommandItem>
@@ -76,7 +76,7 @@ export function SelectType({
                         {possibleTypes.canBeDate ? (
                             <CommandItem
                                 value="date"
-                                onSelect={() => onTypeSelect(PropertyEditorTypes.Date)}
+                                onSelect={() => onTypeSelect(PropertyType.Date)}
                             >
                                 <Calendar className="size-4 mr-2" /> Date
                             </CommandItem>
@@ -84,7 +84,7 @@ export function SelectType({
                         {possibleTypes.canBeDateTime ? (
                             <CommandItem
                                 value="date and time"
-                                onSelect={() => onTypeSelect(PropertyEditorTypes.DateTime)}
+                                onSelect={() => onTypeSelect(PropertyType.DateTime)}
                             >
                                 <CalendarClock className="size-4 mr-2" /> Date and Time
                             </CommandItem>
@@ -92,7 +92,7 @@ export function SelectType({
                         {possibleTypes.canBeReference ? (
                             <CommandItem
                                 value="reference"
-                                onSelect={() => onTypeSelect(PropertyEditorTypes.Reference)}
+                                onSelect={() => onTypeSelect(PropertyType.Reference)}
                             >
                                 <LinkIcon className="size-4 mr-2" /> Reference
                             </CommandItem>

@@ -12,12 +12,7 @@ import { FindReferencesModal } from "@/components/modals/find-references-modal"
 import { SaveAsModal } from "@/components/modals/save-as-modal"
 import { SettingsModal } from "@/components/modals/settings/settings-modal"
 import { DocumentationModal } from "@/components/modals/documentation-modal"
-
-export interface AutoReference {
-    entityId: string
-    propertyName: string
-    valueIdx: number
-}
+import { AutoReference } from "@/lib/utils"
 
 export interface IGlobalModalContext {
     showCreateEntityModal(

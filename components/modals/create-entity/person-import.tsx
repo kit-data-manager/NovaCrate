@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, ExternalLink, Import, LoaderCircle, TextCursor } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { AutoReference } from "@/components/providers/global-modals-provider"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Error } from "@/components/error"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AutoReference } from "@/lib/utils"
 
 export function PersonImport({
     createManually,

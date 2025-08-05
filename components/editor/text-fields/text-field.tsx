@@ -3,9 +3,9 @@ import { Input } from "@/components/ui/input"
 import { ChevronRight, TypeIcon } from "lucide-react"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { SlimClass } from "@/lib/schema-worker/helpers"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { PropertyType } from "@/lib/property"
 
 export const TextField = memo(function TextField({
     value,
@@ -16,7 +16,7 @@ export const TextField = memo(function TextField({
 }: {
     value: string
     onChange: (value: string) => void
-    onChangeType: (type: PropertyEditorTypes) => void
+    onChangeType: (type: PropertyType) => void
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
@@ -66,7 +66,7 @@ export const TextField = memo(function TextField({
                 onModifyTextLikeProperty={onChange}
                 onRemoveEntry={onRemoveEntry}
                 onChangeType={onChangeType}
-                propertyType={PropertyEditorTypes.Text}
+                propertyType={PropertyType.Text}
                 triggerClassName={expanded ? "border-l rounded-l-lg" : ""}
             />
         </div>

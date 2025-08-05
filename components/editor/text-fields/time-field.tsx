@@ -3,8 +3,8 @@ import { Input } from "@/components/ui/input"
 import { Clock9 } from "lucide-react"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { SlimClass } from "@/lib/schema-worker/helpers"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { DateTime } from "luxon"
+import { PropertyType } from "@/lib/property"
 
 export const TimeField = memo(function TimeField({
     value,
@@ -15,7 +15,7 @@ export const TimeField = memo(function TimeField({
 }: {
     value: string
     onChange: (value: string) => void
-    onChangeType: (type: PropertyEditorTypes) => void
+    onChangeType: (type: PropertyType) => void
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
@@ -56,7 +56,7 @@ export const TimeField = memo(function TimeField({
                 onModifyTextLikeProperty={onChange}
                 onRemoveEntry={onRemoveEntry}
                 onChangeType={onChangeType}
-                propertyType={PropertyEditorTypes.Time}
+                propertyType={PropertyType.Time}
             />
         </div>
     )

@@ -1,7 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import React, { useCallback, useContext, useEffect, useState } from "react"
-import { AutoReference } from "@/components/providers/global-modals-provider"
 import { useEditorState } from "@/lib/state/editor-state"
 import { TypeSelect } from "@/components/modals/create-entity/type-select"
 import { CreateEntity } from "@/components/modals/create-entity/create-entity"
@@ -10,7 +9,7 @@ import { SimpleTypeSelect } from "@/components/modals/create-entity/simple-type-
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { UploadProgress } from "@/components/modals/create-entity/upload-progress"
 import { RO_CRATE_FILE } from "@/lib/constants"
-import { asValidPath } from "@/lib/utils"
+import { asValidPath, AutoReference } from "@/lib/utils"
 import { CreateProviders } from "@/components/modals/create-entity/create-providers"
 
 export function CreateEntityModal({

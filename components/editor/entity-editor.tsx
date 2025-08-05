@@ -1,11 +1,7 @@
 "use client"
 
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
-import {
-    mapEntityToProperties,
-    PropertyEditor,
-    PropertyEditorTypes
-} from "@/components/editor/property-editor"
+import { PropertyEditor } from "@/components/editor/property-editor"
 import {
     Diff,
     getEntityDisplayName,
@@ -30,6 +26,7 @@ import { useShallow } from "zustand/react/shallow"
 import { TypeSelectModal } from "@/components/modals/type-select-modal"
 import { useValidation } from "@/lib/validation/ValidationProvider"
 import { ValidationOverview } from "@/components/editor/validation-overview"
+import { mapEntityToProperties, PropertyType } from "@/lib/property"
 
 export function EntityEditor({
     entityId,
@@ -102,7 +99,7 @@ export function EntityEditor({
     }, [entitiesChangelist, entityId])
 
     const onPropertyAddEntry = useCallback(
-        (propertyName: string, type: PropertyEditorTypes) => {
+        (propertyName: string, type: PropertyType) => {
             if (propertyName === "@type") {
                 setTypeSelectModalOpen(true)
             } else {

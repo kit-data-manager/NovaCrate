@@ -9,9 +9,9 @@ import { SlimClass } from "@/lib/schema-worker/helpers"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
 import { EntityIcon } from "@/components/entity/entity-icon"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import z from "zod"
+import { PropertyType } from "@/lib/property"
 
 function undefinedIfEmpty<T>(arr?: T[]) {
     if (arr?.length === 0) {
@@ -32,7 +32,7 @@ export const ReferenceField = memo(function ReferenceField({
     entityId: string
     value: IReference
     onChange: (value: IReference) => void
-    onChangeType: (type: PropertyEditorTypes) => void
+    onChangeType: (type: PropertyType) => void
     propertyName: string
     valueIdx: number
     propertyRange?: SlimClass[]
@@ -210,7 +210,7 @@ export const ReferenceField = memo(function ReferenceField({
                 onModifyReferenceProperty={onChange}
                 onRemoveEntry={onRemoveEntry}
                 onChangeType={onChangeType}
-                propertyType={PropertyEditorTypes.Reference}
+                propertyType={PropertyType.Reference}
             />
         </div>
     )

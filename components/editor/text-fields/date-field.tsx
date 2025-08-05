@@ -3,17 +3,8 @@ import { Input } from "@/components/ui/input"
 import { Calendar } from "lucide-react"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { SlimClass } from "@/lib/schema-worker/helpers"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { DateTime } from "luxon"
-
-export function getDefaultDate() {
-    const today = new Date()
-    const dd = String(today.getDate()).padStart(2, "0")
-    const mm = String(today.getMonth() + 1).padStart(2, "0") //January is 0!
-    const yyyy = today.getFullYear()
-
-    return yyyy + "-" + mm + "-" + dd
-}
+import { getDefaultDate, PropertyType } from "@/lib/property"
 
 export const DateField = memo(function DateField({
     value,
@@ -24,7 +15,7 @@ export const DateField = memo(function DateField({
 }: {
     value: string
     onChange: (value: string) => void
-    onChangeType: (type: PropertyEditorTypes) => void
+    onChangeType: (type: PropertyType) => void
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
@@ -64,7 +55,7 @@ export const DateField = memo(function DateField({
                 onModifyTextLikeProperty={onChange}
                 onRemoveEntry={onRemoveEntry}
                 onChangeType={onChangeType}
-                propertyType={PropertyEditorTypes.Date}
+                propertyType={PropertyType.Date}
             />
         </div>
     )
