@@ -1,9 +1,15 @@
 import { isRootEntity } from "@/lib/utils"
 import { editorState } from "@/lib/state/editor-state"
-import { ValidationResult, ValidationResultSeverity } from "@/lib/validation/validation-result"
-import { Validator } from "@/lib/validation/validator"
+import { ValidationResultSeverity } from "@/lib/validation/validation-result"
+import {
+    EntityRule,
+    PropertyRule,
+    RuleBasedValidator,
+    RuleBuilder
+} from "@/lib/validation/validators/rule-based-validator"
+import { ValidatorContext } from "@/lib/validation/validator"
 
-const entityRules: EntityRule[] = [
+const entityRules: RuleBuilder<EntityRule> = () => [
     async (entity) => {
         if (isRootEntity(entity) && !("license" in entity)) {
             return [
@@ -29,7 +35,7 @@ const entityRules: EntityRule[] = [
     }
 ]
 
-const propertyRules: PropertyRule[] = [
+const propertyRules: RuleBuilder<PropertyRule> = () => [
     async (entity, propertyName) => {
         if (
             isRootEntity(entity) &&
@@ -76,22 +82,7 @@ const propertyRules: PropertyRule[] = [
     }
 ]
 
-type CrateRule = (crate: ICrate) => Promise<ValidationResult[]>
-type PropertyRule = (entity: IEntity, propertyName: string) => Promise<ValidationResult[]>
-type EntityRule = (entity: IEntity) => Promise<ValidationResult[]>
-
-export class SpecificationValidator implements Validator {
-    name = "SpecificationValidator"
-
-    async validateCrate(crate: ICrate): Promise<ValidationResult[]> {
-        return []
-    }
-
-    async validateProperty(entity: IEntity, propertyName: string): Promise<ValidationResult[]> {
-        return (await Promise.all(propertyRules.map((rule) => rule(entity, propertyName)))).flat(1)
-    }
-
-    async validateEntity(entity: IEntity): Promise<ValidationResult[]> {
-        return (await Promise.all(entityRules.map((rule) => rule(entity)))).flat(1)
-    }
+export function makeSpecificationValidator() {
+    return (ctx: ValidatorContext) =>
+        new RuleBasedValidator(ctx, () => [], entityRules, propertyRules)
 }

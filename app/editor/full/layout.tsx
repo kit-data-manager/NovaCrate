@@ -1,6 +1,6 @@
 "use client"
 
-import { PropsWithChildren, useContext, useEffect, useRef } from "react"
+import { PropsWithChildren, useContext, useEffect } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Nav } from "@/components/nav/nav"
 import { usePathname } from "next/navigation"
@@ -14,32 +14,23 @@ import DefaultActions from "@/components/actions/default-actions"
 import { ActionKeyboardShortcuts } from "@/components/actions/action-keyboard-shortcuts"
 import EntityActions from "@/components/actions/entity-actions"
 import { EntityEditorTabsSupervisor } from "@/components/editor/entity-editor-tabs-supervisor"
-import { ValidationProvider } from "@/lib/validation/validation-provider"
-import { editorState } from "@/lib/state/editor-state"
-import { SpecificationValidator } from "@/lib/validation/validators/specification-validator"
-import { ValidationContext } from "@/components/providers/validation-context"
+import { ValidationContextProvider } from "@/components/providers/validation-context"
 
 export default function EditorLayout(props: PropsWithChildren) {
-    const validation = useRef<ValidationProvider>(null!)
-    if (!validation.current) {
-        validation.current = new ValidationProvider(editorState)
-        validation.current.addValidator(new SpecificationValidator())
-    }
-
     return (
         <ActionsProvider>
             <SchemaWorkerProvider>
                 <GlobalModalProvider>
                     <GraphStateProvider>
                         <GraphSettingsProvider>
-                            <ValidationContext.Provider value={{ validation: validation.current }}>
+                            <ValidationContextProvider>
                                 <DefaultActions />
                                 <EntityActions />
                                 <ActionKeyboardShortcuts />
                                 <RecentlyUsed />
                                 <EntityEditorTabsSupervisor />
                                 <Nav>{props.children}</Nav>
-                            </ValidationContext.Provider>
+                            </ValidationContextProvider>
                         </GraphSettingsProvider>
                     </GraphStateProvider>
                 </GlobalModalProvider>

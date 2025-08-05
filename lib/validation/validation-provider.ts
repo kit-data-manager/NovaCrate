@@ -1,17 +1,20 @@
 import { StoreApi, UseBoundStore } from "zustand"
 import { EditorState } from "@/lib/state/editor-state"
 import { createValidationResultStore } from "@/lib/state/validation-result-store"
-import { Validator } from "@/lib/validation/validator"
+import { Validator, ValidatorContext } from "@/lib/validation/validator"
 import { ValidationResult } from "@/lib/validation/validation-result"
 
 export class ValidationProvider {
     validators: Validator[] = []
     resultStore = createValidationResultStore()
+    editorState: UseBoundStore<StoreApi<EditorState>>
 
-    constructor(private editorState: UseBoundStore<StoreApi<EditorState>>) {}
+    constructor(private validatorContext: ValidatorContext) {
+        this.editorState = validatorContext.editorState
+    }
 
-    addValidator(validator: Validator) {
-        this.validators.push(validator)
+    addValidator(validatorConstructor: (validatorContext: ValidatorContext) => Validator) {
+        this.validators.push(validatorConstructor(this.validatorContext))
     }
 
     async validateCrate() {
