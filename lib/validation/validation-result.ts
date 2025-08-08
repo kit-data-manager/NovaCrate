@@ -1,4 +1,6 @@
 export interface ValidationResult {
+    id: string
+
     entityId?: string
     propertyName?: string
     propertyIndex?: number

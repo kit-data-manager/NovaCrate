@@ -5,7 +5,9 @@ import { ValidationResult, ValidationResultSeverity } from "@/lib/validation/val
 export function ValidationResultIcon({ result }: { result: ValidationResult | undefined }) {
     return useMemo(() => {
         if (!result)
-            return <InfoIcon className="size-4 fill-info [&_circle]:stroke-info shrink-0" />
+            return (
+                <InfoIcon className="size-4 fill-info [&_circle]:stroke-info shrink-0 opacity-0" />
+            )
         if (result.resultSeverity === ValidationResultSeverity.error)
             return <CircleAlert className="size-4 fill-error [&_circle]:stroke-error shrink-0" />
         if (result.resultSeverity === ValidationResultSeverity.warning)

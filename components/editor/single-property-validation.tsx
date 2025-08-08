@@ -14,13 +14,11 @@ import { ValidationResultSeverity } from "@/lib/validation/validation-result"
 export function SinglePropertyValidation({
     propertyName,
     entityId,
-    propertyIndex,
-    validationRunning
+    propertyIndex
 }: {
     propertyName: string
     propertyIndex: number
     entityId: string
-    validationRunning: boolean
 }) {
     const validationStore = useValidationStore()
     const validationResults = useStore(
@@ -57,7 +55,7 @@ export function SinglePropertyValidation({
 
     return (
         <div
-            className={`p-1 ${validationResults.length > 0 ? "" : "opacity-0 pointer-events-none"} ${validationRunning ? "opacity-50" : ""} transition-opacity`}
+            className={`p-1 ${validationResults.length > 0 ? "" : "opacity-0 pointer-events-none"} transition-opacity`}
         >
             <Popover>
                 <PopoverTrigger asChild>

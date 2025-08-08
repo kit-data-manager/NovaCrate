@@ -4,17 +4,17 @@ import { ValidationResultIcon } from "@/components/editor/validation/validation-
 import { useGoToEntityEditor } from "@/lib/hooks"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { ValidationResult } from "@/lib/validation/validation-result"
+import Markdown from "react-markdown"
+import { CircleQuestionMark } from "lucide-react"
 
 export function ValidationResultLine({
     result,
     showPropertyName,
-    showEntityId,
-    showDetails
+    showEntityId
 }: {
     result: ValidationResult
     showPropertyName?: boolean
     showEntityId?: boolean
-    showDetails?: boolean
 }) {
     const goToEntityEditor = useGoToEntityEditor()
     const focusProperty = useEntityEditorTabs((store) => store.focusProperty)
@@ -31,13 +31,17 @@ export function ValidationResultLine({
 
     return (
         <div
-            className="flex gap-2 p-1 px-2 text-sm hover:bg-muted rounded-sm items-center"
+            className="flex gap-2 p-1 px-2 text-sm hover:bg-muted rounded-sm items-center w-full text-left"
             onClick={openTarget}
         >
             <ValidationResultIcon result={result} />
             <div className="flex flex-col grow">
                 <div className="flex items-center gap-1 grow truncate">
-                    <div className="truncate">{result.resultTitle}</div>
+                    <div className="truncate">
+                        <Markdown allowedElements={["a", "code", "pre", "em", "strong", "i", "p"]}>
+                            {result.resultTitle}
+                        </Markdown>
+                    </div>
                     {showEntityId && (
                         <div className="text-muted-foreground text-xs self-end">
                             {result.entityId}
@@ -50,12 +54,11 @@ export function ValidationResultLine({
                         </div>
                     )}
                 </div>
-                {showDetails && (
-                    <div className="text-muted-foreground text-xs">
-                        {result.resultDescription} ({result.validatorName}
-                        {result.ruleName && ": " + result.ruleName})
-                    </div>
-                )}
+                <div className="text-muted-foreground text-xs line-clamp-1">
+                    <Markdown allowedElements={["a", "code", "pre", "em", "strong", "i", "p"]}>
+                        {`${result.resultDescription} (${result.validatorName}${result.ruleName ? ": " + result.ruleName : ""})`}
+                    </Markdown>
+                </div>
             </div>
 
             <div className="flex gap-2">
@@ -69,6 +72,15 @@ export function ValidationResultLine({
                         {action.displayName}
                     </Button>
                 ))}
+                {result.helpUrl && (
+                    <Button
+                        className="p-0 m-0 h-auto cursor-pointer"
+                        variant="ghost"
+                        onClick={() => window.open(result.helpUrl, "_blank")}
+                    >
+                        <CircleQuestionMark className="size-4" />
+                    </Button>
+                )}
             </div>
         </div>
     )

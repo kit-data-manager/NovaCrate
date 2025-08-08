@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { useCallback, useContext, useMemo, useState } from "react"
 import { PropertyEditor } from "@/components/editor/property-editor"
 import {
     Diff,
@@ -25,7 +25,6 @@ import { useShallow } from "zustand/react/shallow"
 import { TypeSelectModal } from "@/components/modals/type-select-modal"
 import { ValidationOverview } from "@/components/editor/validation-overview"
 import { mapEntityToProperties, PropertyType } from "@/lib/property"
-import { useValidation } from "@/lib/validation/hooks"
 
 export function EntityEditor({
     entityId,
@@ -44,15 +43,6 @@ export function EntityEditor({
     const getRootEntityId = useEditorState((store) => store.getRootEntityId)
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
-    const validation = useValidation()
-    const [validationRunning, setValidationRunning] = useState(false)
-
-    useEffect(() => {
-        if (entity) {
-            setValidationRunning(true)
-            validation.validateEntity(entity["@id"]).then(() => setValidationRunning(false))
-        }
-    }, [entity, validation])
 
     // Type selection for @type fields
     const [typeSelectModalOpen, setTypeSelectModalOpen] = useState(false)
@@ -214,10 +204,7 @@ export function EntityEditor({
                         <span className="break-all">{displayName}</span>
                     </h2>
                     <div className="gap-2 flex">
-                        <ValidationOverview
-                            entityId={entityId}
-                            validationRunning={validationRunning}
-                        />
+                        <ValidationOverview entityId={entityId} />
                     </div>
                 </div>
 

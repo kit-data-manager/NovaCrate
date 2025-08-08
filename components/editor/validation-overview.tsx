@@ -91,8 +91,8 @@ export function ValidationOverview({
                                 No issues found.
                             </div>
                         )}
-                        {validationResults.map((res, i) => (
-                            <ValidationResultLine result={res} key={i} showPropertyName />
+                        {validationResults.map((res) => (
+                            <ValidationResultLine result={res} key={res.id} showPropertyName />
                         ))}
                     </div>
                 </PopoverContent>

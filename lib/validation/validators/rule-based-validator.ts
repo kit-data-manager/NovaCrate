@@ -5,9 +5,21 @@ export type RuleBuilder<Rule extends CrateRule | PropertyRule | EntityRule> = (
     ctx: ValidatorContext
 ) => Rule[]
 
-export type CrateRule = (crate: ICrate) => Promise<ValidationResult[]>
-export type EntityRule = (entity: IEntity) => Promise<ValidationResult[]>
-export type PropertyRule = (entity: IEntity, propertyName: string) => Promise<ValidationResult[]>
+export type CrateValidationResult = Omit<
+    ValidationResult,
+    "propertyName" | "propertyIndex" | "entityId"
+>
+export type EntityValidationResult = Omit<ValidationResult, "propertyName" | "propertyIndex"> & {
+    entityId: string
+}
+export type PropertyValidationResult = ValidationResult & { entityId: string; propertyName: string }
+
+export type CrateRule = (crate: ICrate) => Promise<CrateValidationResult[]>
+export type EntityRule = (entity: IEntity) => Promise<EntityValidationResult[]>
+export type PropertyRule = (
+    entity: IEntity,
+    propertyName: string
+) => Promise<PropertyValidationResult[]>
 
 export class RuleBasedValidator extends Validator {
     name = "RuleBasedValidator"
@@ -30,16 +42,19 @@ export class RuleBasedValidator extends Validator {
     }
 
     async validateCrate(crate: ICrate): Promise<ValidationResult[]> {
+        console.log("validating crate")
         return (await Promise.all(this.crateRules.map((rule) => rule(crate)))).flat(1)
     }
 
     async validateProperty(entity: IEntity, propertyName: string): Promise<ValidationResult[]> {
+        console.log("validating property", entity["@id"], propertyName)
         return (
             await Promise.all(this.propertyRules.map((rule) => rule(entity, propertyName)))
         ).flat(1)
     }
 
     async validateEntity(entity: IEntity): Promise<ValidationResult[]> {
+        console.log("validating entity", entity["@id"])
         return (await Promise.all(this.entityRules.map((rule) => rule(entity)))).flat(1)
     }
 }

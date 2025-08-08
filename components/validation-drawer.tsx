@@ -36,14 +36,8 @@ export function ValidationDrawer() {
                         No issues found.
                     </div>
                 )}
-                {validationResults.map((res, i) => (
-                    <ValidationResultLine
-                        result={res}
-                        key={i}
-                        showPropertyName
-                        showEntityId
-                        showDetails
-                    />
+                {validationResults.map((res) => (
+                    <ValidationResultLine result={res} key={res.id} showPropertyName showEntityId />
                 ))}
             </div>
         </div>

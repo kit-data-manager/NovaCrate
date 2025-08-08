@@ -15,6 +15,7 @@ import { ActionKeyboardShortcuts } from "@/components/actions/action-keyboard-sh
 import EntityActions from "@/components/actions/entity-actions"
 import { EntityEditorTabsSupervisor } from "@/components/editor/entity-editor-tabs-supervisor"
 import { ValidationContextProvider } from "@/components/providers/validation-context"
+import { CrateValidationSupervisor } from "@/components/crate-validation-supervisor"
 
 export default function EditorLayout(props: PropsWithChildren) {
     return (
@@ -29,6 +30,7 @@ export default function EditorLayout(props: PropsWithChildren) {
                                 <ActionKeyboardShortcuts />
                                 <RecentlyUsed />
                                 <EntityEditorTabsSupervisor />
+                                <CrateValidationSupervisor />
                                 <Nav>{props.children}</Nav>
                             </ValidationContextProvider>
                         </GraphSettingsProvider>

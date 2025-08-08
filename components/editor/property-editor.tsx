@@ -22,7 +22,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import useSWR from "swr"
 import { SinglePropertyValidation } from "@/components/editor/single-property-validation"
 import { EntityEditorProperty, PropertyType } from "@/lib/property"
-import { useValidation } from "@/lib/validation/hooks"
 
 export interface PropertyEditorProps {
     entityId: string
@@ -54,24 +53,6 @@ export const PropertyEditor = memo(function PropertyEditor({
     const unFocusProperty = useEntityEditorTabs((store) => store.unFocusProperty)
     const crateContext = useEditorState((store) => store.crateContext)
     const container = createRef<HTMLDivElement>()
-    const validation = useValidation()
-    const [validationRunning, setValidationRunning] = useState(false)
-
-    const runValidation = useCallback(() => {
-        setValidationRunning(true)
-        validation.validateProperty(entityId, property.propertyName).then(() => {
-            setValidationRunning(false)
-        })
-    }, [entityId, property.propertyName, validation])
-
-    useEffect(() => {
-        runValidation()
-    }, [runValidation])
-
-    useEffect(() => {
-        console.log("Values changed!")
-        runValidation()
-    }, [property.values, runValidation])
 
     const isFocused = useMemo(() => {
         return focusedProperty === property.propertyName
@@ -279,7 +260,6 @@ export const PropertyEditor = memo(function PropertyEditor({
                                         entityId={entityId}
                                         propertyName={property.propertyName}
                                         propertyIndex={i}
-                                        validationRunning={validationRunning}
                                     />
                                 </div>
                             )

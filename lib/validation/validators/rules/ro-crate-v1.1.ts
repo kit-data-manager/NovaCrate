@@ -1,9 +1,11 @@
 import {
     CrateRule,
     EntityRule,
+    EntityValidationResult,
+    PropertyRule,
     RuleBuilder
 } from "@/lib/validation/validators/rule-based-validator"
-import { ValidationResult, ValidationResultSeverity } from "@/lib/validation/validation-result"
+import { ValidationResultSeverity } from "@/lib/validation/validation-result"
 import { toArray } from "@/lib/utils"
 import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { DateTime } from "luxon"
@@ -20,6 +22,7 @@ export const RoCrateV1_1 = {
             ) {
                 return [
                     {
+                        id: crypto.randomUUID(),
                         validatorName: "RO-Crate v1.1",
                         resultTitle: "Missing metadata entity",
                         resultDescription: "The crate must have a metadata entity",
@@ -39,6 +42,7 @@ export const RoCrateV1_1 = {
             ) {
                 return [
                     {
+                        id: crypto.randomUUID(),
                         validatorName: "RO-Crate v1.1",
                         resultTitle: "Missing root entity",
                         resultDescription: "The crate must have a root entity",
@@ -48,53 +52,58 @@ export const RoCrateV1_1 = {
                 ]
             }
             return []
-        },
-        async (crate) => {
+        }
+    ]) satisfies RuleBuilder<CrateRule>,
+
+    entityRules: ((ctx) => [
+        async (entity) => {
             const rootId = ctx.editorState.getState().getRootEntityId()
-            const results: ValidationResult[] = []
+            const results: EntityValidationResult[] = []
+            if (entity["@id"] !== rootId) {
+                return results
+            }
 
             if (rootId !== "./") {
                 results.push({
+                    id: crypto.randomUUID(),
                     validatorName: "RO-Crate v1.1",
                     resultTitle: "Root entity id is not `./`",
                     resultDescription: "The id of the root entity should be `./`",
                     resultSeverity: ValidationResultSeverity.warning,
                     ruleName: "rootEntityId",
                     entityId: rootId,
-                    propertyName: "@id",
                     helpUrl:
                         "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
                 })
             }
             if (rootId && !rootId.endsWith("/")) {
                 results.push({
+                    id: crypto.randomUUID(),
                     validatorName: "RO-Crate v1.1",
                     resultTitle: "Root entity id invalid",
                     resultDescription: "The id of the root entity MUST end with `/`",
                     resultSeverity: ValidationResultSeverity.error,
                     ruleName: "rootEntityId",
                     entityId: rootId,
-                    propertyName: "@id",
                     helpUrl:
                         "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
                 })
             }
 
             return results
-        }
-    ]) satisfies RuleBuilder<CrateRule>,
-
-    entityRules: ((ctx) => [
+        },
         async (entity) => {
             if (entity["@id"] === "ro-crate-metadata.jsonld") {
                 return [
                     {
+                        id: crypto.randomUUID(),
                         validatorName: "RO-Crate v1.1",
                         resultTitle: "Legacy metadata entity",
                         resultDescription:
                             "The metadata entity `ro-crate-metadata.jsonld` should be renamed to `ro-crate-metadata.json`",
                         resultSeverity: ValidationResultSeverity.warning,
                         ruleName: "legacyMetadataEntity",
+                        entityId: entity["@id"],
                         helpUrl:
                             "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
                     }
@@ -109,6 +118,7 @@ export const RoCrateV1_1 = {
                 if (entity["@type"] !== "CreativeWork") {
                     return [
                         {
+                            id: crypto.randomUUID(),
                             validatorName: "RO-Crate v1.1",
                             resultTitle: "Metadata entity has wrong type",
                             resultDescription:
@@ -133,6 +143,7 @@ export const RoCrateV1_1 = {
                 if (!("conformsTo" in entity)) {
                     return [
                         {
+                            id: crypto.randomUUID(),
                             validatorName: "RO-Crate v1.1",
                             resultTitle: "Incomplete metadata entity",
                             resultDescription:
@@ -151,6 +162,7 @@ export const RoCrateV1_1 = {
                 ) {
                     return [
                         {
+                            id: crypto.randomUUID(),
                             validatorName: "RO-Crate v1.1",
                             resultTitle: "Incomplete metadata entity",
                             resultDescription:
@@ -175,6 +187,7 @@ export const RoCrateV1_1 = {
                 if (!("about" in entity)) {
                     return [
                         {
+                            id: crypto.randomUUID(),
                             validatorName: "RO-Crate v1.1",
                             resultTitle: "Incomplete metadata entity",
                             resultDescription:
@@ -191,23 +204,24 @@ export const RoCrateV1_1 = {
             return []
         },
         async (entity) => {
-            const results: ValidationResult[] = []
+            const results: EntityValidationResult[] = []
             if (entity["@id"] === ctx.editorState.getState().getRootEntityId()) {
                 if (!propertyValue(entity["@type"]).is("Dataset")) {
                     results.push({
+                        id: crypto.randomUUID(),
                         validatorName: "RO-Crate v1.1",
                         resultTitle: "Incorrect root entity type",
                         resultDescription: "The type of the root entity MUST be `Dataset`",
                         resultSeverity: ValidationResultSeverity.error,
                         ruleName: "rootEntityType",
                         entityId: entity["@id"],
-                        propertyName: "@type",
                         helpUrl:
                             "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
                     })
                 }
-                if (!("name" in entity) || propertyValue(entity.name).isEmpty()) {
+                if (!("name" in entity)) {
                     results.push({
+                        id: crypto.randomUUID(),
                         validatorName: "RO-Crate v1.1",
                         resultTitle: "Root entity name",
                         resultDescription:
@@ -215,13 +229,13 @@ export const RoCrateV1_1 = {
                         resultSeverity: ValidationResultSeverity.error,
                         ruleName: "rootEntityName",
                         entityId: entity["@id"],
-                        propertyName: "name",
                         helpUrl:
                             "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
                     })
                 }
-                if (!("description" in entity) || propertyValue(entity.description).isEmpty()) {
+                if (!("description" in entity)) {
                     results.push({
+                        id: crypto.randomUUID(),
                         validatorName: "RO-Crate v1.1",
                         resultTitle: "Root entity description",
                         resultDescription:
@@ -229,13 +243,13 @@ export const RoCrateV1_1 = {
                         resultSeverity: ValidationResultSeverity.error,
                         ruleName: "rootEntityDescription",
                         entityId: entity["@id"],
-                        propertyName: "description",
                         helpUrl:
                             "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
                     })
                 }
                 if (!("datePublished" in entity)) {
                     results.push({
+                        id: crypto.randomUUID(),
                         validatorName: "RO-Crate v1.1",
                         resultTitle: "Root entity datePublished",
                         resultDescription:
@@ -246,30 +260,9 @@ export const RoCrateV1_1 = {
                         helpUrl:
                             "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
                     })
-                } else if (
-                    propertyValue(entity.datePublished).singleStringMatcher(
-                        (s) => !DateTime.fromISO(s).isValid
-                    )
-                ) {
+                } else if (!("license" in entity)) {
                     results.push({
-                        validatorName: "RO-Crate v1.1",
-                        resultTitle: "Invalid time string in datePublished property",
-                        resultDescription:
-                            "The `datePublished` property MUST contain an ISO 8601 date string",
-                        resultSeverity: ValidationResultSeverity.error,
-                        ruleName: "rootEntityDatePublished",
-                        entityId: entity["@id"],
-                        propertyName: "datePublished",
-                        helpUrl:
-                            "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
-                    })
-                }
-                if (
-                    !("license" in entity) ||
-                    !PropertyValueUtils.isRef(entity.license) ||
-                    propertyValue(entity.license).isEmpty()
-                ) {
-                    results.push({
+                        id: crypto.randomUUID(),
                         validatorName: "RO-Crate v1.1",
                         resultTitle: "Root entity license",
                         resultDescription:
@@ -277,7 +270,6 @@ export const RoCrateV1_1 = {
                         resultSeverity: ValidationResultSeverity.error,
                         ruleName: "rootEntityLicense",
                         entityId: entity["@id"],
-                        propertyName: "license",
                         helpUrl:
                             "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
                     })
@@ -285,5 +277,58 @@ export const RoCrateV1_1 = {
             }
             return results
         }
-    ]) satisfies RuleBuilder<EntityRule>
+    ]) satisfies RuleBuilder<EntityRule>,
+    propertyRules: ((ctx) => [
+        async (entity, propertyName) => {
+            if (entity["@id"] === ctx.editorState.getState().getRootEntityId())
+                if (
+                    propertyName === "datePublished" &&
+                    propertyValue(entity.datePublished).singleStringMatcher(
+                        (s) => !DateTime.fromISO(s).isValid
+                    )
+                ) {
+                    return [
+                        {
+                            id: crypto.randomUUID(),
+                            validatorName: "RO-Crate v1.1",
+                            resultTitle: "Invalid time string in datePublished property",
+                            resultDescription:
+                                "The `datePublished` property MUST contain an ISO 8601 date string",
+                            resultSeverity: ValidationResultSeverity.error,
+                            ruleName: "rootEntityDatePublished",
+                            entityId: entity["@id"],
+                            propertyName: "datePublished",
+                            helpUrl:
+                                "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
+                        }
+                    ]
+                }
+            return []
+        },
+        async (entity, propertyName) => {
+            if (entity["@id"] === ctx.editorState.getState().getRootEntityId())
+                if (
+                    (propertyName === "license" && !PropertyValueUtils.isRef(entity.license)) ||
+                    propertyValue(entity.license).isEmpty()
+                ) {
+                    return [
+                        {
+                            id: crypto.randomUUID(),
+                            validatorName: "RO-Crate v1.1",
+                            resultTitle: "Root entity license",
+                            resultDescription:
+                                "The root entity MUST have a `license` property referencing a Contextual Entity or a URI",
+                            resultSeverity: ValidationResultSeverity.error,
+                            ruleName: "rootEntityLicense",
+                            entityId: entity["@id"],
+                            propertyName: "license",
+                            helpUrl:
+                                "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
+                        }
+                    ]
+                }
+
+            return []
+        }
+    ]) satisfies RuleBuilder<PropertyRule>
 }
