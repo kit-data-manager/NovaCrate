@@ -1,6 +1,6 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
-import { CircleAlert, InfoIcon, PanelBottomOpen, TriangleAlert } from "lucide-react"
+import { CheckIcon, CircleAlert, InfoIcon, PanelBottomOpen, TriangleAlert } from "lucide-react"
 import React, { useMemo } from "react"
 import { useStore } from "zustand/index"
 import { useShallow } from "zustand/react/shallow"
@@ -30,33 +30,47 @@ export function ValidationOverview({
     const setShowValidationDrawer = useEditorState((s) => s.setShowValidationDrawer)
 
     const icon = useMemo(() => {
+        if (validationResults.length === 0) return <CheckIcon className="size-4 stroke-success" />
+
         const icons = []
         if (validationResults.find((res) => res.resultSeverity === ValidationResultSeverity.error))
-            icons.push(<CircleAlert key="error" className="size-4 stroke-error" />)
+            icons.push(
+                <CircleAlert key="error" className="size-4 fill-error [&_circle]:stroke-error" />
+            )
         if (
             validationResults.find((res) => res.resultSeverity === ValidationResultSeverity.warning)
         )
-            icons.push(<TriangleAlert key="warn" className="size-4 stroke-warn" />)
+            icons.push(
+                <TriangleAlert
+                    key="warn"
+                    className="size-4 fill-warn [&_path:nth-child(1)]:stroke-warn"
+                />
+            )
         if (
             validationResults.find(
                 (res) => res.resultSeverity === ValidationResultSeverity.softWarning
             )
         )
-            icons.push(<TriangleAlert key="soft-warn" className="size-4 stroke-warn opacity-40" />)
+            icons.push(
+                <TriangleAlert
+                    key="soft-warn"
+                    className="size-4 fill-warn [&_path:nth-child(1)]:stroke-warn opacity-50"
+                />
+            )
         if (validationResults.find((res) => res.resultSeverity === ValidationResultSeverity.info))
-            icons.push(<InfoIcon key="info" className="size-4 stroke-info" />)
+            icons.push(<InfoIcon key="info" className="size-4 fill-info [&_circle]:stroke-info" />)
 
         return icons
     }, [validationResults])
 
     return (
         <div
-            className={`p-1 ${validationResults.length > 0 ? "" : "opacity-0 pointer-events-none"} ${validationRunning && validationResults.length > 0 ? "opacity-50" : ""} transition-opacity`}
+            className={`p-1 ${validationRunning && validationResults.length > 0 ? "opacity-50" : ""} transition-opacity`}
         >
             <Popover>
                 <PopoverTrigger asChild>
                     <Button variant={"outline"}>
-                        {validationResults.length} {icon}
+                        {validationResults.length > 0 && validationResults.length} {icon}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="p-2 pb-0 pr-0 w-[600px]">

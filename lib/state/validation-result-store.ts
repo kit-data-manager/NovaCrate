@@ -20,7 +20,7 @@ export const createValidationResultStore = () =>
                             ? propertyName
                                 ? result.entityId !== entityId ||
                                   result.propertyName !== propertyName
-                                : result.entityId !== entityId || result.propertyName !== undefined
+                                : result.entityId !== entityId
                             : result.entityId !== undefined
                     )
                 })

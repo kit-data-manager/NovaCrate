@@ -264,7 +264,11 @@ export const RoCrateV1_1 = {
                             "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
                     })
                 }
-                if (!("license" in entity) || !PropertyValueUtils.isRef(entity.license)) {
+                if (
+                    !("license" in entity) ||
+                    !PropertyValueUtils.isRef(entity.license) ||
+                    propertyValue(entity.license).isEmpty()
+                ) {
                     results.push({
                         validatorName: "RO-Crate v1.1",
                         resultTitle: "Root entity license",
@@ -273,6 +277,7 @@ export const RoCrateV1_1 = {
                         resultSeverity: ValidationResultSeverity.error,
                         ruleName: "rootEntityLicense",
                         entityId: entity["@id"],
+                        propertyName: "license",
                         helpUrl:
                             "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
                     })
