@@ -35,17 +35,63 @@ export class PropertyValueUtils {
 
     /**
      * Returns true iff the property contains the search string. For this, at least one of the values must exactly match the search string.
-     * @param search String that must be contained in at least one value
+     * @param search String that must match at least one value
      */
     contains(search: EntitySinglePropertyTypes) {
         if (PropertyValueUtils.isArray(this.value)) {
             return this.value.some((v) =>
-                PropertyValueUtils.isString(v) ? v === search : v["@id"] === search
+                PropertyValueUtils.isString(v) || PropertyValueUtils.isString(search)
+                    ? v === search
+                    : v["@id"] === search["@id"]
             )
-        } else if (PropertyValueUtils.isString(this.value)) {
+        } else if (PropertyValueUtils.isString(this.value) && PropertyValueUtils.isString(search)) {
             return this.value === search
-        } else if (PropertyValueUtils.isRef(this.value)) {
-            return this.value["@id"] === search
+        } else if (PropertyValueUtils.isRef(this.value) && PropertyValueUtils.isRef(search)) {
+            return this.value["@id"] === search["@id"]
+        }
+        return false
+    }
+
+    /**
+     * Returns true iff the property contains the search string as a substring. For this, at least one of the values must contain the search string as a substring.
+     * @param search String that must be contained in at least one value
+     */
+    containsSubstring(search: EntitySinglePropertyTypes) {
+        if (PropertyValueUtils.isArray(this.value)) {
+            return this.value.some((v) => {
+                if (PropertyValueUtils.isString(v) && PropertyValueUtils.isString(search)) {
+                    return v.includes(search)
+                } else if (PropertyValueUtils.isRef(v) && PropertyValueUtils.isRef(search)) {
+                    return v["@id"].includes(search["@id"])
+                }
+                return false
+            })
+        } else if (PropertyValueUtils.isString(this.value) && PropertyValueUtils.isString(search)) {
+            return this.value === search
+        } else if (PropertyValueUtils.isRef(this.value) && PropertyValueUtils.isRef(search)) {
+            return this.value["@id"] === search["@id"]
+        }
+        return false
+    }
+
+    /**
+     * Returns true iff the property matches exactly the input value
+     * @param match Value that the property must have
+     */
+    is(match: EntitySinglePropertyTypes) {
+        if (PropertyValueUtils.isArray(this.value)) {
+            return false
+        } else if (PropertyValueUtils.isString(this.value) && PropertyValueUtils.isString(match)) {
+            return this.value === match
+        } else if (PropertyValueUtils.isRef(this.value) && PropertyValueUtils.isRef(match)) {
+            return this.value["@id"] === match["@id"]
+        }
+        return false
+    }
+
+    singleStringMatcher(matcher: (value: string) => boolean) {
+        if (PropertyValueUtils.isString(this.value)) {
+            return matcher(this.value)
         }
         return false
     }

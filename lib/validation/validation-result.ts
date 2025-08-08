@@ -8,6 +8,7 @@ export interface ValidationResult {
     resultDescription: string
 
     actions?: ValidationResultAction[]
+    helpUrl?: string
 
     validatorName: string
     ruleName?: string
