@@ -1,7 +1,7 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { CheckIcon, CircleAlert, InfoIcon, PanelBottomOpen, TriangleAlert } from "lucide-react"
-import React, { useMemo } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { useStore } from "zustand/index"
 import { useShallow } from "zustand/react/shallow"
 import { ValidationResultLine } from "@/components/editor/validation/validation-result-line"
@@ -17,7 +17,10 @@ export function ValidationOverview({
     entityId?: string
     validationRunning?: boolean
 }) {
+    const [initiallyHidden, setInitiallyHidden] = useState(true)
+
     const validationStore = useValidationStore()
+    const validationRanAtLeastOnce = useStore(validationStore, (s) => s.ranAtLeastOnce)
     const validationResults = useStore(
         validationStore,
         useShallow((s) =>
@@ -28,6 +31,10 @@ export function ValidationOverview({
         )
     )
     const setShowValidationDrawer = useEditorState((s) => s.setShowValidationDrawer)
+
+    useEffect(() => {
+        setInitiallyHidden(!validationRanAtLeastOnce)
+    }, [validationRanAtLeastOnce])
 
     const icon = useMemo(() => {
         if (validationResults.length === 0) return <CheckIcon className="size-4 stroke-success" />
@@ -65,7 +72,7 @@ export function ValidationOverview({
 
     return (
         <div
-            className={`p-1 ${validationRunning && validationResults.length > 0 ? "opacity-50" : ""} transition-opacity`}
+            className={`p-1 ${validationRunning && validationResults.length > 0 ? "opacity-50" : ""} ${initiallyHidden ? "opacity-0" : ""} transition-opacity`}
         >
             <Popover>
                 <PopoverTrigger asChild>

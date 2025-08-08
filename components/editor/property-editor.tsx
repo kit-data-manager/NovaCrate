@@ -233,7 +233,10 @@ export const PropertyEditor = memo(function PropertyEditor({
                     </div>
                 ) : null}
 
-                <div className="flex flex-col gap-4">
+                <div
+                    className="flex flex-col gap-4"
+                    id={`property-editor-${property.propertyName}-right`}
+                >
                     <Pagination
                         leftContent={
                             <AddEntryDropdown
@@ -246,7 +249,11 @@ export const PropertyEditor = memo(function PropertyEditor({
                     >
                         {property.values.map((v, i) => {
                             return (
-                                <div key={i} className="flex items-center">
+                                <div
+                                    key={i}
+                                    id={`single-property-editor-${property.propertyName}-${i}`}
+                                    className="flex items-center"
+                                >
                                     <SinglePropertyEditor
                                         entityId={entityId}
                                         valueIndex={i}

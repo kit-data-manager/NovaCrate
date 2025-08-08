@@ -5,7 +5,6 @@ import {
     PropertyRule,
     RuleBuilder
 } from "@/lib/validation/validators/rule-based-validator"
-import { ValidationResultSeverity } from "@/lib/validation/validation-result"
 import { toArray } from "@/lib/utils"
 import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { DateTime } from "luxon"
@@ -87,9 +86,9 @@ export const RoCrateV1_1 = {
             if (entity["@id"] === "ro-crate-metadata.jsonld") {
                 return [
                     builder.rule("legacyMetadataEntity").warning({
-                        resultTitle: "Legacy metadata entity",
+                        resultTitle: "Legacy metadata file name",
                         resultDescription:
-                            "The metadata entity `ro-crate-metadata.jsonld` should be renamed to `ro-crate-metadata.json`",
+                            "The metadata file `ro-crate-metadata.jsonld` should be renamed to `ro-crate-metadata.json`",
                         entityId: entity["@id"],
                         helpUrl:
                             "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
@@ -191,7 +190,7 @@ export const RoCrateV1_1 = {
                 if (!("name" in entity)) {
                     results.push(
                         builder.rule("rootEntityName").error({
-                            resultTitle: "Root entity name",
+                            resultTitle: "Missing root entity name",
                             resultDescription:
                                 "The root entity MUST have a `name` property to disambiguate it from other RO-Crates",
                             entityId: entity["@id"],
@@ -203,7 +202,7 @@ export const RoCrateV1_1 = {
                 if (!("description" in entity)) {
                     results.push(
                         builder.rule("rootEntityDescription").error({
-                            resultTitle: "Root entity description",
+                            resultTitle: "Missing root entity description",
                             resultDescription:
                                 "The root entity MUST have a `description` to provide a summary of the context in which the dataset is important",
                             entityId: entity["@id"],
@@ -215,13 +214,9 @@ export const RoCrateV1_1 = {
                 if (!("datePublished" in entity)) {
                     results.push(
                         builder.rule("rootEntityDatePublished").error({
-                            id: crypto.randomUUID(),
-                            validatorName: "RO-Crate v1.1",
-                            resultTitle: "Root entity datePublished",
+                            resultTitle: "Missing root entity `datePublished`",
                             resultDescription:
                                 "The root entity MUST have a `datePublished` property containing an ISO 8601 date string denoting when the RO-Crate was published",
-                            resultSeverity: ValidationResultSeverity.error,
-                            ruleName: "rootEntityDatePublished",
                             entityId: entity["@id"],
                             helpUrl:
                                 "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
@@ -230,7 +225,7 @@ export const RoCrateV1_1 = {
                 } else if (!("license" in entity)) {
                     results.push(
                         builder.rule("rootEntityLicense").error({
-                            resultTitle: "Root entity license",
+                            resultTitle: "Missing root entity license",
                             resultDescription:
                                 "The root entity MUST have a `license` property referencing a Contextual Entity or a URI",
                             entityId: entity["@id"],
@@ -254,7 +249,7 @@ export const RoCrateV1_1 = {
                 ) {
                     return [
                         builder.rule("rootEntityDatePublishedFormat").error({
-                            resultTitle: "Invalid time string in datePublished property",
+                            resultTitle: "Invalid time string in `datePublished` property",
                             resultDescription:
                                 "The `datePublished` property MUST contain an ISO 8601 date string",
                             entityId: entity["@id"],
@@ -274,7 +269,7 @@ export const RoCrateV1_1 = {
                 ) {
                     return [
                         builder.rule("rootEntityLicenseRef").error({
-                            resultTitle: "Root entity license",
+                            resultTitle: "Empty license",
                             resultDescription:
                                 "The root entity MUST have a `license` property referencing a Contextual Entity or a URI",
                             entityId: entity["@id"],

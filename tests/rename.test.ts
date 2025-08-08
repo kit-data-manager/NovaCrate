@@ -57,7 +57,7 @@ test("Rename File", async ({ page }) => {
     - button
     `)
     await page.getByRole("button", { name: "Preview File" }).click()
-    await expect(page.getByRole("code")).toContainText('"entry": {')
+    await expect(page.locator(".monaco-editor")).toContainText('"entry": {')
     await page.getByRole("button", { name: "File Explorer" }).click()
     await expect(page.locator("body")).toMatchAriaSnapshot(`
     - button "Subfolder":

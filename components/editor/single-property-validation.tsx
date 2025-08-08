@@ -55,7 +55,7 @@ export function SinglePropertyValidation({
 
     return (
         <div
-            className={`p-1 ${validationResults.length > 0 ? "" : "opacity-0 pointer-events-none"} transition-opacity`}
+            className={`p-1 ${validationResults.length > 0 ? "" : "opacity-0 pointer-events-none"} transition-opacity shrink-0`}
         >
             <Popover>
                 <PopoverTrigger asChild>
