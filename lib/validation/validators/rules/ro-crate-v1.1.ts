@@ -1,28 +1,28 @@
 import { CrateRule, RuleBuilder } from "@/lib/validation/validators/rule-based-validator"
 import { ValidationResultSeverity } from "@/lib/validation/validation-result"
+import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 
-function findRoot(crate: ICrate) {
+function findRoot(entities: ICrate["@graph"]) {
     let rootId: string | null = null
-    for (const entity of crate["@graph"]) {
-        if ("conformsTo" in entity) {
-            if (
-                typeof entity.conformsTo === "object" &&
-                !Array.isArray(entity.conformsTo) &&
-                entity.conformsTo["@id"] === "https://w3id.org/ro/crate/"
-            ) {
-                if (typeof entity.about === "object" && !Array.isArray(entity.about))
-                    rootId = entity.about["@id"]
+    for (const entity of entities) {
+        if (
+            "conformsTo" in entity &&
+            propertyValue(entity.conformsTo).contains("https://w3id.org/ro/crate/")
+        ) {
+            if ("about" in entity && PropertyValueUtils.isRef(entity.about)) {
+                rootId = entity.about["@id"]
+                break
             }
         }
     }
 
-    return crate["@graph"].find((e) => e["@id"] === rootId)
+    return entities.find((e) => e["@id"] === rootId)
 }
 
 export const RoCrateV1_1 = {
     crateRules: ((ctx) => [
         async (crate) => {
-            if (!findRoot(crate)) {
+            if (!findRoot(crate["@graph"])) {
                 return [
                     {
                         validatorName: "RoCrateV1_1",
