@@ -1,4 +1,3 @@
-import { isRootEntity } from "@/lib/utils"
 import { editorState } from "@/lib/state/editor-state"
 import { ValidationResultSeverity } from "@/lib/validation/validation-result"
 import {
@@ -9,9 +8,12 @@ import {
 } from "@/lib/validation/validators/rule-based-validator"
 import { ValidatorContext } from "@/lib/validation/validator"
 
-const entityRules: RuleBuilder<EntityRule> = () => [
+const entityRules: RuleBuilder<EntityRule> = (ctx) => [
     async (entity) => {
-        if (isRootEntity(entity) && !("license" in entity)) {
+        if (
+            entity["@id"] === ctx.editorState.getState().getRootEntityId() &&
+            !("license" in entity)
+        ) {
             return [
                 {
                     entityId: entity["@id"],
@@ -35,10 +37,10 @@ const entityRules: RuleBuilder<EntityRule> = () => [
     }
 ]
 
-const propertyRules: RuleBuilder<PropertyRule> = () => [
+const propertyRules: RuleBuilder<PropertyRule> = (ctx) => [
     async (entity, propertyName) => {
         if (
-            isRootEntity(entity) &&
+            entity["@id"] === ctx.editorState.getState().getRootEntityId() &&
             propertyName === "license" &&
             entity[propertyName] !== undefined
         ) {

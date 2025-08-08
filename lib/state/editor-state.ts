@@ -5,6 +5,7 @@ import { CrateContext } from "@/lib/crate-context"
 import { createWithEqualityFn } from "zustand/traditional"
 import { useStore } from "zustand/index"
 import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
+import { PropertyValueUtils } from "@/lib/property-value-utils"
 
 enableMapSet()
 
@@ -26,6 +27,7 @@ export interface EditorState {
     getEntities(): Map<string, IEntity>
     getEntitiesChangelist(): Map<string, Diff>
     getEntityDiff(id: string): Diff | null
+    getRootEntityId(): string | undefined
     getChangedEntities(): IEntity[]
     getHasUnsavedChanges(): boolean
     addEntity(
@@ -145,6 +147,16 @@ export const editorState = createWithEqualityFn<EditorState>()(
             if (isEntityEqual(entity, initialEntity)) {
                 return Diff.None
             } else return Diff.Changed
+        },
+
+        getRootEntityId(): string | undefined {
+            const entities = getState().entities
+            const meta = entities.get("ro-crate-metadata.json")
+            const legacy = entities.get("ro-crate-metadata.jsonld")
+            if (meta && "about" in meta && PropertyValueUtils.isRef(meta.about))
+                return meta.about["@id"]
+            if (legacy && "about" in legacy && PropertyValueUtils.isRef(legacy.about))
+                return legacy.about["@id"]
         },
 
         getChangedEntities(): IEntity[] {

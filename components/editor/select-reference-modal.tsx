@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/command"
 import { Checkbox } from "@/components/ui/checkbox"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { getEntityDisplayName, isRoCrateMetadataEntity, isRootEntity, toArray } from "@/lib/utils"
+import { getEntityDisplayName, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { SlimClass } from "@/lib/schema-worker/helpers"
@@ -72,6 +72,7 @@ export function SelectReferenceModal({
 }) {
     const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
     const crateContext = useEditorState((store) => store.crateContext)
+    const rootEntityId = useEditorState((store) => store.getRootEntityId())
 
     const [isReferenceUrl, setIsReferenceUrl] = useState(false)
     const [referenceUrl, setReferenceUrl] = useState("")
@@ -105,7 +106,7 @@ export function SelectReferenceModal({
 
         if (onlyShowAllowed && propertyRangeIds) {
             return crateData["@graph"]
-                .filter((e) => !isRootEntity(e))
+                .filter((e) => e["@id"] !== rootEntityId)
                 .filter((e) => !isRoCrateMetadataEntity(e))
                 .filter((entity) => {
                     for (const type of toArray(entity["@type"])) {
@@ -119,7 +120,15 @@ export function SelectReferenceModal({
         } else {
             return crateData["@graph"]
         }
-    }, [crateContext, crateData, crateDataIsLoading, onlyShowAllowed, open, propertyRangeIds])
+    }, [
+        crateContext,
+        crateData,
+        crateDataIsLoading,
+        onlyShowAllowed,
+        open,
+        propertyRangeIds,
+        rootEntityId
+    ])
 
     const onSelectAndClose = useCallback(
         (ref: IReference) => {

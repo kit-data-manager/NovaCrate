@@ -1,13 +1,14 @@
 import { useCurrentEntity } from "@/lib/hooks"
 import { useCallback, useMemo, useState } from "react"
 import { AtSign, LayoutGrid, Minus, SearchIcon, XIcon } from "lucide-react"
-import { camelCaseReadable, isRootEntity } from "@/lib/utils"
+import { camelCaseReadable } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import { sortByPropertyName } from "@/lib/property"
+import { useEditorState } from "@/lib/state/editor-state"
 
 export function PropertyOverview() {
     const currentEntity = useCurrentEntity()
@@ -16,18 +17,19 @@ export function PropertyOverview() {
         (store) => store.setShowPropertyOverview
     )
     const [search, setSearch] = useState("")
+    const rootEntityId = useEditorState((s) => s.getRootEntityId())
 
     const properties = useMemo(() => {
         if (!currentEntity) return []
         const all = Object.keys(currentEntity)
             .sort((a, b) => sortByPropertyName(a, b))
-            .filter((e) => (isRootEntity(currentEntity) ? !e.startsWith("@") : true))
+            .filter((e) => (currentEntity["@id"] === rootEntityId ? !e.startsWith("@") : true))
         if (!search) return all
         else
             return all.filter((property) =>
                 property.toLowerCase().includes(search.replaceAll(" ", "").toLowerCase())
             )
-    }, [currentEntity, search])
+    }, [currentEntity, rootEntityId, search])
 
     const getKey = useCallback(
         (propertyName: string) => {

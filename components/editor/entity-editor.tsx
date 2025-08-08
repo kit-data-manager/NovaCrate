@@ -6,7 +6,6 @@ import {
     Diff,
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
-    isRootEntity,
     propertyHasChanged,
     canHavePreview as canHavePreviewUtil
 } from "@/lib/utils"
@@ -42,6 +41,7 @@ export function EntityEditor({
     const addPropertyEntry = useEditorState((store) => store.addPropertyEntry)
     const modifyPropertyEntry = useEditorState((store) => store.modifyPropertyEntry)
     const removePropertyEntry = useEditorState((store) => store.removePropertyEntry)
+    const getRootEntityId = useEditorState((store) => store.getRootEntityId)
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
     const validation = useValidation()
@@ -126,9 +126,9 @@ export function EntityEditor({
     const properties = useMemo(() => {
         if (!entity) return []
         return mapEntityToProperties(entity, originalEntity).filter((e) =>
-            isRootEntity(entity) ? !e.propertyName.startsWith("@") : true
+            entity["@id"] === getRootEntityId() ? !e.propertyName.startsWith("@") : true
         )
-    }, [entity, originalEntity])
+    }, [entity, getRootEntityId, originalEntity])
 
     const propertiesChangelist = useMemo(() => {
         const changeMap: Map<string, Diff> = new Map()

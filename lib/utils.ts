@@ -78,6 +78,7 @@ function isValidUrl(string: string) {
 /**
  * Check if this entity is the crate root
  * @param entity
+ * @deprecated Use `editorState.getRootEntityId()` instead to reliably determine the @id of the root entity
  */
 export function isRootEntity(entity: IEntity) {
     return entity["@id"] === "./"
@@ -127,11 +128,11 @@ export function isFolderDataEntity(entity: IEntity) {
 }
 
 /**
- * Check if the supplied entity is a contextual entity. An entity is a contextual entity if it is not a data entity and not the crate root.
+ * Check if the supplied entity is a contextual entity. An entity is a contextual entity if it is not a data entity.
  * @param entity
  */
 export function isContextualEntity(entity: IEntity) {
-    return !isRootEntity(entity) && !isDataEntity(entity)
+    return !isDataEntity(entity)
 }
 
 /**
