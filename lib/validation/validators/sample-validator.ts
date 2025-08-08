@@ -14,6 +14,7 @@ export class SampleValidator extends Validator {
         if (Array.isArray(values)) {
             for (let i = 0; i < values.length; i++) {
                 results.push({
+                    id: crypto.randomUUID(),
                     entityId: entity["@id"],
                     propertyName,
                     propertyIndex: i,
@@ -25,6 +26,7 @@ export class SampleValidator extends Validator {
             }
         } else {
             results.push({
+                id: crypto.randomUUID(),
                 entityId: entity["@id"],
                 propertyName,
                 validatorName: this.name,
@@ -57,6 +59,7 @@ export class SampleValidator extends Validator {
     async validateEntity(entity: IEntity): Promise<ValidationResult[]> {
         return [
             {
+                id: crypto.randomUUID(),
                 entityId: entity["@id"],
                 validatorName: this.name,
                 resultTitle: "Test result (Entity)",
@@ -69,6 +72,7 @@ export class SampleValidator extends Validator {
     async validateCrate(): Promise<ValidationResult[]> {
         return [
             {
+                id: crypto.randomUUID(),
                 validatorName: this.name,
                 resultTitle: "Test result (Crate)",
                 resultDescription: "This result is just a test for crate validation",
