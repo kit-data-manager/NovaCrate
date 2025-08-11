@@ -92,6 +92,8 @@ export class PropertyValueUtils {
     singleStringMatcher(matcher: (value: string) => boolean) {
         if (PropertyValueUtils.isString(this.value)) {
             return matcher(this.value)
+        } else if (PropertyValueUtils.isStringArray(this.value) && this.value.length === 1) {
+            return matcher(this.value[0])
         }
         return false
     }

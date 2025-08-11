@@ -227,7 +227,7 @@ export const RoCrateV1_1 = {
                         builder.rule("rootEntityLicense").error({
                             resultTitle: "Missing root entity license",
                             resultDescription:
-                                "The root entity MUST have a `license` property referencing a Contextual Entity or a URI",
+                                "The root entity MUST have a `license` property referencing a Contextual Entity or a URI. It MAY also be a textual description of a license.",
                             entityId: entity["@id"],
                             helpUrl:
                                 "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
@@ -235,6 +235,33 @@ export const RoCrateV1_1 = {
                     )
                 }
             }
+            return results
+        },
+        async (entity) => {
+            const results: EntityValidationResult[] = []
+            if (entity["@id"] === "ro-crate-metadata.json") return []
+
+            if (!("name" in entity)) {
+                results.push(
+                    builder.rule("entityName").warning({
+                        resultTitle: "Entity should have a name",
+                        resultDescription:
+                            "Provide a `name` property for this entity to make it easier to recognize for human readers.",
+                        entityId: entity["@id"]
+                    })
+                )
+            }
+            if (!("description" in entity)) {
+                results.push(
+                    builder.rule("entityDescription").softWarning({
+                        resultTitle: "Entity should have a description",
+                        resultDescription:
+                            "Provide a `description` property for this entity to described it for human readers.",
+                        entityId: entity["@id"]
+                    })
+                )
+            }
+
             return results
         }
     ]) satisfies RuleBuilder<EntityRule>,
@@ -263,22 +290,53 @@ export const RoCrateV1_1 = {
         },
         async (entity, propertyName) => {
             if (entity["@id"] === ctx.editorState.getState().getRootEntityId())
-                if (
-                    (propertyName === "license" && !PropertyValueUtils.isRef(entity.license)) ||
-                    propertyValue(entity.license).isEmpty()
-                ) {
-                    return [
-                        builder.rule("rootEntityLicenseRef").error({
-                            resultTitle: "Empty license",
-                            resultDescription:
-                                "The root entity MUST have a `license` property referencing a Contextual Entity or a URI",
-                            entityId: entity["@id"],
-                            propertyName: "license",
-                            helpUrl:
-                                "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
-                        })
-                    ]
+                if (propertyName === "license") {
+                    if (propertyValue(entity.license).isEmpty()) {
+                        return [
+                            builder.rule("rootEntityLicenseEmpty").error({
+                                resultTitle: "Empty license",
+                                resultDescription:
+                                    "The license field is empty. Provide a reference to a Contextual Entity or a URI. You may also provide a textual description of a license.",
+                                entityId: entity["@id"],
+                                propertyName: "license",
+                                helpUrl:
+                                    "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
+                            })
+                        ]
+                    } else if (
+                        !(
+                            PropertyValueUtils.isRef(entity.license) ||
+                            PropertyValueUtils.isRefArray(entity.license)
+                        )
+                    ) {
+                        return [
+                            builder.rule("rootEntityLicenseNotRef").softWarning({
+                                resultTitle: "License field should be a reference",
+                                resultDescription:
+                                    "The license field should directly reference a Contextual Entity or a URI. You may also provide a textual description of a license.",
+                                entityId: entity["@id"],
+                                propertyName: "license",
+                                helpUrl:
+                                    "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
+                            })
+                        ]
+                    }
                 }
+
+            return []
+        },
+        async (entity, propertyName) => {
+            if (propertyName === "name" && propertyValue(entity.name).isEmpty()) {
+                return [
+                    builder.rule("entityNameEmpty").warning({
+                        resultTitle: "Name is empty",
+                        resultDescription:
+                            "The `name` property should not be empty, in order for human readers to be able to recognize the entity.",
+                        entityId: entity["@id"],
+                        propertyName: "name"
+                    })
+                ]
+            }
 
             return []
         }

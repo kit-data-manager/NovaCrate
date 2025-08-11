@@ -43,7 +43,7 @@ import { KeyboardShortcut } from "@/components/actions/action-keyboard-shortcuts
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Error } from "@/components/error"
-import { ValidationOverview } from "@/components/editor/validation-overview"
+import { ValidationOverview } from "@/components/editor/validation/validation-overview"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()

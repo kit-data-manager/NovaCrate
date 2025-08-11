@@ -18,11 +18,6 @@
     propertyName: description
     Rule: Each contextual entity SHOULD have a description property to further explain its role or context.
 
-    Severity: error
-    entityId: [ROOT: all entities in the @graph]
-    propertyName: @id
-    Rule: There MUST NOT be multiple entities in the @graph with the same @id. Each @id in the @graph array MUST be unique.
-
     Severity: info
     entityId: [any entity @id]
     propertyName: identifier

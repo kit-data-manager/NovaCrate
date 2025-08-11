@@ -28,7 +28,7 @@ export class ValidationResultBuilder {
         return {
             ...data,
             ...this.error(data),
-            id: crypto.randomUUID()
+            resultSeverity: ValidationResultSeverity.warning
         }
     }
 
@@ -38,7 +38,7 @@ export class ValidationResultBuilder {
         return {
             ...data,
             ...this.error(data),
-            id: crypto.randomUUID()
+            resultSeverity: ValidationResultSeverity.softWarning
         }
     }
 
@@ -48,7 +48,7 @@ export class ValidationResultBuilder {
         return {
             ...data,
             ...this.error(data),
-            id: crypto.randomUUID()
+            resultSeverity: ValidationResultSeverity.info
         }
     }
 }

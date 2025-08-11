@@ -23,7 +23,7 @@ import { EntityBadge } from "../entity/entity-badge"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useShallow } from "zustand/react/shallow"
 import { TypeSelectModal } from "@/components/modals/type-select-modal"
-import { ValidationOverview } from "@/components/editor/validation-overview"
+import { ValidationOverview } from "@/components/editor/validation/validation-overview"
 import { mapEntityToProperties, PropertyType } from "@/lib/property"
 
 export function EntityEditor({

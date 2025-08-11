@@ -1,23 +1,32 @@
 import { Button } from "@/components/ui/button"
-import React, { useCallback } from "react"
+import React, { memo, useCallback, useEffect, useMemo, useRef } from "react"
 import { ValidationResultIcon } from "@/components/editor/validation/validation-result-icon"
 import { useGoToEntityEditor } from "@/lib/hooks"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { ValidationResult } from "@/lib/validation/validation-result"
 import Markdown from "react-markdown"
 import { CircleQuestionMark } from "lucide-react"
+import { useEditorState } from "@/lib/state/editor-state"
 
-export function ValidationResultLine({
+export const ValidationResultLine = memo(function ValidationResultLine({
     result,
     showPropertyName,
-    showEntityId
+    showEntityId,
+    focusable
 }: {
     result: ValidationResult
     showPropertyName?: boolean
     showEntityId?: boolean
+    focusable?: boolean
 }) {
+    const container = useRef<HTMLDivElement>(null)
     const goToEntityEditor = useGoToEntityEditor()
     const focusProperty = useEntityEditorTabs((store) => store.focusProperty)
+    const focusedValidationResult = useEditorState((store) =>
+        focusable ? store.focusedValidationResultId : undefined
+    )
+    const focusValidationResult = useEditorState((store) => store.setFocusedValidationResultId)
+    const setShowValidationDrawer = useEditorState((store) => store.setShowValidationDrawer)
 
     const openTarget = useCallback(() => {
         if (result.entityId) {
@@ -29,26 +38,48 @@ export function ValidationResultLine({
         }
     }, [focusProperty, goToEntityEditor, result.entityId, result.propertyName])
 
+    const focusResult = useCallback(() => {
+        setShowValidationDrawer(true)
+        focusValidationResult(result.id)
+    }, [focusValidationResult, result.id, setShowValidationDrawer])
+
+    const isFocused = useMemo(() => {
+        return focusedValidationResult === result.id && focusable
+    }, [focusable, focusedValidationResult, result.id])
+
+    useEffect(() => {
+        if (isFocused) {
+            container.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+            const timeout = setTimeout(() => {
+                focusValidationResult(undefined)
+            }, 2000)
+
+            return () => clearTimeout(timeout)
+        }
+    }, [focusValidationResult, isFocused])
+
     return (
         <div
-            className="flex gap-2 p-1 px-2 text-sm hover:bg-muted rounded-sm items-center w-full text-left"
+            className={`flex gap-2 p-1 px-2 text-sm hover:bg-muted rounded-sm items-center w-full text-left transition-bg ${isFocused ? "bg-muted" : ""}`}
             onClick={openTarget}
+            onDoubleClick={focusResult}
+            ref={container}
         >
             <ValidationResultIcon result={result} />
-            <div className="flex flex-col grow">
-                <div className="flex items-center gap-1 grow truncate">
-                    <div className="truncate">
+            <div className="flex flex-col grow min-w-0">
+                <div className="flex items-center gap-1 grow">
+                    <div className="text-nowrap">
                         <Markdown allowedElements={["a", "code", "pre", "em", "strong", "i", "p"]}>
                             {result.resultTitle}
                         </Markdown>
                     </div>
                     {showEntityId && (
-                        <div className="text-muted-foreground text-xs self-end">
+                        <div className="text-muted-foreground text-xs self-end truncate">
                             {result.entityId}
                         </div>
                     )}
                     {showPropertyName && (
-                        <div className="text-muted-foreground text-xs self-end">
+                        <div className="text-muted-foreground text-xs self-end truncate">
                             {result.propertyName}
                             {result.propertyIndex !== undefined && `#${result.propertyIndex}`}
                         </div>
@@ -84,4 +115,4 @@ export function ValidationResultLine({
             </div>
         </div>
     )
-}
+})

@@ -1,10 +1,5 @@
     Severity: error
     entityId: [any data entity @id]
-    propertyName: @type
-    Rule: Every data entity MUST have a @type property set to either "Dataset" or "File".
-
-    Severity: error
-    entityId: [any data entity @id]
     propertyName: @id
     Rule: Every data entity MUST have an @id property. For files and datasets, this SHOULD be a URI relative to the RO-Crate root, and MUST be unique within the RO-Crate.
 

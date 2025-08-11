@@ -65,6 +65,8 @@ export interface EditorState {
 
     showValidationDrawer: boolean
     setShowValidationDrawer(show: boolean): void
+    focusedValidationResultId?: string
+    setFocusedValidationResultId(id?: string): void
 }
 
 function setPropertyValue(
@@ -335,6 +337,12 @@ export const editorState = createWithEqualityFn<EditorState>()(
         setShowValidationDrawer(show: boolean) {
             setState((state) => {
                 state.showValidationDrawer = show
+            })
+        },
+        focusedValidationResultId: undefined,
+        setFocusedValidationResultId(id?: string) {
+            setState((state) => {
+                state.focusedValidationResultId = id
             })
         }
     }))
