@@ -1,4 +1,9 @@
-import { ValidationResult, ValidationResultSeverity } from "@/lib/validation/validation-result"
+import { ValidationResultSeverity } from "@/lib/validation/validation-result"
+import {
+    CrateValidationResult,
+    EntityValidationResult,
+    PropertyValidationResult
+} from "@/lib/validation/validators/rule-based-validator"
 
 export class ValidationResultBuilder {
     private ruleName = "unnamedRule"
@@ -10,21 +15,21 @@ export class ValidationResultBuilder {
         return this
     }
 
-    error<D extends Omit<ValidationResult, "resultSeverity" | "ruleName" | "id" | "validatorName">>(
-        data: D
-    ) {
+    error<D = EntityValidationResult | PropertyValidationResult | CrateValidationResult>(
+        data: Omit<D, "resultSeverity" | "ruleName" | "id" | "validatorName">
+    ): D {
         return {
             ...data,
             resultSeverity: ValidationResultSeverity.error,
             ruleName: this.ruleName,
             validatorName: this.validatorName,
             id: crypto.randomUUID()
-        }
+        } as D
     }
 
-    warning<
-        D extends Omit<ValidationResult, "resultSeverity" | "ruleName" | "id" | "validatorName">
-    >(data: D) {
+    warning<D = EntityValidationResult | PropertyValidationResult | CrateValidationResult>(
+        data: Omit<D, "resultSeverity" | "ruleName" | "id" | "validatorName">
+    ): D {
         return {
             ...data,
             ...this.error(data),
@@ -32,9 +37,9 @@ export class ValidationResultBuilder {
         }
     }
 
-    softWarning<
-        D extends Omit<ValidationResult, "resultSeverity" | "ruleName" | "id" | "validatorName">
-    >(data: D) {
+    softWarning<D = EntityValidationResult | PropertyValidationResult | CrateValidationResult>(
+        data: Omit<D, "resultSeverity" | "ruleName" | "id" | "validatorName">
+    ): D {
         return {
             ...data,
             ...this.error(data),
@@ -42,9 +47,9 @@ export class ValidationResultBuilder {
         }
     }
 
-    info<D extends Omit<ValidationResult, "resultSeverity" | "ruleName" | "id" | "validatorName">>(
-        data: D
-    ) {
+    info<D = EntityValidationResult | PropertyValidationResult | CrateValidationResult>(
+        data: Omit<D, "resultSeverity" | "ruleName" | "id" | "validatorName">
+    ): D {
         return {
             ...data,
             ...this.error(data),

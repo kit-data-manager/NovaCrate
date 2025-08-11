@@ -107,27 +107,6 @@ export const RoCrateV1_1 = {
                 entity["@id"] === "ro-crate-metadata.jsonld" ||
                 entity["@id"] === "ro-crate-metadata.json"
             ) {
-                if (entity["@type"] !== "CreativeWork") {
-                    return [
-                        builder.rule("metadataEntityType").error({
-                            resultTitle: "Metadata entity has wrong type",
-                            resultDescription:
-                                "The type of the metadata entity must be `CreativeWork`",
-                            entityId: entity["@id"],
-                            propertyName: "@type",
-                            helpUrl:
-                                "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
-                        })
-                    ]
-                }
-            }
-            return []
-        },
-        async (entity) => {
-            if (
-                entity["@id"] === "ro-crate-metadata.jsonld" ||
-                entity["@id"] === "ro-crate-metadata.json"
-            ) {
                 if (!("conformsTo" in entity)) {
                     return [
                         builder.rule("metadataEntityConformsTo").warning({
@@ -150,7 +129,6 @@ export const RoCrateV1_1 = {
                             resultDescription:
                                 "The conformsTo of the RO-Crate Metadata File Descriptor SHOULD be a versioned permalink URI of the RO-Crate specification that the RO-Crate JSON-LD conforms to",
                             entityId: entity["@id"],
-                            propertyName: "conformsTo",
                             helpUrl:
                                 "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
                         })
@@ -385,6 +363,28 @@ export const RoCrateV1_1 = {
                 ]
             }
 
+            return []
+        },
+        async (entity, propertyName) => {
+            if (propertyName === "@type")
+                if (
+                    entity["@id"] === "ro-crate-metadata.jsonld" ||
+                    entity["@id"] === "ro-crate-metadata.json"
+                ) {
+                    if (entity["@type"] !== "CreativeWork") {
+                        return [
+                            builder.rule("metadataEntityType").error({
+                                resultTitle: "Metadata entity has wrong type",
+                                resultDescription:
+                                    "The type of the metadata entity must be `CreativeWork`",
+                                entityId: entity["@id"],
+                                propertyName: "@type",
+                                helpUrl:
+                                    "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
+                            })
+                        ]
+                    }
+                }
             return []
         }
     ]) satisfies RuleBuilder<PropertyRule>
