@@ -13,7 +13,7 @@ export interface ValidationResult {
     helpUrl?: string
 
     validatorName: string
-    ruleName?: string
+    ruleName: string
 }
 
 export enum ValidationResultSeverity {

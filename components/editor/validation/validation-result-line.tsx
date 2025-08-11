@@ -12,12 +12,16 @@ export const ValidationResultLine = memo(function ValidationResultLine({
     result,
     showPropertyName,
     showEntityId,
-    focusable
+    focusable,
+    render,
+    renderRequest
 }: {
     result: ValidationResult
     showPropertyName?: boolean
     showEntityId?: boolean
     focusable?: boolean
+    render?: boolean
+    renderRequest?: () => void
 }) {
     const container = useRef<HTMLDivElement>(null)
     const goToEntityEditor = useGoToEntityEditor()
@@ -49,14 +53,20 @@ export const ValidationResultLine = memo(function ValidationResultLine({
 
     useEffect(() => {
         if (isFocused) {
-            container.current?.scrollIntoView({ behavior: "smooth", block: "center" })
-            const timeout = setTimeout(() => {
-                focusValidationResult(undefined)
-            }, 2000)
+            if (!render) {
+                renderRequest?.()
+            } else {
+                container.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+                const timeout = setTimeout(() => {
+                    focusValidationResult(undefined)
+                }, 2000)
 
-            return () => clearTimeout(timeout)
+                return () => clearTimeout(timeout)
+            }
         }
-    }, [focusValidationResult, isFocused])
+    }, [focusValidationResult, isFocused, render, renderRequest])
+
+    if (render === false) return null
 
     return (
         <div

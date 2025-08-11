@@ -21,7 +21,8 @@ export class SampleValidator extends Validator {
                     validatorName: this.name,
                     resultTitle: "Test result (Property)",
                     resultDescription: "This result is just a test",
-                    resultSeverity: ValidationResultSeverity.error
+                    resultSeverity: ValidationResultSeverity.error,
+                    ruleName: "sample-rule"
                 })
             }
         } else {
@@ -49,7 +50,8 @@ export class SampleValidator extends Validator {
                             alert("Hello")
                         }
                     }
-                ]
+                ],
+                ruleName: "sample-rule"
             })
         }
 
@@ -64,7 +66,8 @@ export class SampleValidator extends Validator {
                 validatorName: this.name,
                 resultTitle: "Test result (Entity)",
                 resultDescription: "This result is just a test for entity validation",
-                resultSeverity: ValidationResultSeverity.warning
+                resultSeverity: ValidationResultSeverity.warning,
+                ruleName: "sample-rule"
             }
         ]
     }
@@ -76,7 +79,8 @@ export class SampleValidator extends Validator {
                 validatorName: this.name,
                 resultTitle: "Test result (Crate)",
                 resultDescription: "This result is just a test for crate validation",
-                resultSeverity: ValidationResultSeverity.warning
+                resultSeverity: ValidationResultSeverity.warning,
+                ruleName: "sample-rule"
             }
         ]
     }
