@@ -97,6 +97,22 @@ export class PropertyValueUtils {
         }
         return false
     }
+
+    hasRefs() {
+        if (PropertyValueUtils.isArray(this.value)) {
+            return this.value.some((v) => PropertyValueUtils.isRef(v))
+        } else {
+            return PropertyValueUtils.isRef(this.value)
+        }
+    }
+
+    forEach(callback: (value: EntitySinglePropertyTypes, index: number) => void) {
+        if (PropertyValueUtils.isArray(this.value)) {
+            this.value.forEach(callback)
+        } else {
+            callback(this.value, 0)
+        }
+    }
 }
 
 export function propertyValue(value: EntityPropertyTypes) {

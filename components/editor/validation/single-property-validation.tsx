@@ -66,14 +66,6 @@ export function SinglePropertyValidation({
                 <PopoverContent className="p-2 w-[600px] max-w-[600px]">
                     <div className="text-xs font-medium p-1 mb-1 flex justify-between">
                         Property Issues
-                        <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-auto p-1"
-                            onClick={() => setShowValidationDrawer(true)}
-                        >
-                            <PanelBottomOpen className="size-3" />
-                        </Button>
                     </div>
                     {validationResults.length === 0 && (
                         <div className="flex justify-center text-muted-foreground text-xs p-2">
@@ -83,6 +75,14 @@ export function SinglePropertyValidation({
                     {validationResults.map((res, i) => (
                         <ValidationResultLine result={res} key={i} />
                     ))}
+                    <Button
+                        variant="ghost"
+                        className="w-full -ml-1 mt-2"
+                        size="sm"
+                        onClick={() => setShowValidationDrawer(true)}
+                    >
+                        <PanelBottomOpen /> Show Details
+                    </Button>
                 </PopoverContent>
             </Popover>
         </div>

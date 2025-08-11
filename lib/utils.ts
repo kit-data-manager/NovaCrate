@@ -66,7 +66,7 @@ export function getEntityDisplayName(entity: IEntity, fallback: boolean = true) 
  * Check if the string represents a valid URL
  * @param string String to check
  */
-function isValidUrl(string: string) {
+export function isValidUrl(string: string) {
     try {
         new URL(string)
         return true
@@ -293,6 +293,23 @@ export function referenceCheck(propertyRange?: string[]) {
                   )
               ).length > 0
         : undefined
+}
+
+/**
+ * Check if a given property type range allows for its value to be a text.
+ * @param propertyRange
+ */
+export function textCheck(propertyRange?: string[]) {
+    return propertyRange
+        ? propertyRange.length === 0 ||
+              propertyRange.includes(SCHEMA_ORG_TEXT) ||
+              SCHEMA_ORG_TEXTLIKE.find((s) => propertyRange.includes(s)) !== undefined // ||
+        : // canBeTime ||
+          // canBeBoolean ||
+          // canBeDate ||
+          // canBeDateTime ||
+          // canBeNumber
+          undefined
 }
 
 /**

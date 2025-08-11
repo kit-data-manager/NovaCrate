@@ -3,6 +3,7 @@ import {
     EntityRule,
     EntityValidationResult,
     PropertyRule,
+    PropertyValidationResult,
     RuleBuilder
 } from "@/lib/validation/validators/rule-based-validator"
 import {
@@ -10,6 +11,8 @@ import {
     isDataEntity,
     isFileDataEntity,
     isFolderDataEntity,
+    isValidUrl,
+    referenceCheck,
     toArray
 } from "@/lib/utils"
 import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
@@ -386,6 +389,122 @@ export const RoCrateV1_1 = {
                     }
                 }
             return []
+        },
+        async (entity, propertyName) => {
+            if (propertyName === "@type")
+                if (
+                    entity["@id"] === "ro-crate-metadata.jsonld" ||
+                    entity["@id"] === "ro-crate-metadata.json"
+                ) {
+                    if (entity["@type"] !== "CreativeWork") {
+                        return [
+                            builder.rule("metadataEntityType").error({
+                                resultTitle: "Metadata entity has wrong type",
+                                resultDescription:
+                                    "The type of the metadata entity must be `CreativeWork`",
+                                entityId: entity["@id"],
+                                propertyName: "@type",
+                                helpUrl:
+                                    "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
+                            })
+                        ]
+                    }
+                }
+            return []
+        },
+        async (entity, propertyName) => {
+            const results: PropertyValidationResult[] = []
+            try {
+                const range = await ctx.schemaWorker.worker.execute(
+                    "getPropertyRange",
+                    propertyName
+                )
+
+                if (!referenceCheck(range.map((s) => s["@id"]))) {
+                    // Values can't be references
+                    if (propertyValue(entity[propertyName]).hasRefs()) {
+                        results.push(
+                            builder.rule("unallowedRef").error({
+                                resultTitle: `Property \`${propertyName}\` can't be a reference`,
+                                resultDescription: `The property \`${propertyName}\` only allows textual values, but it contains a reference. Remove the reference.`,
+                                entityId: entity["@id"],
+                                propertyName
+                            })
+                        )
+                    }
+                }
+                // Checking if text is allowed is not that simple, skipped for now...
+            } catch (e) {
+                console.error(
+                    `getPropertyRange failed on entity ${entity["@id"]} with property ${propertyName}`,
+                    e
+                )
+            }
+            return results
+        },
+        async (entity, propertyName) => {
+            const results: PropertyValidationResult[] = []
+            try {
+                const entities = ctx.editorState.getState().getEntities()
+                const propertyId = ctx.editorState.getState().crateContext.resolve(propertyName)
+                if (!propertyId) return []
+                const range = await ctx.schemaWorker.worker.execute("getPropertyRange", propertyId)
+                const rangeIds = range.map((s) => s["@id"])
+
+                propertyValue(entity[propertyName]).forEach((v, i) => {
+                    if (PropertyValueUtils.isRef(v) && !propertyValue(v).isEmpty()) {
+                        const target = entities.get(v["@id"])
+                        if (!target && !isValidUrl(v["@id"])) {
+                            results.push(
+                                builder.rule("unresolvedRef").error({
+                                    resultTitle: `Unresolved reference \`${v["@id"]}\``,
+                                    resultDescription: `The reference to \`${v["@id"]}\` could not be resolved, no entity with this id exists in this crate.`,
+                                    entityId: entity["@id"],
+                                    propertyName,
+                                    propertyIndex: i
+                                })
+                            )
+                            return
+                        }
+                        if (!target) return
+
+                        const targetTypes = toArray(target["@type"])
+                            .map((v) => ctx.editorState.getState().crateContext.resolve(v))
+                            .filter((v) => v !== null)
+                        if (targetTypes.length === 0) return // Could not determine type, abort
+
+                        if (rangeIds.some((r) => targetTypes.includes(r))) return
+                        else {
+                            results.push(
+                                builder.rule("wrongRefType").warning({
+                                    resultTitle: `Invalid reference to type \`${target["@type"]}\``,
+                                    resultDescription: `The reference to \`${v["@id"]}\` is not allowed here, because it's type \`${target["@type"]}\` can not be used for the property \`${propertyName}\`.`,
+                                    entityId: entity["@id"],
+                                    propertyName,
+                                    propertyIndex: i
+                                })
+                            )
+                            return
+                        }
+                    } else if (PropertyValueUtils.isRef(v) && propertyValue(v).isEmpty()) {
+                        results.push(
+                            builder.rule("emptyRef").warning({
+                                resultTitle: `Empty reference`,
+                                resultDescription: `The reference is empty. You can remove it, link it to an existing entity or create a new matching entity.`,
+                                entityId: entity["@id"],
+                                propertyName,
+                                propertyIndex: i
+                            })
+                        )
+                    }
+                })
+            } catch (e) {
+                console.error(
+                    `getPropertyRange failed on entity ${entity["@id"]} on property "${propertyName}"`,
+                    e
+                )
+            }
+            return results
         }
     ]) satisfies RuleBuilder<PropertyRule>
 }
