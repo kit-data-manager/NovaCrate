@@ -415,23 +415,26 @@ export const RoCrateV1_1 = {
         async (entity, propertyName) => {
             const results: PropertyValidationResult[] = []
             try {
-                const range = await ctx.schemaWorker.worker.execute(
-                    "getPropertyRange",
-                    propertyName
-                )
+                const propertyId = ctx.editorState.getState().crateContext.resolve(propertyName)
+                if (!propertyId) return []
+                const range = await ctx.schemaWorker.worker.execute("getPropertyRange", propertyId)
 
                 if (!referenceCheck(range.map((s) => s["@id"]))) {
                     // Values can't be references
-                    if (propertyValue(entity[propertyName]).hasRefs()) {
-                        results.push(
-                            builder.rule("unallowedRef").error({
-                                resultTitle: `Property \`${propertyName}\` can't be a reference`,
-                                resultDescription: `The property \`${propertyName}\` only allows textual values, but it contains a reference. Remove the reference.`,
-                                entityId: entity["@id"],
-                                propertyName
-                            })
-                        )
-                    }
+                    propertyValue(entity[propertyName]).forEach((v, i) => {
+                        // Exception: URLs seem to be allowed anywhere
+                        if (PropertyValueUtils.isRef(v) && !isValidUrl(v["@id"])) {
+                            results.push(
+                                builder.rule("unallowedRef").error({
+                                    resultTitle: `Property \`${propertyName}\` can't be a reference`,
+                                    resultDescription: `The property \`${propertyName}\` only allows textual values, but it contains a reference. Remove the reference.`,
+                                    entityId: entity["@id"],
+                                    propertyName,
+                                    propertyIndex: i
+                                })
+                            )
+                        }
+                    })
                 }
                 // Checking if text is allowed is not that simple, skipped for now...
             } catch (e) {
@@ -475,13 +478,15 @@ export const RoCrateV1_1 = {
 
                         if (rangeIds.some((r) => targetTypes.includes(r))) return
                         else {
+                            if (propertyName === "encodingFormat") return // encodingFormat can reference any type, induced from specification
                             results.push(
                                 builder.rule("wrongRefType").warning({
                                     resultTitle: `Invalid reference to type \`${target["@type"]}\``,
                                     resultDescription: `The reference to \`${v["@id"]}\` is not allowed here, because it's type \`${target["@type"]}\` can not be used for the property \`${propertyName}\`.`,
                                     entityId: entity["@id"],
                                     propertyName,
-                                    propertyIndex: i
+                                    propertyIndex: i,
+                                    helpUrl: isValidUrl(propertyId) ? propertyId : undefined
                                 })
                             )
                             return
