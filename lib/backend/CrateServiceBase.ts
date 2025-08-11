@@ -87,6 +87,8 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
 
     abstract getCrateFilesList(crateId: string): Promise<string[]>
 
+    abstract getCrateFileInfo(crateId: string, filePath: string): Promise<FileInfo>
+
     abstract getStorageInfo(crateId?: string): Promise<CrateServiceProviderStorageInfo | null>
 
     abstract getStoredCrateIds(): Promise<string[]>

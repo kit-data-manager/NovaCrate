@@ -185,6 +185,10 @@ export class ROCrateJavaCrateService extends CrateServiceBase {
         }
     }
 
+    async getCrateFileInfo(): Promise<FileInfo> {
+        return Promise.reject("Not implemented")
+    }
+
     async updateEntity(
         crateId: string,
         entityData: IEntity,

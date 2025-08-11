@@ -5,7 +5,13 @@ import {
     PropertyRule,
     RuleBuilder
 } from "@/lib/validation/validators/rule-based-validator"
-import { toArray } from "@/lib/utils"
+import {
+    canHavePreview,
+    isDataEntity,
+    isFileDataEntity,
+    isFolderDataEntity,
+    toArray
+} from "@/lib/utils"
 import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { DateTime } from "luxon"
 import { ValidationResultBuilder } from "@/lib/validation/validation-result-builder"
@@ -251,15 +257,56 @@ export const RoCrateV1_1 = {
                     })
                 )
             }
-            if (!("description" in entity)) {
-                results.push(
-                    builder.rule("entityDescription").softWarning({
-                        resultTitle: "Entity should have a description",
-                        resultDescription:
-                            "Provide a `description` property for this entity to described it for human readers.",
-                        entityId: entity["@id"]
-                    })
-                )
+
+            return results
+        },
+        async (entity) => {
+            const results: EntityValidationResult[] = []
+            if (!ctx.serviceProvider || !ctx.crateData.crateId) return results
+
+            if (isDataEntity(entity) && canHavePreview(entity)) {
+                try {
+                    const result = await ctx.serviceProvider.getCrateFileInfo(
+                        ctx.crateData.crateId,
+                        entity["@id"]
+                    )
+
+                    if (result.type === "file" && !isFileDataEntity(entity)) {
+                        results.push(
+                            builder.rule("fileDataEntityWrongType").error({
+                                resultTitle: "Data entity points to file but has wrong type",
+                                resultDescription: `This entity points to a file at \`${entity["@id"]}\`, but the \`type\` of the entity is not \`File\``,
+                                entityId: entity["@id"],
+                                helpUrl:
+                                    "https://www.researchobject.org/ro-crate/specification/1.1/data-entities.html"
+                            })
+                        )
+                    } else if (result.type === "directory" && !isFolderDataEntity(entity)) {
+                        results.push(
+                            builder.rule("folderDataEntityWrongType").error({
+                                resultTitle: "Data entity points to directory but has wrong type",
+                                resultDescription: `This entity points to a directory at \`${entity["@id"]}\`, but the \`type\` of the entity is not \`Dataset\``,
+                                entityId: entity["@id"],
+                                helpUrl:
+                                    "https://www.researchobject.org/ro-crate/specification/1.1/data-entities.html"
+                            })
+                        )
+                    }
+                } catch (e) {
+                    console.error(
+                        `Failed to get crate file info during validation for entity ${entity["@id"]}`,
+                        e
+                    )
+                    results.push(
+                        builder.rule("dataEntityFileError").error({
+                            resultTitle: "Could not find corresponding file or directory",
+                            resultDescription: `This data entity points to a file or directory at \`${entity["@id"]}\`, but the corresponding file or directory could not be found in the crate.`,
+                            entityId: entity["@id"],
+                            helpUrl:
+                                "https://www.researchobject.org/ro-crate/specification/1.1/data-entities.html"
+                        })
+                    )
+                }
             }
 
             return results

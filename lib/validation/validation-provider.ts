@@ -17,6 +17,13 @@ export class ValidationProvider {
         this.validators.push(validatorConstructor(this.validatorContext))
     }
 
+    updateContext(ctx: ValidatorContext) {
+        this.validatorContext = ctx
+        for (const validator of this.validators) {
+            validator.updateContext(ctx)
+        }
+    }
+
     async validateCrate() {
         const entities = this.editorState.getState().getEntities()
         const context = this.editorState.getState().crateContext

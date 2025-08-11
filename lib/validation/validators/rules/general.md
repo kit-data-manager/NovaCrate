@@ -1,11 +1,3 @@
-1. Data/Contextual entity disambiguation
-
-   Severity: error
-   entityId: [any entity @id]
-   propertyName: @id
-   Rule: If an entity's @id is a file or directory path relative to the crate root, its @type MUST include "File" or "Dataset".
-
-
 2. Reference integrity (foreign key check)
 
    Severity: error
@@ -20,23 +12,6 @@
    entityId: ./
    propertyName: hasPart
    Rule: All data entities (files/datasets) described in the RO-Crate SHOULD be transitively included under the root data entity’s hasPart hierarchy, so that no described file is “orphaned”.
-
-
-4. Contextual entity type completeness
-
-   Severity: warning
-   entityId: [any contextual entity @id]
-   propertyName: @type
-   Rule: If @type is "Person" or "Organization", the entity SHOULD have at least one contact property (email, url, affiliation, address, etc.).
-
-
-5. Recommended descriptions for top-level datasets
-
-   Severity: soft-warning
-   entityId: ./
-   propertyName: description
-   Rule: The root data entity’s description SHOULD be at least 20 characters and not only whitespace.
-
 
 6. File encodingFormat consistency
 

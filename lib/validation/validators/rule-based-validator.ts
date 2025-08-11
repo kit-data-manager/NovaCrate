@@ -24,37 +24,30 @@ export type PropertyRule = (
 export class RuleBasedValidator extends Validator {
     name = "RuleBasedValidator"
 
-    private crateRules: CrateRule[]
-    private entityRules: EntityRule[]
-    private propertyRules: PropertyRule[]
-
     constructor(
-        ctx: ValidatorContext,
-        crateRuleBuilder: RuleBuilder<CrateRule>,
-        entityRuleBuilder: RuleBuilder<EntityRule>,
-        propertyRuleBuilder: RuleBuilder<PropertyRule>
+        context: ValidatorContext,
+        private crateRuleBuilder: RuleBuilder<CrateRule>,
+        private entityRuleBuilder: RuleBuilder<EntityRule>,
+        private propertyRuleBuilder: RuleBuilder<PropertyRule>
     ) {
-        super(ctx)
-
-        this.crateRules = crateRuleBuilder(ctx)
-        this.entityRules = entityRuleBuilder(ctx)
-        this.propertyRules = propertyRuleBuilder(ctx)
+        super(context)
     }
 
     async validateCrate(crate: ICrate): Promise<ValidationResult[]> {
         console.log("validating crate")
-        return (await Promise.all(this.crateRules.map((rule) => rule(crate)))).flat(1)
+        const crateRules = this.crateRuleBuilder(super.getContext())
+        return (await Promise.all(crateRules.map((rule) => rule(crate)))).flat(1)
     }
 
     async validateProperty(entity: IEntity, propertyName: string): Promise<ValidationResult[]> {
         console.log("validating property", entity["@id"], propertyName)
-        return (
-            await Promise.all(this.propertyRules.map((rule) => rule(entity, propertyName)))
-        ).flat(1)
+        const propertyRules = this.propertyRuleBuilder(super.getContext())
+        return (await Promise.all(propertyRules.map((rule) => rule(entity, propertyName)))).flat(1)
     }
 
     async validateEntity(entity: IEntity): Promise<ValidationResult[]> {
         console.log("validating entity", entity["@id"])
-        return (await Promise.all(this.entityRules.map((rule) => rule(entity)))).flat(1)
+        const entityRules = this.entityRuleBuilder(super.getContext())
+        return (await Promise.all(entityRules.map((rule) => rule(entity)))).flat(1)
     }
 }

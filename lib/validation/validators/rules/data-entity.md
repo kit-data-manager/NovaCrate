@@ -1,17 +1,8 @@
-    Severity: error
-    entityId: [any data entity @id]
-    propertyName: @id
-    Rule: Every data entity MUST have an @id property. For files and datasets, this SHOULD be a URI relative to the RO-Crate root, and MUST be unique within the RO-Crate.
 
     Severity: warning
     entityId: [any data entity @id]
     propertyName: name
     Rule: Every data entity SHOULD have a name property describing it for human readers.
-
-    Severity: warning
-    entityId: [any data entity @id]
-    propertyName: description
-    Rule: Data entities SHOULD have a description property that provides a concise explanation of the resource.
 
     Severity: error
     entityId: [any data entity @id]

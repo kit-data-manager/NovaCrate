@@ -118,6 +118,8 @@ declare interface CrateServiceAdapter {
      */
     getCrateFilesList(crateId: string): Promise<string[]>
 
+    getCrateFileInfo(crateId: string, filePath: string): Promise<FileInfo>
+
     /**
      * Get a URL to a file from the crate archive, for preview or download purposes
      * @param crateId ID of the target crate
@@ -189,4 +191,9 @@ declare interface FolderFile {
      */
     relativePath: string
     data: Blob
+}
+
+declare interface FileInfo {
+    type: "file" | "directory"
+    name: string
 }

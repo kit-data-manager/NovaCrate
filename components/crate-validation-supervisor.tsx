@@ -17,6 +17,7 @@ import { useStore } from "zustand/index"
  */
 export function CrateValidationSupervisor() {
     const { crateData } = useContext(CrateDataContext)
+    const { crateId } = useContext(CrateDataContext)
     const entities = useEditorState((store) => store.entities)
     const validation = useValidation()
 
@@ -33,6 +34,8 @@ export function CrateValidationSupervisor() {
     const entitiesArray = useMemo(() => {
         return Array.from(entities.values())
     }, [entities])
+
+    if (!crateId) return null
 
     return (
         <>

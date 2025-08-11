@@ -97,6 +97,14 @@ export async function getCrateDirContents(crateId: string) {
     return contents.map((s) => s.normalize())
 }
 
+export async function getFileInfo(crateId: string, filePath: string) {
+    const result = await fs.stat(resolveCratePath(crateId, filePath))
+    if (!result.isOk()) throw result.unwrapErr()
+    const stat = result.unwrap()
+
+    return { type: stat.kind, name: stat.name }
+}
+
 export async function getCrates() {
     const result = await fs.readDir(`/${CRATE_STORAGE}`)
     if (!result.isOk()) throw result.unwrapErr()
@@ -198,6 +206,7 @@ export const opfsFunctions = {
     getCrates,
     deleteCrateDir,
     getCrateDirContents,
+    getFileInfo,
     getStorageInfo,
     createCrateZip,
     createCrateFromZip,

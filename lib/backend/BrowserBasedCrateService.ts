@@ -241,6 +241,10 @@ export class BrowserBasedCrateService extends CrateServiceBase {
         return await opfsFunctions.getCrateDirContents(crateId)
     }
 
+    async getCrateFileInfo(crateId: string, path: string) {
+        return await opfsFunctions.getFileInfo(crateId, path)
+    }
+
     async getStoredCrateIds() {
         return await this.worker.execute("getCrates")
     }
