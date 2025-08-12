@@ -2,7 +2,7 @@ import { memo, useCallback, useContext, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { SelectReferenceModal } from "@/components/editor/select-reference-modal"
 import { ExternalLink, Eye, LinkIcon, Plus, PlusIcon } from "lucide-react"
-import { getEntityDisplayName } from "@/lib/utils"
+import { findEntity, getEntityDisplayName } from "@/lib/utils"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { SlimClass } from "@/lib/schema-worker/helpers"
@@ -38,7 +38,7 @@ export const ReferenceField = memo(function ReferenceField({
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
-    const referencedEntity = useEditorState((store) => store.entities.get(value["@id"]))
+    const referencedEntity = useEditorState((store) => findEntity(store.entities, value["@id"]))
     const { showCreateEntityModal } = useContext(GlobalModalContext)
     const openTab = useEntityEditorTabs((store) => store.openTab)
 

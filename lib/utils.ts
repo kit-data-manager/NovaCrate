@@ -76,6 +76,20 @@ export function isValidUrl(string: string) {
 }
 
 /**
+ * Find an entity in a map of entities. Tries different methods of resolving the entity using the id:
+ *  1. Direct use of the id
+ *  2. decoding the id as if it were an encoded URI
+ * @param entities Entities map from editor state
+ * @param id of the target entity
+ */
+export function findEntity(entities: Map<string, IEntity>, id: string): IEntity | undefined {
+    const standard = entities.get(id)
+    if (standard) return standard
+    // Fallback method
+    return entities.get(decodeURI(id))
+}
+
+/**
  * Check if this entity is the crate root
  * @param entity
  * @deprecated Use `editorState.getRootEntityId()` instead to reliably determine the @id of the root entity

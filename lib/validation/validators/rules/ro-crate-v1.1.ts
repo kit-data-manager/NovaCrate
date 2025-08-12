@@ -8,6 +8,7 @@ import {
 } from "@/lib/validation/validators/rule-based-validator"
 import {
     canHavePreview,
+    findEntity,
     isDataEntity,
     isFileDataEntity,
     isFolderDataEntity,
@@ -456,7 +457,7 @@ export const RoCrateV1_1 = {
 
                 propertyValue(entity[propertyName]).forEach((v, i) => {
                     if (PropertyValueUtils.isRef(v) && !propertyValue(v).isEmpty()) {
-                        const target = entities.get(v["@id"])
+                        const target = findEntity(entities, v["@id"])
                         if (!target && !isValidUrl(v["@id"])) {
                             results.push(
                                 builder.rule("unresolvedRef").error({
