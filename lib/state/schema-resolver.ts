@@ -35,17 +35,32 @@ export interface SchemaResolverStore {
 
 enableMapSet()
 
+const defaultSchemas = [
+    {
+        id: "schema",
+        displayName: "Schema.org",
+        matchesUrls: ["https://schema.org/"],
+        schemaUrl: "https://schema.org/version/latest/schemaorg-current-https.jsonld"
+    },
+    {
+        id: "bioschemas",
+        displayName: "Bioschemas.org",
+        matchesUrls: ["https://bioschemas.org/"],
+        schemaUrl:
+            "https://raw.githubusercontent.com/BioSchemas/specifications/refs/heads/master/ComputationalWorkflow/jsonld/ComputationalWorkflow_v0.5-DRAFT-2020_07_21.json"
+    },
+    {
+        id: "bioschemas_types",
+        displayName: "Bioschemas.org Types",
+        matchesUrls: ["https://bioschemas.org/"],
+        schemaUrl: "https://bioschemas.org/types/bioschemas_types.jsonld"
+    }
+]
+
 export const schemaResolverStore = create<SchemaResolverStore>()(
     persist(
         immer((set, get) => ({
-            registeredSchemas: [
-                {
-                    id: "schema",
-                    displayName: "Schema.org",
-                    matchesUrls: ["https://schema.org/"],
-                    schemaUrl: "https://schema.org/version/latest/schemaorg-current-https.jsonld"
-                }
-            ],
+            registeredSchemas: defaultSchemas,
 
             deleteSchema: (name: string) => {
                 set((draft) => {
@@ -72,6 +87,10 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
                 })
             }
         })),
-        { name: "schema-resolver" }
+        {
+            name: "schema-resolver",
+            version: 1,
+            migrate: () => ({ registeredSchemas: defaultSchemas })
+        }
     )
 )

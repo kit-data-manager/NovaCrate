@@ -27,10 +27,15 @@ export class SchemaGraph {
 
     constructor(private schemaResolver: SchemaResolver) {}
 
-    async getNode(id: string) {
-        const firstAttempt = this.graph.get(id)
+    async getNode(id: string, abortOnFail: boolean = false): Promise<SchemaNode | undefined> {
+        let firstAttempt = this.graph.get(id)
 
-        if (firstAttempt) {
+        if (id.includes("#")) {
+            console.log(id)
+            firstAttempt = this.getNodeFromHashNamespace(id)
+        }
+
+        if (firstAttempt || abortOnFail) {
             return firstAttempt
         } else {
             // Try autoloading required schemas to get this node
@@ -49,8 +54,22 @@ export class SchemaGraph {
             }
 
             // If the second attempt fails, return undefined
-            return this.graph.get(id)
+            return this.getNode(id, true)
         }
+    }
+
+    getNodeFromHashNamespace(id: string) {
+        const split = id.split("#")
+        if (split.length === 2) {
+            const namespace = this.graph.get(split[0])
+            console.log("namespace", split, namespace)
+            if (namespace) {
+                const subtype = namespace.resolveSubtype(split[1])
+                if (subtype) return SchemaNode.createWithContext(subtype, this.context)
+            }
+        }
+
+        return undefined
     }
 
     /**
@@ -148,7 +167,7 @@ export class SchemaGraph {
     async getSubClasses(classId: string) {
         const childrenIds: Set<string> = new Set<string>()
         const self = await this.getNode(classId)
-        if (!self) throw new ReferenceError("classId not specified or invalid")
+        if (!self) throw new ReferenceError(`classId ${classId} not specified or invalid`)
         if (!self.isClass()) throw new Error(`Node ${self["@id"]} is not a class`)
 
         for (const [, node] of this.graph.entries()) {
