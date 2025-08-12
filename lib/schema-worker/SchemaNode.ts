@@ -11,8 +11,6 @@ export interface ISchemaNode {
     "rdfs:label"?: string | { "@language": string; "@value": string }
     "rdfs:subClassOf"?: IReference | IReference[]
     "rdfs:subPropertyOf"?: IReference | IReference[]
-    "schema:domainIncludes"?: IReference | IReference[]
-    "schema:rangeIncludes"?: IReference | IReference[]
     $validation?: {
         definitions?: Record<string, ISchemaNode>
         required?: string[]
@@ -20,6 +18,7 @@ export interface ISchemaNode {
         recommended?: string[]
     }
     [key: string]: unknown
+    [key: `${string}:${"rangeIncludes" | "domainIncludes"}`]: IReference | IReference[] | undefined
 }
 
 /**
@@ -50,11 +49,25 @@ export class SchemaNode {
     }
 
     get domain() {
-        return this.node["schema:domainIncludes"]
+        const key = Object.keys(this.node).find((key) =>
+            key.endsWith(":domainIncludes")
+        ) as `${string}:${"domainIncludes"}`
+        if (key) {
+            return this.node[key]
+        } else {
+            return undefined
+        }
     }
 
     get range() {
-        return this.node["schema:rangeIncludes"]
+        const key = Object.keys(this.node).find((key) =>
+            key.endsWith(":rangeIncludes")
+        ) as `${string}:${"rangeIncludes"}`
+        if (key) {
+            return this.node[key]
+        } else {
+            return undefined
+        }
     }
 
     resolveSubtype(id: string) {

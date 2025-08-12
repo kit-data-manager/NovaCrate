@@ -1,6 +1,6 @@
 "use client"
 
-import { SchemaNode } from "./SchemaNode"
+import { ISchemaNode, SchemaNode } from "./SchemaNode"
 import { SchemaResolver } from "./SchemaResolver"
 import { SchemaFile } from "./types"
 
@@ -238,7 +238,7 @@ export class SchemaGraph {
 
         if ("@graph" in schema) {
             for (const node of schema["@graph"]) {
-                const schemaNode = SchemaNode.createWithContext(node, this.context)
+                const schemaNode = SchemaNode.createWithContext(node as ISchemaNode, this.context)
                 this.addNode(schemaNode)
 
                 sourceMapSchemaNodes.push(schemaNode["@id"])

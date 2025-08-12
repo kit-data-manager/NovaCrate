@@ -430,7 +430,7 @@ export const RoCrateV1_1 = {
                             if (!comment) {
                                 results.push(
                                     builder.rule("missingSchemaForType").error({
-                                        resultTitle: `Missing schema for ype \`${type}\``,
+                                        resultTitle: `Missing schema for type \`${type}\``,
                                         resultDescription: `The type \`${type}\` is defined in the context of this crate (resolved to \`${resolvedType}\`), but the corresponding schema could not be found. Validation is not available for this type.`,
                                         entityId: entity["@id"],
                                         propertyName: "@type",

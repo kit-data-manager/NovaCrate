@@ -54,6 +54,13 @@ const defaultSchemas = [
         displayName: "Bioschemas.org Types",
         matchesUrls: ["https://bioschemas.org/"],
         schemaUrl: "https://bioschemas.org/types/bioschemas_types.jsonld"
+    },
+    {
+        id: "dcmi",
+        displayName: "DCMI",
+        matchesUrls: ["http://purl.org/dc/terms/"],
+        schemaUrl:
+            "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl"
     }
 ]
 

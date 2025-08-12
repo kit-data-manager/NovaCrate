@@ -1,6 +1,6 @@
 import { ExternalLink } from "lucide-react"
 import Markdown from "react-markdown"
-import React, { memo } from "react"
+import React, { memo, useMemo } from "react"
 
 type CommentType = string | { "@language": string; "@value": string }
 
@@ -11,6 +11,14 @@ export const MarkdownComment = memo(function MarkdownComment({
     comment?: CommentType
     allowLinks?: boolean
 }) {
+    const parsedComment = useMemo(() => {
+        if (!comment) return ""
+        const value = typeof comment === "string" ? comment : comment["@value"]
+        // In future versions this could be extended to redirect to the correct schema. Currently, I
+        // only saw Schema.org schemas with links, so that's what I used.
+        return value.replaceAll(/\[{2}(\w+)]{2}/g, "[$1](https://schema.org/$1)")
+    }, [comment])
+
     return (
         <Markdown
             allowedElements={["a", "p", "br", "b", "i"]}
@@ -28,7 +36,7 @@ export const MarkdownComment = memo(function MarkdownComment({
                     )
             }}
         >
-            {(comment + "").replaceAll(/\[{2}(\w+)]{2}/g, "[$1](https://schema.org/$1)")}
+            {parsedComment}
         </Markdown>
     )
 })

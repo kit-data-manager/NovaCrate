@@ -34,19 +34,16 @@ export class RuleBasedValidator extends Validator {
     }
 
     async validateCrate(crate: ICrate): Promise<ValidationResult[]> {
-        console.log("validating crate")
         const crateRules = this.crateRuleBuilder(super.getContext())
         return (await Promise.all(crateRules.map((rule) => rule(crate)))).flat(1)
     }
 
     async validateProperty(entity: IEntity, propertyName: string): Promise<ValidationResult[]> {
-        console.log("validating property", entity["@id"], propertyName)
         const propertyRules = this.propertyRuleBuilder(super.getContext())
         return (await Promise.all(propertyRules.map((rule) => rule(entity, propertyName)))).flat(1)
     }
 
     async validateEntity(entity: IEntity): Promise<ValidationResult[]> {
-        console.log("validating entity", entity["@id"])
         const entityRules = this.entityRuleBuilder(super.getContext())
         return (await Promise.all(entityRules.map((rule) => rule(entity)))).flat(1)
     }

@@ -369,8 +369,8 @@ export function changeEntityId(entities: IEntity[], oldId: string, newId: string
  * @param b
  */
 export function sortValidationResultByName(a: ValidationResult, b: ValidationResult) {
-    const strA = (a.propertyName ?? "undefined") + a.propertyIndex + a.entityId + a.resultTitle
-    const strB = (b.propertyName ?? "undefined") + b.propertyIndex + b.entityId + b.resultTitle
+    const strA = `${a.propertyName ?? "undefined"}|${a.propertyIndex ?? ""}|${a.entityId ?? ""}|${a.resultTitle}`
+    const strB = `${b.propertyName ?? "undefined"}|${b.propertyIndex ?? ""}|${b.entityId ?? ""}|${b.resultTitle}`
     return strA.localeCompare(strB)
 }
 
