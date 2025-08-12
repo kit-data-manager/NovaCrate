@@ -14,7 +14,8 @@ export const ValidationResultLine = memo(function ValidationResultLine({
     showEntityId,
     focusable,
     render,
-    renderRequest
+    renderRequest,
+    truncate = true
 }: {
     result: ValidationResult
     showPropertyName?: boolean
@@ -22,6 +23,7 @@ export const ValidationResultLine = memo(function ValidationResultLine({
     focusable?: boolean
     render?: boolean
     renderRequest?: () => void
+    truncate?: boolean
 }) {
     const container = useRef<HTMLDivElement>(null)
     const goToEntityEditor = useGoToEntityEditor()
@@ -84,18 +86,22 @@ export const ValidationResultLine = memo(function ValidationResultLine({
                         </Markdown>
                     </div>
                     {showEntityId && (
-                        <div className="text-muted-foreground text-xs self-end truncate">
+                        <div
+                            className={`text-muted-foreground text-xs self-end ${truncate && "truncate"}`}
+                        >
                             {result.entityId}
                         </div>
                     )}
                     {showPropertyName && (
-                        <div className="text-muted-foreground text-xs self-end truncate">
+                        <div
+                            className={`text-muted-foreground text-xs self-end ${truncate && "truncate"}`}
+                        >
                             {result.propertyName}
                             {result.propertyIndex !== undefined && `#${result.propertyIndex}`}
                         </div>
                     )}
                 </div>
-                <div className="text-muted-foreground text-xs line-clamp-1">
+                <div className={`text-muted-foreground text-xs ${truncate && "line-clamp-1"}`}>
                     <Markdown allowedElements={["a", "code", "pre", "em", "strong", "i", "p"]}>
                         {`${result.resultDescription} (${result.validatorName}${result.ruleName ? ": " + result.ruleName : ""})`}
                     </Markdown>

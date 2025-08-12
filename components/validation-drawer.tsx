@@ -140,9 +140,7 @@ export function ValidationDrawer() {
                                 className={`ml-2 ${structuredView === "severity" ? "bg-muted-foreground/10 dark:bg-muted-foreground/20" : ""}`}
                                 onClick={() => setStructuredView("severity")}
                             >
-                                <TriangleAlert
-                                    className={structuredView === "severity" ? "stroke-warn" : ""}
-                                />
+                                <TriangleAlert />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>Sort by Severity</TooltipContent>
@@ -157,8 +155,9 @@ export function ValidationDrawer() {
                                 onClick={() => setStructuredView("entity")}
                             >
                                 <EntityIcon
-                                    className={`mr-0 ${structuredView === "entity" ? "" : "grayscale-100"}`}
+                                    className={`mr-0`}
                                     entity={{ "@id": "", "@type": "File" }}
+                                    noColor
                                 />
                             </Button>
                         </TooltipTrigger>
@@ -173,11 +172,7 @@ export function ValidationDrawer() {
                                 className={`${structuredView === "ruleName" ? "bg-muted-foreground/10 dark:bg-muted-foreground/20" : ""}`}
                                 onClick={() => setStructuredView("ruleName")}
                             >
-                                <Ruler
-                                    className={
-                                        structuredView === "ruleName" ? "stroke-amber-900" : ""
-                                    }
-                                />
+                                <Ruler />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>Sort by Rule Name</TooltipContent>

@@ -36,47 +36,84 @@ export const ValidationOverview = memo(function ValidationOverview({
         setInitiallyHidden(!validationRanAtLeastOnce)
     }, [validationRanAtLeastOnce])
 
+    const errorResults = useMemo(() => {
+        return validationResults.filter(
+            (res) => res.resultSeverity === ValidationResultSeverity.error
+        )
+    }, [validationResults])
+
+    const warningResults = useMemo(() => {
+        return validationResults.filter(
+            (res) => res.resultSeverity === ValidationResultSeverity.warning
+        )
+    }, [validationResults])
+
+    const softWarningResults = useMemo(() => {
+        return validationResults.filter(
+            (res) => res.resultSeverity === ValidationResultSeverity.softWarning
+        )
+    }, [validationResults])
+
+    const infoResults = useMemo(() => {
+        return validationResults.filter(
+            (res) => res.resultSeverity === ValidationResultSeverity.info
+        )
+    }, [validationResults])
+
     const icon = useMemo(() => {
-        if (validationResults.length === 0) return <CheckIcon className="size-4 stroke-success" />
+        if (validationResults.length === 0)
+            return [<CheckIcon key={"self"} className="size-4 stroke-success" />]
 
         const icons = []
-        if (validationResults.find((res) => res.resultSeverity === ValidationResultSeverity.error))
+        if (errorResults.length > 0)
             icons.push(
-                <CircleAlert
-                    key="error"
-                    className="size-4 fill-error [&_circle]:stroke-error stroke-background dark:stroke-foreground"
-                />
+                <span className="flex items-center gap-1" key={"error"}>
+                    {errorResults.length}
+                    <CircleAlert
+                        key="error"
+                        className="size-4 fill-error [&_circle]:stroke-error stroke-background dark:stroke-foreground"
+                    />
+                </span>
             )
-        if (
-            validationResults.find((res) => res.resultSeverity === ValidationResultSeverity.warning)
-        )
+        if (warningResults.length > 0)
             icons.push(
-                <TriangleAlert
-                    key="warn"
-                    className="size-4 fill-warn [&_path:nth-child(1)]:stroke-warn stroke-background dark:stroke-foreground"
-                />
+                <span className="flex items-center gap-1" key={"warn"}>
+                    {warningResults.length}
+                    <TriangleAlert
+                        key="warn"
+                        className="size-4 fill-warn [&_path:nth-child(1)]:stroke-warn stroke-background dark:stroke-foreground"
+                    />
+                </span>
             )
-        if (
-            validationResults.find(
-                (res) => res.resultSeverity === ValidationResultSeverity.softWarning
-            )
-        )
+        if (softWarningResults.length > 0)
             icons.push(
-                <TriangleAlert
-                    key="soft-warn"
-                    className="size-4 fill-warn [&_path:nth-child(1)]:stroke-warn opacity-50 stroke-background dark:stroke-foreground"
-                />
+                <span className="flex items-center gap-1" key={"soft-warn"}>
+                    {softWarningResults.length}
+                    <TriangleAlert
+                        key="soft-warn"
+                        className="size-4 fill-warn [&_path:nth-child(1)]:stroke-warn opacity-50 stroke-background dark:stroke-foreground"
+                    />
+                </span>
             )
-        if (validationResults.find((res) => res.resultSeverity === ValidationResultSeverity.info))
+        if (infoResults.length > 0)
             icons.push(
-                <InfoIcon
-                    key="info"
-                    className="size-4 fill-info [&_circle]:stroke-info stroke-background dark:stroke-foreground"
-                />
+                <span className="flex items-center gap-1" key={"info"}>
+                    {infoResults.length}
+                    <InfoIcon
+                        key="info"
+                        className="size-4 fill-info [&_circle]:stroke-info stroke-background dark:stroke-foreground"
+                    />
+                </span>
             )
 
         return icons
-    }, [validationResults])
+    }, [
+        errorResults.length,
+        infoResults.length,
+        softWarningResults.length,
+        validationResults.length,
+        warningResults.length
+    ])
 
     return (
         <div
@@ -84,9 +121,7 @@ export const ValidationOverview = memo(function ValidationOverview({
         >
             <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant={"outline"}>
-                        {validationResults.length > 0 && validationResults.length} {icon}
-                    </Button>
+                    <Button variant={"outline"}>{icon}</Button>
                 </PopoverTrigger>
                 <PopoverContent className="p-2 pb-0 pr-0 w-[600px]">
                     <div className="text-xs font-medium p-1 mb-1 flex justify-between">

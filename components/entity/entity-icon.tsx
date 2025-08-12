@@ -19,6 +19,7 @@ export function EntityIcon(props: {
     size?: "md" | "lg" | "sm"
     unsavedChanges?: boolean
     className?: string
+    noColor?: boolean
 }) {
     const getRootEntityId = useEditorState((s) => s.getRootEntityId)
 
@@ -30,11 +31,12 @@ export function EntityIcon(props: {
     }, [getRootEntityId, props.entity])
 
     const baseColor = useMemo(() => {
+        if (props.noColor) return "border-foreground text-foreground"
         if (!props.entity) return "border-muted-foreground text-muted-foreground"
         else if (props.entity["@id"] === getRootEntityId()) return "border-root text-root"
         else if (isDataEntity(props.entity)) return "border-data text-data"
         else return "border-contextual text-contextual"
-    }, [getRootEntityId, props.entity])
+    }, [getRootEntityId, props.entity, props.noColor])
 
     return (
         <div

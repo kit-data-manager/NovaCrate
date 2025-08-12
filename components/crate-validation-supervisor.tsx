@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo } from "react"
+import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useValidation, useValidationStore } from "@/lib/validation/hooks"
 import { useDebounceCallback } from "usehooks-ts"
@@ -16,10 +16,11 @@ import { useStore } from "zustand/index"
  * @constructor
  */
 export function CrateValidationSupervisor() {
-    const { crateData } = useContext(CrateDataContext)
+    const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
     const { crateId } = useContext(CrateDataContext)
     const entities = useEditorState((store) => store.entities)
     const validation = useValidation()
+    const [runValidation, setRunValidation] = useState(false)
 
     const validateCrate = useCallback(() => {
         validation.validateCrate().catch((e) => console.error("Crate validation failed: ", e))
@@ -28,14 +29,19 @@ export function CrateValidationSupervisor() {
     const debouncedValidateCrate = useDebounceCallback(validateCrate, 200)
 
     useEffect(() => {
-        debouncedValidateCrate()
-    }, [crateData, debouncedValidateCrate])
+        if (runValidation) debouncedValidateCrate()
+    }, [crateData, debouncedValidateCrate, runValidation])
+
+    useEffect(() => {
+        if (!crateDataIsLoading && crateId) setRunValidation(true)
+        else setRunValidation(false)
+    }, [crateDataIsLoading, crateId])
 
     const entitiesArray = useMemo(() => {
         return Array.from(entities.values())
     }, [entities])
 
-    if (!crateId) return null
+    if (!crateId || !runValidation) return null
 
     return (
         <>

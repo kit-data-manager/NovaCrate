@@ -52,6 +52,7 @@ export function ValidationDrawerSection({
                         focusable
                         render={open}
                         renderRequest={renderRequest}
+                        truncate={false}
                     />
                 ))}
             </div>
