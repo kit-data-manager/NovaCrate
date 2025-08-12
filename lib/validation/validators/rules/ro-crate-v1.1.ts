@@ -43,11 +43,7 @@ export const RoCrateV1_1 = {
             } else return []
         },
         async (crate) => {
-            if (
-                !crate["@graph"].find(
-                    (e) => e["@id"] === ctx.editorState.getState().getRootEntityId()
-                )
-            ) {
+            if (!crate["@graph"].find((e) => e["@id"] === ctx.editorState.getRootEntityId())) {
                 return [
                     builder.rule("missingRootEntity").error({
                         resultTitle: "Missing root entity",
@@ -61,7 +57,7 @@ export const RoCrateV1_1 = {
 
     entityRules: ((ctx) => [
         async (entity) => {
-            const rootId = ctx.editorState.getState().getRootEntityId()
+            const rootId = ctx.editorState.getRootEntityId()
             const results: EntityValidationResult[] = []
             if (entity["@id"] !== rootId) {
                 return results
@@ -163,7 +159,7 @@ export const RoCrateV1_1 = {
         },
         async (entity) => {
             const results: EntityValidationResult[] = []
-            if (entity["@id"] === ctx.editorState.getState().getRootEntityId()) {
+            if (entity["@id"] === ctx.editorState.getRootEntityId()) {
                 if (!propertyValue(entity["@type"]).is("Dataset")) {
                     results.push(
                         builder.rule("rootEntityType").error({
@@ -296,7 +292,7 @@ export const RoCrateV1_1 = {
     ]) satisfies RuleBuilder<EntityRule>,
     propertyRules: ((ctx) => [
         async (entity, propertyName) => {
-            if (entity["@id"] === ctx.editorState.getState().getRootEntityId())
+            if (entity["@id"] === ctx.editorState.getRootEntityId())
                 if (
                     propertyName === "datePublished" &&
                     propertyValue(entity.datePublished).singleStringMatcher(
@@ -318,7 +314,7 @@ export const RoCrateV1_1 = {
             return []
         },
         async (entity, propertyName) => {
-            if (entity["@id"] === ctx.editorState.getState().getRootEntityId())
+            if (entity["@id"] === ctx.editorState.getRootEntityId())
                 if (propertyName === "license") {
                     if (propertyValue(entity.license).isEmpty()) {
                         return [
@@ -410,13 +406,49 @@ export const RoCrateV1_1 = {
                             })
                         ]
                     }
+                } else {
+                    const resolved = toArray(entity["@type"]).map(
+                        (type, i) => [type, ctx.editorState.crateContext.resolve(type), i] as const
+                    )
+                    const results: PropertyValidationResult[] = []
+                    for (const [type, resolvedType, i] of resolved) {
+                        if (resolvedType === null) {
+                            results.push(
+                                builder.rule("unknownType").error({
+                                    resultTitle: `Unknown type \`${type}\``,
+                                    resultDescription: `The type \`${type}\` is not defined in the context of this crate. Please use a different type, or add the type to the context. Validation is not available for this type.`,
+                                    entityId: entity["@id"],
+                                    propertyName: "@type",
+                                    propertyIndex: i
+                                })
+                            )
+                        } else {
+                            const comment = await ctx.schemaWorker.worker.execute(
+                                "getPropertyComment",
+                                resolvedType
+                            )
+                            if (!comment) {
+                                results.push(
+                                    builder.rule("missingSchemaForType").error({
+                                        resultTitle: `Missing schema for ype \`${type}\``,
+                                        resultDescription: `The type \`${type}\` is defined in the context of this crate (resolved to \`${resolvedType}\`), but the corresponding schema could not be found. Validation is not available for this type.`,
+                                        entityId: entity["@id"],
+                                        propertyName: "@type",
+                                        propertyIndex: i
+                                    })
+                                )
+                            }
+                        }
+                    }
+
+                    return results
                 }
             return []
         },
         async (entity, propertyName) => {
             const results: PropertyValidationResult[] = []
             try {
-                const propertyId = ctx.editorState.getState().crateContext.resolve(propertyName)
+                const propertyId = ctx.editorState.crateContext.resolve(propertyName)
                 if (!propertyId) return []
                 const range = await ctx.schemaWorker.worker.execute("getPropertyRange", propertyId)
 
@@ -447,13 +479,33 @@ export const RoCrateV1_1 = {
             return results
         },
         async (entity, propertyName) => {
+            if (propertyName === "@id" || propertyName === "@type") return []
             const results: PropertyValidationResult[] = []
             try {
-                const entities = ctx.editorState.getState().getEntities()
-                const propertyId = ctx.editorState.getState().crateContext.resolve(propertyName)
-                if (!propertyId) return []
+                const entities = ctx.editorState.getEntities()
+                const propertyId = ctx.editorState.crateContext.resolve(propertyName)
+                if (!propertyId)
+                    return [
+                        builder.rule("propertyNotInContext").info({
+                            resultTitle: `Undefined property \`${propertyName}\``,
+                            resultDescription: `The property \`${propertyName}\` is not defined in the context of this crate. Please use a different property, or add the property to the context. Validation is not available for this property.`,
+                            entityId: entity["@id"],
+                            propertyName
+                        })
+                    ]
                 const range = await ctx.schemaWorker.worker.execute("getPropertyRange", propertyId)
                 const rangeIds = range.map((s) => s["@id"])
+
+                if (rangeIds.length === 0) {
+                    results.push(
+                        builder.rule("unknownPropertyRange").warning({
+                            resultTitle: `Unknown property range`,
+                            resultDescription: `The property range for this property could not be determined. Is the schema for this property defined and up-to-date?`,
+                            entityId: entity["@id"],
+                            propertyName
+                        })
+                    )
+                }
 
                 propertyValue(entity[propertyName]).forEach((v, i) => {
                     if (PropertyValueUtils.isRef(v) && !propertyValue(v).isEmpty()) {
@@ -473,7 +525,7 @@ export const RoCrateV1_1 = {
                         if (!target) return
 
                         const targetTypes = toArray(target["@type"])
-                            .map((v) => ctx.editorState.getState().crateContext.resolve(v))
+                            .map((v) => ctx.editorState.crateContext.resolve(v))
                             .filter((v) => v !== null)
                         if (targetTypes.length === 0) return // Could not determine type, abort
 
@@ -505,7 +557,7 @@ export const RoCrateV1_1 = {
                     }
                 })
             } catch (e) {
-                console.error(
+                console.warn(
                     `getPropertyRange failed on entity ${entity["@id"]} on property "${propertyName}"`,
                     e
                 )

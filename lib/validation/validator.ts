@@ -1,11 +1,10 @@
 import { ValidationResult } from "@/lib/validation/validation-result"
-import { StoreApi, UseBoundStore } from "zustand"
 import { EditorState } from "@/lib/state/editor-state"
 import { ISchemaWorkerContext } from "@/components/providers/schema-worker-provider"
 import { ICrateDataProvider } from "@/components/providers/crate-data-provider"
 
 export type ValidatorContext = {
-    editorState: UseBoundStore<StoreApi<EditorState>>
+    editorState: EditorState
     serviceProvider?: CrateServiceAdapter
     crateData: ICrateDataProvider
     schemaWorker: ISchemaWorkerContext

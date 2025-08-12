@@ -13,7 +13,6 @@ import { WebWorkerWarning } from "@/components/web-worker-warning"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Error } from "@/components/error"
 import { EntityEditorHeader } from "@/components/editor/entity-editor-header"
-import { UnknownTypeWarning } from "@/components/editor/unknown-type-warning"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { InternalEntityHint } from "@/components/editor/hints/internal-entity-hint"
@@ -209,7 +208,6 @@ export function EntityEditor({
                 </div>
 
                 <WebWorkerWarning />
-                <UnknownTypeWarning entityType={entity?.["@type"] || []} />
                 <InternalEntityHint entity={entity} />
                 <Error
                     className="mt-4"

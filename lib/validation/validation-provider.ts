@@ -1,4 +1,3 @@
-import { StoreApi, UseBoundStore } from "zustand"
 import { EditorState } from "@/lib/state/editor-state"
 import { createValidationResultStore } from "@/lib/state/validation-result-store"
 import { Validator, ValidatorContext } from "@/lib/validation/validator"
@@ -7,7 +6,7 @@ import { ValidationResult } from "@/lib/validation/validation-result"
 export class ValidationProvider {
     validators: Validator[] = []
     resultStore = createValidationResultStore()
-    editorState: UseBoundStore<StoreApi<EditorState>>
+    editorState: EditorState
 
     constructor(private validatorContext: ValidatorContext) {
         this.editorState = validatorContext.editorState
@@ -25,8 +24,8 @@ export class ValidationProvider {
     }
 
     async validateCrate() {
-        const entities = this.editorState.getState().getEntities()
-        const context = this.editorState.getState().crateContext
+        const entities = this.editorState.getEntities()
+        const context = this.editorState.crateContext
         const promises: Promise<ValidationResult[]>[] = []
         for (const validator of this.validators) {
             promises.push(
@@ -42,7 +41,7 @@ export class ValidationProvider {
     }
 
     async validateEntity(entityId: string) {
-        const entity = this.editorState.getState().getEntities().get(entityId)
+        const entity = this.editorState.getEntities().get(entityId)
         if (!entity) return console.warn("Entity not found during validation", entityId)
 
         const promises: Promise<ValidationResult[]>[] = []
@@ -55,7 +54,7 @@ export class ValidationProvider {
     }
 
     async validateProperty(entityId: string, propertyName: string) {
-        const entity = this.editorState.getState().getEntities().get(entityId)
+        const entity = this.editorState.getEntities().get(entityId)
         if (!entity) return console.warn("Entity not found during validation", entityId)
         const promises: Promise<ValidationResult[]>[] = []
         for (const validator of this.validators) {
