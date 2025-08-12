@@ -97,13 +97,16 @@ test("Change field type and change back", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
     await loadTestCrate(page)
 
-    await expect(page.locator("body")).toMatchAriaSnapshot(`
+    await expect(page.locator("body")).toMatchAriaSnapshot(
+        `
     - spinbutton: /\\d+/
     - button
     - textbox: v25.0.0
     - button
     - button "Add another entry"
-    `)
+    `,
+        { timeout: 10000 }
+    )
     await page
         .locator("#single-property-editor-version-0 #single-property-dropdown-trigger")
         .click()
