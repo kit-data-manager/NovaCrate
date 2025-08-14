@@ -1,6 +1,6 @@
 "use client"
 
-import { PropsWithChildren, useContext, useEffect } from "react"
+import { memo, PropsWithChildren, useContext, useEffect } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Nav } from "@/components/nav/nav"
 import { usePathname } from "next/navigation"
@@ -25,13 +25,7 @@ export default function EditorLayout(props: PropsWithChildren) {
                     <GraphStateProvider>
                         <GraphSettingsProvider>
                             <ValidationContextProvider>
-                                <DefaultActions />
-                                <EntityActions />
-                                <ActionKeyboardShortcuts />
-                                <RecentlyUsed />
-                                <EntityEditorTabsSupervisor />
-                                <CrateValidationSupervisor />
-                                <Nav>{props.children}</Nav>
+                                <ProviderBoundary>{props.children}</ProviderBoundary>
                             </ValidationContextProvider>
                         </GraphSettingsProvider>
                     </GraphStateProvider>
@@ -40,6 +34,26 @@ export default function EditorLayout(props: PropsWithChildren) {
         </ActionsProvider>
     )
 }
+
+/**
+ * State changes in the providers (parent components) would normally trigger all child components (the entire editor) to
+ * re-render, regardless of if their props changed or not. Therefore, we memoize here to prevent this effect.
+ *
+ * Children will still re-render as normal when their subscribed context or their props change.
+ */
+const ProviderBoundary = memo(function ProviderBoundary(props: PropsWithChildren) {
+    return (
+        <>
+            <DefaultActions />
+            <EntityActions />
+            <ActionKeyboardShortcuts />
+            <RecentlyUsed />
+            <EntityEditorTabsSupervisor />
+            <CrateValidationSupervisor />
+            <Nav>{props.children}</Nav>
+        </>
+    )
+})
 
 function RecentlyUsed() {
     const pathname = usePathname()

@@ -1,8 +1,8 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import React, { useMemo } from "react"
-import { useStore } from "zustand/index"
-import { useShallow } from "zustand/react/shallow"
+import { useStore } from "zustand"
+import { useShallow } from "zustand/shallow"
 import { ValidationResultIcon } from "@/components/editor/validation/validation-result-icon"
 import { ValidationResultLine } from "@/components/editor/validation/validation-result-line"
 import { sortValidationResultByName } from "@/lib/utils"
@@ -30,7 +30,7 @@ export function SinglePropertyValidation({
                         res.entityId === entityId &&
                         res.propertyName === propertyName &&
                         (res.propertyIndex === propertyIndex ||
-                            (!res.propertyIndex && propertyIndex === 0))
+                            (res.propertyIndex === undefined && propertyIndex === 0))
                 )
                 .sort(sortValidationResultByName)
                 .sort((a, b) => b.resultSeverity - a.resultSeverity)

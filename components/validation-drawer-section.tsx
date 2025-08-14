@@ -25,9 +25,9 @@ export function ValidationDrawerSection({
     }, [defaultSectionOpen])
 
     const toggleOpen = useCallback(() => {
-        setOpen(!open)
+        setOpen((v) => !v)
         onSectionOpenChange()
-    }, [onSectionOpenChange, open])
+    }, [onSectionOpenChange])
 
     const renderRequest = useCallback(() => {
         toggleOpen()

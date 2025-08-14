@@ -72,7 +72,7 @@ export const ValidationResultLine = memo(function ValidationResultLine({
 
     return (
         <div
-            className={`flex gap-2 p-1 px-2 text-sm hover:bg-muted rounded-sm items-center w-full text-left transition-bg ${isFocused ? "bg-muted" : ""}`}
+            className={`flex gap-2 p-1 px-2 text-sm hover:bg-muted rounded-sm items-center w-full text-left transition-colors ${isFocused ? "bg-muted" : ""}`}
             onClick={openTarget}
             onDoubleClick={focusResult}
             ref={container}
@@ -114,7 +114,10 @@ export const ValidationResultLine = memo(function ValidationResultLine({
                         className="p-0 m-0 h-auto"
                         variant="link"
                         key={j}
-                        onClick={action.dispatch}
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            action.dispatch()
+                        }}
                     >
                         {action.displayName}
                     </Button>
@@ -123,7 +126,10 @@ export const ValidationResultLine = memo(function ValidationResultLine({
                     <Button
                         className="p-0 m-0 h-auto cursor-pointer"
                         variant="ghost"
-                        onClick={() => window.open(result.helpUrl, "_blank")}
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            window.open(result.helpUrl, "_blank")
+                        }}
                     >
                         <CircleQuestionMark className="size-4" />
                     </Button>

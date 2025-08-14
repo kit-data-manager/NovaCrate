@@ -118,6 +118,14 @@ declare interface CrateServiceAdapter {
      */
     getCrateFilesList(crateId: string): Promise<string[]>
 
+    /**
+     * Get information about a file or directory inside a crate.
+     * Implementations MUST throw if the path does not exist or cannot be accessed.
+     * @param crateId Identifier of the crate
+     * @param filePath Path relative to the crate root
+     * @returns FileInfo describing type/name of the item
+     * @throws Error when the filePath is invalid or inaccessible
+     */
     getCrateFileInfo(crateId: string, filePath: string): Promise<FileInfo>
 
     /**

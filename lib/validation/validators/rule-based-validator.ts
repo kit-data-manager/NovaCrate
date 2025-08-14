@@ -35,16 +35,48 @@ export class RuleBasedValidator extends Validator {
 
     async validateCrate(crate: ICrate): Promise<ValidationResult[]> {
         const crateRules = this.crateRuleBuilder(super.getContext())
-        return (await Promise.all(crateRules.map((rule) => rule(crate)))).flat(1)
+        const results = await Promise.allSettled(crateRules.map((rule) => rule(crate)))
+        return results
+            .filter((result): result is PromiseFulfilledResult<CrateValidationResult[]> => {
+                if (result.status === "rejected") {
+                    console.error("[RuleBasedValidator] Crate rule failed:", result.reason)
+                    return false
+                }
+                return true
+            })
+            .map((result) => result.value)
+            .flat(1)
     }
 
     async validateProperty(entity: IEntity, propertyName: string): Promise<ValidationResult[]> {
-        const propertyRules = this.propertyRuleBuilder(super.getContext())
-        return (await Promise.all(propertyRules.map((rule) => rule(entity, propertyName)))).flat(1)
+        const crateRules = this.propertyRuleBuilder(super.getContext())
+        const results = await Promise.allSettled(
+            crateRules.map((rule) => rule(entity, propertyName))
+        )
+        return results
+            .filter((result): result is PromiseFulfilledResult<PropertyValidationResult[]> => {
+                if (result.status === "rejected") {
+                    console.error("[RuleBasedValidator] Property rule failed:", result.reason)
+                    return false
+                }
+                return true
+            })
+            .map((result) => result.value)
+            .flat(1)
     }
 
     async validateEntity(entity: IEntity): Promise<ValidationResult[]> {
         const entityRules = this.entityRuleBuilder(super.getContext())
-        return (await Promise.all(entityRules.map((rule) => rule(entity)))).flat(1)
+        const results = await Promise.allSettled(entityRules.map((rule) => rule(entity)))
+        return results
+            .filter((result): result is PromiseFulfilledResult<EntityValidationResult[]> => {
+                if (result.status === "rejected") {
+                    console.error("[RuleBasedValidator] Entity rule failed:", result.reason)
+                    return false
+                }
+                return true
+            })
+            .map((result) => result.value)
+            .flat(1)
     }
 }

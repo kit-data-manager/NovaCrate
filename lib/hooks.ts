@@ -4,7 +4,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { usePathname, useRouter } from "next/navigation"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { encodeFilePath } from "@/lib/utils"
+import { encodeFilePath, getEntityDisplayName } from "@/lib/utils"
 import { useGraphState } from "@/components/providers/graph-state-provider"
 import { Action, notFoundAction } from "@/lib/state/actions"
 import { useActionsStore } from "@/components/providers/actions-provider"
@@ -227,15 +227,15 @@ export function useSaveAllEntities() {
  * Returns the name of the current crate
  */
 export function useCrateName() {
-    const crate = useContext(CrateDataContext)
     const rootEntityId = useEditorState((store) => store.getRootEntityId())
+    const rootEntity = useEditorState((store) =>
+        rootEntityId ? store.entities.get(rootEntityId) : undefined
+    )
 
     return useMemo(() => {
-        return (
-            (crate.crateData?.["@graph"].find((e) => e["@id"] === rootEntityId)?.name ||
-                crate.crateId) + ""
-        )
-    }, [crate.crateData, crate.crateId, rootEntityId])
+        if (!rootEntityId || !rootEntity) return "Unnamed Crate"
+        return getEntityDisplayName(rootEntity, false) || "Unnamed Crate"
+    }, [rootEntity, rootEntityId])
 }
 
 /**

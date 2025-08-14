@@ -31,7 +31,6 @@ export class SchemaGraph {
         let firstAttempt = this.graph.get(id)
 
         if (id.includes("#")) {
-            console.log(id)
             firstAttempt = this.getNodeFromHashNamespace(id)
         }
 
@@ -62,11 +61,12 @@ export class SchemaGraph {
         const split = id.split("#")
         if (split.length === 2) {
             const namespace = this.graph.get(split[0])
-            console.log("namespace", split, namespace)
             if (namespace) {
                 const subtype = namespace.resolveSubtype(split[1])
                 if (subtype) return SchemaNode.createWithContext(subtype, this.context)
             }
+        } else {
+            console.warn("Invalid hash namespace format", id)
         }
 
         return undefined

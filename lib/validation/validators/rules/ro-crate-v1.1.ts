@@ -160,7 +160,7 @@ export const RoCrateV1_1 = {
         async (entity) => {
             const results: EntityValidationResult[] = []
             if (entity["@id"] === ctx.editorState.getRootEntityId()) {
-                if (!propertyValue(entity["@type"]).is("Dataset")) {
+                if (!propertyValue(entity["@type"]).contains("Dataset")) {
                     results.push(
                         builder.rule("rootEntityType").error({
                             resultTitle: "Incorrect root entity type",
@@ -223,7 +223,11 @@ export const RoCrateV1_1 = {
         },
         async (entity) => {
             const results: EntityValidationResult[] = []
-            if (entity["@id"] === "ro-crate-metadata.json") return []
+            if (
+                entity["@id"] === "ro-crate-metadata.json" ||
+                entity["@id"] === "ro-crate-metadata.jsonld"
+            )
+                return []
 
             if (!("name" in entity)) {
                 results.push(
@@ -363,28 +367,6 @@ export const RoCrateV1_1 = {
                 ]
             }
 
-            return []
-        },
-        async (entity, propertyName) => {
-            if (propertyName === "@type")
-                if (
-                    entity["@id"] === "ro-crate-metadata.jsonld" ||
-                    entity["@id"] === "ro-crate-metadata.json"
-                ) {
-                    if (entity["@type"] !== "CreativeWork") {
-                        return [
-                            builder.rule("metadataEntityType").error({
-                                resultTitle: "Metadata entity has wrong type",
-                                resultDescription:
-                                    "The type of the metadata entity must be `CreativeWork`",
-                                entityId: entity["@id"],
-                                propertyName: "@type",
-                                helpUrl:
-                                    "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
-                            })
-                        ]
-                    }
-                }
             return []
         },
         async (entity, propertyName) => {

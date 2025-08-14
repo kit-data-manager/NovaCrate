@@ -67,7 +67,7 @@ const defaultSchemas = [
 export const schemaResolverStore = create<SchemaResolverStore>()(
     persist(
         immer((set, get) => ({
-            registeredSchemas: defaultSchemas,
+            registeredSchemas: [...defaultSchemas],
 
             deleteSchema: (name: string) => {
                 set((draft) => {
@@ -97,7 +97,19 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
         {
             name: "schema-resolver",
             version: 1,
-            migrate: () => ({ registeredSchemas: defaultSchemas })
+            migrate: (_persisted: unknown) => {
+                if (!_persisted) return { registeredSchemas: [...defaultSchemas] }
+                const persisted = _persisted as Partial<SchemaResolverStore>
+                const existing = Array.isArray(persisted?.registeredSchemas)
+                    ? [...persisted!.registeredSchemas!]
+                    : []
+                // Drop any stale default entries by id, then append the new defaults
+                const merged = [
+                    ...existing.filter((s) => !defaultSchemas.some((d) => d.id === s.id)),
+                    ...defaultSchemas
+                ]
+                return { registeredSchemas: merged }
+            }
         }
     )
 )

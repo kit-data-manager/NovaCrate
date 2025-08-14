@@ -3,7 +3,7 @@ import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useValidation, useValidationStore } from "@/lib/validation/hooks"
 import { useDebounceCallback } from "usehooks-ts"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useStore } from "zustand/index"
+import { useStore } from "zustand"
 
 /**
  * Hooks into the editor state and the crate data context to watch for changes in the crate, each entity, and each property. It then starts the validation of any changed
@@ -74,13 +74,14 @@ function EntitySupervisor({ entity }: { entity: IEntity }) {
     }, [debouncedRunValidation, entity])
 
     const unmount = useCallback(() => {
+        debouncedRunValidation.cancel()
         clearResults(entityId)
-    }, [clearResults, entityId])
+    }, [clearResults, debouncedRunValidation, entityId])
 
     useEffect(() => {
-        // Entity was deleted, remove all results
+        // Entity was deleted, remove all validation results of this entity
         return () => unmount()
-    }, [unmount])
+    }, [debouncedRunValidation, unmount])
 
     const properties = useMemo(() => {
         return Array.from(Object.entries(entity))
@@ -122,8 +123,9 @@ function PropertySupervisor({
 
     const unmount = useCallback(() => {
         // Property was deleted, remove all results
+        debouncedRunValidation.cancel()
         clearResults(entityId, name)
-    }, [clearResults, entityId, name])
+    }, [clearResults, debouncedRunValidation, entityId, name])
 
     useEffect(() => {
         return () => unmount()

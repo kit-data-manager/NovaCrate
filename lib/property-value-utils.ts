@@ -67,9 +67,9 @@ export class PropertyValueUtils {
                 return false
             })
         } else if (PropertyValueUtils.isString(this.value) && PropertyValueUtils.isString(search)) {
-            return this.value === search
+            return this.value.includes(search)
         } else if (PropertyValueUtils.isRef(this.value) && PropertyValueUtils.isRef(search)) {
-            return this.value["@id"] === search["@id"]
+            return this.value["@id"].includes(search["@id"])
         }
         return false
     }

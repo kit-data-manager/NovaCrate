@@ -1,4 +1,4 @@
-import { create } from "zustand/index"
+import { create } from "zustand"
 import { immer } from "zustand/middleware/immer"
 import { ValidationResult } from "@/lib/validation/validation-result"
 

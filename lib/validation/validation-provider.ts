@@ -35,9 +35,10 @@ export class ValidationProvider {
                 })
             )
         }
-        const results = await Promise.all(promises)
+
+        const results = await this.handlePromises(promises)
         this.resultStore.getState().clearResults()
-        this.resultStore.getState().addResults(results.flat())
+        this.resultStore.getState().addResults(results)
     }
 
     async validateEntity(entityId: string) {
@@ -48,9 +49,10 @@ export class ValidationProvider {
         for (const validator of this.validators) {
             promises.push(validator.validateEntity(entity))
         }
-        const results = await Promise.all(promises)
+
+        const results = await this.handlePromises(promises)
         this.resultStore.getState().clearResults(entity["@id"])
-        this.resultStore.getState().addResults(results.flat())
+        this.resultStore.getState().addResults(results)
     }
 
     async validateProperty(entityId: string, propertyName: string) {
@@ -60,8 +62,29 @@ export class ValidationProvider {
         for (const validator of this.validators) {
             promises.push(validator.validateProperty(entity, propertyName))
         }
-        const results = await Promise.all(promises)
+
+        const results = await this.handlePromises(promises)
         this.resultStore.getState().clearResults(entity["@id"], propertyName)
-        this.resultStore.getState().addResults(results.flat())
+        this.resultStore.getState().addResults(results)
+    }
+
+    private async handlePromises(
+        promises: Promise<ValidationResult[]>[]
+    ): Promise<ValidationResult[]> {
+        const settledResults = await Promise.allSettled(promises)
+        const results: ValidationResult[] = []
+
+        settledResults.forEach((result, index) => {
+            if (result.status === "fulfilled") {
+                results.push(...result.value)
+            } else {
+                console.error(
+                    `Validator ${this.validators[index].constructor.name} failed during crate validation:`,
+                    result.reason
+                )
+            }
+        })
+
+        return results
     }
 }

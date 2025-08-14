@@ -31,7 +31,6 @@ export class ValidationResultBuilder {
         data: Omit<D, "resultSeverity" | "ruleName" | "id" | "validatorName">
     ): D {
         return {
-            ...data,
             ...this.error(data),
             resultSeverity: ValidationResultSeverity.warning
         }
@@ -41,7 +40,6 @@ export class ValidationResultBuilder {
         data: Omit<D, "resultSeverity" | "ruleName" | "id" | "validatorName">
     ): D {
         return {
-            ...data,
             ...this.error(data),
             resultSeverity: ValidationResultSeverity.softWarning
         }
@@ -51,7 +49,6 @@ export class ValidationResultBuilder {
         data: Omit<D, "resultSeverity" | "ruleName" | "id" | "validatorName">
     ): D {
         return {
-            ...data,
             ...this.error(data),
             resultSeverity: ValidationResultSeverity.info
         }
