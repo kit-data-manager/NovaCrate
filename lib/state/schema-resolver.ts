@@ -67,7 +67,7 @@ const defaultSchemas = [
 export const schemaResolverStore = create<SchemaResolverStore>()(
     persist(
         immer((set, get) => ({
-            registeredSchemas: [...defaultSchemas],
+            registeredSchemas: structuredClone(defaultSchemas),
 
             deleteSchema: (name: string) => {
                 set((draft) => {
@@ -106,7 +106,7 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
                 // Drop any stale default entries by id, then append the new defaults
                 const merged = [
                     ...existing.filter((s) => !defaultSchemas.some((d) => d.id === s.id)),
-                    ...defaultSchemas
+                    ...structuredClone(defaultSchemas)
                 ]
                 return { registeredSchemas: merged }
             }

@@ -30,7 +30,7 @@ export class SchemaGraph {
     async getNode(id: string, abortOnFail: boolean = false): Promise<SchemaNode | undefined> {
         let firstAttempt = this.graph.get(id)
 
-        if (id.includes("#")) {
+        if (!firstAttempt && id.includes("#")) {
             firstAttempt = this.getNodeFromHashNamespace(id)
         }
 
