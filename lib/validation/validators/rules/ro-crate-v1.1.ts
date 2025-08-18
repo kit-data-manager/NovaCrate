@@ -109,7 +109,7 @@ export const RoCrateV1_1 = {
             ) {
                 if (!("conformsTo" in entity)) {
                     return [
-                        builder.rule("metadataEntityConformsTo").warning({
+                        builder.rule("metadataEntityConformsToMissing").warning({
                             resultTitle: "Incomplete metadata entity",
                             resultDescription:
                                 "The metadata entity does not have a `conformsTo` property. It should be a versioned permalink URI of the RO-Crate specification that the RO-Crate JSON-LD conforms to`",
@@ -119,9 +119,9 @@ export const RoCrateV1_1 = {
                         })
                     ]
                 } else if (
-                    toArray(entity.conformsTo).some((s) =>
-                        propertyValue(s).containsSubstring({ "@id": "https://w3id.org/ro/crate/" })
-                    )
+                    !propertyValue(entity.conformsTo).containsSubstring({
+                        "@id": "https://w3id.org/ro/crate/"
+                    })
                 ) {
                     return [
                         builder.rule("metadataEntityConformsTo").warning({
@@ -174,7 +174,7 @@ export const RoCrateV1_1 = {
                 if (!("name" in entity)) {
                     results.push(
                         builder.rule("rootEntityName").error({
-                            resultTitle: "Missing root entity name",
+                            resultTitle: "Missing root entity property:  name",
                             resultDescription:
                                 "The root entity MUST have a `name` property to disambiguate it from other RO-Crates",
                             entityId: entity["@id"],
@@ -186,7 +186,7 @@ export const RoCrateV1_1 = {
                 if (!("description" in entity)) {
                     results.push(
                         builder.rule("rootEntityDescription").error({
-                            resultTitle: "Missing root entity description",
+                            resultTitle: "Missing root entity property:  description",
                             resultDescription:
                                 "The root entity MUST have a `description` to provide a summary of the context in which the dataset is important",
                             entityId: entity["@id"],
@@ -198,7 +198,7 @@ export const RoCrateV1_1 = {
                 if (!("datePublished" in entity)) {
                     results.push(
                         builder.rule("rootEntityDatePublished").error({
-                            resultTitle: "Missing root entity `datePublished`",
+                            resultTitle: "Missing root entity property:  `datePublished`",
                             resultDescription:
                                 "The root entity MUST have a `datePublished` property containing an ISO 8601 date string denoting when the RO-Crate was published",
                             entityId: entity["@id"],
@@ -209,7 +209,7 @@ export const RoCrateV1_1 = {
                 } else if (!("license" in entity)) {
                     results.push(
                         builder.rule("rootEntityLicense").error({
-                            resultTitle: "Missing root entity license",
+                            resultTitle: "Missing root entity property:  license",
                             resultDescription:
                                 "The root entity MUST have a `license` property referencing a Contextual Entity or a URI. It MAY also be a textual description of a license.",
                             entityId: entity["@id"],
