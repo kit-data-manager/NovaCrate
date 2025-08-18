@@ -1,6 +1,6 @@
 # 📦 NovaCrate - RO-Crate Editor
 
-Web-based fully-featured interactive editor for **creating, editing and visualizing** research object crates. Built for inspecting, validating and manipulating RO-Crates, allowing you to get a deeper understanding of it's content and structure.
+Web-based fully-featured interactive editor for **creating, editing, and visualizing** research object crates. Built for inspecting, validating and manipulating RO-Crates, allowing you to get a deeper understanding of its content and structure.
 
 NovaCrate is in active development, we are happy to receive feedback, feature requests and bug reports on the [issues page](https://github.com/kit-data-manager/NovaCrate/issues).
 
@@ -8,23 +8,23 @@ NovaCrate is in active development, we are happy to receive feedback, feature re
 
 ## 🚀 Features
 
-- ✅ Create, read and edit RO-Crates
+- ✅ Create, read, and edit RO-Crates
 - ✅ Live validation of RO-Crates
   - ⚙️ Supports validation of the RO-Crate Specification v1.1
-  - 🏗️ Easily extensible to do validation for profiles or specific RO-Crate types (e.g., Workflow crates)
-  - 🚀 Autofix actions available for some types of issues
+  - 🏗️ Easily extensible to validate profiles or specific RO-Crate types (e.g., Workflow crates)
+  - 🚀 Autofix actions available for some issues
 - ✅ Visualize RO-Crates with a graph
 - ✅ Focused on usability and modern architecture
 - ✅ Context-information and property descriptions
 - ✅ Automatic recommendation of fitting entity types and properties
 - ✅ Support for importing and exporting the ELN format
 - ✅ Extensible with custom schemas at runtime
-- ✅ Generate and view HTML preview file
-- ⚠️ Support for RO-Crate Specification v1.2 not implemented (coming soon)
+- ✅ Generate and view an HTML preview file
+- ⚠️ Support for RO-Crate Specification v1.2 is not implemented (coming soon)
 
 ## 🎨 Editions
 
-NovaCrate can be used and deployed in multiple different ways. Currently, only the web-version is in active development.
+NovaCrate can be used and deployed in multiple different ways. Currently, only the web version is in active development.
 You can access it directly [here](https://kit-data-manager.github.io/NovaCrate/).
 
 > 💡 If you have a special interest in the Desktop App or the Cloud Frontend, please get in contact.
@@ -41,7 +41,7 @@ You can access it directly [here](https://kit-data-manager.github.io/NovaCrate/)
 ### ℹ️ How To: Custom Backend
 
 NovaCrate is a frontend that can be used for any backend that hosts RO-Crates (an appropriate backend adapter must be implemented). This could be anything in the range from a simple file storage to a full REST Service for manipulating crates.
-See `src/lib/backend/CrateServiceAdapter.ts` for a list of methods that a backend adapter should implement. All of these methods can make use of backend resources or be suplemented locally.
+See `src/lib/backend/CrateServiceAdapter.ts` for a list of methods that a backend adapter should implement. All of these methods can make use of backend resources or be supplemented locally.
 
 NovaCrate currently does not include mechanisms for authentication, access control or concurrent access.
 </details>
@@ -73,7 +73,7 @@ npm install
 
 ### Development
 
-This command starts NovaCrate in development mode. This enables hot reload but also increases response time
+This command starts NovaCrate in development mode. This enables hot reload but also increases response time.
 
 ```bash
 npm run dev
@@ -97,10 +97,10 @@ npx serve@latest out
 
 ### Testing
 
-NovaCrate ships with ent-to-end frontend tests that can be used to verify that the core functionality is working as expected. At the current time, the test coverage is relatively low
+NovaCrate ships with end-to-end frontend tests that can be used to verify that the core functionality is working as expected. At the current time, the test coverage is relatively low
 due to the complexity of UI-based testing.
 
-You can run the tests yourself using:
+You can run the tests using:
 
     npm run build && npm run serve
     # In a different terminal:
@@ -114,7 +114,7 @@ This project was first created as part of a [bachelor thesis](https://doi.org/10
 
 Most of the structure of the editor and many implementation and design details are outlined in the bachelor thesis.
 
-To summarize: This is a Next.js app. Pages are located in /app, components in /components and anything else is probably in /lib.
+To summarize: This is a Next.js app. Pages are located in /app, components in /components, and anything else is probably in /lib.
 
 ## 📸 Screenshots
 
