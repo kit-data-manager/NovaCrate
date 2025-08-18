@@ -2,16 +2,16 @@ import { memo, useCallback, useContext, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { SelectReferenceModal } from "@/components/editor/select-reference-modal"
 import { ExternalLink, Eye, LinkIcon, Plus, PlusIcon } from "lucide-react"
-import { getEntityDisplayName } from "@/lib/utils"
+import { findEntity, getEntityDisplayName } from "@/lib/utils"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
 import { EntityIcon } from "@/components/entity/entity-icon"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import z from "zod"
+import { PropertyType } from "@/lib/property"
 
 function undefinedIfEmpty<T>(arr?: T[]) {
     if (arr?.length === 0) {
@@ -32,13 +32,13 @@ export const ReferenceField = memo(function ReferenceField({
     entityId: string
     value: IReference
     onChange: (value: IReference) => void
-    onChangeType: (type: PropertyEditorTypes) => void
+    onChangeType: (type: PropertyType) => void
     propertyName: string
     valueIdx: number
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
-    const referencedEntity = useEditorState((store) => store.entities.get(value["@id"]))
+    const referencedEntity = useEditorState((store) => findEntity(store.entities, value["@id"]))
     const { showCreateEntityModal } = useContext(GlobalModalContext)
     const openTab = useEntityEditorTabs((store) => store.openTab)
 
@@ -210,7 +210,7 @@ export const ReferenceField = memo(function ReferenceField({
                 onModifyReferenceProperty={onChange}
                 onRemoveEntry={onRemoveEntry}
                 onChangeType={onChangeType}
-                propertyType={PropertyEditorTypes.Reference}
+                propertyType={PropertyType.Reference}
             />
         </div>
     )

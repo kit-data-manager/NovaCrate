@@ -10,6 +10,7 @@ import {
     SCHEMA_ORG_TEXTLIKE,
     SCHEMA_ORG_TIME
 } from "./constants"
+import { ValidationResult } from "@/lib/validation/validation-result"
 
 /**
  * Utility from shadcn/ui to merge multiple className strings into one
@@ -65,7 +66,7 @@ export function getEntityDisplayName(entity: IEntity, fallback: boolean = true) 
  * Check if the string represents a valid URL
  * @param string String to check
  */
-function isValidUrl(string: string) {
+export function isValidUrl(string: string) {
     try {
         new URL(string)
         return true
@@ -75,8 +76,23 @@ function isValidUrl(string: string) {
 }
 
 /**
+ * Find an entity in a map of entities. Tries different methods of resolving the entity using the id:
+ *  1. Direct use of the id
+ *  2. decoding the id as if it were an encoded URI
+ * @param entities Entities map from editor state
+ * @param id of the target entity
+ */
+export function findEntity(entities: Map<string, IEntity>, id: string): IEntity | undefined {
+    const standard = entities.get(id)
+    if (standard) return standard
+    // Fallback method
+    return entities.get(decodeURI(id))
+}
+
+/**
  * Check if this entity is the crate root
  * @param entity
+ * @deprecated Use `editorState.getRootEntityId()` instead to reliably determine the @id of the root entity
  */
 export function isRootEntity(entity: IEntity) {
     return entity["@id"] === "./"
@@ -126,11 +142,11 @@ export function isFolderDataEntity(entity: IEntity) {
 }
 
 /**
- * Check if the supplied entity is a contextual entity. An entity is a contextual entity if it is not a data entity and not the crate root.
+ * Check if the supplied entity is a contextual entity. An entity is a contextual entity if it is not a data entity.
  * @param entity
  */
 export function isContextualEntity(entity: IEntity) {
-    return !isRootEntity(entity) && !isDataEntity(entity)
+    return !isDataEntity(entity)
 }
 
 /**
@@ -294,6 +310,23 @@ export function referenceCheck(propertyRange?: string[]) {
 }
 
 /**
+ * Check if a given property type range allows for its value to be a text.
+ * @param propertyRange
+ */
+export function textCheck(propertyRange?: string[]) {
+    return propertyRange
+        ? propertyRange.length === 0 ||
+              propertyRange.includes(SCHEMA_ORG_TEXT) ||
+              SCHEMA_ORG_TEXTLIKE.find((s) => propertyRange.includes(s)) !== undefined // ||
+        : // canBeTime ||
+          // canBeBoolean ||
+          // canBeDate ||
+          // canBeDateTime ||
+          // canBeNumber
+          undefined
+}
+
+/**
  * Indicates the type of difference between two things.
  */
 export enum Diff {
@@ -328,4 +361,21 @@ export function changeEntityId(entities: IEntity[], oldId: string, newId: string
             }
         }
     })
+}
+
+/**
+ * Sort a ValidationResult by propertyName, propertyIndex, entityId and resultTitle
+ * @param a
+ * @param b
+ */
+export function sortValidationResultByName(a: ValidationResult, b: ValidationResult) {
+    const strA = `${a.propertyName ?? "undefined"}|${a.propertyIndex ?? ""}|${a.entityId ?? ""}|${a.resultTitle}`
+    const strB = `${b.propertyName ?? "undefined"}|${b.propertyIndex ?? ""}|${b.entityId ?? ""}|${b.resultTitle}`
+    return strA.localeCompare(strB)
+}
+
+export interface AutoReference {
+    entityId: string
+    propertyName: string
+    valueIdx: number
 }

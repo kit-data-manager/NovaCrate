@@ -1,5 +1,6 @@
 import { SchemaFile, schemaFileSchema } from "./types"
 import type { SchemaResolverStore } from "../state/schema-resolver"
+import { parse as parseTtl } from "@frogcat/ttl2jsonld"
 
 export class SchemaResolver {
     // SchemaResolver becomes ready with the first {@link SchemaResolver.updateRegisteredSchemas} call
@@ -75,10 +76,23 @@ export class SchemaResolver {
         if (existing) {
             return existing
         } else {
-            const promise = fetch(url).then(async (req) => {
-                const data = await req.json()
-                this.runningFetches.delete(url)
-                return schemaFileSchema.parse(data)
+            const promise = fetch(url, {
+                headers: { Accept: "text/turtle" }
+            }).then(async (req) => {
+                if (
+                    req.headers.get("Content-Type") === "application/ld+json" ||
+                    req.headers.get("Content-Type")?.startsWith("text/plain") // GitHub raw files are served as text/plain, will try to use JSON anyway
+                ) {
+                    const data = await req.json()
+                    this.runningFetches.delete(url)
+                    return schemaFileSchema.parse(data)
+                } else if (req.headers.get("Content-Type") === "text/turtle") {
+                    const ttl = await req.text()
+                    const rawJson = parseTtl(ttl)
+                    rawJson["@graph"] = rawJson["@graph"].filter((e) => "@type" in e)
+                    this.runningFetches.delete(url)
+                    return schemaFileSchema.parse(rawJson)
+                } else throw new Error(`Invalid content type ${req.headers.get("Content-Type")}`)
             })
             this.runningFetches.set(url, promise)
             return promise

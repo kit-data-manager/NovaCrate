@@ -97,18 +97,18 @@ test("Change field type and change back", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
     await loadTestCrate(page)
 
-    await expect(page.locator("body")).toMatchAriaSnapshot(`
+    await expect(page.locator("body")).toMatchAriaSnapshot(
+        `
     - spinbutton: /\\d+/
     - button
     - textbox: v25.0.0
     - button
     - button "Add another entry"
-    `)
+    `,
+        { timeout: 10000 }
+    )
     await page
-        .locator(
-            "div:nth-child(6) > .grid > .truncate > div > div > #single-property-dropdown-trigger"
-        )
-        .first()
+        .locator("#single-property-editor-version-0 #single-property-dropdown-trigger")
         .click()
     await page.getByRole("menuitem", { name: "Change Type" }).click()
     await page.getByRole("menuitem", { name: "Text" }).click()
@@ -122,10 +122,7 @@ test("Change field type and change back", async ({ page }) => {
     await page.getByRole("textbox").nth(3).click()
     await page.getByRole("textbox").nth(3).fill("25 und mehr")
     await page
-        .locator(
-            "div:nth-child(6) > .grid > .truncate > div > div > #single-property-dropdown-trigger"
-        )
-        .first()
+        .locator("#single-property-editor-version-0 #single-property-dropdown-trigger")
         .click()
     await page.getByRole("menuitem", { name: "Change Type" }).click()
     await page.getByRole("menuitem", { name: "Number" }).click()
@@ -160,10 +157,7 @@ test("Change field type and revert", async ({ page }) => {
 
     await page.getByRole("spinbutton").click()
     await page
-        .locator(
-            "div:nth-child(6) > .grid > .truncate > div > div > #single-property-dropdown-trigger"
-        )
-        .first()
+        .locator("#single-property-editor-version-0 #single-property-dropdown-trigger")
         .click()
     await page.getByRole("menuitem", { name: "Change Type" }).click()
     await page.getByRole("menuitem", { name: "Text" }).click()
@@ -189,14 +183,10 @@ test("Add Entries of different types and save", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
     await loadTestCrate(page)
 
-    await page
-        .locator(
-            "div:nth-child(6) > .grid > .truncate > div > .mt-\\[-16px\\] > #add-property-dropdown-trigger"
-        )
-        .click()
+    await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
-    await page.locator("div:nth-child(4) > #add-property-dropdown-trigger").click()
+    await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Number" }).click()
     await page.getByRole("textbox").nth(4).click()
     await page.getByRole("textbox").nth(4).fill("Ein Versionstext")
@@ -233,11 +223,7 @@ test("Add Reference and follow it", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
     await loadTestCrate(page)
 
-    await page
-        .locator(
-            "div:nth-child(4) > .grid > div:nth-child(3) > div > .mt-\\[-16px\\] > #add-property-dropdown-trigger"
-        )
-        .click()
+    await page.locator("#property-editor-hasPart-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Reference" }).click()
     await page.getByRole("button", { name: "Link" }).click()
     await page.getByLabel("Suggestions").getByText("FJSON Result FileFile").click()
@@ -319,40 +305,34 @@ test("Add many properties and test pagination", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
     await loadTestCrate(page)
 
-    await page
-        .locator(
-            "div:nth-child(6) > .grid > .truncate > div > .mt-\\[-16px\\] > #add-property-dropdown-trigger"
-        )
-        .click()
+    await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
-    await page.locator("div:nth-child(4) > #add-property-dropdown-trigger").click()
+    await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
-    await page.locator("div:nth-child(5) > #add-property-dropdown-trigger").click()
+    await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
-    await page.locator("div:nth-child(6) > #add-property-dropdown-trigger").click()
+    await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
-    await page.locator("div:nth-child(7) > #add-property-dropdown-trigger").click()
+    await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
-    await page.locator("div:nth-child(8) > #add-property-dropdown-trigger").click()
+    await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
-    await page.locator("div:nth-child(9) > #add-property-dropdown-trigger").click()
+    await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
-    await page.locator("div:nth-child(10) > #add-property-dropdown-trigger").click()
+    await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
-    await page.locator("div:nth-child(11) > #add-property-dropdown-trigger").click()
+    await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
-    await page
-        .locator("div:nth-child(2) > .mt-\\[-16px\\] > #add-property-dropdown-trigger")
-        .click()
+    await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
     await expect(page.locator("body")).toMatchAriaSnapshot(`

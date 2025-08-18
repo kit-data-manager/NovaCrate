@@ -1,6 +1,7 @@
 import { useMemo } from "react"
-import { cn, isDataEntity, isFileDataEntity, isRootEntity } from "@/lib/utils"
+import { cn, isDataEntity, isFileDataEntity } from "@/lib/utils"
 import { Asterisk } from "lucide-react"
+import { useEditorState } from "@/lib/state/editor-state"
 
 const entityBrowserItemIconBaseCN =
     "min-w-5 min-h-5 inline-flex justify-center items-center border mr-2 rounded font-bold text-xs shrink-0 relative"
@@ -18,20 +19,24 @@ export function EntityIcon(props: {
     size?: "md" | "lg" | "sm"
     unsavedChanges?: boolean
     className?: string
+    noColor?: boolean
 }) {
+    const getRootEntityId = useEditorState((s) => s.getRootEntityId)
+
     const content = useMemo(() => {
         if (!props.entity) return "?"
-        else if (isRootEntity(props.entity)) return "R"
+        else if (props.entity["@id"] === getRootEntityId()) return "R"
         else if (isDataEntity(props.entity)) return isFileDataEntity(props.entity) ? "F" : "D"
         else return "C"
-    }, [props.entity])
+    }, [getRootEntityId, props.entity])
 
     const baseColor = useMemo(() => {
+        if (props.noColor) return "border-foreground text-foreground"
         if (!props.entity) return "border-muted-foreground text-muted-foreground"
-        else if (isRootEntity(props.entity)) return "border-root text-root"
+        else if (props.entity["@id"] === getRootEntityId()) return "border-root text-root"
         else if (isDataEntity(props.entity)) return "border-data text-data"
         else return "border-contextual text-contextual"
-    }, [props.entity])
+    }, [getRootEntityId, props.entity, props.noColor])
 
     return (
         <div

@@ -1,16 +1,11 @@
 "use client"
 
 import { useCallback, useContext, useMemo, useState } from "react"
-import {
-    mapEntityToProperties,
-    PropertyEditor,
-    PropertyEditorTypes
-} from "@/components/editor/property-editor"
+import { PropertyEditor } from "@/components/editor/property-editor"
 import {
     Diff,
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
-    isRootEntity,
     propertyHasChanged,
     canHavePreview as canHavePreviewUtil
 } from "@/lib/utils"
@@ -18,7 +13,6 @@ import { WebWorkerWarning } from "@/components/web-worker-warning"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Error } from "@/components/error"
 import { EntityEditorHeader } from "@/components/editor/entity-editor-header"
-import { UnknownTypeWarning } from "@/components/editor/unknown-type-warning"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { InternalEntityHint } from "@/components/editor/hints/internal-entity-hint"
@@ -28,6 +22,8 @@ import { EntityBadge } from "../entity/entity-badge"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useShallow } from "zustand/react/shallow"
 import { TypeSelectModal } from "@/components/modals/type-select-modal"
+import { ValidationOverview } from "@/components/editor/validation/validation-overview"
+import { mapEntityToProperties, PropertyType } from "@/lib/property"
 
 export function EntityEditor({
     entityId,
@@ -43,6 +39,7 @@ export function EntityEditor({
     const addPropertyEntry = useEditorState((store) => store.addPropertyEntry)
     const modifyPropertyEntry = useEditorState((store) => store.modifyPropertyEntry)
     const removePropertyEntry = useEditorState((store) => store.removePropertyEntry)
+    const getRootEntityId = useEditorState((store) => store.getRootEntityId)
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
 
@@ -91,7 +88,7 @@ export function EntityEditor({
     }, [entitiesChangelist, entityId])
 
     const onPropertyAddEntry = useCallback(
-        (propertyName: string, type: PropertyEditorTypes) => {
+        (propertyName: string, type: PropertyType) => {
             if (propertyName === "@type") {
                 setTypeSelectModalOpen(true)
             } else {
@@ -118,9 +115,9 @@ export function EntityEditor({
     const properties = useMemo(() => {
         if (!entity) return []
         return mapEntityToProperties(entity, originalEntity).filter((e) =>
-            isRootEntity(entity) ? !e.propertyName.startsWith("@") : true
+            entity["@id"] === getRootEntityId() ? !e.propertyName.startsWith("@") : true
         )
-    }, [entity, originalEntity])
+    }, [entity, getRootEntityId, originalEntity])
 
     const propertiesChangelist = useMemo(() => {
         const changeMap: Map<string, Diff> = new Map()
@@ -205,11 +202,12 @@ export function EntityEditor({
                         <EntityBadge entity={entity} size="lg" />
                         <span className="break-all">{displayName}</span>
                     </h2>
-                    <div className="gap-2 flex"></div>
+                    <div className="gap-2 flex">
+                        <ValidationOverview entityId={entityId} />
+                    </div>
                 </div>
 
                 <WebWorkerWarning />
-                <UnknownTypeWarning entityType={entity?.["@type"] || []} />
                 <InternalEntityHint entity={entity} />
                 <Error
                     className="mt-4"

@@ -35,17 +35,39 @@ export interface SchemaResolverStore {
 
 enableMapSet()
 
+const defaultSchemas = [
+    {
+        id: "schema",
+        displayName: "Schema.org",
+        matchesUrls: ["https://schema.org/"],
+        schemaUrl: "https://schema.org/version/latest/schemaorg-current-https.jsonld"
+    },
+    {
+        id: "bioschemas",
+        displayName: "Bioschemas.org",
+        matchesUrls: ["https://bioschemas.org/"],
+        schemaUrl:
+            "https://raw.githubusercontent.com/BioSchemas/specifications/refs/heads/master/ComputationalWorkflow/jsonld/ComputationalWorkflow_v0.5-DRAFT-2020_07_21.json"
+    },
+    {
+        id: "bioschemas_types",
+        displayName: "Bioschemas.org Types",
+        matchesUrls: ["https://bioschemas.org/"],
+        schemaUrl: "https://bioschemas.org/types/bioschemas_types.jsonld"
+    },
+    {
+        id: "dcmi",
+        displayName: "DCMI",
+        matchesUrls: ["http://purl.org/dc/terms/"],
+        schemaUrl:
+            "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl"
+    }
+]
+
 export const schemaResolverStore = create<SchemaResolverStore>()(
     persist(
         immer((set, get) => ({
-            registeredSchemas: [
-                {
-                    id: "schema",
-                    displayName: "Schema.org",
-                    matchesUrls: ["https://schema.org/"],
-                    schemaUrl: "https://schema.org/version/latest/schemaorg-current-https.jsonld"
-                }
-            ],
+            registeredSchemas: structuredClone(defaultSchemas),
 
             deleteSchema: (name: string) => {
                 set((draft) => {
@@ -72,6 +94,22 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
                 })
             }
         })),
-        { name: "schema-resolver" }
+        {
+            name: "schema-resolver",
+            version: 1,
+            migrate: (_persisted: unknown) => {
+                if (!_persisted) return { registeredSchemas: [...defaultSchemas] }
+                const persisted = _persisted as Partial<SchemaResolverStore>
+                const existing = Array.isArray(persisted?.registeredSchemas)
+                    ? [...persisted!.registeredSchemas!]
+                    : []
+                // Drop any stale default entries by id, then append the new defaults
+                const merged = [
+                    ...existing.filter((s) => !defaultSchemas.some((d) => d.id === s.id)),
+                    ...structuredClone(defaultSchemas)
+                ]
+                return { registeredSchemas: merged }
+            }
+        }
     )
 )

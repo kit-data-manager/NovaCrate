@@ -1,13 +1,10 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useCallback, useEffect, useState } from "react"
-import {
-    getPropertyTypeDefaultValue,
-    PropertyEditorTypes
-} from "@/components/editor/property-editor"
 import { SelectProperty } from "@/components/modals/add-property/select-property"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
 import { SelectType } from "@/components/modals/add-property/select-type"
 import { SchemaNode } from "@/lib/schema-worker/SchemaNode"
+import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
 
 export interface PossibleProperty {
     propertyName: string
@@ -37,10 +34,7 @@ export function AddPropertyModal({
     const onPropertySelect = useCallback(
         (propertyName: string, canBe: ReturnType<typeof usePropertyCanBe>) => {
             if (onlyReferences) {
-                onPropertyAdd(
-                    propertyName,
-                    getPropertyTypeDefaultValue(PropertyEditorTypes.Reference)
-                )
+                onPropertyAdd(propertyName, getPropertyTypeDefaultValue(PropertyType.Reference))
                 onOpenChange(false)
             } else if (canBe.possiblePropertyTypes.length === 1) {
                 onPropertyAdd(
@@ -50,7 +44,7 @@ export function AddPropertyModal({
                 onOpenChange(false)
             } else if (canBe.possiblePropertyTypes.length === 0) {
                 console.warn("Got empty canBe from " + propertyName)
-                onPropertyAdd(propertyName, getPropertyTypeDefaultValue(PropertyEditorTypes.Text))
+                onPropertyAdd(propertyName, getPropertyTypeDefaultValue(PropertyType.Text))
                 onOpenChange(false)
             } else {
                 setTypeSelectOptions(canBe)
@@ -61,7 +55,7 @@ export function AddPropertyModal({
     )
 
     const onTypeSelect = useCallback(
-        (type: PropertyEditorTypes) => {
+        (type: PropertyType) => {
             onPropertyAdd(selectedPropertyName, getPropertyTypeDefaultValue(type))
             onOpenChange(false)
         },

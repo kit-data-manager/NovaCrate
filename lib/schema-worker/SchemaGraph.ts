@@ -1,6 +1,6 @@
 "use client"
 
-import { SchemaNode } from "./SchemaNode"
+import { ISchemaNode, SchemaNode } from "./SchemaNode"
 import { SchemaResolver } from "./SchemaResolver"
 import { SchemaFile } from "./types"
 
@@ -27,22 +27,22 @@ export class SchemaGraph {
 
     constructor(private schemaResolver: SchemaResolver) {}
 
-    async getNode(id: string) {
-        const firstAttempt = this.graph.get(id)
+    async getNode(id: string, abortOnFail: boolean = false): Promise<SchemaNode | undefined> {
+        let firstAttempt = this.graph.get(id)
 
-        if (firstAttempt) {
+        if (!firstAttempt && id.includes("#")) {
+            firstAttempt = this.getNodeFromHashNamespace(id)
+        }
+
+        if (firstAttempt || abortOnFail) {
             return firstAttempt
         } else {
-            console.time("getNode-" + id)
             // Try autoloading required schemas to get this node
-            console.time("autoload-" + id)
             const result = await this.schemaResolver.autoload(
                 id,
                 this.getExcludedSchemasForAutoload()
             )
-            console.timeEnd("autoload-" + id)
 
-            console.time("addSchema-" + id)
             for (const [key, schema] of result) {
                 if (schema.schema) {
                     this.addSchemaFromFile(key, schema.schema)
@@ -51,12 +51,25 @@ export class SchemaGraph {
                     this.schemaIssues.set(key, schema.error)
                 }
             }
-            console.timeEnd("addSchema-" + id)
 
             // If the second attempt fails, return undefined
-            console.timeEnd("getNode-" + id)
-            return this.graph.get(id)
+            return this.getNode(id, true)
         }
+    }
+
+    getNodeFromHashNamespace(id: string) {
+        const split = id.split("#")
+        if (split.length === 2) {
+            const namespace = this.graph.get(split[0])
+            if (namespace) {
+                const subtype = namespace.resolveSubtype(split[1])
+                if (subtype) return SchemaNode.createWithContext(subtype, this.context)
+            }
+        } else {
+            console.warn("Invalid hash namespace format", id)
+        }
+
+        return undefined
     }
 
     /**
@@ -154,7 +167,7 @@ export class SchemaGraph {
     async getSubClasses(classId: string) {
         const childrenIds: Set<string> = new Set<string>()
         const self = await this.getNode(classId)
-        if (!self) throw new ReferenceError("classId not specified or invalid")
+        if (!self) throw new ReferenceError(`classId ${classId} not specified or invalid`)
         if (!self.isClass()) throw new Error(`Node ${self["@id"]} is not a class`)
 
         for (const [, node] of this.graph.entries()) {
@@ -225,7 +238,7 @@ export class SchemaGraph {
 
         if ("@graph" in schema) {
             for (const node of schema["@graph"]) {
-                const schemaNode = SchemaNode.createWithContext(node, this.context)
+                const schemaNode = SchemaNode.createWithContext(node as ISchemaNode, this.context)
                 this.addNode(schemaNode)
 
                 sourceMapSchemaNodes.push(schemaNode["@id"])

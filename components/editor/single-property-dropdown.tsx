@@ -13,11 +13,8 @@ import { ArrowLeftRight, EllipsisVertical, Eraser, Trash, Unlink } from "lucide-
 import TypeSelectDropdown from "@/components/editor/type-select-dropdown"
 import { usePropertyCanBe } from "@/components/editor/property-hooks"
 import { SlimClass } from "@/lib/schema-worker/helpers"
-import {
-    getPropertyTypeDefaultValue,
-    PropertyEditorTypes
-} from "@/components/editor/property-editor"
 import { cn } from "@/lib/utils"
+import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
 
 export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
     propertyRange,
@@ -33,10 +30,10 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
     isReference?: boolean
     onModifyTextLikeProperty?: (value: string) => void
     onModifyReferenceProperty?: (value: IReference) => void
-    onChangeType: (type: PropertyEditorTypes) => void
+    onChangeType: (type: PropertyType) => void
     onRemoveEntry: () => void
     triggerClassName?: string
-    propertyType: PropertyEditorTypes
+    propertyType: PropertyType
 }) {
     const canClear = useMemo(() => {
         return onModifyReferenceProperty || onModifyTextLikeProperty

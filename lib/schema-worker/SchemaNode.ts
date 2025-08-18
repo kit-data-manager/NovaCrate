@@ -11,10 +11,14 @@ export interface ISchemaNode {
     "rdfs:label"?: string | { "@language": string; "@value": string }
     "rdfs:subClassOf"?: IReference | IReference[]
     "rdfs:subPropertyOf"?: IReference | IReference[]
-    "schema:domainIncludes"?: IReference | IReference[]
-    "schema:rangeIncludes"?: IReference | IReference[]
-    $validation?: unknown // For validation with AJV outside of schema graph
+    $validation?: {
+        definitions?: Record<string, ISchemaNode>
+        required?: string[]
+        optional?: string[]
+        recommended?: string[]
+    }
     [key: string]: unknown
+    [key: `${string}:${"rangeIncludes" | "domainIncludes"}`]: IReference | IReference[] | undefined
 }
 
 /**
@@ -45,11 +49,35 @@ export class SchemaNode {
     }
 
     get domain() {
-        return this.node["schema:domainIncludes"]
+        const key = Object.keys(this.node).find((key) =>
+            key.endsWith(":domainIncludes")
+        ) as `${string}:${"domainIncludes"}`
+        if (key) {
+            return this.node[key]
+        } else {
+            return undefined
+        }
     }
 
     get range() {
-        return this.node["schema:rangeIncludes"]
+        const key = Object.keys(this.node).find((key) =>
+            key.endsWith(":rangeIncludes")
+        ) as `${string}:${"rangeIncludes"}`
+        if (key) {
+            return this.node[key]
+        } else {
+            return undefined
+        }
+    }
+
+    resolveSubtype(id: string) {
+        if (
+            this.node.$validation &&
+            "definitions" in this.node.$validation &&
+            this.node.$validation.definitions
+        ) {
+            return this.node.$validation.definitions[id]
+        } else return undefined
     }
 
     isProperty() {
@@ -104,6 +132,9 @@ export class SchemaNode {
                 `invalid context of type ${typeof context} in SchemaNode.createWithContext`
             )
         }
+
+        // Hardcoded overwrite to make Bioschemas.org schemas work
+        context.set("bioschemas", "https://bioschemas.org/")
 
         function handleString(str: string): string {
             const match = /^([a-z]+):.+$/.exec(str)

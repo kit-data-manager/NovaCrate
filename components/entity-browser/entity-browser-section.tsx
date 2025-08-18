@@ -4,8 +4,7 @@ import {
     getEntityDisplayName,
     isContextualEntity,
     isDataEntity,
-    isRoCrateMetadataEntity,
-    isRootEntity
+    isRoCrateMetadataEntity
 } from "@/lib/utils"
 import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -24,7 +23,10 @@ export function EntityBrowserSection(props: {
         (store) => {
             return Array.from(store.entities.entries())
                 .map(([key, item]) => [key, item] as [string, IEntity])
-                .filter(([, item]) => !isRootEntity(item) && !isRoCrateMetadataEntity(item))
+                .filter(
+                    ([, item]) =>
+                        item["@id"] !== store.getRootEntityId() && !isRoCrateMetadataEntity(item)
+                )
                 .filter(([, item]) =>
                     props.section === "Data" ? isDataEntity(item) : isContextualEntity(item)
                 )

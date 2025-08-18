@@ -319,7 +319,9 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
                     <div className="text-sm">
                         Download URL{" "}
                         <HelpTooltip>
-                            Should point to a valid JSON-LD file that contains the schema.
+                            Endpoint that responds with a JSON-LD file or Turtle file, containing
+                            the schema. Requests will always be sent with &#34;Accept:
+                            application/ld+json&#34;
                         </HelpTooltip>
                     </div>
                     <Input value={downloadURL} onChange={(e) => setDownloadURL(e.target.value)} />

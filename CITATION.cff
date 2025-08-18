@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: If you use this software, please cite it using these metadata.
 type: software
 title: novacrate
-abstract: Web-based interactive editor for creating, editing and visualising research
-  object crates.
+abstract: Web-based interactive editor for creating, editing and visualising 
+  research object crates.
 version: 1.2.0
 keywords:
   - ro-crate

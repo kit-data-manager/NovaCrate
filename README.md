@@ -1,14 +1,36 @@
-# 📦 NovaCrate
+# 📦 NovaCrate - RO-Crate Editor
 
-Web-based fully-featured interactive editor for **creating, editing and visualising** research object crates.
+Web-based fully-featured interactive editor for **creating, editing, and visualizing** research object crates. Built for inspecting, validating and manipulating RO-Crates, allowing you to get a deeper understanding of its content and structure.
+
+NovaCrate is in active development, we are happy to receive feedback, feature requests and bug reports on the [issues page](https://github.com/kit-data-manager/NovaCrate/issues).
 
 ## [▶️ Open NovaCrate](https://kit-data-manager.github.io/NovaCrate/)
 
+## 🚀 Features
+
+- ✅ Create, read, and edit RO-Crates
+- ✅ Live validation of RO-Crates
+  - ⚙️ Supports validation of the RO-Crate Specification v1.1
+  - 🏗️ Easily extensible to validate profiles or specific RO-Crate types (e.g., Workflow crates)
+  - 🚀 Autofix actions available for some issues
+- ✅ Visualize RO-Crates with a graph
+- ✅ Focused on usability and modern architecture
+- ✅ Context-information and property descriptions
+- ✅ Automatic recommendation of fitting entity types and properties
+- ✅ Support for importing and exporting the ELN format
+- ✅ Extensible with custom schemas at runtime
+- ✅ Generate and view an HTML preview file
+- ⚠️ Support for RO-Crate Specification v1.2 is not implemented (coming soon)
+
 ## 🎨 Editions
 
-NovaCrate can be used and deployed in multiple different ways. Currently, the following editions (conceptually) exist:
+NovaCrate can be used and deployed in multiple different ways. Currently, only the web version is in active development.
+You can access it directly [here](https://kit-data-manager.github.io/NovaCrate/).
 
 > 💡 If you have a special interest in the Desktop App or the Cloud Frontend, please get in contact.
+
+<details>
+<summary>Details on NovaCrate Editions</summary>
 
 | Name               | Status  | Description                                                                                                                                                                                                             | Notes                                                                                                      |
 |--------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
@@ -19,23 +41,10 @@ NovaCrate can be used and deployed in multiple different ways. Currently, the fo
 ### ℹ️ How To: Custom Backend
 
 NovaCrate is a frontend that can be used for any backend that hosts RO-Crates (an appropriate backend adapter must be implemented). This could be anything in the range from a simple file storage to a full REST Service for manipulating crates.
-See `src/lib/backend/CrateServiceAdapter.ts` for a list of methods that a backend adapter should implement. All of these methods can make use of backend resources or be suplemented locally.
+See `src/lib/backend/CrateServiceAdapter.ts` for a list of methods that a backend adapter should implement. All of these methods can make use of backend resources or be supplemented locally.
 
 NovaCrate currently does not include mechanisms for authentication, access control or concurrent access.
-
-## 📊 Roadmap
-
-- ✅ Create, read and edit RO-Crates
-- ✅ Visualize RO-Crates with a graph
-- ✅ Focused on usability and a modern architecture
-- ✅ Context-information and property descriptions
-- ✅ Automatic recommendation of fitting entity types and properties
-- ✅ Support for RO-Crate Specification v1.1
-- ✅ Support for importing and exporting the ELN format
-- ✅ Easily extendable with custom schemas
-- ✅ Generate and view HTML preview file
-- ❌ Validation of RO-Crates (limited validation available in HTML preview file)
-- ❌ Support for RO-Crate Profiles
+</details>
 
 ## 👨‍💻 Development
 
@@ -64,7 +73,7 @@ npm install
 
 ### Development
 
-This command starts NovaCrate in development mode. This enabled hot reload, but also increases response time
+This command starts NovaCrate in development mode. This enables hot reload but also increases response time.
 
 ```bash
 npm run dev
@@ -86,6 +95,17 @@ The website can then be found in the `out` folder. Use any web server for viewin
 npx serve@latest out
 ```
 
+### Testing
+
+NovaCrate ships with end-to-end frontend tests that can be used to verify that the core functionality is working as expected. At the current time, the test coverage is relatively low
+due to the complexity of UI-based testing.
+
+You can run the tests using:
+
+    npm run build && npm run serve
+    # In a different terminal:
+    npm run test
+
 ## 🎓 Thesis
 
 This project was first created as part of a [bachelor thesis](https://doi.org/10.5445/IR/1000178790)
@@ -94,7 +114,7 @@ This project was first created as part of a [bachelor thesis](https://doi.org/10
 
 Most of the structure of the editor and many implementation and design details are outlined in the bachelor thesis.
 
-To summarize: This is a Next.js app. Pages are located in /app, components in /components and anything else is probably in /lib.
+To summarize: This is a Next.js app. Pages are located in /app, components in /components, and anything else is probably in /lib.
 
 ## 📸 Screenshots
 

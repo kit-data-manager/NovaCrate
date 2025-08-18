@@ -1,12 +1,15 @@
 import { useMemo } from "react"
-import { isDataEntity, isFileDataEntity, isRootEntity } from "@/lib/utils"
+import { isDataEntity, isFileDataEntity } from "@/lib/utils"
 import { InfoIcon, PlusIcon } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useEditorState } from "@/lib/state/editor-state"
 
 const entityBrowserItemIconBaseCN = "border px-2 py-1 text-sm"
 
 export function EntityBadge(props: { entity?: IEntity; size?: "md" | "lg" | "sm" }) {
+    const rootEntityId = useEditorState((s) => s.getRootEntityId())
+
     const sizeMod = useMemo(() => {
         return props.size == "lg" ? " rounded-lg" : props.size == "sm" ? " " : ""
     }, [props.size])
@@ -23,7 +26,7 @@ export function EntityBadge(props: { entity?: IEntity; size?: "md" | "lg" | "sm"
                 <span>Unknown</span>
             </div>
         )
-    } else if (isRootEntity(props.entity)) {
+    } else if (props.entity["@id"] === rootEntityId) {
         return (
             <Tooltip delayDuration={200}>
                 <TooltipTrigger>

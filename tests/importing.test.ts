@@ -183,9 +183,9 @@ test("Import Folder", async ({ page }) => {
     await page.getByRole("button", { name: "candles-9247498_1280." }).click()
     await expect(page.locator("body")).toMatchAriaSnapshot(`- text: img/candles-9247498_1280.jpg`)
     await page.getByRole("button", { name: "example.json" }).click()
-    await expect(page.getByRole("code")).toContainText(
+    await expect(page.locator(".monaco-editor")).toContainText(
         '{ "file": "example.json", "contains": "nothing"}'
     )
     await page.getByRole("button", { name: "description.txt" }).click()
-    await expect(page.getByRole("code")).toContainText("This is the Test Folder Crate")
+    await expect(page.locator(".monaco-editor")).toContainText("This is the Test Folder Crate")
 })

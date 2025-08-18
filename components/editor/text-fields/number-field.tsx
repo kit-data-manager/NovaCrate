@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input"
 import { Diff } from "lucide-react"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { SlimClass } from "@/lib/schema-worker/helpers"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
+import { PropertyType } from "@/lib/property"
 
 export const NumberField = memo(function NumberField({
     value,
@@ -14,7 +14,7 @@ export const NumberField = memo(function NumberField({
 }: {
     value: string
     onChange: (value: string) => void
-    onChangeType: (type: PropertyEditorTypes) => void
+    onChangeType: (type: PropertyType) => void
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
@@ -52,7 +52,7 @@ export const NumberField = memo(function NumberField({
                 onModifyTextLikeProperty={onChange}
                 onRemoveEntry={onRemoveEntry}
                 onChangeType={onChangeType}
-                propertyType={PropertyEditorTypes.Number}
+                propertyType={PropertyType.Number}
             />
         </div>
     )

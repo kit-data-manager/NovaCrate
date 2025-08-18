@@ -43,6 +43,7 @@ import { KeyboardShortcut } from "@/components/actions/action-keyboard-shortcuts
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Error } from "@/components/error"
+import { ValidationOverview } from "@/components/editor/validation/validation-overview"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -258,9 +259,7 @@ export function NavHeader() {
             <div />
 
             <div className="flex justify-end items-center gap-2">
-                {/*<div className="flex items-center mr-2 text-green-500">*/}
-                {/*    <Check className="size-4 mr-2" /> No Issues detected*/}
-                {/*</div>*/}
+                <ValidationOverview />
                 {error || saveError.size > 0 || healthTestError ? (
                     <Popover>
                         <PopoverTrigger asChild>

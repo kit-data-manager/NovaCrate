@@ -1,8 +1,8 @@
 import { memo, useCallback } from "react"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { SlimClass } from "@/lib/schema-worker/helpers"
-import { PropertyEditorTypes } from "@/components/editor/property-editor"
 import { Switch } from "@/components/ui/switch"
+import { PropertyType } from "@/lib/property"
 
 export const BooleanField = memo(function DateField({
     value,
@@ -13,7 +13,7 @@ export const BooleanField = memo(function DateField({
 }: {
     value: string
     onChange: (value: string) => void
-    onChangeType: (type: PropertyEditorTypes) => void
+    onChangeType: (type: PropertyType) => void
     propertyRange?: SlimClass[]
     onRemoveEntry: () => void
 }) {
@@ -35,8 +35,8 @@ export const BooleanField = memo(function DateField({
                 onModifyTextLikeProperty={onChange}
                 onRemoveEntry={onRemoveEntry}
                 onChangeType={onChangeType}
-                triggerClassName="border-none rounded-md"
-                propertyType={PropertyEditorTypes.Boolean}
+                triggerClassName="border-l rounded-md"
+                propertyType={PropertyType.Boolean}
             />
         </div>
     )
