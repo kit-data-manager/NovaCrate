@@ -3,10 +3,16 @@ import { collectAsyncIterator } from "./helpers"
 
 const CRATE_STORAGE = "crate-storage" as const
 
-function toArrayBuffer(buf: Uint8Array<ArrayBufferLike>): ArrayBuffer {
-    if (buf.buffer instanceof ArrayBuffer) return buf.buffer
-    // SharedArrayBuffer fallback: copy into real ArrayBuffer
-    return buf.slice(0).buffer
+function toArrayBuffer(buf: Uint8Array): ArrayBuffer {
+    const { buffer, byteOffset, byteLength } = buf
+    if (buffer instanceof ArrayBuffer) {
+        // Return underlying buffer only if the view covers it entirely
+        return byteOffset === 0 && byteLength === buffer.byteLength
+            ? buffer
+            : buffer.slice(byteOffset, byteOffset + byteLength)
+    }
+    // SharedArrayBuffer fallback: copy into a real ArrayBuffer
+    return buf.slice().buffer
 }
 
 function resolveCratePath(crateId: string, path?: string) {
