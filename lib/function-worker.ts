@@ -28,11 +28,12 @@ export class FunctionWorker<T extends Record<string, (...args: any[]) => any>> {
         this.options = options
 
         this.executeUncached = this.execute.bind(this)
-        this.execute = memoizee(this.execute.bind(this), {
-            max: options.memoize ? undefined : 1,
-            maxAge: options.memoizeMaxAge,
-            length: false
-        })
+        if (options.memoize)
+            this.execute = memoizee(this.execute.bind(this), {
+                maxAge: options.memoizeMaxAge,
+                length: false,
+                promise: true
+            })
     }
 
     get worker() {
