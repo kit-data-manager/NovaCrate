@@ -22,7 +22,8 @@ export const SchemaWorker = createContext<ISchemaWorkerContext>({
 export function SchemaWorkerProvider(props: PropsWithChildren) {
     const { worker, isUsingWebWorker, isReady } = useFunctionWorker(
         schemaWorkerFunctions,
-        addBasePath("/schema-worker.js")
+        addBasePath("/schema-worker.js"),
+        { memoize: true, memoizeMaxAge: 5000 }
     )
 
     useEffect(() => {

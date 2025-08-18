@@ -1,25 +1,39 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import memoizee, { Memoized } from "memoizee"
+
 const HEALTH_TEST_FN = "__healthTest__"
 
-interface FunctionWorkerOptions {
+export interface FunctionWorkerOptions {
     /**
      * Whether the execution of a function should fall back to executing locally if the web worker
      * is not available
      * @default true
      */
     localFallback?: boolean
+
+    memoize?: boolean
+    memoizeMaxAge?: number
 }
 
 /**
  * Class to construct a function worker. Should be constructed in the main thread to hold the Web Worker.
  */
 export class FunctionWorker<T extends Record<string, (...args: any[]) => any>> {
-    private readonly functions: T
+    private readonly functions: Record<keyof T, T[keyof T] & Memoized<T[keyof T]>>
     private _worker: Worker | undefined
     private options: FunctionWorkerOptions
 
     constructor(functions: T, options: FunctionWorkerOptions = { localFallback: true }) {
-        this.functions = functions
+        this.functions = Object.fromEntries(
+            Object.entries(functions).map(([name, fn]) => [
+                name as keyof T,
+                memoizee(fn, {
+                    max: options.memoize ? undefined : 1,
+                    maxAge: options.memoizeMaxAge
+                })
+            ])
+        ) as Record<keyof T, T[keyof T] & Memoized<T[keyof T]>>
+
         this.options = options
     }
 

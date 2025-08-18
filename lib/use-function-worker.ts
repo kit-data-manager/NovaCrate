@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useRef, useState } from "react"
-import { FunctionWorker } from "@/lib/function-worker"
+import { FunctionWorker, FunctionWorkerOptions } from "@/lib/function-worker"
 import { useInterval } from "usehooks-ts"
 
 /**
@@ -8,12 +8,14 @@ import { useInterval } from "usehooks-ts"
  * When the worker is not mounted, the function will be run locally instead.
  * @param functions Flat object of functions that the function worker can run (the same object that was passed to the function worker)
  * @param scriptPath Path to the script of the function worker
+ * @param options Options for the function worker
  */
 export function useFunctionWorker<T extends Record<string, (...args: any[]) => any>>(
     functions: T,
-    scriptPath: string
+    scriptPath: string,
+    options?: FunctionWorkerOptions
 ) {
-    const functionWorker = useRef(new FunctionWorker(functions))
+    const functionWorker = useRef(new FunctionWorker(functions, options))
     const scriptPathRef = useRef(scriptPath)
 
     const [isReady, setIsReady] = useState(false)
