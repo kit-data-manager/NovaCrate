@@ -9,6 +9,7 @@ import { sortValidationResultByName } from "@/lib/utils"
 import { useEditorState } from "@/lib/state/editor-state"
 import { useValidationStore } from "@/lib/validation/hooks"
 import { ValidationResultSeverity } from "@/lib/validation/validation-result"
+import { validationSettings } from "@/lib/state/validation-settings"
 
 export const ValidationOverview = memo(function ValidationOverview({
     entityId,
@@ -31,6 +32,7 @@ export const ValidationOverview = memo(function ValidationOverview({
         )
     )
     const setShowValidationDrawer = useEditorState((s) => s.setShowValidationDrawer)
+    const validationEnabled = useStore(validationSettings, (s) => s.enabled)
 
     useEffect(() => {
         setInitiallyHidden(!validationRanAtLeastOnce)
@@ -114,6 +116,8 @@ export const ValidationOverview = memo(function ValidationOverview({
         validationResults.length,
         warningResults.length
     ])
+
+    if (!validationEnabled) return null
 
     return (
         <div

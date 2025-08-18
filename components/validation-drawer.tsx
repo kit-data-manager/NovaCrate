@@ -19,6 +19,7 @@ import type { DefaultSectionOpen } from "@/components/file-explorer/explorer"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useGoToEntityEditor } from "@/lib/hooks"
+import { validationSettings } from "@/lib/state/validation-settings"
 
 export function ValidationDrawer() {
     const validationStore = useValidationStore()
@@ -30,6 +31,12 @@ export function ValidationDrawer() {
                 .sort((a, b) => b.resultSeverity - a.resultSeverity)
         )
     )
+    const validationEnabled = useStore(validationSettings, (s) => s.enabled)
+    const setValidationEnabled = useStore(validationSettings, (s) => s.setEnabled)
+
+    const enableValidation = useCallback(() => {
+        setValidationEnabled(true)
+    }, [setValidationEnabled])
 
     const setShowValidationDrawer = useEditorState((store) => store.setShowValidationDrawer)
 
@@ -200,19 +207,32 @@ export function ValidationDrawer() {
                 </Button>
             </div>
             <div className="overflow-y-auto p-2 grow">
-                {validationResults.length === 0 && (
+                {!validationEnabled && (
+                    <div className="flex justify-center flex-col gap-2">
+                        <div className="flex justify-center text-muted-foreground text-xs p-4">
+                            Validation is disabled.
+                        </div>
+                        <div className="flex justify-center">
+                            <Button variant={"outline"} onClick={enableValidation}>
+                                Enable Validation
+                            </Button>
+                        </div>
+                    </div>
+                )}
+                {validationEnabled && validationResults.length === 0 && (
                     <div className="flex justify-center text-muted-foreground text-xs p-4">
                         No issues found.
                     </div>
                 )}
-                {structuredResults.map((group) => (
-                    <ValidationDrawerSection
-                        {...group}
-                        key={group.key}
-                        defaultSectionOpen={defaultSectionOpen}
-                        onSectionOpenChange={onSectionOpenChange}
-                    />
-                ))}
+                {validationEnabled &&
+                    structuredResults.map((group) => (
+                        <ValidationDrawerSection
+                            {...group}
+                            key={group.key}
+                            defaultSectionOpen={defaultSectionOpen}
+                            onSectionOpenChange={onSectionOpenChange}
+                        />
+                    ))}
             </div>
         </div>
     )

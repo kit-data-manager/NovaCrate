@@ -1,18 +1,20 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { FileJson2, HardDrive, HardHat } from "lucide-react"
+import { BugIcon, FileJson2, HardDrive, HardHat } from "lucide-react"
 import { PropsWithChildren, useMemo, useState } from "react"
 import { GeneralSettings } from "@/components/modals/settings/general"
 import { WorkerSettings } from "@/components/modals/settings/workers"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { StoragePage } from "@/components/modals/settings/storage"
 import { SchemaSettingsPage } from "@/components/modals/settings/schemas"
+import { ValidationSettings } from "@/components/modals/settings/validation"
 
 export enum SettingsPages {
     GENERAL,
     WORKERS,
     STORAGE,
-    SCHEMAS
+    SCHEMAS,
+    VALIDATION
 }
 
 function SettingsPageButton({
@@ -55,6 +57,8 @@ export function SettingsModal({
                 return <StoragePage />
             case SettingsPages.SCHEMAS:
                 return <SchemaSettingsPage />
+            case SettingsPages.VALIDATION:
+                return <ValidationSettings />
         }
     }, [page])
 
@@ -81,6 +85,13 @@ export function SettingsModal({
                             setPage={setPage}
                         >
                             <FileJson2 className="size-4 mr-2" /> Schemas
+                        </SettingsPageButton>
+                        <SettingsPageButton
+                            page={SettingsPages.VALIDATION}
+                            currentPage={page}
+                            setPage={setPage}
+                        >
+                            <BugIcon className="size-4 mr-2" /> Validation
                         </SettingsPageButton>
                         <SettingsPageButton
                             page={SettingsPages.WORKERS}

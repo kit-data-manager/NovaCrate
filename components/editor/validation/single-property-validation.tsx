@@ -10,6 +10,7 @@ import { PanelBottomOpen } from "lucide-react"
 import { useEditorState } from "@/lib/state/editor-state"
 import { useValidationStore } from "@/lib/validation/hooks"
 import { ValidationResultSeverity } from "@/lib/validation/validation-result"
+import { validationSettings } from "@/lib/state/validation-settings"
 
 export function SinglePropertyValidation({
     propertyName,
@@ -37,6 +38,7 @@ export function SinglePropertyValidation({
         )
     )
     const setShowValidationDrawer = useEditorState((s) => s.setShowValidationDrawer)
+    const validationEnabled = useStore(validationSettings, (s) => s.enabled)
 
     const highestResultType = useMemo(() => {
         return (
@@ -52,6 +54,8 @@ export function SinglePropertyValidation({
             validationResults.find((res) => res.resultSeverity === ValidationResultSeverity.info)
         )
     }, [validationResults])
+
+    if (!validationEnabled) return null
 
     return (
         <div

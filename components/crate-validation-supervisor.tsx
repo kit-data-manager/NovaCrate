@@ -4,6 +4,7 @@ import { useValidation, useValidationStore } from "@/lib/validation/hooks"
 import { useDebounceCallback } from "usehooks-ts"
 import { useEditorState } from "@/lib/state/editor-state"
 import { useStore } from "zustand"
+import { validationSettings } from "@/lib/state/validation-settings"
 
 /**
  * Hooks into the editor state and the crate data context to watch for changes in the crate, each entity, and each property. It then starts the validation of any changed
@@ -21,6 +22,7 @@ export function CrateValidationSupervisor() {
     const entities = useEditorState((store) => store.entities)
     const validation = useValidation()
     const [runValidation, setRunValidation] = useState(false)
+    const validationEnabled = useStore(validationSettings, (s) => s.enabled)
 
     const validateCrate = useCallback(() => {
         validation.validateCrate().catch((e) => console.error("Crate validation failed: ", e))
@@ -37,11 +39,17 @@ export function CrateValidationSupervisor() {
         else setRunValidation(false)
     }, [crateDataIsLoading, crateId])
 
+    useEffect(() => {
+        if (!validationEnabled) {
+            validation.resultStore.getState().clear()
+        }
+    }, [validation.resultStore, validationEnabled])
+
     const entitiesArray = useMemo(() => {
         return Array.from(entities.values())
     }, [entities])
 
-    if (!crateId || !runValidation) return null
+    if (!crateId || !runValidation || !validationEnabled) return null
 
     return (
         <>
