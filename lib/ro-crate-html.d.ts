@@ -1,5 +1,5 @@
 declare module "ro-crate-html/lib/ro-crate-preview.js" {
-    import { ROCrate } from "ro-crate"
+    import type { ROCrate } from "ro-crate"
 
     type TemplateParams = {
         html: string

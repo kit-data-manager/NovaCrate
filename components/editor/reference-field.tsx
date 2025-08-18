@@ -10,7 +10,7 @@ import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-e
 import { useEditorState } from "@/lib/state/editor-state"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import z from "zod"
+import * as z from "zod/mini"
 import { PropertyType } from "@/lib/property"
 
 function undefinedIfEmpty<T>(arr?: T[]) {

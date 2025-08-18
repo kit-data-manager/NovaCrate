@@ -1,10 +1,11 @@
-import z, { ZodError } from "zod"
+import * as z from "zod/mini"
+import { ZodError } from "zod"
 
 const SpringErrorSchema = z.object({
     timestamp: z.number(),
     status: z.number(),
     error: z.string(),
-    trace: z.string().optional(),
+    trace: z.optional(z.string()),
     message: z.string(),
     path: z.string()
 })

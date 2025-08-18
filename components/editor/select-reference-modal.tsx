@@ -20,7 +20,7 @@ import HelpTooltip from "@/components/help-tooltip"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import z from "zod"
+import * as z from "zod/mini"
 import { TriangleAlert } from "lucide-react"
 
 function SelectReferenceModalEntry({
