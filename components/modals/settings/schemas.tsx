@@ -139,7 +139,7 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
     const [schemaError, setSchemaError] = useState<unknown>()
 
     const getSchemaStatus = useCallback(async () => {
-        const status = await schemaWorker.worker.execute("getWorkerStatus")
+        const status = await schemaWorker.worker.executeUncached("getWorkerStatus")
         if (status.schemaStatus.loadedSchemas.has(schema.id)) {
             setSchemaStatus("loaded")
             setSchemaError(undefined)
@@ -158,8 +158,8 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
     const forceSchemaLoad = useCallback(async () => {
         setSchemaLoading(true)
         setSchemaError(undefined)
-        await schemaWorker.worker.execute("unloadSchema", schema.id)
-        await schemaWorker.worker.execute("forceSchemaLoad", schema.id)
+        await schemaWorker.worker.executeUncached("unloadSchema", schema.id)
+        await schemaWorker.worker.executeUncached("forceSchemaLoad", schema.id)
         setSchemaLoading(false)
         getSchemaStatus().then()
     }, [getSchemaStatus, schema.id, schemaWorker.worker])

@@ -27,6 +27,7 @@ export class FunctionWorker<T extends Record<string, (...args: any[]) => any>> {
         this.functions = functions
         this.options = options
 
+        this.executeUncached = this.execute.bind(this)
         this.execute = memoizee(this.execute.bind(this), {
             max: options.memoize ? undefined : 1,
             maxAge: options.memoizeMaxAge,
@@ -57,6 +58,17 @@ export class FunctionWorker<T extends Record<string, (...args: any[]) => any>> {
         this._worker = undefined
     }
 
+    /**
+     * Same as {@link execute}, but without memoization (caching).
+     */
+    executeUncached: typeof this.execute
+
+    /**
+     * Executes a function in the worker or locally if the worker is not available. Results may be cached, depending on the configuration of the {@link FunctionWorker}.
+     * @param name Name of the function to execute
+     * @param args Arguments to pass to the function
+     * @returns The result of the function
+     */
     execute<K extends keyof T>(name: K, ...args: Parameters<T[K]>): Promise<ReturnType<T[K]>> {
         return this._worker ? this.workerExecute(name, args) : this.localExecute(name, args)
     }

@@ -29,14 +29,14 @@ export function SchemaWorkerProvider(props: PropsWithChildren) {
     useEffect(() => {
         if (isReady) {
             worker
-                .execute(
+                .executeUncached(
                     "updateRegisteredSchemas",
                     schemaResolverStore.getState().registeredSchemas
                 )
                 .then()
 
             return schemaResolverStore.subscribe((newState) => {
-                worker.execute("updateRegisteredSchemas", newState.registeredSchemas).then()
+                worker.executeUncached("updateRegisteredSchemas", newState.registeredSchemas).then()
             })
         }
     }, [isReady, worker])
