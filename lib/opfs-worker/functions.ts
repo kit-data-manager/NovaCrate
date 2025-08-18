@@ -3,6 +3,18 @@ import { collectAsyncIterator } from "./helpers"
 
 const CRATE_STORAGE = "crate-storage" as const
 
+function toArrayBuffer(buf: Uint8Array): ArrayBuffer {
+    const { buffer, byteOffset, byteLength } = buf
+    if (buffer instanceof ArrayBuffer) {
+        // Return underlying buffer only if the view covers it entirely
+        return byteOffset === 0 && byteLength === buffer.byteLength
+            ? buffer
+            : buffer.slice(byteOffset, byteOffset + byteLength)
+    }
+    // SharedArrayBuffer fallback: copy into a real ArrayBuffer
+    return buf.slice().buffer
+}
+
 function resolveCratePath(crateId: string, path?: string) {
     if (path?.startsWith("./")) path = path.slice(2)
     if (path?.startsWith("/")) path = path.slice(1)
@@ -17,7 +29,10 @@ async function deleteCrateDir(id: string) {
 }
 
 export async function writeFile(crateId: string, filePath: string, data: Uint8Array | Blob) {
-    const result = await fs.writeFile(resolveCratePath(crateId, filePath), data)
+    const result = await fs.writeFile(
+        resolveCratePath(crateId, filePath),
+        data instanceof Blob ? data : toArrayBuffer(data)
+    )
 
     if (result.isErr()) throw result.unwrapErr()
 }
@@ -123,7 +138,7 @@ export async function createCrateZip(crateId: string) {
     const result = await fs.zip(resolveCratePath(crateId), { preserveRoot: false })
     if (result.isOk()) {
         const zip = result.unwrap()
-        return new Blob([zip], { type: "application/zip" })
+        return new Blob([toArrayBuffer(zip)], { type: "application/zip" })
     } else {
         throw result.unwrapErr()
     }
@@ -133,7 +148,7 @@ export async function createCrateEln(crateId: string) {
     const result = await fs.zip(resolveCratePath(crateId), { preserveRoot: true })
     if (result.isOk()) {
         const zip = result.unwrap()
-        return new Blob([zip], { type: "application/vnd.eln+zip" })
+        return new Blob([toArrayBuffer(zip)], { type: "application/vnd.eln+zip" })
     } else {
         throw result.unwrapErr()
     }
