@@ -5,7 +5,7 @@ import useSWR from "swr"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Draft, produce } from "immer"
 import { applyServerDifferences } from "@/lib/ensure-sync"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { TriangleAlert } from "lucide-react"
 import { changeEntityId, getEntityDisplayName } from "@/lib/utils"
@@ -482,6 +482,13 @@ export function CrateDataProvider({
         [mutate, crateId, serviceProvider]
     )
 
+    const pathname = usePathname()
+    const pathnameRef = useRef(pathname)
+
+    useEffect(() => {
+        pathnameRef.current = pathname
+    }, [pathname])
+
     useEffect(() => {
         if (crateId) {
             console.log("CrateID known, saving")
@@ -493,8 +500,12 @@ export function CrateDataProvider({
                 setCrateId(saved)
                 console.log("CrateID found in local storage", saved)
             } else {
-                router.push("/editor")
-                console.log("Nothing found in local storage, navigating to landing page")
+                if (pathnameRef.current.startsWith("/editor/full")) {
+                    router.push("/editor")
+                    console.log("Nothing found in local storage, navigating to landing page")
+                } else {
+                    console.log("Nothing found in local storage")
+                }
             }
         }
     }, [crateId, router])
