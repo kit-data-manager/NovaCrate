@@ -74,7 +74,7 @@ export function WorkerSettings() {
     }, [serviceProvider])
 
     const fetchData = useCallback(async () => {
-        const { workerActive, schemaStatus } = await worker.execute("getWorkerStatus")
+        const { workerActive, schemaStatus } = await worker.executeUncached("getWorkerStatus")
         setIsSchemaWorkerActive(workerActive)
         setSchemaStatus(schemaStatus)
     }, [worker])

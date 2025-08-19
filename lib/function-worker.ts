@@ -1,13 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import memoizee from "memoizee"
+
 const HEALTH_TEST_FN = "__healthTest__"
 
-interface FunctionWorkerOptions {
+export interface FunctionWorkerOptions {
     /**
      * Whether the execution of a function should fall back to executing locally if the web worker
      * is not available
      * @default true
      */
     localFallback?: boolean
+
+    memoize?: boolean
+    memoizeMaxAge?: number
 }
 
 /**
@@ -21,6 +26,14 @@ export class FunctionWorker<T extends Record<string, (...args: any[]) => any>> {
     constructor(functions: T, options: FunctionWorkerOptions = { localFallback: true }) {
         this.functions = functions
         this.options = options
+
+        this.executeUncached = this.execute.bind(this)
+        if (options.memoize)
+            this.execute = memoizee(this.execute.bind(this), {
+                maxAge: options.memoizeMaxAge,
+                length: false,
+                promise: true
+            })
     }
 
     get worker() {
@@ -46,6 +59,17 @@ export class FunctionWorker<T extends Record<string, (...args: any[]) => any>> {
         this._worker = undefined
     }
 
+    /**
+     * Same as {@link execute}, but without memoization (caching).
+     */
+    executeUncached: typeof this.execute
+
+    /**
+     * Executes a function in the worker or locally if the worker is not available. Results may be cached, depending on the configuration of the {@link FunctionWorker}.
+     * @param name Name of the function to execute
+     * @param args Arguments to pass to the function
+     * @returns The result of the function
+     */
     execute<K extends keyof T>(name: K, ...args: Parameters<T[K]>): Promise<ReturnType<T[K]>> {
         return this._worker ? this.workerExecute(name, args) : this.localExecute(name, args)
     }
@@ -120,37 +144,4 @@ export class FunctionWorker<T extends Record<string, (...args: any[]) => any>> {
 
         worker.addEventListener("message", handler)
     }
-}
-
-interface FunctionWorkerMessage {
-    name: string
-    args: any[]
-    nonce: string
-}
-
-/**
- * Utility to let a script work as a function worker. Should be used in a web worker script
- * @param functions Functions that the worker can run (flat object containing functions)
- */
-export function workAsFunctionWorker<T extends Record<string, (...args: any[]) => any>>(
-    functions: T
-) {
-    addEventListener("message", async (event) => {
-        const { name, args, nonce } = event.data as FunctionWorkerMessage
-
-        if (name in functions) {
-            try {
-                const data = await functions[name](...args)
-                postMessage({ nonce, data })
-            } catch (error) {
-                postMessage({ nonce, error })
-            }
-        } else if (name === HEALTH_TEST_FN) {
-            postMessage({ nonce, data: true })
-        } else
-            postMessage({
-                nonce,
-                error: `FunctionWorkerClient: Function ${name} does not exists in functions object`
-            })
-    })
 }

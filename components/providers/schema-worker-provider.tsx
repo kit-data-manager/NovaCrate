@@ -22,20 +22,21 @@ export const SchemaWorker = createContext<ISchemaWorkerContext>({
 export function SchemaWorkerProvider(props: PropsWithChildren) {
     const { worker, isUsingWebWorker, isReady } = useFunctionWorker(
         schemaWorkerFunctions,
-        addBasePath("/schema-worker.js")
+        addBasePath("/schema-worker.js"),
+        { memoize: true, memoizeMaxAge: 5000 }
     )
 
     useEffect(() => {
         if (isReady) {
             worker
-                .execute(
+                .executeUncached(
                     "updateRegisteredSchemas",
                     schemaResolverStore.getState().registeredSchemas
                 )
                 .then()
 
             return schemaResolverStore.subscribe((newState) => {
-                worker.execute("updateRegisteredSchemas", newState.registeredSchemas).then()
+                worker.executeUncached("updateRegisteredSchemas", newState.registeredSchemas).then()
             })
         }
     }, [isReady, worker])
