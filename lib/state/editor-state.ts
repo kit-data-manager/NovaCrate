@@ -98,6 +98,9 @@ export const editorState = createWithEqualityFn<EditorState>()(
         entities: new Map<string, IEntity>(),
 
         updateCrateContext(crateContext: CrateContextType) {
+            setState((s) => {
+                s.crateContextReady = false
+            })
             const newContext = new CrateContext()
             newContext.update(crateContext).then(() => {
                 setState((state) => {

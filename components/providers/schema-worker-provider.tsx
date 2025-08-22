@@ -51,6 +51,12 @@ export function SchemaWorkerProvider(props: PropsWithChildren) {
         }
     }, [context.specification, isReady, worker])
 
+    useEffect(() => {
+        // Clear cache on context change
+        console.log("Clearing schema worker cache")
+        worker.clearExecuteCache()
+    }, [context, worker])
+
     return (
         <SchemaWorker.Provider
             value={{

@@ -54,11 +54,19 @@ const defaultSchemas = [
         activeOnSpec: [RO_CRATE_VERSION.V1_1_3]
     },
     {
+        id: "bioschemas-v1.0",
+        displayName: "Bioschemas.org v1.0",
+        matchesUrls: ["https://bioschemas.org/"],
+        schemaUrl:
+            "https://raw.githubusercontent.com/BioSchemas/specifications/refs/heads/master/ComputationalWorkflow/jsonld/ComputationalWorkflow_v1.0-RELEASE.json",
+        activeOnSpec: [RO_CRATE_VERSION.V1_2_0]
+    },
+    {
         id: "bioschemas_types",
         displayName: "Bioschemas.org Types",
         matchesUrls: ["https://bioschemas.org/"],
         schemaUrl: "https://bioschemas.org/types/bioschemas_types.jsonld",
-        activeOnSpec: [RO_CRATE_VERSION.V1_1_3]
+        activeOnSpec: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
     },
     {
         id: "dcmi",
@@ -126,6 +134,9 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
                             schema.activeOnSpec = [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
                         }
                     }
+
+                    if (!merged.find((s) => s.id === "bioschemas-v1.0"))
+                        merged.push(defaultSchemas.find((d) => d.id === "bioschemas-v1.0")!)
                 }
 
                 return { registeredSchemas: merged }

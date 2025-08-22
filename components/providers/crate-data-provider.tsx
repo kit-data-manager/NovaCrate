@@ -10,7 +10,7 @@ import {
     useState
 } from "react"
 import useSWR from "swr"
-import { useEditorState } from "@/lib/state/editor-state"
+import { editorState, useEditorState } from "@/lib/state/editor-state"
 import { Draft, produce } from "immer"
 import { applyServerDifferences } from "@/lib/ensure-sync"
 import { useRouter } from "next/navigation"
@@ -151,6 +151,10 @@ export function CrateDataProvider({
 
             setEntities(updatedEntities)
             lastCrateData.current = data
+        } else {
+            editorState.setState((s) => {
+                s.crateContextReady = false
+            })
         }
     }, [
         data,

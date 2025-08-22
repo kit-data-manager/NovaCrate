@@ -29,7 +29,8 @@ export interface SlimClass {
 }
 
 export async function getPropertyRange(propertyId: string) {
-    let refs = (await schemaGraph.getNode(propertyId))?.range
+    const node = await schemaGraph.getNode(propertyId)
+    let refs = node?.range
     if (!refs) return []
 
     const range = new Set<SlimClass>()

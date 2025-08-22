@@ -38,7 +38,7 @@ export class SchemaResolver {
         return loadedSchemas
     }
 
-    private async waitForReady() {
+    private waitForReady(): Promise<void> {
         if (!this.ready) {
             if (!this.waitingForReady) {
                 this.waitingForReady = new Promise((resolve, reject) => {
@@ -60,8 +60,12 @@ export class SchemaResolver {
                         )
                     }, 2000)
                 })
-            } else return this.waitingForReady
+            }
+
+            return this.waitingForReady
         }
+
+        return Promise.resolve()
     }
 
     updateRegisteredSchemas(
