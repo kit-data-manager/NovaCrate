@@ -52,6 +52,7 @@ export const PropertyEditor = memo(function PropertyEditor({
     const focusedProperty = useEntityEditorTabs((store) => store.focusedProperty)
     const unFocusProperty = useEntityEditorTabs((store) => store.unFocusProperty)
     const crateContext = useEditorState((store) => store.crateContext)
+    const crateContextReady = useEditorState((store) => store.crateContextReady)
     const container = createRef<HTMLDivElement>()
 
     const isFocused = useMemo(() => {
@@ -82,10 +83,11 @@ export const PropertyEditor = memo(function PropertyEditor({
     )
 
     const resolvedPropertyName = useMemo(() => {
+        if (!crateContextReady) return null
         if (property.propertyName === "@id" || property.propertyName === "@type")
             return property.propertyName
         return crateContext.resolve(property.propertyName)
-    }, [crateContext, property.propertyName])
+    }, [crateContext, crateContextReady, property.propertyName])
 
     const referenceTypeRangeResolver = useCallback(async () => {
         if (property.propertyName.startsWith("@")) return []
@@ -97,7 +99,9 @@ export const PropertyEditor = memo(function PropertyEditor({
     }, [crateVerifyReady, property.propertyName, resolvedPropertyName, worker])
 
     const { data: propertyRange, error: propertyRangeError } = useSWR(
-        crateVerifyReady ? "property-type-range-" + property.propertyName : null,
+        crateVerifyReady && crateContextReady
+            ? "property-type-range-" + property.propertyName
+            : null,
         referenceTypeRangeResolver
     )
 
@@ -116,7 +120,7 @@ export const PropertyEditor = memo(function PropertyEditor({
         error: commentError,
         isLoading: commentIsPending
     } = useSWR(
-        crateVerifyReady ? "property-comment-" + property.propertyName : null,
+        crateVerifyReady && crateContextReady ? "property-comment-" + property.propertyName : null,
         propertyCommentResolver
     )
 
@@ -127,7 +131,7 @@ export const PropertyEditor = memo(function PropertyEditor({
     }, [])
 
     const Comment = useCallback(() => {
-        if (commentIsPending) {
+        if (commentIsPending || !crateContextReady) {
             return <Skeleton className="h-3 w-4/12 mt-1" />
         } else if (resolvedPropertyName === null) {
             console.warn(
@@ -184,6 +188,7 @@ export const PropertyEditor = memo(function PropertyEditor({
         comment,
         commentError,
         commentIsPending,
+        crateContextReady,
         expandComment,
         property.propertyName,
         resolvedPropertyName,

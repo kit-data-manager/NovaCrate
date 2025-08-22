@@ -1,6 +1,17 @@
-import Context_1_1 from "./schema-worker/assets/context-1.1.json"
-
-const KNOWN_CONTEXTS = [Context_1_1]
+const KNOWN_CONTEXTS = [
+    {
+        "@id": "https://w3id.org/ro/crate/1.1/context",
+        name: "RO-Crate JSON-LD Context",
+        version: "1.1.3",
+        load: () => import("./schema-worker/assets/context-1.1.json")
+    },
+    {
+        "@id": "https://w3id.org/ro/crate/1.2/context",
+        name: "RO-Crate JSON-LD Context",
+        version: "1.2.0",
+        load: () => import("./schema-worker/assets/context-1.2.json")
+    }
+]
 
 /**
  * Provides an easy interface into the crate context for id resolution
@@ -9,34 +20,47 @@ const KNOWN_CONTEXTS = [Context_1_1]
  * @example resolve("Organization") -> "https://schema.org/Organization"
  */
 export class CrateContext {
-    readonly context: Record<string, string> = {}
-    readonly customPairs: Record<string, string> = {}
-    readonly specification: string = "unknown"
-    readonly raw: CrateContextType
+    private _context: Record<string, string> = {}
+    private _customPairs: Record<string, string> = {}
+    private _specification: string = "unknown"
 
-    constructor(crateContext: CrateContextType) {
-        this.raw = crateContext
+    constructor() {}
 
+    get context() {
+        return structuredClone(this._context)
+    }
+
+    get customPairs() {
+        return structuredClone(this._customPairs)
+    }
+
+    get specification() {
+        return structuredClone(this._specification)
+    }
+
+    async update(crateContext: CrateContextType) {
         const content = Array.isArray(crateContext) ? crateContext : [crateContext]
 
         for (const entry of content) {
             if (typeof entry === "string") {
                 const known = CrateContext.getKnownContext(entry)
                 if (known) {
-                    this.specification = `${known.name[0]} (v${known.version})`
-                    this.context = { ...this.context, ...known["@context"] }
+                    const loaded = await known.load()
+                    this._specification = `${known.name} (v${known.version})`
+                    this._context = { ...this._context, ...loaded["@context"] }
                 } else console.warn("Failed to parse context entry " + entry)
             } else {
                 for (const [key, value] of Object.entries(entry)) {
                     if (key === "@vocab") {
                         const known = CrateContext.getKnownContext(value)
                         if (known) {
-                            this.specification = `${known.name[0]} (v${known.version})`
-                            this.context = { ...this.context, ...known["@context"] }
+                            const loaded = await known.load()
+                            this._specification = `${known.name} (v${known.version})`
+                            this._context = { ...this._context, ...loaded["@context"] }
                         } else console.warn("Failed to parse context @vocab entry " + value)
                     } else {
-                        this.context[key] = value
-                        this.customPairs[key] = value
+                        this._context[key] = value
+                        this._customPairs[key] = value
                     }
                 }
             }
@@ -57,13 +81,13 @@ export class CrateContext {
      * @returns Full ID of the specified ID (e.g. "Organization" becomes "https://schema.org/Organization"). Can be used to query the SchemaGraph. Returns null on failure
      */
     resolve(id: string) {
-        if (id in this.context) {
-            return this.context[id]
+        if (id in this._context) {
+            return this._context[id]
         } else return null
     }
 
     reverse(URI: string) {
-        for (const [key, value] of Object.entries(this.context)) {
+        for (const [key, value] of Object.entries(this._context)) {
             if (URI === value) {
                 return key
             }
@@ -79,9 +103,9 @@ export class CrateContext {
      */
     getAllClasses() {
         const result = new Set<string>()
-        Object.entries(this.context)
-            .filter(([key, _]) => key.match(/^[A-Z0-9]/))
-            .forEach(([_, url]) => {
+        Object.entries(this._context)
+            .filter(([key]) => key.match(/^[A-Z0-9]/))
+            .forEach(([, url]) => {
                 result.add(url)
             })
 

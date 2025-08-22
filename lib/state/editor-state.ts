@@ -12,11 +12,10 @@ enableMapSet()
 export interface EditorState {
     initialCrateContext: CrateContext
     crateContext: CrateContext
+    crateContextReady: boolean
 
-    setInitialCrateContext(crateContext: CrateContextType): void
-    setCrateContext(crateContext: CrateContextType): void
-
-    revertContext(): void
+    updateInitialCrateContext(crateContext: CrateContextType): void
+    updateCrateContext(crateContext: CrateContextType): void
 
     initialEntities: Map<string, IEntity>
     entities: Map<string, IEntity>
@@ -92,26 +91,28 @@ function setPropertyValue(
 
 export const editorState = createWithEqualityFn<EditorState>()(
     immer<EditorState>((setState, getState) => ({
-        initialCrateContext: new CrateContext([]),
-        crateContext: new CrateContext([]),
+        initialCrateContext: new CrateContext(),
+        crateContext: new CrateContext(),
+        crateContextReady: false,
         initialEntities: new Map<string, IEntity>(),
         entities: new Map<string, IEntity>(),
 
-        setCrateContext(crateContext: CrateContextType) {
-            setState((state) => {
-                state.crateContext = new CrateContext(crateContext)
+        updateCrateContext(crateContext: CrateContextType) {
+            const newContext = new CrateContext()
+            newContext.update(crateContext).then(() => {
+                setState((state) => {
+                    state.crateContextReady = true
+                    state.crateContext = newContext
+                })
             })
         },
 
-        setInitialCrateContext(crateContext: CrateContextType) {
-            setState((state) => {
-                state.initialCrateContext = new CrateContext(crateContext)
-            })
-        },
-
-        revertContext() {
-            setState((state) => {
-                state.crateContext = new CrateContext(state.initialCrateContext.raw)
+        updateInitialCrateContext(crateContext: CrateContextType) {
+            const newContext = new CrateContext()
+            newContext.update(crateContext).then(() => {
+                setState((state) => {
+                    state.initialCrateContext = newContext
+                })
             })
         },
 

@@ -1,6 +1,6 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useRef } from "react"
 import { ValidationProvider } from "@/lib/validation/validation-provider"
-import { editorState, useEditorState } from "@/lib/state/editor-state"
+import { useEditorState } from "@/lib/state/editor-state"
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { makeSpecificationValidator } from "@/lib/validation/validators/specification-validator"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
