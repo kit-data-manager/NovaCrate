@@ -1,14 +1,16 @@
+import { RO_CRATE_VERSION } from "@/lib/constants"
+
 const KNOWN_CONTEXTS = [
     {
         "@id": "https://w3id.org/ro/crate/1.1/context",
         name: "RO-Crate JSON-LD Context",
-        version: "1.1.3",
+        version: RO_CRATE_VERSION.V1_1_3,
         load: () => import("./schema-worker/assets/context-1.1.json")
     },
     {
         "@id": "https://w3id.org/ro/crate/1.2/context",
         name: "RO-Crate JSON-LD Context",
-        version: "1.2.0",
+        version: RO_CRATE_VERSION.V1_2_0,
         load: () => import("./schema-worker/assets/context-1.2.json")
     }
 ]
@@ -22,7 +24,7 @@ const KNOWN_CONTEXTS = [
 export class CrateContext {
     private _context: Record<string, string> = {}
     private _customPairs: Record<string, string> = {}
-    private _specification: string = "unknown"
+    private _specification: RO_CRATE_VERSION | undefined = undefined
 
     constructor() {}
 
@@ -46,7 +48,7 @@ export class CrateContext {
                 const known = CrateContext.getKnownContext(entry)
                 if (known) {
                     const loaded = await known.load()
-                    this._specification = `${known.name} (v${known.version})`
+                    this._specification = known.version
                     this._context = { ...this._context, ...loaded["@context"] }
                 } else console.warn("Failed to parse context entry " + entry)
             } else {
@@ -55,7 +57,7 @@ export class CrateContext {
                         const known = CrateContext.getKnownContext(value)
                         if (known) {
                             const loaded = await known.load()
-                            this._specification = `${known.name} (v${known.version})`
+                            this._specification = known.version
                             this._context = { ...this._context, ...loaded["@context"] }
                         } else console.warn("Failed to parse context @vocab entry " + value)
                     } else {

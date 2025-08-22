@@ -2,12 +2,14 @@ import { create } from "zustand/index"
 import { immer } from "zustand/middleware/immer"
 import { persist } from "zustand/middleware"
 import { enableMapSet } from "immer"
+import { RO_CRATE_VERSION } from "@/lib/constants"
 
 export interface RegisteredSchema {
     id: string
     displayName: string
     matchesUrls: string[]
     schemaUrl: string
+    activeOnSpec: RO_CRATE_VERSION[]
 }
 
 export interface SchemaResolverStore {
@@ -40,27 +42,31 @@ const defaultSchemas = [
         id: "schema",
         displayName: "Schema.org",
         matchesUrls: ["https://schema.org/"],
-        schemaUrl: "https://schema.org/version/latest/schemaorg-current-https.jsonld"
+        schemaUrl: "https://schema.org/version/latest/schemaorg-current-https.jsonld",
+        activeOnSpec: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
     },
     {
         id: "bioschemas",
         displayName: "Bioschemas.org",
         matchesUrls: ["https://bioschemas.org/"],
         schemaUrl:
-            "https://raw.githubusercontent.com/BioSchemas/specifications/refs/heads/master/ComputationalWorkflow/jsonld/ComputationalWorkflow_v0.5-DRAFT-2020_07_21.json"
+            "https://raw.githubusercontent.com/BioSchemas/specifications/refs/heads/master/ComputationalWorkflow/jsonld/ComputationalWorkflow_v0.5-DRAFT-2020_07_21.json",
+        activeOnSpec: [RO_CRATE_VERSION.V1_1_3]
     },
     {
         id: "bioschemas_types",
         displayName: "Bioschemas.org Types",
         matchesUrls: ["https://bioschemas.org/"],
-        schemaUrl: "https://bioschemas.org/types/bioschemas_types.jsonld"
+        schemaUrl: "https://bioschemas.org/types/bioschemas_types.jsonld",
+        activeOnSpec: [RO_CRATE_VERSION.V1_1_3]
     },
     {
         id: "dcmi",
         displayName: "DCMI",
         matchesUrls: ["http://purl.org/dc/terms/"],
         schemaUrl:
-            "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl"
+            "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
+        activeOnSpec: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
     }
 ]
 
@@ -96,8 +102,8 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
         })),
         {
             name: "schema-resolver",
-            version: 1,
-            migrate: (_persisted: unknown) => {
+            version: 2,
+            migrate: (_persisted: unknown, persistedVersion) => {
                 if (!_persisted) return { registeredSchemas: [...defaultSchemas] }
                 const persisted = _persisted as Partial<SchemaResolverStore>
                 const existing = Array.isArray(persisted?.registeredSchemas)
@@ -108,6 +114,20 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
                     ...existing.filter((s) => !defaultSchemas.some((d) => d.id === s.id)),
                     ...structuredClone(defaultSchemas)
                 ]
+
+                // activeOnSpec was added in version 2 of the store
+                if (persistedVersion < 2) {
+                    for (const schema of merged) {
+                        const defaults = defaultSchemas.find((d) => d.id === schema.id)
+                        if (defaults && !schema.activeOnSpec) {
+                            schema.activeOnSpec = defaults.activeOnSpec
+                        } else if (!schema.activeOnSpec) {
+                            // Activate on all specs if the actual spec usage is unknown
+                            schema.activeOnSpec = [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
+                        }
+                    }
+                }
+
                 return { registeredSchemas: merged }
             }
         }

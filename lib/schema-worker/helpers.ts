@@ -3,6 +3,7 @@ import { SchemaNode } from "./SchemaNode"
 import { SchemaGraph } from "./SchemaGraph"
 import { SchemaResolver } from "./SchemaResolver"
 import type { SchemaResolverStore } from "@/lib/state/schema-resolver"
+import { RO_CRATE_VERSION } from "@/lib/constants"
 
 const schemaResolver = new SchemaResolver([])
 const schemaGraph = new SchemaGraph(schemaResolver)
@@ -141,8 +142,11 @@ export function getWorkerStatus() {
     return { workerActive, schemaStatus: schemaGraph.getSchemaStatus() }
 }
 
-export function updateRegisteredSchemas(state: SchemaResolverStore["registeredSchemas"]) {
-    schemaResolver.updateRegisteredSchemas(state)
+export function updateRegisteredSchemas(
+    state: SchemaResolverStore["registeredSchemas"],
+    spec: RO_CRATE_VERSION
+) {
+    schemaResolver.updateRegisteredSchemas(state, spec)
 }
 
 export function forceSchemaLoad(schemaId: string) {

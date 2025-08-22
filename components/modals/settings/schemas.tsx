@@ -22,6 +22,9 @@ import { Error } from "@/components/error"
 import { LoadedSchemaInfos } from "@/lib/schema-worker/SchemaGraph"
 import { Badge } from "@/components/ui/badge"
 import HelpTooltip from "@/components/help-tooltip"
+import { RO_CRATE_VERSION } from "@/lib/constants"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
 
 export function SchemaSettingsPage() {
     const registeredSchemas = useStore(schemaResolverStore, (s) => s.registeredSchemas)
@@ -39,7 +42,8 @@ export function SchemaSettingsPage() {
             id: newSchemaID.trim(),
             displayName: newSchemaDisplayName.trim(),
             schemaUrl: "",
-            matchesUrls: [""]
+            matchesUrls: [""],
+            activeOnSpec: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_1_3]
         })
         setNewSchemaID("")
         setNewSchemaDisplayName("")
@@ -126,6 +130,12 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
 
     const [matchesPrefixes, setMatchesPrefixes] = useState(schema.matchesUrls)
     const [downloadURL, setDownloadURL] = useState(schema.schemaUrl)
+    const [activeOnROCrateV1_2_0, setActiveOnROCrateV1_2_0] = useState(
+        schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_2_0)
+    )
+    const [activeOnROCrateV1_1_3, setActiveOnROCrateV1_1_3] = useState(
+        schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_1_3)
+    )
 
     const [newID, setNewID] = useState(schema.id)
     const [newName, setNewName] = useState(schema.displayName)
@@ -189,19 +199,29 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
         deleteSchema(schema.id)
     }, [deleteSchema, schema.id])
 
+    const changedActiveOn = useMemo(() => {
+        const activeOn: RO_CRATE_VERSION[] = []
+        if (activeOnROCrateV1_2_0) activeOn.push(RO_CRATE_VERSION.V1_2_0)
+        if (activeOnROCrateV1_1_3) activeOn.push(RO_CRATE_VERSION.V1_1_3)
+        return activeOn
+    }, [activeOnROCrateV1_1_3, activeOnROCrateV1_2_0])
+
     const saveSelf = useCallback(() => {
         updateSchema(schema.id, {
             ...schema,
             schemaUrl: downloadURL.trim(),
-            matchesUrls: matchesPrefixes.map((s) => s.trim())
+            matchesUrls: matchesPrefixes.map((s) => s.trim()),
+            activeOnSpec: changedActiveOn
         })
         forceSchemaLoad().then()
-    }, [downloadURL, forceSchemaLoad, matchesPrefixes, schema, updateSchema])
+    }, [changedActiveOn, downloadURL, forceSchemaLoad, matchesPrefixes, schema, updateSchema])
 
     const revertSelf = useCallback(() => {
         setDownloadURL(schema.schemaUrl)
         setMatchesPrefixes(schema.matchesUrls)
-    }, [schema.matchesUrls, schema.schemaUrl])
+        setActiveOnROCrateV1_1_3(schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_1_3))
+        setActiveOnROCrateV1_2_0(schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_2_0))
+    }, [schema.activeOnSpec, schema.matchesUrls, schema.schemaUrl])
 
     const changeName = useCallback(() => {
         updateSchema(schema.id, {
@@ -222,9 +242,18 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
     const hasChanges = useMemo(() => {
         return (
             downloadURL !== schema.schemaUrl ||
-            matchesPrefixes.join(",") !== schema.matchesUrls.join(",")
+            matchesPrefixes.join(",") !== schema.matchesUrls.join(",") ||
+            changedActiveOn.slice().sort().join(",") !==
+                schema.activeOnSpec.slice().sort().join(",")
         )
-    }, [downloadURL, matchesPrefixes, schema.matchesUrls, schema.schemaUrl])
+    }, [
+        changedActiveOn,
+        downloadURL,
+        matchesPrefixes,
+        schema.activeOnSpec,
+        schema.matchesUrls,
+        schema.schemaUrl
+    ])
 
     return (
         <div className="p-4 border rounded mb-4">
@@ -325,6 +354,42 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
                         </HelpTooltip>
                     </div>
                     <Input value={downloadURL} onChange={(e) => setDownloadURL(e.target.value)} />
+                </div>
+            </div>
+
+            <div className={"space-y-1 mb-6"}>
+                <div className="text-sm">
+                    Specifications{" "}
+                    <HelpTooltip>
+                        Determines on which RO-Crate specification version this schema will be
+                        active.
+                    </HelpTooltip>
+                </div>
+                <div className="grid grid-cols-4 gap-4">
+                    <div className="flex items-center gap-2">
+                        <Checkbox
+                            checked={activeOnROCrateV1_2_0}
+                            onCheckedChange={(s) =>
+                                setActiveOnROCrateV1_2_0(s === "indeterminate" ? true : s)
+                            }
+                            id={`ro-crate-v1.2.0-${schema.id}`}
+                        />
+                        <Label className="mb-0 pb-0" htmlFor={`ro-crate-v1.2.0-${schema.id}`}>
+                            RO-Crate v1.2.0
+                        </Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Checkbox
+                            checked={activeOnROCrateV1_1_3}
+                            onCheckedChange={(s) =>
+                                setActiveOnROCrateV1_1_3(s === "indeterminate" ? true : s)
+                            }
+                            id={`ro-crate-v1.1.3-${schema.id}`}
+                        />
+                        <Label className="mb-0 pb-0" htmlFor={`ro-crate-v1.1.3-${schema.id}`}>
+                            RO-Crate v1.1.3
+                        </Label>
+                    </div>
                 </div>
             </div>
 

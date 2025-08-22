@@ -1,12 +1,14 @@
 import { SchemaFile, schemaFileSchema } from "./types"
 import type { SchemaResolverStore } from "../state/schema-resolver"
 import { parse as parseTtl } from "@frogcat/ttl2jsonld"
+import { RO_CRATE_VERSION } from "@/lib/constants"
 
 export class SchemaResolver {
     // SchemaResolver becomes ready with the first {@link SchemaResolver.updateRegisteredSchemas} call
     private ready = false
     private waitingForReady: Promise<void> | null = null
     private runningFetches: Map<string, Promise<SchemaFile>> = new Map()
+    private spec: RO_CRATE_VERSION | null = null
 
     constructor(private registeredSchemas: SchemaResolverStore["registeredSchemas"]) {}
 
@@ -16,8 +18,10 @@ export class SchemaResolver {
         // Wait until the SchemaResolver becomes ready. Crucial to prevent errors on initial render
         await this.waitForReady()
 
-        const matched = this.registeredSchemas.filter((schema) =>
-            schema.matchesUrls.some((prefix) => nodeId.startsWith(prefix))
+        const matched = this.registeredSchemas.filter(
+            (schema) =>
+                schema.matchesUrls.some((prefix) => nodeId.startsWith(prefix)) &&
+                (this.spec ? schema.activeOnSpec.includes(this.spec) : true)
         )
         for (const registeredSchema of matched) {
             if (exclude.includes(registeredSchema.id)) continue
@@ -60,9 +64,13 @@ export class SchemaResolver {
         }
     }
 
-    updateRegisteredSchemas(state: SchemaResolverStore["registeredSchemas"]) {
+    updateRegisteredSchemas(
+        state: SchemaResolverStore["registeredSchemas"],
+        spec: RO_CRATE_VERSION
+    ) {
         this.ready = true
         this.registeredSchemas = state
+        this.spec = spec
     }
 
     async forceLoad(schemaId: string) {
