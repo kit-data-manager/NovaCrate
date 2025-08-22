@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
     ChevronsDownUp,
@@ -25,6 +25,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { DefaultSectionOpen } from "@/components/entity-browser/entity-browser-section"
 import { EntityBrowserContent } from "@/components/entity-browser/entity-browser-content"
+import { ImperativePanelHandle } from "react-resizable-panels"
 
 export function EntityBrowser() {
     const state = useEntityBrowserSettings()
@@ -33,6 +34,7 @@ export function EntityBrowser() {
     const setShowPropertyOverview = useEntityBrowserSettings(
         (store) => store.setShowPropertyOverview
     )
+    const propertyOverviewPanel = useRef<ImperativePanelHandle>(null)
 
     const collapseAllSections = useCallback(() => {
         setDefaultSectionOpen(false)
@@ -49,6 +51,16 @@ export function EntityBrowser() {
     const togglePropertyOverview = useCallback(() => {
         setShowPropertyOverview(!showPropertyOverview)
     }, [setShowPropertyOverview, showPropertyOverview])
+
+    useEffect(() => {
+        if (propertyOverviewPanel.current) {
+            if (showPropertyOverview) {
+                propertyOverviewPanel.current.expand(50)
+            } else {
+                propertyOverviewPanel.current.collapse()
+            }
+        }
+    }, [showPropertyOverview])
 
     const EntityBrowserPanel = useCallback(() => {
         return (
@@ -132,15 +144,13 @@ export function EntityBrowser() {
         togglePropertyOverview
     ])
 
-    if (!showPropertyOverview) return <EntityBrowserPanel />
-
     return (
         <ResizablePanelGroup direction={"vertical"}>
-            <ResizablePanel defaultSize={60} minSize={10}>
+            <ResizablePanel defaultSize={100} minSize={10}>
                 <EntityBrowserPanel />
             </ResizablePanel>
             <ResizableHandle />
-            <ResizablePanel defaultSize={40} minSize={5}>
+            <ResizablePanel defaultSize={0} minSize={10} ref={propertyOverviewPanel} collapsible>
                 <PropertyOverview />
             </ResizablePanel>
         </ResizablePanelGroup>
