@@ -45,6 +45,11 @@ export function CrateValidationSupervisor() {
         }
     }, [validation.resultStore, validationEnabled])
 
+    const crateContext = useEditorState((store) => store.crateContext)
+    useEffect(() => {
+        debouncedValidateCrate()
+    }, [debouncedValidateCrate, crateContext])
+
     const entitiesArray = useMemo(() => {
         return Array.from(entities.values())
     }, [entities])
@@ -91,6 +96,11 @@ function EntitySupervisor({ entity }: { entity: IEntity }) {
         return () => unmount()
     }, [debouncedRunValidation, unmount])
 
+    const crateContext = useEditorState((store) => store.crateContext)
+    useEffect(() => {
+        debouncedRunValidation()
+    }, [debouncedRunValidation, crateContext])
+
     const properties = useMemo(() => {
         return Array.from(Object.entries(entity))
     }, [entity])
@@ -134,6 +144,11 @@ function PropertySupervisor({
         debouncedRunValidation.cancel()
         clearResults(entityId, name)
     }, [clearResults, debouncedRunValidation, entityId, name])
+
+    const crateContext = useEditorState((store) => store.crateContext)
+    useEffect(() => {
+        debouncedRunValidation()
+    }, [debouncedRunValidation, crateContext])
 
     useEffect(() => {
         return () => unmount()

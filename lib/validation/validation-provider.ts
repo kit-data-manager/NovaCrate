@@ -18,6 +18,7 @@ export class ValidationProvider {
 
     updateContext(ctx: ValidatorContext) {
         this.validatorContext = ctx
+        this.editorState = ctx.editorState
         for (const validator of this.validators) {
             validator.updateContext(ctx)
         }
