@@ -19,7 +19,7 @@ export const useEntityBrowserSettings = create<EntityBrowserSettings>()(
             showFolderStructure: true,
             showEntityType: true,
             showIdInsteadOfName: false,
-            showPropertyOverview: true,
+            showPropertyOverview: false,
             setShowEntityType(val: boolean) {
                 set({ showEntityType: val })
             },
