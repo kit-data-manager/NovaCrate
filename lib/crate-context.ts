@@ -25,6 +25,7 @@ export class CrateContext {
     private _context: Record<string, string> = {}
     private _customPairs: Record<string, string> = {}
     private _specification: RO_CRATE_VERSION | undefined = undefined
+    private _usingFallback = false
 
     constructor() {}
 
@@ -40,26 +41,41 @@ export class CrateContext {
         return structuredClone(this._specification)
     }
 
+    get usingFallback() {
+        return this._usingFallback
+    }
+
+    private async loadKnownContext(
+        primary: (typeof KNOWN_CONTEXTS)[number] | undefined,
+        fallback: (typeof KNOWN_CONTEXTS)[number]
+    ) {
+        if (!primary) {
+            console.warn(
+                `Using fallback context ${fallback.version} because the specification of this crate is not supported`
+            )
+            this._usingFallback = true
+        } else {
+            this._usingFallback = false
+        }
+        const known = primary || fallback
+        const loaded = await known.load()
+        this._specification = known.version
+        this._context = { ...this._context, ...loaded["@context"] }
+    }
+
     async update(crateContext: CrateContextType) {
         const content = Array.isArray(crateContext) ? crateContext : [crateContext]
+        const fallback = KNOWN_CONTEXTS.find((c) => c.version === RO_CRATE_VERSION.V1_1_3)!
 
         for (const entry of content) {
             if (typeof entry === "string") {
                 const known = CrateContext.getKnownContext(entry)
-                if (known) {
-                    const loaded = await known.load()
-                    this._specification = known.version
-                    this._context = { ...this._context, ...loaded["@context"] }
-                } else console.warn("Failed to parse context entry " + entry)
+                await this.loadKnownContext(known, fallback)
             } else {
                 for (const [key, value] of Object.entries(entry)) {
                     if (key === "@vocab") {
                         const known = CrateContext.getKnownContext(value)
-                        if (known) {
-                            const loaded = await known.load()
-                            this._specification = known.version
-                            this._context = { ...this._context, ...loaded["@context"] }
-                        } else console.warn("Failed to parse context @vocab entry " + value)
+                        await this.loadKnownContext(known, fallback)
                     } else {
                         this._context[key] = value
                         this._customPairs[key] = value
