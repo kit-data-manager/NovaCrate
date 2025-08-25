@@ -24,6 +24,7 @@ export function PropertyOverview() {
         const all = Object.keys(currentEntity)
             .sort((a, b) => sortByPropertyName(a, b))
             .filter((e) => (currentEntity["@id"] === rootEntityId ? !e.startsWith("@") : true))
+            .filter((e) => e !== "@reverse")
         if (!search) return all
         else
             return all.filter((property) =>

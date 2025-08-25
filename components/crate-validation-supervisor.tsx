@@ -103,7 +103,7 @@ function EntitySupervisor({ entity }: { entity: IEntity }) {
     }, [debouncedRunValidation, crateContext])
 
     const properties = useMemo(() => {
-        return Array.from(Object.entries(entity))
+        return Array.from(Object.entries(entity)).filter(([name]) => name !== "@reverse")
     }, [entity])
 
     return (
