@@ -82,6 +82,13 @@ const defaultSchemas = [
         matchesUrls: ["https://codemeta.github.io/terms/"],
         schemaUrl: addBasePath("schema/codemeta-3.0-terms.jsonld"),
         activeOnSpec: [RO_CRATE_VERSION.V1_2_0]
+    },
+    {
+        id: "pcdm",
+        displayName: "Portland Common Data Model",
+        matchesUrls: ["http://pcdm.org/models#"],
+        schemaUrl: addBasePath("schema/pcdm-selected.jsonld"),
+        activeOnSpec: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_1_3]
     }
 ]
 
@@ -146,6 +153,9 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
 
                     if (!merged.find((s) => s.id === "codemeta3"))
                         merged.push(defaultSchemas.find((d) => d.id === "codemeta3")!)
+
+                    if (!merged.find((s) => s.id === "pcdm"))
+                        merged.push(defaultSchemas.find((d) => d.id === "pcdm")!)
                 }
 
                 return { registeredSchemas: merged }
