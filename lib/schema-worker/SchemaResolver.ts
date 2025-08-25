@@ -98,9 +98,26 @@ export class SchemaResolver {
                     const data = await req.json()
                     this.runningFetches.delete(url)
                     return schemaFileSchema.parse(data)
-                } else if (req.headers.get("Content-Type") === "text/turtle") {
+                } else if (req.headers.get("Content-Type")?.startsWith("text/turtle")) {
                     const ttl = await req.text()
                     const rawJson = parseTtl(ttl)
+
+                    // Rewrite rdf:type style definitions to @type style definitions.
+                    // Remove owl references, use rdf and rdfs.
+                    rawJson["@graph"] = rawJson["@graph"].map((e) => {
+                        if ("rdf:type" in e) {
+                            e["@type"] = (e["rdf:type"] as IReference)["@id"]
+                            if (e["@type"] === "owl:Class") {
+                                e["@type"] = "rdfs:Class"
+                            }
+                            if (e["@type"] === "owl:ObjectProperty") {
+                                e["@type"] = "rdf:Property"
+                            }
+                        }
+
+                        return e
+                    })
+
                     rawJson["@graph"] = rawJson["@graph"].filter((e) => "@type" in e)
                     this.runningFetches.delete(url)
                     return schemaFileSchema.parse(rawJson)

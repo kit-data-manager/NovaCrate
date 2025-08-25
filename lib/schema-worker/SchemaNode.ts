@@ -9,6 +9,8 @@ export interface ISchemaNode {
     "@type": string | string[]
     "rdfs:comment"?: string | { "@language": string; "@value": string }
     "rdfs:label"?: string | { "@language": string; "@value": string }
+    "skos:definition"?: string | { "@language": string; "@value": string }
+    "skos:note"?: string | { "@language": string; "@value": string }
     "rdfs:subClassOf"?: IReference | IReference[]
     "rdfs:subPropertyOf"?: IReference | IReference[]
     $validation?: {
@@ -18,7 +20,10 @@ export interface ISchemaNode {
         recommended?: string[]
     }
     [key: string]: unknown
-    [key: `${string}:${"rangeIncludes" | "domainIncludes"}`]: IReference | IReference[] | undefined
+    [key: `${string}:${"rangeIncludes" | "domainIncludes" | "range" | "domain"}`]:
+        | IReference
+        | IReference[]
+        | undefined
 }
 
 /**
@@ -45,43 +50,41 @@ export class SchemaNode {
     }
 
     get comment() {
-        return this.node["rdfs:comment"]
+        return this.node["rdfs:comment"] ?? this.node["skos:definition"] ?? this.node["skos:note"]
     }
 
     get domain() {
-        const key = Object.keys(this.node).find((key) =>
-            key.endsWith(":domainIncludes")
-        ) as `${string}:${"domainIncludes"}`
-        if (key) {
-            return this.node[key]
+        const key = Object.keys(this.node).find((key) => key.endsWith(":domainIncludes")) as
+            | `${string}:${"domainIncludes"}`
+            | undefined
+        const keyFallback = Object.keys(this.node).find((key) =>
+            key.endsWith(":domain")
+        ) as `${string}:${"domain"}`
+        if (key ?? keyFallback) {
+            return this.node[key ?? keyFallback]
         } else {
             return undefined
         }
     }
 
     get range() {
-        const key = Object.keys(this.node).find((key) =>
-            key.endsWith(":rangeIncludes")
-        ) as `${string}:${"rangeIncludes"}`
-        if (key) {
-            return this.node[key]
+        const key = Object.keys(this.node).find((key) => key.endsWith(":rangeIncludes")) as
+            | `${string}:${"rangeIncludes"}`
+            | undefined
+        const keyFallback = Object.keys(this.node).find((key) =>
+            key.endsWith(":range")
+        ) as `${string}:${"range"}`
+        if (key || keyFallback) {
+            return this.node[key || keyFallback]
         } else {
             return undefined
         }
     }
 
-    resolveSubtype(id: string) {
-        if (
-            this.node.$validation &&
-            "definitions" in this.node.$validation &&
-            this.node.$validation.definitions
-        ) {
-            return this.node.$validation.definitions[id]
-        } else return undefined
-    }
-
     isProperty() {
-        return this.node["@type"] === "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
+        return toArray(this.node["@type"]).includes(
+            "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
+        )
     }
 
     isClass() {
@@ -89,12 +92,12 @@ export class SchemaNode {
     }
 
     isDirectPropertyOfClass(classId: string) {
-        if (!this.node["schema:domainIncludes"]) return false
+        if (!this.domain) return false
 
-        if (Array.isArray(this.node["schema:domainIncludes"])) {
-            return this.node["schema:domainIncludes"].map((ref) => ref["@id"]).includes(classId)
+        if (Array.isArray(this.domain)) {
+            return this.domain.map((ref) => ref["@id"]).includes(classId)
         } else {
-            return this.node["schema:domainIncludes"]["@id"] === classId
+            return this.domain["@id"] === classId
         }
     }
 
@@ -133,11 +136,8 @@ export class SchemaNode {
             )
         }
 
-        // Hardcoded overwrite to make Bioschemas.org schemas work
-        context.set("bioschemas", "https://bioschemas.org/")
-
         function handleString(str: string): string {
-            const match = /^([a-z]+):.+$/.exec(str)
+            const match = /^([a-z0-9]+):.+$/.exec(str)
             if (match != null) {
                 const replaceWith = context.get(match[1])
                 if (replaceWith) {
