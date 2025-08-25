@@ -16,12 +16,28 @@ declare interface CrateServiceAdapter {
     createCrate(name: string, description: string): Promise<string>
 
     /**
+     * Create a crate from a file representing a crate
+     * @param file representing a valid crate in some way, could be a zip archive or a json file
+     * @returns Promise - resolves on success with the id if the new crate
+     * @throws Error when the ID is already in use or when an error occurred
+     */
+    createCrateFromFile(file: Blob): Promise<string>
+
+    /**
      * Upload a valid crate in form of a zip archive
      * @param zip zip archive of a valid crate
      * @returns Promise - resolves on success with the id if the new crate
      * @throws Error when the ID is already in use or when an error occurred
      */
     createCrateFromCrateZip(zip: Blob): Promise<string>
+
+    /**
+     * Create a crate from a valid JSON metadata file
+     * @param metadataFile Blob containing the metadata file as application/json context
+     * @returns Promise - resolves on success with the id if the new crate
+     * @throws Error when the ID is already in use or when an error occurred
+     */
+    createCrateFromMetadataFile(metadataFile: Blob): Promise<string>
 
     /**
      * Create a new crate with a folder of files. The folder is not required to already
