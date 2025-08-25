@@ -1,0 +1,204 @@
+{
+  "@context": {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "schema": "https://schema.org/",
+    "codemeta": "https://codemeta.github.io/terms/"
+  },
+  "@graph": [
+    {
+      "@id": "codemeta:buildInstructions",
+      "@type": "rdf:Property",
+      "rdfs:label": "buildInstructions",
+      "rdfs:comment": "Link to build/installation documentation or instructions.",
+      "schema:domainIncludes": [
+        {
+          "@id": "schema:SoftwareSourceCode"
+        },
+        {
+          "@id": "schema:SoftwareApplication"
+        }
+      ],
+      "schema:rangeIncludes": {
+        "@id": "schema:URL"
+      }
+    },
+    {
+      "@id": "codemeta:continuousIntegration",
+      "@type": "rdf:Property",
+      "rdfs:label": "continuousIntegration",
+      "rdfs:comment": "Link to the continuous integration (CI) service for the software.",
+      "schema:domainIncludes": [
+        {
+          "@id": "schema:SoftwareSourceCode"
+        },
+        {
+          "@id": "schema:SoftwareApplication"
+        }
+      ],
+      "schema:rangeIncludes": {
+        "@id": "schema:URL"
+      }
+    },
+    {
+      "@id": "codemeta:developmentStatus",
+      "@type": "rdf:Property",
+      "rdfs:label": "developmentStatus",
+      "rdfs:comment": "Short text indicating project status, e.g., Active, Inactive, Suspended.",
+      "schema:domainIncludes": [
+        {
+          "@id": "schema:SoftwareSourceCode"
+        },
+        {
+          "@id": "schema:SoftwareApplication"
+        }
+      ],
+      "schema:rangeIncludes": {
+        "@id": "schema:Text"
+      }
+    },
+    {
+      "@id": "codemeta:embargoEndDate",
+      "@type": "rdf:Property",
+      "rdfs:label": "embargoEndDate",
+      "rdfs:comment": "Date when any access embargo on the software ends.",
+      "schema:domainIncludes": [
+        {
+          "@id": "schema:SoftwareSourceCode"
+        },
+        {
+          "@id": "schema:SoftwareApplication"
+        }
+      ],
+      "schema:rangeIncludes": {
+        "@id": "schema:Date"
+      }
+    },
+    {
+      "@id": "codemeta:funding",
+      "@type": "rdf:Property",
+      "rdfs:label": "funding",
+      "rdfs:comment": "Text describing funding source(s) or grant(s).",
+      "schema:domainIncludes": [
+        {
+          "@id": "schema:SoftwareSourceCode"
+        },
+        {
+          "@id": "schema:SoftwareApplication"
+        }
+      ],
+      "schema:rangeIncludes": {
+        "@id": "schema:Text"
+      }
+    },
+    {
+      "@id": "codemeta:hasSourceCode",
+      "@type": "rdf:Property",
+      "rdfs:label": "hasSourceCode",
+      "rdfs:comment": "Indicates where the software\u2019s source code can be found for a given software product or registry entry.",
+      "schema:domainIncludes": {
+        "@id": "schema:SoftwareApplication"
+      },
+      "schema:rangeIncludes": {
+        "@id": "schema:SoftwareSourceCode"
+      }
+    },
+    {
+      "@id": "codemeta:isSourceCodeOf",
+      "@type": "rdf:Property",
+      "rdfs:label": "isSourceCodeOf",
+      "rdfs:comment": "Indicates the software application built from a given source code record (inverse of hasSourceCode).",
+      "schema:domainIncludes": {
+        "@id": "schema:SoftwareSourceCode"
+      },
+      "schema:rangeIncludes": {
+        "@id": "schema:SoftwareApplication"
+      }
+    },
+    {
+      "@id": "codemeta:issueTracker",
+      "@type": "rdf:Property",
+      "rdfs:label": "issueTracker",
+      "rdfs:comment": "Link to the issue/bug tracker for the software.",
+      "schema:domainIncludes": [
+        {
+          "@id": "schema:SoftwareSourceCode"
+        },
+        {
+          "@id": "schema:SoftwareApplication"
+        }
+      ],
+      "schema:rangeIncludes": {
+        "@id": "schema:URL"
+      }
+    },
+    {
+      "@id": "codemeta:maintainer",
+      "@type": "rdf:Property",
+      "rdfs:label": "maintainer",
+      "rdfs:comment": "Person responsible for maintaining the software.",
+      "schema:domainIncludes": [
+        {
+          "@id": "schema:SoftwareSourceCode"
+        },
+        {
+          "@id": "schema:SoftwareApplication"
+        }
+      ],
+      "schema:rangeIncludes": {
+        "@id": "schema:Person"
+      }
+    },
+    {
+      "@id": "codemeta:readme",
+      "@type": "rdf:Property",
+      "rdfs:label": "readme",
+      "rdfs:comment": "Link to a README file for the software.",
+      "schema:domainIncludes": [
+        {
+          "@id": "schema:SoftwareSourceCode"
+        },
+        {
+          "@id": "schema:SoftwareApplication"
+        }
+      ],
+      "schema:rangeIncludes": {
+        "@id": "schema:URL"
+      }
+    },
+    {
+      "@id": "codemeta:referencePublication",
+      "@type": "rdf:Property",
+      "rdfs:label": "referencePublication",
+      "rdfs:comment": "A scholarly publication related to the software.",
+      "schema:domainIncludes": [
+        {
+          "@id": "schema:SoftwareSourceCode"
+        },
+        {
+          "@id": "schema:SoftwareApplication"
+        }
+      ],
+      "schema:rangeIncludes": [
+        {
+          "@id": "schema:CreativeWork"
+        },
+        {
+          "@id": "schema:URL"
+        }
+      ]
+    },
+    {
+      "@id": "codemeta:softwareSuggestions",
+      "@type": "rdf:Property",
+      "rdfs:label": "softwareSuggestions",
+      "rdfs:comment": "Optional or suggested software dependencies.",
+      "schema:domainIncludes": {
+        "@id": "schema:SoftwareSourceCode"
+      },
+      "schema:rangeIncludes": {
+        "@id": "schema:SoftwareSourceCode"
+      }
+    }
+  ]
+}

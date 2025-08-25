@@ -3,6 +3,7 @@ import { immer } from "zustand/middleware/immer"
 import { persist } from "zustand/middleware"
 import { enableMapSet } from "immer"
 import { RO_CRATE_VERSION } from "@/lib/constants"
+import { addBasePath } from "next/dist/client/add-base-path"
 
 export interface RegisteredSchema {
     id: string
@@ -46,22 +47,6 @@ const defaultSchemas = [
         activeOnSpec: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
     },
     {
-        id: "bioschemas",
-        displayName: "Bioschemas.org",
-        matchesUrls: ["https://bioschemas.org/"],
-        schemaUrl:
-            "https://raw.githubusercontent.com/BioSchemas/specifications/refs/heads/master/ComputationalWorkflow/jsonld/ComputationalWorkflow_v0.5-DRAFT-2020_07_21.json",
-        activeOnSpec: [RO_CRATE_VERSION.V1_1_3]
-    },
-    {
-        id: "bioschemas-v1.0",
-        displayName: "Bioschemas.org v1.0",
-        matchesUrls: ["https://bioschemas.org/"],
-        schemaUrl:
-            "https://raw.githubusercontent.com/BioSchemas/specifications/refs/heads/master/ComputationalWorkflow/jsonld/ComputationalWorkflow_v1.0-RELEASE.json",
-        activeOnSpec: [RO_CRATE_VERSION.V1_2_0]
-    },
-    {
         id: "bioschemas_types",
         displayName: "Bioschemas.org Types",
         matchesUrls: ["https://bioschemas.org/"],
@@ -75,6 +60,28 @@ const defaultSchemas = [
         schemaUrl:
             "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
         activeOnSpec: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
+    },
+    /* Added in store version 2 */
+    {
+        id: "prof-voc",
+        displayName: "Profile Vocabulary",
+        matchesUrls: ["http://www.w3.org/ns/dx/prof"],
+        schemaUrl: "https://www.w3.org/TR/dx-prof/rdf/prof.ttl",
+        activeOnSpec: [RO_CRATE_VERSION.V1_2_0]
+    },
+    {
+        id: "geosparql",
+        displayName: "GeoSPARQL",
+        matchesUrls: ["http://www.opengis.net/ont/geosparql"],
+        schemaUrl: "https://opengeospatial.github.io/ogc-geosparql/geosparql11/geo.ttl",
+        activeOnSpec: [RO_CRATE_VERSION.V1_2_0]
+    },
+    {
+        id: "codemeta3",
+        displayName: "CodeMeta 3.0",
+        matchesUrls: ["https://codemeta.github.io/terms/"],
+        schemaUrl: addBasePath("schema/codemeta-3.0-terms.jsonld"),
+        activeOnSpec: [RO_CRATE_VERSION.V1_2_0]
     }
 ]
 
@@ -117,11 +124,7 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
                 const existing = Array.isArray(persisted?.registeredSchemas)
                     ? [...persisted!.registeredSchemas!]
                     : []
-                // Drop any stale default entries by id, then append the new defaults
-                const merged = [
-                    ...existing.filter((s) => !defaultSchemas.some((d) => d.id === s.id)),
-                    ...structuredClone(defaultSchemas)
-                ]
+                const merged = [...existing]
 
                 // activeOnSpec was added in version 2 of the store
                 if (persistedVersion < 2) {
@@ -135,8 +138,14 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
                         }
                     }
 
-                    if (!merged.find((s) => s.id === "bioschemas-v1.0"))
-                        merged.push(defaultSchemas.find((d) => d.id === "bioschemas-v1.0")!)
+                    if (!merged.find((s) => s.id === "prof-voc"))
+                        merged.push(defaultSchemas.find((d) => d.id === "prof-voc")!)
+
+                    if (!merged.find((s) => s.id === "geosparql"))
+                        merged.push(defaultSchemas.find((d) => d.id === "geosparql")!)
+
+                    if (!merged.find((s) => s.id === "codemeta3"))
+                        merged.push(defaultSchemas.find((d) => d.id === "codemeta3")!)
                 }
 
                 return { registeredSchemas: merged }
