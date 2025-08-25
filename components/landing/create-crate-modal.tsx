@@ -20,13 +20,13 @@ export function CreateCrateModal({
     open,
     onOpenChange,
     fromFolder,
-    fromZip,
+    fromFile,
     openEditor
 }: {
     open: boolean
     onOpenChange: (isOpen: boolean) => void
     fromFolder: boolean
-    fromZip?: File
+    fromFile?: File
     openEditor(id: string): void
 }) {
     const { serviceProvider } = useContext(CrateDataContext)
@@ -103,17 +103,17 @@ export function CreateCrateModal({
         }
     }, [serviceProvider, name, description, openEditor])
 
-    const createFromZipLocked = useRef(false)
-    const createCrateFromCrateZip = useCallback(() => {
-        if (fromZip && serviceProvider && !createFromZipLocked.current) {
-            createFromZipLocked.current = true
+    const createFromFileLocked = useRef(false)
+    const createCrateFromFile = useCallback(() => {
+        if (fromFile && serviceProvider && !createFromFileLocked.current) {
+            createFromFileLocked.current = true
 
             setUploading(true)
             setCurrentProgress(0)
             setMaxProgress(1)
             setUploadErrors([])
             serviceProvider
-                .createCrateFromCrateZip(fromZip)
+                .createCrateFromFile(fromFile)
                 .then((id) => {
                     setCurrentProgress(1)
                     openEditor(id)
@@ -123,15 +123,15 @@ export function CreateCrateModal({
                     setError(e)
                 })
         }
-    }, [fromZip, serviceProvider, openEditor])
+    }, [fromFile, serviceProvider, openEditor])
 
     useEffect(() => {
-        createCrateFromCrateZip()
-    }, [createCrateFromCrateZip])
+        createCrateFromFile()
+    }, [createCrateFromFile])
 
     useEffect(() => {
         if (!open) {
-            createFromZipLocked.current = false
+            createFromFileLocked.current = false
         }
     }, [open])
 
@@ -195,7 +195,7 @@ export function CreateCrateModal({
                             </div>
                         ) : null}
 
-                        {!fromZip ? (
+                        {!fromFile ? (
                             <>
                                 <div>
                                     <Label>Name</Label>
@@ -223,7 +223,7 @@ export function CreateCrateModal({
                             </Button>
                             <Button
                                 onClick={onCreateClick}
-                                disabled={(fromFolder && files.length == 0) || !!fromZip}
+                                disabled={(fromFolder && files.length == 0) || !!fromFile}
                             >
                                 <PackagePlus className="size-4 mr-2" /> Create
                             </Button>

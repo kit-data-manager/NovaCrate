@@ -76,7 +76,7 @@ function entitiesToGraph(entitiesMap: Map<string, IEntity>): [Node[], Edge[]] {
         })
 
         for (const [key, value] of Object.entries(entity)) {
-            if (key === "@id" || key === "@type") continue
+            if (key === "@id" || key === "@type" || key === "@reverse") continue
             const values = toArray(value)
             for (const singleValue of values) {
                 if (isReference(singleValue) && singleValue["@id"]) {

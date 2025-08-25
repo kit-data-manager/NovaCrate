@@ -45,6 +45,7 @@ export const AddEntryDropdown = memo(function AddEntryDropdown(props: {
             <TypeSelectDropdown
                 propertyCanBe={propertyCanBe}
                 onPropertyTypeSelect={props.onAddEntry}
+                showFallback={props.propertyRange === undefined}
             />
         </DropdownMenu>
     )

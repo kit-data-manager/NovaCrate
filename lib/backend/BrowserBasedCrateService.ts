@@ -11,7 +11,7 @@ const template: (name: string, description: string) => ICrate = (
     description: string
 ) =>
     ({
-        "@context": "https://w3id.org/ro/crate/1.1/context",
+        "@context": "https://w3id.org/ro/crate/1.2/context",
         "@graph": [
             {
                 "@id": "./",
@@ -24,7 +24,7 @@ const template: (name: string, description: string) => ICrate = (
                     "@id": "./"
                 },
                 conformsTo: {
-                    "@id": "https://w3id.org/ro/crate/1.1"
+                    "@id": "https://w3id.org/ro/crate/1.2"
                 },
                 "@id": "ro-crate-metadata.json",
                 "@type": "CreativeWork"
@@ -80,6 +80,14 @@ export class BrowserBasedCrateService extends CrateServiceBase {
 
     async createCrateFromCrateZip(zip: Blob) {
         return this.worker.execute("createCrateFromZip", zip)
+    }
+
+    async createCrateFromMetadataFile(metadataFile: Blob) {
+        const id = crypto.randomUUID()
+        const crate = await metadataFile.text()
+
+        await this.saveRoCrateMetadataJSON(id, crate)
+        return id
     }
 
     async createEntity(crateId: string, entityData: IEntity, overwrite = false) {

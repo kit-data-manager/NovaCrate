@@ -20,6 +20,7 @@ export function CrateValidationSupervisor() {
     const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
     const { crateId } = useContext(CrateDataContext)
     const entities = useEditorState((store) => store.entities)
+    const crateContextReady = useEditorState((store) => store.crateContextReady)
     const validation = useValidation()
     const [runValidation, setRunValidation] = useState(false)
     const validationEnabled = useStore(validationSettings, (s) => s.enabled)
@@ -35,9 +36,9 @@ export function CrateValidationSupervisor() {
     }, [crateData, debouncedValidateCrate, runValidation])
 
     useEffect(() => {
-        if (!crateDataIsLoading && crateId) setRunValidation(true)
+        if (!crateDataIsLoading && crateId && crateContextReady) setRunValidation(true)
         else setRunValidation(false)
-    }, [crateDataIsLoading, crateId])
+    }, [crateContextReady, crateDataIsLoading, crateId])
 
     useEffect(() => {
         if (!validationEnabled) {
@@ -102,7 +103,7 @@ function EntitySupervisor({ entity }: { entity: IEntity }) {
     }, [debouncedRunValidation, crateContext])
 
     const properties = useMemo(() => {
-        return Array.from(Object.entries(entity))
+        return Array.from(Object.entries(entity)).filter(([name]) => name !== "@reverse")
     }, [entity])
 
     return (

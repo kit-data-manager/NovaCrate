@@ -94,7 +94,7 @@ export function SelectProperty({
                       "getPossibleEntityProperties",
                       types
                           .map((type) => crateContext.resolve(type))
-                          .filter((s) => typeof s === "string") as string[],
+                          .filter((s) => typeof s === "string"),
                       { onlyReferences }
                   )
             return data

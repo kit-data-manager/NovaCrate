@@ -1,3 +1,8 @@
+export enum RO_CRATE_VERSION {
+    V1_1_3 = "v1.1.3",
+    V1_2_0 = "v1.2.0"
+}
+
 // Constants inferred from the RO-Crate Specification v1.1
 
 export const SCHEMA_ORG_TIME = "https://schema.org/Time"

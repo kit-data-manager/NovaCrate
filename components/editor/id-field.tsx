@@ -1,4 +1,13 @@
-import { Copy, EllipsisVertical, Eye, Folder, Pencil, ScanBarcode } from "lucide-react"
+import {
+    Copy,
+    EllipsisVertical,
+    Eye,
+    Folder,
+    Pencil,
+    ScanBarcode,
+    File,
+    ExternalLink
+} from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -9,7 +18,7 @@ import {
 import { useCopyToClipboard } from "usehooks-ts"
 import { useCallback, useMemo, useState } from "react"
 import { useEditorState } from "@/lib/state/editor-state"
-import { canHavePreview as canHavePreviewUtil } from "@/lib/utils"
+import { canHavePreview as canHavePreviewUtil, isValidUrl } from "@/lib/utils"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { Button } from "@/components/ui/button"
 import { RenameEntityModal } from "@/components/modals/rename-entity-modal"
@@ -42,6 +51,20 @@ export function IDField({ value }: { value: string }) {
         copy(value).then()
     }, [copy, value])
 
+    const isExternalResource = useMemo(() => {
+        return isValidUrl(value)
+    }, [value])
+
+    const Icon = useMemo(() => {
+        if (canHavePreview) return File
+        if (isExternalResource) return ExternalLink
+        return ScanBarcode
+    }, [canHavePreview, isExternalResource])
+
+    const openExternalResource = useCallback(() => {
+        window.open(value, "_blank")
+    }, [value])
+
     return (
         <div className="flex grow justify-start pl-3 items-center rounded-lg">
             <RenameEntityModal
@@ -50,7 +73,7 @@ export function IDField({ value }: { value: string }) {
                 open={renameEntityModalOpen}
             />
 
-            <ScanBarcode className="size-4 pointer-events-none text-muted-foreground mr-2 shrink-0" />
+            <Icon className="size-4 pointer-events-none text-muted-foreground mr-2 shrink-0" />
             <span className="truncate grow">{value}</span>
             <DropdownMenu>
                 <DropdownMenuTrigger className="p-2" asChild>
@@ -73,6 +96,14 @@ export function IDField({ value }: { value: string }) {
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => showInFileExplorer()}>
                                 <Folder className="size-4 mr-2" /> Show in File Explorer
+                            </DropdownMenuItem>
+                        </>
+                    ) : null}
+                    {isExternalResource ? (
+                        <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={openExternalResource}>
+                                <ExternalLink className="size-4 mr-2" /> Open with Browser
                             </DropdownMenuItem>
                         </>
                     ) : null}

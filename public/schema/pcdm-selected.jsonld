@@ -1,0 +1,86 @@
+{
+  "@context": {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "schema": "https://schema.org/",
+    "pcdm": "http://pcdm.org/models#",
+    "ore": "http://www.openarchives.org/ore/terms/"
+  },
+  "@graph": [
+    {
+      "@id": "pcdm:Collection",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Collection",
+      "rdfs:comment": "An ordered or unordered group of Objects; may correspond to archival collections or user groupings.",
+      "rdfs:subClassOf": { "@id": "ore:Aggregation" }
+    },
+    {
+      "@id": "pcdm:Object",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Object",
+      "rdfs:comment": "An intellectual work or component thereof, which may contain Files or be part of a Collection.",
+      "rdfs:subClassOf": { "@id": "ore:Aggregation" }
+    },
+    {
+      "@id": "pcdm:File",
+      "@type": "rdfs:Class",
+      "rdfs:label": "File",
+      "rdfs:comment": "A metadata record or technical resource representing digital file(s); subordinate to pcdm:Object.",
+      "rdfs:subClassOf": { "@id": "ore:Aggregation" }
+    },
+    {
+      "@id": "pcdm:hasMember",
+      "@type": "rdf:Property",
+      "rdfs:label": "hasMember",
+      "rdfs:comment": "Indicates a resource is a constituent of the parent resource (e.g., a page within a book).",
+      "schema:domainIncludes": { "@id": "pcdm:Collection" },
+      "schema:rangeIncludes": { "@id": "pcdm:Object" },
+      "owl:inverseOf": { "@id": "pcdm:memberOf" }
+    },
+    {
+      "@id": "pcdm:memberOf",
+      "@type": "rdf:Property",
+      "rdfs:label": "memberOf",
+      "rdfs:comment": "Indicates membership in a Collection (inverse of hasMember).",
+      "schema:domainIncludes": { "@id": "pcdm:Object" },
+      "schema:rangeIncludes": { "@id": "pcdm:Collection" },
+      "owl:inverseOf": { "@id": "pcdm:hasMember" }
+    },
+    {
+      "@id": "pcdm:hasFile",
+      "@type": "rdf:Property",
+      "rdfs:label": "hasFile",
+      "rdfs:comment": "Indicates that an Object has an associated File (technical metadata).",
+      "schema:domainIncludes": { "@id": "pcdm:Object" },
+      "schema:rangeIncludes": { "@id": "pcdm:File" },
+      "owl:inverseOf": { "@id": "pcdm:fileOf" }
+    },
+    {
+      "@id": "pcdm:fileOf",
+      "@type": "rdf:Property",
+      "rdfs:label": "fileOf",
+      "rdfs:comment": "Indicates that a File belongs to an Object (inverse of hasFile).",
+      "schema:domainIncludes": { "@id": "pcdm:File" },
+      "schema:rangeIncludes": { "@id": "pcdm:Object" },
+      "owl:inverseOf": { "@id": "pcdm:hasFile" }
+    },
+    {
+      "@id": "pcdm:hasRelatedObject",
+      "@type": "rdf:Property",
+      "rdfs:label": "hasRelatedObject",
+      "rdfs:comment": "Indicates a logical structural relationship to another object (e.g., cover image).",
+      "schema:domainIncludes": { "@id": "pcdm:Object" },
+      "schema:rangeIncludes": { "@id": "pcdm:Object" },
+      "owl:inverseOf": { "@id": "pcdm:relatedObjectOf" }
+    },
+    {
+      "@id": "pcdm:relatedObjectOf",
+      "@type": "rdf:Property",
+      "rdfs:label": "relatedObjectOf",
+      "rdfs:comment": "Inverse of hasRelatedObject.",
+      "schema:domainIncludes": { "@id": "pcdm:Object" },
+      "schema:rangeIncludes": { "@id": "pcdm:Object" },
+      "owl:inverseOf": { "@id": "pcdm:hasRelatedObject" }
+    }
+  ]
+}

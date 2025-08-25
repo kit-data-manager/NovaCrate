@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import memoizee from "memoizee"
+import memoizee, { Memoized } from "memoizee"
 
 const HEALTH_TEST_FN = "__healthTest__"
 
@@ -72,6 +72,15 @@ export class FunctionWorker<T extends Record<string, (...args: any[]) => any>> {
      */
     execute<K extends keyof T>(name: K, ...args: Parameters<T[K]>): Promise<ReturnType<T[K]>> {
         return this._worker ? this.workerExecute(name, args) : this.localExecute(name, args)
+    }
+
+    /**
+     * Clear the cache of the {@link execute} method
+     */
+    clearExecuteCache() {
+        if (this.options.memoize) {
+            ;(this.execute as Memoized<typeof this.execute> & typeof this.execute).clear()
+        }
     }
 
     executeTransfer<K extends keyof T>(

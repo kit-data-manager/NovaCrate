@@ -82,6 +82,7 @@ export const SinglePropertyDropdown = memo(function SinglePropertyDropdown({
                     <TypeSelectDropdown
                         sub
                         propertyCanBe={propertyCanBe}
+                        showFallback={propertyRange === undefined}
                         onPropertyTypeSelect={onChangeType}
                     />
                 </DropdownMenuSub>
