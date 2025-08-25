@@ -1,11 +1,6 @@
 import { useStoreWithEqualityFn } from "zustand/traditional"
 import { editorState } from "@/lib/state/editor-state"
-import {
-    getEntityDisplayName,
-    isContextualEntity,
-    isDataEntity,
-    isRoCrateMetadataEntity
-} from "@/lib/utils"
+import { getEntityDisplayName, isContextualEntity, isDataEntity } from "@/lib/utils"
 import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ChevronDown } from "lucide-react"
@@ -23,10 +18,7 @@ export function EntityBrowserSection(props: {
         (store) => {
             return Array.from(store.entities.entries())
                 .map(([key, item]) => [key, item] as [string, IEntity])
-                .filter(
-                    ([, item]) =>
-                        item["@id"] !== store.getRootEntityId() && !isRoCrateMetadataEntity(item)
-                )
+                .filter(([, item]) => item["@id"] !== store.getRootEntityId())
                 .filter(([, item]) =>
                     props.section === "Data" ? isDataEntity(item) : isContextualEntity(item)
                 )
