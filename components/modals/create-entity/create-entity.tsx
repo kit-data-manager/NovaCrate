@@ -6,13 +6,14 @@ import {
     ArrowLeft,
     ExternalLink,
     File,
-    FileX2,
     Folder,
     FolderDot,
-    HardDriveUpload,
-    Plus
+    Globe,
+    HardDrive,
+    Plus,
+    TriangleAlert
 } from "lucide-react"
-import { camelCaseReadable, encodeFilePath, fileNameWithoutEnding } from "@/lib/utils"
+import { camelCaseReadable, encodeFilePath, fileNameWithoutEnding, isValidUrl } from "@/lib/utils"
 import { Error } from "@/components/error"
 import prettyBytes from "pretty-bytes"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -22,6 +23,7 @@ import HelpTooltip from "@/components/help-tooltip"
 import { useAutoId } from "@/lib/hooks"
 import { CreateEntityHint } from "@/components/modals/create-entity/create-entity-hint"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertTitle } from "@/components/ui/alert"
 
 export function CreateEntity({
     selectedType,
@@ -42,7 +44,7 @@ export function CreateEntity({
 }) {
     const context = useEditorState((store) => store.crateContext)
 
-    const [forceWithoutFile, setForceWithoutFile] = useState(false)
+    const [externalResource, setExternalResource] = useState(false)
     const [path, setPath] = useState("")
     const fileUpload = useMemo(() => {
         return context.resolve(selectedType) === RO_CRATE_FILE
@@ -134,7 +136,7 @@ export function CreateEntity({
     const localOnCreateClick = useCallback(() => {
         if (
             !forceId &&
-            ((hasFileUpload && !forceWithoutFile) || (hasFolderUpload && !forceWithoutFile))
+            ((hasFileUpload && !externalResource) || (hasFolderUpload && !externalResource))
         ) {
             if (hasFileUpload) {
                 onUploadFile(path, name, plainFiles[0])
@@ -145,7 +147,7 @@ export function CreateEntity({
     }, [
         forceId,
         hasFileUpload,
-        forceWithoutFile,
+        externalResource,
         hasFolderUpload,
         onCreateClick,
         identifier,
@@ -184,10 +186,15 @@ export function CreateEntity({
         }
     }, [folderFiles])
 
+    const identifierValid = useMemo(() => {
+        return !(externalResource && !isValidUrl(identifier))
+    }, [externalResource, identifier])
+
     const createDisabled = useMemo(() => {
+        if (!identifierValid) return true
         if (hasFolderUpload && folderFiles.length > 0) return false
         return autoId.length <= 0
-    }, [autoId.length, folderFiles.length, hasFolderUpload])
+    }, [autoId.length, folderFiles.length, hasFolderUpload, identifierValid])
 
     if (hasFileUpload && hasFolderUpload)
         return (
@@ -235,21 +242,22 @@ export function CreateEntity({
                 <div>
                     <Tabs
                         className="mb-4"
-                        value={forceWithoutFile ? "without-file" : "with-file"}
+                        value={externalResource ? "without-file" : "with-file"}
                         onValueChange={(v) => {
-                            setForceWithoutFile(v === "without-file")
+                            setExternalResource(v === "without-file")
                         }}
                     >
                         <TabsList className="flex self-center">
                             <TabsTrigger value="with-file">
-                                <HardDriveUpload className="size-4 mr-2" /> Upload File
+                                <HardDrive className="size-4" /> Local File
                             </TabsTrigger>
+                            or
                             <TabsTrigger value="without-file">
-                                <FileX2 className="size-4 mr-2" /> Without Data
+                                <Globe className="size-4" /> Web Resource
                             </TabsTrigger>
                         </TabsList>
                     </Tabs>
-                    {forceWithoutFile ? null : (
+                    {externalResource ? null : (
                         <>
                             <Label>File</Label>
                             <div>
@@ -270,21 +278,22 @@ export function CreateEntity({
                 <div>
                     <Tabs
                         className="mb-4"
-                        value={forceWithoutFile ? "without-file" : "with-file"}
+                        value={externalResource ? "without-file" : "with-file"}
                         onValueChange={(v) => {
-                            setForceWithoutFile(v === "without-file")
+                            setExternalResource(v === "without-file")
                         }}
                     >
                         <TabsList className="flex self-center">
                             <TabsTrigger value="with-file">
-                                <HardDriveUpload className="size-4 mr-2" /> Upload Folder
+                                <HardDrive className="size-4" /> Local Folder
                             </TabsTrigger>
+                            or
                             <TabsTrigger value="without-file">
-                                <FileX2 className="size-4 mr-2" /> Without Data
+                                <Globe className="size-4" /> Web Resource
                             </TabsTrigger>
                         </TabsList>
                     </Tabs>
-                    {forceWithoutFile ? null : (
+                    {externalResource ? null : (
                         <>
                             <Label>Folder</Label>
                             <div className="flex items-center">
@@ -319,7 +328,7 @@ export function CreateEntity({
                 </div>
             ) : null}
 
-            {(hasFileUpload || hasFolderUpload) && !forceId && !forceWithoutFile ? (
+            {(hasFileUpload || hasFolderUpload) && !forceId && !externalResource ? (
                 <div>
                     <Label className="flex gap-1 items-center py-1">
                         Path{" "}
@@ -342,13 +351,15 @@ export function CreateEntity({
                 />
             </div>
 
-            {(!hasFileUpload || forceWithoutFile) &&
-            (!hasFolderUpload || forceWithoutFile) &&
+            {(!hasFileUpload || externalResource) &&
+            (!hasFolderUpload || externalResource) &&
             !forceId ? (
                 <div>
                     <Label>Identifier</Label>
                     <Input
-                        placeholder={autoId || "#localname or https://..."}
+                        placeholder={
+                            autoId || externalResource ? "https://..." : "#localname or https://..."
+                        }
                         value={identifier}
                         onChange={onIdentifierChange}
                     />
@@ -364,6 +375,13 @@ export function CreateEntity({
                         How to find a good identifier <ExternalLink className="w-3 h-3 ml-1" />
                     </a>
                 </div>
+            ) : null}
+
+            {externalResource && !identifierValid && identifier.length > 0 ? (
+                <Alert className="text-warn border-warn/40">
+                    <TriangleAlert />
+                    <AlertTitle>Identifier must be a valid absolute URL</AlertTitle>
+                </Alert>
             ) : null}
 
             <div className="mt-2 flex justify-between">
