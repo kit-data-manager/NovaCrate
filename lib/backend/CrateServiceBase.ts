@@ -14,11 +14,14 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
         if (file.type === "application/zip" || file.type === "application/x-zip-compressed") {
             return this.createCrateFromCrateZip(file)
         }
-        throw new Error(
+        console.warn(
             "Unsupported file type " +
                 file.type +
                 ". Only zip archives and JSON metadata files are supported"
         )
+
+        // Fallback to zip
+        return this.createCrateFromCrateZip(file)
     }
 
     abstract createCrateFromCrateZip(zip: Blob): Promise<string>

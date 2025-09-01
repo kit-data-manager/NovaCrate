@@ -40,6 +40,10 @@ export class ROCrateJavaCrateService extends CrateServiceBase {
         }
     }
 
+    createCrateFromMetadataFile(metadataFile: File): Promise<string> {
+        throw "Not implemented"
+    }
+
     createEntity(crateId: string, entityData: IEntity): Promise<boolean> {
         return this.updateEntity(crateId, entityData, true)
     }
