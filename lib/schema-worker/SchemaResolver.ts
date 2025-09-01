@@ -83,6 +83,16 @@ export class SchemaResolver {
         return this.fetchSchema(schema.schemaUrl)
     }
 
+    loadAll(exclude: string[]) {
+        const schemas = this.registeredSchemas
+            .filter((schema) => !exclude.includes(schema.id))
+            .filter((schema) => (this.spec ? schema.activeOnSpec.includes(this.spec) : true))
+        return schemas.map((schema) => ({
+            schema: schema,
+            data: this.fetchSchema(schema.schemaUrl)
+        }))
+    }
+
     private fetchSchema(url: string): Promise<SchemaFile> {
         const existing = this.runningFetches.get(url)
         if (existing) {

@@ -15,11 +15,13 @@ import { CreateEntityModalEntry } from "@/components/modals/create-entity/modal-
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { Error } from "@/components/error"
 import { Button } from "@/components/ui/button"
-import { Blocks } from "lucide-react"
+import { Blocks, TriangleAlert } from "lucide-react"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { COMMON_PROPERTIES } from "@/lib/constants"
 import HelpTooltip from "@/components/help-tooltip"
 import useSWR from "swr"
+import { schemaResolverStore } from "@/lib/state/schema-resolver"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export function TypeSelect({
     open,
@@ -35,6 +37,7 @@ export function TypeSelect({
     const crateContext = useEditorState((store) => store.crateContext)
     const { worker } = useContext(SchemaWorker)
     const [bypassRestrictions, setBypassRestrictions] = useState(false)
+    const [isMatchingSchemaUnloaded, setIsMatchingSchemaUnloaded] = useState(false)
 
     const toggleRestrictions = useCallback((state: boolean | "indeterminate") => {
         setBypassRestrictions(state === "indeterminate" ? true : !state)
@@ -56,7 +59,8 @@ export function TypeSelect({
     const {
         data: types,
         isLoading,
-        error
+        error,
+        mutate
     } = useSWR(
         `type-select-${restrictToClasses?.map((c) => c["@id"]).join(",") || "full"}-${bypassRestrictions}`,
         typesResolver
@@ -76,6 +80,40 @@ export function TypeSelect({
         return types?.filter((e) => !COMMON_PROPERTIES.includes(e["@id"]))
     }, [types])
 
+    /**
+     * Returns true if at least one registered schema that matches the current specification is not loaded.
+     */
+    const checkIfMatchingSchemaUnloaded = useCallback(async () => {
+        const status = await worker.executeUncached("getWorkerStatus")
+        const allMatchingRegisteredSchemas = schemaResolverStore
+            .getState()
+            .registeredSchemas.filter((schema) =>
+                crateContext.specification
+                    ? schema.activeOnSpec.includes(crateContext.specification)
+                    : true
+            )
+            .map((schema) => schema.id)
+
+        setIsMatchingSchemaUnloaded(
+            allMatchingRegisteredSchemas.find((s) => !status.schemaStatus.loadedSchemas.has(s)) !==
+                undefined
+        )
+    }, [crateContext.specification, worker])
+
+    useEffect(() => {
+        checkIfMatchingSchemaUnloaded().then()
+    }, [checkIfMatchingSchemaUnloaded])
+
+    const [isLoadingAllSchemas, setIsLoadingAllSchemas] = useState(false)
+    const loadAll = useCallback(async () => {
+        setIsLoadingAllSchemas(true)
+        await worker.executeUncached("loadAllSchemas")
+        await checkIfMatchingSchemaUnloaded()
+        await mutate()
+        worker.clearExecuteCache()
+        setIsLoadingAllSchemas(false)
+    }, [checkIfMatchingSchemaUnloaded, mutate, worker])
+
     return (
         <>
             <DialogHeader>
@@ -86,6 +124,23 @@ export function TypeSelect({
                     best. It is recommended to only show valid Types.
                 </DialogDescription>
             </DialogHeader>
+
+            {isMatchingSchemaUnloaded && (
+                <Alert className="border-warn/50 text-warn-foreground bg-warn/10">
+                    <TriangleAlert />
+                    <AlertTitle>Some Schemas are not loaded</AlertTitle>
+                    <AlertDescription>
+                        Load all Schemas required for the current specification to get a complete
+                        list of available entity types.
+                    </AlertDescription>
+                    <div />
+                    <div className="w-full flex justify-end gap-2 mt-2">
+                        <Button disabled={isLoadingAllSchemas} onClick={loadAll}>
+                            Load All
+                        </Button>
+                    </div>
+                </Alert>
+            )}
 
             <Error title="Error while getting list of possible types" error={error} />
             <Command className="py-2">

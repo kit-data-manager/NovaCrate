@@ -154,6 +154,10 @@ export function forceSchemaLoad(schemaId: string) {
     return schemaGraph.forceSchemaLoad(schemaId)
 }
 
+export function loadAllSchemas() {
+    return schemaGraph.loadAllSchemas()
+}
+
 export function unloadSchema(schemaId: string) {
     return schemaGraph.unloadSchema(schemaId)
 }
@@ -169,5 +173,6 @@ export const schemaWorkerFunctions = {
     getWorkerStatus,
     updateRegisteredSchemas,
     forceSchemaLoad,
+    loadAllSchemas,
     unloadSchema
 }

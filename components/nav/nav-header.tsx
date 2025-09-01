@@ -97,7 +97,7 @@ export function NavHeader() {
     const schemaWorker = useContext(SchemaWorker)
 
     const updateSchemaWorkerIssues = useCallback(async () => {
-        const status = await schemaWorker.worker.execute("getWorkerStatus")
+        const status = await schemaWorker.worker.executeUncached("getWorkerStatus")
         setSchemaIssues((current) => {
             if (
                 JSON.stringify(Array.from(current.entries())) !==

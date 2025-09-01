@@ -66,6 +66,18 @@ export class SchemaGraph {
         }
     }
 
+    async loadAllSchemas() {
+        const results = this.schemaResolver.loadAll(this.getExcludedSchemasForAutoload())
+        for (const result of results) {
+            try {
+                const data = await result.data
+                this.addSchemaFromFile(result.schema.id, data)
+            } catch (err) {
+                this.schemaIssues.set(result.schema.id, err)
+            }
+        }
+    }
+
     getAllNodes() {
         return Array.from(this.graph.values())
     }
@@ -210,7 +222,6 @@ export class SchemaGraph {
         let loadedContextEntries = 0
         let loadedNodes = 0
 
-        const sourceMapContextValues: string[] = []
         const sourceMapSchemaNodes: string[] = []
         const context = new Map<string, string>()
 
@@ -219,7 +230,6 @@ export class SchemaGraph {
                 if (typeof value === "string") {
                     context.set(key, value)
 
-                    sourceMapContextValues.push(key)
                     loadedContextEntries += 1
                 }
             }
