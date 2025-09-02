@@ -26,6 +26,7 @@ export class CrateContext {
     private _customPairs: Record<string, string> = {}
     private _specification: RO_CRATE_VERSION | undefined = undefined
     private _usingFallback = false
+    private raw?: CrateContextType
 
     constructor() {}
 
@@ -63,7 +64,13 @@ export class CrateContext {
         this._context = { ...this._context, ...loaded["@context"] }
     }
 
-    async update(crateContext: CrateContextType) {
+    async setup(crateContext: CrateContextType) {
+        this._context = {}
+        this._customPairs = {}
+        this._specification = undefined
+        this._usingFallback = false
+        this.raw = crateContext
+
         const content = Array.isArray(crateContext) ? crateContext : [crateContext]
         const fallback = KNOWN_CONTEXTS.find((c) => c.version === RO_CRATE_VERSION.V1_1_3)!
 
@@ -83,6 +90,15 @@ export class CrateContext {
                 }
             }
         }
+    }
+
+    /**
+     * Compares the provided crate context with the crate context that was used to set up this instance.
+     * The comparison happens using JSON.stringify, which might be unstable.
+     * @param crateContext
+     */
+    isSameAs(crateContext: CrateContextType) {
+        return JSON.stringify(this.raw) === JSON.stringify(crateContext)
     }
 
     static getKnownContext(id: string) {
