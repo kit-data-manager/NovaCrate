@@ -18,7 +18,7 @@ import {
 import { useCopyToClipboard } from "usehooks-ts"
 import { useCallback, useMemo, useState } from "react"
 import { useEditorState } from "@/lib/state/editor-state"
-import { canHavePreview as canHavePreviewUtil, isValidUrl } from "@/lib/utils"
+import { canHavePreview as canHavePreviewUtil } from "@/lib/utils"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { Button } from "@/components/ui/button"
 import { RenameEntityModal } from "@/components/modals/rename-entity-modal"
@@ -52,7 +52,12 @@ export function IDField({ value }: { value: string }) {
     }, [copy, value])
 
     const isExternalResource = useMemo(() => {
-        return isValidUrl(value)
+        try {
+            const url = new URL(value)
+            return url.protocol.toLowerCase() === "http:" || url.protocol.toLowerCase() === "https:"
+        } catch {
+            return false
+        }
     }, [value])
 
     const Icon = useMemo(() => {
@@ -62,7 +67,7 @@ export function IDField({ value }: { value: string }) {
     }, [canHavePreview, isExternalResource])
 
     const openExternalResource = useCallback(() => {
-        window.open(value, "_blank")
+        window.open(value, "_blank", "noopener,noreferrer")
     }, [value])
 
     return (
