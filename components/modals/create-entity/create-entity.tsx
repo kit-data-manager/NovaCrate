@@ -369,7 +369,8 @@ export function CreateEntity({
                     <Label>Identifier</Label>
                     <Input
                         placeholder={
-                            autoId || externalResource ? "https://..." : "#localname or https://..."
+                            autoId ||
+                            (externalResource ? "https://..." : "#localname or https://...")
                         }
                         value={identifier}
                         onChange={onIdentifierChange}
