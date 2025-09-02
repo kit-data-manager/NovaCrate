@@ -529,7 +529,7 @@ export function CrateDataProvider({
                 crateId: crateId || "",
                 // Force the editor into a global loading state until everything is settled
                 crateData: ready ? data : undefined,
-                crateDataIsLoading: isLoading,
+                crateDataIsLoading: isLoading || !crateContextReady,
                 saveEntity,
                 saveAllEntities,
                 createFileEntity,

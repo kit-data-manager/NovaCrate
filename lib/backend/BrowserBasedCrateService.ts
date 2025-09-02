@@ -5,6 +5,7 @@ import fileDownload from "js-file-download"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { CrateServiceBase } from "@/lib/backend/CrateServiceBase"
 import { changeEntityId, encodeFilePath, isDataEntity, isFolderDataEntity } from "@/lib/utils"
+import * as z from "zod/mini"
 
 const template: (name: string, description: string) => ICrate = (
     name: string,
@@ -85,6 +86,29 @@ export class BrowserBasedCrateService extends CrateServiceBase {
     async createCrateFromMetadataFile(metadataFile: Blob) {
         const id = crypto.randomUUID()
         const crate = await metadataFile.text()
+
+        let parseResult
+        try {
+            const json = JSON.parse(crate)
+
+            parseResult = z
+                .object({
+                    "@context": z.union([
+                        z.string(),
+                        z.object(),
+                        z.array(z.union([z.string(), z.object()]))
+                    ]),
+                    "@graph": z.array(z.object())
+                })
+                .safeParse(json)
+        } catch (e) {
+            throw new Error("Invalid JSON", { cause: e })
+        }
+
+        if (parseResult && !parseResult.success) {
+            console.error("Failed to parse metadata file", parseResult.error)
+            throw z.prettifyError(parseResult.error)
+        }
 
         await this.saveRoCrateMetadataJSON(id, crate)
         return id
