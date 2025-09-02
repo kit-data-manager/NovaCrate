@@ -1,12 +1,14 @@
 import { SchemaFile, schemaFileSchema } from "./types"
 import type { SchemaResolverStore } from "../state/schema-resolver"
 import { parse as parseTtl } from "@frogcat/ttl2jsonld"
+import { RO_CRATE_VERSION } from "@/lib/constants"
 
 export class SchemaResolver {
     // SchemaResolver becomes ready with the first {@link SchemaResolver.updateRegisteredSchemas} call
     private ready = false
     private waitingForReady: Promise<void> | null = null
     private runningFetches: Map<string, Promise<SchemaFile>> = new Map()
+    private spec: RO_CRATE_VERSION | null = null
 
     constructor(private registeredSchemas: SchemaResolverStore["registeredSchemas"]) {}
 
@@ -16,8 +18,10 @@ export class SchemaResolver {
         // Wait until the SchemaResolver becomes ready. Crucial to prevent errors on initial render
         await this.waitForReady()
 
-        const matched = this.registeredSchemas.filter((schema) =>
-            schema.matchesUrls.some((prefix) => nodeId.startsWith(prefix))
+        const matched = this.registeredSchemas.filter(
+            (schema) =>
+                schema.matchesUrls.some((prefix) => nodeId.startsWith(prefix)) &&
+                (this.spec ? schema.activeOnSpec.includes(this.spec) : true)
         )
         for (const registeredSchema of matched) {
             if (exclude.includes(registeredSchema.id)) continue
@@ -34,7 +38,7 @@ export class SchemaResolver {
         return loadedSchemas
     }
 
-    private async waitForReady() {
+    private waitForReady(): Promise<void> {
         if (!this.ready) {
             if (!this.waitingForReady) {
                 this.waitingForReady = new Promise((resolve, reject) => {
@@ -56,19 +60,37 @@ export class SchemaResolver {
                         )
                     }, 2000)
                 })
-            } else return this.waitingForReady
+            }
+
+            return this.waitingForReady
         }
+
+        return Promise.resolve()
     }
 
-    updateRegisteredSchemas(state: SchemaResolverStore["registeredSchemas"]) {
+    updateRegisteredSchemas(
+        state: SchemaResolverStore["registeredSchemas"],
+        spec: RO_CRATE_VERSION
+    ) {
         this.ready = true
         this.registeredSchemas = state
+        this.spec = spec
     }
 
     async forceLoad(schemaId: string) {
         const schema = this.registeredSchemas.find((schema) => schema.id === schemaId)
         if (!schema) return
         return this.fetchSchema(schema.schemaUrl)
+    }
+
+    loadAll(exclude: string[]) {
+        const schemas = this.registeredSchemas
+            .filter((schema) => !exclude.includes(schema.id))
+            .filter((schema) => (this.spec ? schema.activeOnSpec.includes(this.spec) : true))
+        return schemas.map((schema) => ({
+            schema: schema,
+            data: this.fetchSchema(schema.schemaUrl)
+        }))
     }
 
     private fetchSchema(url: string): Promise<SchemaFile> {
@@ -86,9 +108,26 @@ export class SchemaResolver {
                     const data = await req.json()
                     this.runningFetches.delete(url)
                     return schemaFileSchema.parse(data)
-                } else if (req.headers.get("Content-Type") === "text/turtle") {
+                } else if (req.headers.get("Content-Type")?.startsWith("text/turtle")) {
                     const ttl = await req.text()
                     const rawJson = parseTtl(ttl)
+
+                    // Rewrite rdf:type style definitions to @type style definitions.
+                    // Remove owl references, use rdf and rdfs.
+                    rawJson["@graph"] = rawJson["@graph"].map((e) => {
+                        if ("rdf:type" in e) {
+                            e["@type"] = (e["rdf:type"] as IReference)["@id"]
+                            if (e["@type"] === "owl:Class") {
+                                e["@type"] = "rdfs:Class"
+                            }
+                            if (e["@type"] === "owl:ObjectProperty") {
+                                e["@type"] = "rdf:Property"
+                            }
+                        }
+
+                        return e
+                    })
+
                     rawJson["@graph"] = rawJson["@graph"].filter((e) => "@type" in e)
                     this.runningFetches.delete(url)
                     return schemaFileSchema.parse(rawJson)

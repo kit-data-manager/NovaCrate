@@ -119,14 +119,14 @@ async function testCrateContent(page: Page) {
 
 test("Import Crate .zip", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
-    await page.getByRole("button", { name: "Import Crate (.zip)" }).click()
+    await page.getByRole("button", { name: "Open Crate" }).click()
     await page.getByTestId("create-upload-input").setInputFiles("tests/data/TestCrate.zip")
     await testCrateContent(page)
 })
 
 test("Import Crate .eln", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
-    await page.getByRole("button", { name: "Import Crate (.zip)" }).click()
+    await page.getByRole("button", { name: "Open Crate" }).click()
     await page.getByTestId("create-upload-input").setInputFiles("tests/data/TestCrate.eln")
     await testCrateContent(page)
 })

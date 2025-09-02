@@ -7,7 +7,26 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
 
     abstract createCrate(name: string, description: string): Promise<string>
 
+    createCrateFromFile(file: Blob): Promise<string> {
+        if (file.type === "application/json" || file.type === "application/ld+json") {
+            return this.createCrateFromMetadataFile(file)
+        }
+        if (file.type === "application/zip" || file.type === "application/x-zip-compressed") {
+            return this.createCrateFromCrateZip(file)
+        }
+        console.warn(
+            "Unsupported file type " +
+                file.type +
+                ". Only zip archives and JSON metadata files are supported"
+        )
+
+        // Fallback to zip
+        return this.createCrateFromCrateZip(file)
+    }
+
     abstract createCrateFromCrateZip(zip: Blob): Promise<string>
+
+    abstract createCrateFromMetadataFile(metadataFile: Blob): Promise<string>
 
     async createCrateFromFiles(
         name: string,

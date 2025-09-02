@@ -114,9 +114,11 @@ export function EntityEditor({
 
     const properties = useMemo(() => {
         if (!entity) return []
-        return mapEntityToProperties(entity, originalEntity).filter((e) =>
-            entity["@id"] === getRootEntityId() ? !e.propertyName.startsWith("@") : true
-        )
+        return mapEntityToProperties(entity, originalEntity)
+            .filter((e) =>
+                entity["@id"] === getRootEntityId() ? !e.propertyName.startsWith("@") : true
+            )
+            .filter((e) => e.propertyName !== "@reverse")
     }, [entity, getRootEntityId, originalEntity])
 
     const propertiesChangelist = useMemo(() => {

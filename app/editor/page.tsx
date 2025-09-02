@@ -11,7 +11,6 @@ import {
     Loader,
     LoaderCircle,
     Moon,
-    Notebook,
     Package,
     PackageOpen,
     PackagePlus,
@@ -72,7 +71,7 @@ export default function EditorLandingPage() {
     const [createCrateModalState, setCreateCrateModalState] = useState({
         open: false,
         fromFolder: false,
-        fromZip: undefined as File | undefined
+        fromFile: undefined as File | undefined
     })
     const [search, setSearch] = useState("")
 
@@ -100,7 +99,7 @@ export default function EditorLandingPage() {
     const createEmptyCrate = useCallback(() => {
         setCreateCrateModalState({
             fromFolder: false,
-            fromZip: undefined,
+            fromFile: undefined,
             open: true
         })
     }, [])
@@ -108,7 +107,7 @@ export default function EditorLandingPage() {
     const createCrateFromFolder = useCallback(() => {
         setCreateCrateModalState({
             fromFolder: true,
-            fromZip: undefined,
+            fromFile: undefined,
             open: true
         })
     }, [])
@@ -156,7 +155,7 @@ export default function EditorLandingPage() {
         ) {
             setCreateCrateModalState({
                 fromFolder: false,
-                fromZip: createUploadInputRef.current.files[0],
+                fromFile: createUploadInputRef.current.files[0],
                 open: true
             })
         }
@@ -235,7 +234,7 @@ export default function EditorLandingPage() {
                     <h4>RO-Crate Editor</h4>
                 </div>
 
-                <div className="flex flex-col items-center pr-20">
+                <div className="flex flex-col items-center pr-14">
                     <div className="flex items-start flex-col">
                         <Button
                             size="lg"
@@ -243,15 +242,7 @@ export default function EditorLandingPage() {
                             className="border-r-0 rounded-r-none h-12"
                             onClick={() => openZipFilePicker()}
                         >
-                            <PackageOpen className="w-6 h-6 mr-3" /> Import Crate (.zip)
-                        </Button>
-                        <Button
-                            size="lg"
-                            variant="link"
-                            className="border-r-0 rounded-r-none h-12"
-                            onClick={() => openZipFilePicker()}
-                        >
-                            <Notebook className="w-6 h-6 mr-3" /> Import ELN (.eln)
+                            <PackageOpen className="w-6 h-6 mr-3" /> Open Crate
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -541,7 +532,7 @@ export default function EditorLandingPage() {
             <input
                 type="file"
                 className="hidden"
-                accept=".zip,.eln"
+                accept=".zip,.eln,.json,.jsonld"
                 data-testid="create-upload-input"
                 ref={createUploadInputRef}
                 onChange={() => createUploadInputChangeHandler()}

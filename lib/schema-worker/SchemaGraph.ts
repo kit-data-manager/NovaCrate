@@ -12,12 +12,8 @@ export interface LoadedSchemaInfos {
 }
 
 export class SchemaGraph {
-    private context: Map<string, string> = new Map<string, string>()
     private graph: Map<string, SchemaNode> = new Map<string, SchemaNode>()
 
-    // Source maps for removing schema elements from the graph without resetting it completely.
-    // Maps schema id to context keys.
-    private contextEntrySourceMap: Map<string, string[]> = new Map<string, string[]>()
     // Source maps for removing schema elements from the graph without resetting it completely.
     // Maps schema id to node ids.
     private graphNodeSourceMap: Map<string, string[]> = new Map<string, string[]>()
@@ -28,11 +24,7 @@ export class SchemaGraph {
     constructor(private schemaResolver: SchemaResolver) {}
 
     async getNode(id: string, abortOnFail: boolean = false): Promise<SchemaNode | undefined> {
-        let firstAttempt = this.graph.get(id)
-
-        if (!firstAttempt && id.includes("#")) {
-            firstAttempt = this.getNodeFromHashNamespace(id)
-        }
+        const firstAttempt = this.graph.get(id)
 
         if (firstAttempt || abortOnFail) {
             return firstAttempt
@@ -57,21 +49,6 @@ export class SchemaGraph {
         }
     }
 
-    getNodeFromHashNamespace(id: string) {
-        const split = id.split("#")
-        if (split.length === 2) {
-            const namespace = this.graph.get(split[0])
-            if (namespace) {
-                const subtype = namespace.resolveSubtype(split[1])
-                if (subtype) return SchemaNode.createWithContext(subtype, this.context)
-            }
-        } else {
-            console.warn("Invalid hash namespace format", id)
-        }
-
-        return undefined
-    }
-
     /**
      * Exclude all already loaded and all failed schemas from the next autoload
      * @private
@@ -89,13 +66,29 @@ export class SchemaGraph {
         }
     }
 
+    async loadAllSchemas() {
+        const results = this.schemaResolver.loadAll(this.getExcludedSchemasForAutoload())
+        for (const result of results) {
+            try {
+                const data = await result.data
+                this.addSchemaFromFile(result.schema.id, data)
+            } catch (err) {
+                this.schemaIssues.set(result.schema.id, err)
+            }
+        }
+    }
+
     getAllNodes() {
         return Array.from(this.graph.values())
     }
 
     async getClassSpecificProperties(classId: string) {
+        if (!classId) throw new ReferenceError(`classId not specified or invalid: ${classId}`)
         const self = await this.getNode(classId)
-        if (!self) throw new ReferenceError("classId not specified or invalid")
+        if (!self) {
+            console.warn(`class with classId "${classId}" does not exist`)
+            return []
+        }
 
         const nodes: SchemaNode[] = []
         for (const [, node] of this.graph.entries()) {
@@ -108,7 +101,10 @@ export class SchemaGraph {
 
     async getClassProperties(classId: string) {
         const self = await this.getNode(classId)
-        if (!self) throw new ReferenceError("classId not specified or invalid")
+        if (!self)
+            throw new ReferenceError(
+                "failed to get class properties, classId not specified or class does not exist"
+            )
         const parents = await this.getClassParents(self["@id"])
         const properties: Set<SchemaNode> = new Set<SchemaNode>()
         for (const nodeId of [...parents, self["@id"]]) {
@@ -122,8 +118,12 @@ export class SchemaGraph {
 
     async getClassParents(classId: string) {
         let parentIds: string[] = []
+        if (!classId) throw new ReferenceError("classId not specified or invalid")
         const self = await this.getNode(classId)
-        if (!self) throw new ReferenceError("classId not specified or invalid")
+        if (!self) {
+            console.warn(`class with classId "${classId}" does not exist`)
+            return []
+        }
         if (!self.isClass()) throw new Error("Node is not a class")
 
         if (self.parentClass) {
@@ -222,15 +222,14 @@ export class SchemaGraph {
         let loadedContextEntries = 0
         let loadedNodes = 0
 
-        const sourceMapContextValues: string[] = []
         const sourceMapSchemaNodes: string[] = []
+        const context = new Map<string, string>()
 
         if ("@context" in schema) {
             for (const [key, value] of Object.entries(schema["@context"])) {
                 if (typeof value === "string") {
-                    this.context.set(key, value)
+                    context.set(key, value)
 
-                    sourceMapContextValues.push(key)
                     loadedContextEntries += 1
                 }
             }
@@ -238,7 +237,7 @@ export class SchemaGraph {
 
         if ("@graph" in schema) {
             for (const node of schema["@graph"]) {
-                const schemaNode = SchemaNode.createWithContext(node as ISchemaNode, this.context)
+                const schemaNode = SchemaNode.createWithContext(node as ISchemaNode, context)
                 this.addNode(schemaNode)
 
                 sourceMapSchemaNodes.push(schemaNode["@id"])
@@ -250,19 +249,11 @@ export class SchemaGraph {
             contextEntries: loadedContextEntries,
             nodes: loadedNodes
         })
-        this.contextEntrySourceMap.set(id, sourceMapContextValues)
         this.graphNodeSourceMap.set(id, sourceMapSchemaNodes)
     }
 
     unloadSchema(id: string) {
-        const contextKeys = this.contextEntrySourceMap.get(id)
         const graphNodeIds = this.graphNodeSourceMap.get(id)
-
-        if (contextKeys) {
-            for (const key of contextKeys) {
-                this.context.delete(key)
-            }
-        }
 
         if (graphNodeIds) {
             for (const nodeId of graphNodeIds) {

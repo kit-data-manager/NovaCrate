@@ -1,6 +1,19 @@
-import Context_1_1 from "./schema-worker/assets/context-1.1.json"
+import { RO_CRATE_VERSION } from "@/lib/constants"
 
-const KNOWN_CONTEXTS = [Context_1_1]
+const KNOWN_CONTEXTS = [
+    {
+        "@id": "https://w3id.org/ro/crate/1.1/context",
+        name: "RO-Crate JSON-LD Context",
+        version: RO_CRATE_VERSION.V1_1_3,
+        load: () => import("./schema-worker/assets/context-1.1.json")
+    },
+    {
+        "@id": "https://w3id.org/ro/crate/1.2/context",
+        name: "RO-Crate JSON-LD Context",
+        version: RO_CRATE_VERSION.V1_2_0,
+        load: () => import("./schema-worker/assets/context-1.2.json")
+    }
+]
 
 /**
  * Provides an easy interface into the crate context for id resolution
@@ -9,38 +22,83 @@ const KNOWN_CONTEXTS = [Context_1_1]
  * @example resolve("Organization") -> "https://schema.org/Organization"
  */
 export class CrateContext {
-    readonly context: Record<string, string> = {}
-    readonly customPairs: Record<string, string> = {}
-    readonly specification: string = "unknown"
-    readonly raw: CrateContextType
+    private _context: Record<string, string> = {}
+    private _customPairs: Record<string, string> = {}
+    private _specification: RO_CRATE_VERSION | undefined = undefined
+    private _usingFallback = false
+    private raw?: CrateContextType
 
-    constructor(crateContext: CrateContextType) {
+    constructor() {}
+
+    get context() {
+        return structuredClone(this._context)
+    }
+
+    get customPairs() {
+        return structuredClone(this._customPairs)
+    }
+
+    get specification() {
+        return structuredClone(this._specification)
+    }
+
+    get usingFallback() {
+        return this._usingFallback
+    }
+
+    private async loadKnownContext(
+        primary: (typeof KNOWN_CONTEXTS)[number] | undefined,
+        fallback: (typeof KNOWN_CONTEXTS)[number]
+    ) {
+        if (!primary) {
+            console.warn(
+                `Using fallback context ${fallback.version} because the specification of this crate is not supported`
+            )
+            this._usingFallback = true
+        } else {
+            this._usingFallback = false
+        }
+        const known = primary || fallback
+        const loaded = await known.load()
+        this._specification = known.version
+        this._context = { ...this._context, ...loaded["@context"] }
+    }
+
+    async setup(crateContext: CrateContextType) {
+        this._context = {}
+        this._customPairs = {}
+        this._specification = undefined
+        this._usingFallback = false
         this.raw = crateContext
 
         const content = Array.isArray(crateContext) ? crateContext : [crateContext]
+        const fallback = KNOWN_CONTEXTS.find((c) => c.version === RO_CRATE_VERSION.V1_1_3)!
 
         for (const entry of content) {
             if (typeof entry === "string") {
                 const known = CrateContext.getKnownContext(entry)
-                if (known) {
-                    this.specification = `${known.name[0]} (v${known.version})`
-                    this.context = { ...this.context, ...known["@context"] }
-                } else console.warn("Failed to parse context entry " + entry)
+                await this.loadKnownContext(known, fallback)
             } else {
                 for (const [key, value] of Object.entries(entry)) {
                     if (key === "@vocab") {
                         const known = CrateContext.getKnownContext(value)
-                        if (known) {
-                            this.specification = `${known.name[0]} (v${known.version})`
-                            this.context = { ...this.context, ...known["@context"] }
-                        } else console.warn("Failed to parse context @vocab entry " + value)
+                        await this.loadKnownContext(known, fallback)
                     } else {
-                        this.context[key] = value
-                        this.customPairs[key] = value
+                        this._context[key] = value
+                        this._customPairs[key] = value
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Compares the provided crate context with the crate context that was used to set up this instance.
+     * The comparison happens using JSON.stringify, which might be unstable.
+     * @param crateContext
+     */
+    isSameAs(crateContext: CrateContextType) {
+        return JSON.stringify(this.raw) === JSON.stringify(crateContext)
     }
 
     static getKnownContext(id: string) {
@@ -57,13 +115,13 @@ export class CrateContext {
      * @returns Full ID of the specified ID (e.g. "Organization" becomes "https://schema.org/Organization"). Can be used to query the SchemaGraph. Returns null on failure
      */
     resolve(id: string) {
-        if (id in this.context) {
-            return this.context[id]
+        if (id in this._context) {
+            return this._context[id]
         } else return null
     }
 
     reverse(URI: string) {
-        for (const [key, value] of Object.entries(this.context)) {
+        for (const [key, value] of Object.entries(this._context)) {
             if (URI === value) {
                 return key
             }
@@ -79,9 +137,9 @@ export class CrateContext {
      */
     getAllClasses() {
         const result = new Set<string>()
-        Object.entries(this.context)
-            .filter(([key, _]) => key.match(/^[A-Z0-9]/))
-            .forEach(([_, url]) => {
+        Object.entries(this._context)
+            .filter(([key]) => key.match(/^[A-Z0-9]/))
+            .forEach(([, url]) => {
                 result.add(url)
             })
 

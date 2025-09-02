@@ -11,6 +11,7 @@ import { PropertyType } from "@/lib/property"
 export default function TypeSelectDropdown(props: {
     sub?: boolean
     propertyCanBe: ReturnType<typeof usePropertyCanBe>
+    showFallback?: boolean
     onPropertyTypeSelect(type: PropertyType): void
 }) {
     const Content = useMemo(() => {
@@ -19,7 +20,7 @@ export default function TypeSelectDropdown(props: {
 
     return (
         <Content>
-            {props.propertyCanBe.canBeText ? (
+            {props.showFallback || props.propertyCanBe.canBeText ? (
                 <DropdownMenuItem onClick={() => props.onPropertyTypeSelect(PropertyType.Text)}>
                     <Type className="size-4 mr-2" /> Text
                 </DropdownMenuItem>
@@ -49,7 +50,7 @@ export default function TypeSelectDropdown(props: {
                     <CalendarClock className="size-4 mr-2" /> Date and Time
                 </DropdownMenuItem>
             ) : null}
-            {props.propertyCanBe.canBeReference ? (
+            {props.showFallback || props.propertyCanBe.canBeReference ? (
                 <DropdownMenuItem
                     onClick={() => props.onPropertyTypeSelect(PropertyType.Reference)}
                 >

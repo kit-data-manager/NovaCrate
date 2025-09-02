@@ -1,8 +1,16 @@
 "use client"
 
-import { createContext, PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
+import {
+    createContext,
+    PropsWithChildren,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState
+} from "react"
 import useSWR from "swr"
-import { useEditorState } from "@/lib/state/editor-state"
+import { editorState, useEditorState } from "@/lib/state/editor-state"
 import { Draft, produce } from "immer"
 import { applyServerDifferences } from "@/lib/ensure-sync"
 import { useRouter } from "next/navigation"
@@ -106,8 +114,9 @@ export function CrateDataProvider({
     const [crateId, setCrateId] = useState<string | undefined>(undefined)
     const getEntities = useEditorState((store) => store.getEntities)
     const setEntities = useEditorState((store) => store.setEntities)
-    const setCrateContext = useEditorState((store) => store.setCrateContext)
-    const setInitialCrateContext = useEditorState((store) => store.setInitialCrateContext)
+    const crateContextReady = useEditorState((store) => store.crateContextReady)
+    const updateCrateContext = useEditorState((store) => store.updateCrateContext)
+    const updateInitialCrateContext = useEditorState((store) => store.updateInitialCrateContext)
     const setInitialEntities = useEditorState((store) => store.setInitialEntities)
     const { data, error, isLoading, mutate } = useSWR<ICrate>(crateId, serviceProvider.getCrate)
     const lastCrateData = useRef<ICrate | undefined>(undefined)
@@ -121,8 +130,9 @@ export function CrateDataProvider({
         if (data) {
             // Initial crate context is currently useless as the context is always updated to the server state
             // Might be used in the future if the context becomes more complex
-            setInitialCrateContext(data["@context"])
-            setCrateContext(data["@context"])
+            updateCrateContext(data["@context"])
+            updateInitialCrateContext(data["@context"])
+
             setInitialEntities(new Map(data["@graph"].map((entity) => [entity["@id"], entity])))
 
             const entities = getEntities()
@@ -141,14 +151,18 @@ export function CrateDataProvider({
 
             setEntities(updatedEntities)
             lastCrateData.current = data
+        } else {
+            editorState.setState((s) => {
+                s.crateContextReady = false
+            })
         }
     }, [
         data,
         getEntities,
-        setCrateContext,
         setEntities,
-        setInitialCrateContext,
-        setInitialEntities
+        setInitialEntities,
+        updateCrateContext,
+        updateInitialCrateContext
     ])
 
     const healthTest = useCallback(async () => {
@@ -504,12 +518,17 @@ export function CrateDataProvider({
         localStorage.removeItem(CRATE_ID_STORAGE_KEY)
     }, [])
 
+    const ready = useMemo(() => {
+        return crateContextReady && data !== undefined && !isLoading
+    }, [data, crateContextReady, isLoading])
+
     return (
         <CrateDataContext.Provider
             value={{
                 serviceProvider: serviceProvider,
                 crateId: crateId || "",
-                crateData: data,
+                // Force the editor into a global loading state until everything is settled
+                crateData: ready ? data : undefined,
                 crateDataIsLoading: isLoading,
                 saveEntity,
                 saveAllEntities,

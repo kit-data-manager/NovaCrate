@@ -10,7 +10,7 @@ test("Landing Page Tests", async ({ page }) => {
         .filter({ hasText: "An Error occured while" })
         .nth(1)
         .click()
-    await page.getByRole("button", { name: "Import Crate (.zip)" }).click()
+    await page.getByRole("button", { name: "Open Crate" }).click()
     await page.getByTestId("create-upload-input").setInputFiles("tests/data/TestCrate.zip")
     await page.getByRole("menuitem", { name: "Editor" }).click()
     await page.getByRole("menuitem", { name: "Back to Main Menu" }).click()

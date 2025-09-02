@@ -4,6 +4,7 @@ import { FunctionWorker } from "@/lib/function-worker"
 import { useFunctionWorker } from "@/lib/use-function-worker"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { schemaResolverStore } from "@/lib/state/schema-resolver"
+import { useEditorState } from "@/lib/state/editor-state"
 
 export interface ISchemaWorkerContext {
     isReady: boolean
@@ -25,21 +26,36 @@ export function SchemaWorkerProvider(props: PropsWithChildren) {
         addBasePath("/schema-worker.js"),
         { memoize: true, memoizeMaxAge: 5000 }
     )
+    const context = useEditorState((state) => state.crateContext)
 
     useEffect(() => {
-        if (isReady) {
+        if (isReady && context.specification) {
             worker
                 .executeUncached(
                     "updateRegisteredSchemas",
-                    schemaResolverStore.getState().registeredSchemas
+                    schemaResolverStore.getState().registeredSchemas,
+                    context.specification
                 )
                 .then()
 
             return schemaResolverStore.subscribe((newState) => {
-                worker.executeUncached("updateRegisteredSchemas", newState.registeredSchemas).then()
+                if (context.specification)
+                    worker
+                        .executeUncached(
+                            "updateRegisteredSchemas",
+                            newState.registeredSchemas,
+                            context.specification
+                        )
+                        .then()
             })
         }
-    }, [isReady, worker])
+    }, [context.specification, isReady, worker])
+
+    useEffect(() => {
+        // Clear cache on context change
+        console.log("Clearing schema worker cache")
+        worker.clearExecuteCache()
+    }, [context, worker])
 
     return (
         <SchemaWorker.Provider

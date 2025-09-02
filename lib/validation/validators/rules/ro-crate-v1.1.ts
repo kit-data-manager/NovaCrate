@@ -197,7 +197,7 @@ export const RoCrateV1_1 = {
                 }
                 if (!("datePublished" in entity)) {
                     results.push(
-                        builder.rule("rootEntityDatePublished").error({
+                        builder.rule("rootEntityDatePublished").warning({
                             resultTitle: "Missing root entity property:  `datePublished`",
                             resultDescription:
                                 "The root entity MUST have a `datePublished` property containing an ISO 8601 date string denoting when the RO-Crate was published",
@@ -479,14 +479,7 @@ export const RoCrateV1_1 = {
                 const rangeIds = range.map((s) => s["@id"])
 
                 if (rangeIds.length === 0) {
-                    results.push(
-                        builder.rule("unknownPropertyRange").warning({
-                            resultTitle: `Unknown property range`,
-                            resultDescription: `The property range for this property could not be determined. Is the schema for this property defined and up-to-date?`,
-                            entityId: entity["@id"],
-                            propertyName
-                        })
-                    )
+                    return results
                 }
 
                 propertyValue(entity[propertyName]).forEach((v, i) => {

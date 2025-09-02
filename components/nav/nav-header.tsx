@@ -28,13 +28,13 @@ import {
     MenubarTrigger
 } from "@/components/ui/menubar"
 import { useTheme } from "next-themes"
-import React, { useCallback, useContext, useMemo } from "react"
+import React, { useCallback, useContext, useMemo, useState } from "react"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useAction, useCrateName, useCurrentEntity } from "@/lib/hooks"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useCopyToClipboard } from "usehooks-ts"
+import { useCopyToClipboard, useInterval } from "usehooks-ts"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getEntityDisplayName } from "@/lib/utils"
 import { ActionButton, ActionMenubarItem } from "@/components/actions/action-buttons"
@@ -44,6 +44,7 @@ import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Error } from "@/components/error"
 import { ValidationOverview } from "@/components/editor/validation/validation-overview"
+import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -91,6 +92,23 @@ export function NavHeader() {
     } = useContext(CrateDataContext)
     // const { undo, redo } = useEditorState.temporal.getState()
     const [, copyFn] = useCopyToClipboard()
+    const [schemaIssues, setSchemaIssues] = useState<Map<string, unknown>>(new Map())
+
+    const schemaWorker = useContext(SchemaWorker)
+
+    const updateSchemaWorkerIssues = useCallback(async () => {
+        const status = await schemaWorker.worker.executeUncached("getWorkerStatus")
+        setSchemaIssues((current) => {
+            if (
+                JSON.stringify(Array.from(current.entries())) !==
+                JSON.stringify(Array.from(status.schemaStatus.schemaIssues.entries()))
+            ) {
+                return status.schemaStatus.schemaIssues
+            } else return current
+        })
+    }, [schemaWorker.worker])
+
+    useInterval(updateSchemaWorkerIssues, 2000)
 
     const copy = useCallback(
         (text: string) => {
@@ -260,23 +278,30 @@ export function NavHeader() {
 
             <div className="flex justify-end items-center gap-2">
                 <ValidationOverview />
-                {error || saveError.size > 0 || healthTestError ? (
+                {error || saveError.size > 0 || healthTestError || schemaIssues.size > 0 ? (
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button size="icon" variant="destructive" className="relative">
-                                <CircleAlert className="size-4" />
-                                <CircleAlert className="size-4 absolute animate-ping top-[9px] left-[9px]" />
+                                <CircleAlert className="size-4 animate-pulse" />
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[400px] flex flex-col gap-2">
+                            <div className="text-sm font-bold">Internal Error Log</div>
                             <Error title="Crate service is not reachable" error={healthTestError} />
                             <Error title="Error while loading crate data" error={error} />
                             {Array.from(saveError.entries()).map(([key, value]) => (
                                 <Error
-                                    title={`Error while saving entity with id "${key}"`}
+                                    title={`Error while saving entity "${key}"`}
                                     key={key}
                                     error={value}
                                     onClear={() => clearSaveError(key)}
+                                />
+                            ))}
+                            {Array.from(schemaIssues.entries()).map(([key, value]) => (
+                                <Error
+                                    title={`Error while loading schema "${key}"`}
+                                    key={key}
+                                    error={value}
                                 />
                             ))}
                         </PopoverContent>
