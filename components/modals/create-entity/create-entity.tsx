@@ -192,9 +192,20 @@ export function CreateEntity({
 
     const createDisabled = useMemo(() => {
         if (!identifierValid) return true
-        if (hasFolderUpload && folderFiles.length > 0) return false
+        if (hasFolderUpload && !externalResource && !emptyFolder && folderFiles.length === 0)
+            return true
+        if (hasFileUpload && !externalResource && plainFiles.length === 0) return true
         return autoId.length <= 0
-    }, [autoId.length, folderFiles.length, hasFolderUpload, identifierValid])
+    }, [
+        autoId.length,
+        emptyFolder,
+        externalResource,
+        folderFiles.length,
+        hasFileUpload,
+        hasFolderUpload,
+        identifierValid,
+        plainFiles.length
+    ])
 
     if (hasFileUpload && hasFolderUpload)
         return (
