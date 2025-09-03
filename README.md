@@ -1,8 +1,8 @@
 # 📦 NovaCrate - RO-Crate Editor
 
-Web-based fully-featured interactive editor for **creating, editing, and visualizing** research object crates. Built for inspecting, validating and manipulating RO-Crates, allowing you to get a deeper understanding of its content and structure.
+Web-based fully-featured interactive editor for **creating, editing, and visualizing** research object crates. Built for inspecting, validating, and manipulating RO-Crates, allowing you to get a deeper understanding of its content and structure.
 
-NovaCrate is in active development, we are happy to receive feedback, feature requests and bug reports on the [issues page](https://github.com/kit-data-manager/NovaCrate/issues).
+NovaCrate is in active development; we welcome feedback, feature requests, and bug reports on the [issues page](https://github.com/kit-data-manager/NovaCrate/issues).
 
 ## [▶️ Open NovaCrate](https://kit-data-manager.github.io/NovaCrate/)
 
@@ -10,7 +10,7 @@ NovaCrate is in active development, we are happy to receive feedback, feature re
 
 - ✅ Create, read, and edit RO-Crates
 - ✅ Live validation of RO-Crates
-  - ⚙️ Supports validation of the RO-Crate Specification v1.1
+  - ⚙️ Supports validation of the RO-Crate Specification v1.1 and v1.2
   - 🏗️ Easily extensible to validate profiles or specific RO-Crate types (e.g., Workflow crates)
   - 🚀 Autofix actions available for some issues
 - ✅ Visualize RO-Crates with a graph
@@ -20,7 +20,6 @@ NovaCrate is in active development, we are happy to receive feedback, feature re
 - ✅ Support for importing and exporting the ELN format
 - ✅ Extensible with custom schemas at runtime
 - ✅ Generate and view an HTML preview file
-- ⚠️ Support for RO-Crate Specification v1.2 is not implemented (coming soon)
 
 ## 🎨 Editions
 
