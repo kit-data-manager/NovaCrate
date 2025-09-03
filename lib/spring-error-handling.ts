@@ -30,7 +30,7 @@ export function handleSpringError(e: unknown) {
             if (e && typeof e === "object") {
                 try {
                     return JSON.stringify(e)
-                } catch (_) {
+                } catch {
                     console.log(e)
                     return e.toString()
                 }

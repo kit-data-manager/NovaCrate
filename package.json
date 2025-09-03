@@ -47,7 +47,7 @@
     "immer": "^10.0.4",
     "js-file-download": "^0.4.12",
     "jszip": "^3.10.1",
-    "lucide-react": "^0.540.0",
+    "lucide-react": "^0.542.0",
     "luxon": "^3.4.4",
     "memoizee": "^0.4.17",
     "monaco-editor": "^0.52.2",
@@ -72,7 +72,7 @@
     "zustand": "^5.0.4"
   },
   "devDependencies": {
-    "@playwright/test": "^1.52.0",
+    "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4.1.4",
     "@types/node": "^22",
     "@types/react": "^19.1.2",

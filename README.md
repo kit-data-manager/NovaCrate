@@ -36,12 +36,12 @@ You can access it directly [here](https://kit-data-manager.github.io/NovaCrate/)
 |--------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
 | Standalone Web App | Active  | Standalone Web App without a backend. Stores Crates in the local origin-private file system of the browser                                                                                                              | [Access here](https://kit-data-manager.github.io/NovaCrate/)                                               |
 | Desktop App        | Concept | Tauri App with a local backend. Has full access to file system and can make use of arbitrary backend software.                                                                                                          | Suitable backend already implemented.                                                                      |
-| Cloud Frontend     | Concept | NovaCrate is a frontend that can be used with any compatible backend solution, for example a cloud based service that hosts RO-Crates. This approach has not been explored yet due to lack of viable backend solutions. | See `src/lib/backend/CrateServiceAdapter.ts` for a list of methods that a backend adapter should implement |
+| Cloud Frontend     | Concept | NovaCrate is a frontend that can be used with any compatible backend solution, for example a cloud based service that hosts RO-Crates. This approach has not been explored yet due to lack of viable backend solutions. | See `src/lib/backend/CrateServiceAdapter.d.ts` for a list of methods that a backend adapter should implement |
 
 ### ℹ️ How To: Custom Backend
 
 NovaCrate is a frontend that can be used for any backend that hosts RO-Crates (an appropriate backend adapter must be implemented). This could be anything in the range from a simple file storage to a full REST Service for manipulating crates.
-See `src/lib/backend/CrateServiceAdapter.ts` for a list of methods that a backend adapter should implement. All of these methods can make use of backend resources or be supplemented locally.
+See `src/lib/backend/CrateServiceAdapter.d.ts` for a list of methods that a backend adapter should implement. All of these methods can make use of backend resources or be supplemented locally.
 
 NovaCrate currently does not include mechanisms for authentication, access control or concurrent access.
 </details>
