@@ -2,7 +2,7 @@
 
 Web-based fully-featured interactive editor for **creating, editing, and visualizing** research object crates. Built for inspecting, validating, and manipulating RO-Crates, allowing you to get a deeper understanding of its content and structure.
 
-NovaCrate is in active development, we are happy to receive feedback, feature requests, and bug reports on the [issues page](https://github.com/kit-data-manager/NovaCrate/issues).
+NovaCrate is in active development; we welcome feedback, feature requests, and bug reports on the [issues page](https://github.com/kit-data-manager/NovaCrate/issues).
 
 ## [▶️ Open NovaCrate](https://kit-data-manager.github.io/NovaCrate/)
 
