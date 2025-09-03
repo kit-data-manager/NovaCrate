@@ -40,7 +40,7 @@ export class ROCrateJavaCrateService extends CrateServiceBase {
         }
     }
 
-    createCrateFromMetadataFile(metadataFile: File): Promise<string> {
+    createCrateFromMetadataFile(): Promise<string> {
         throw "Not implemented"
     }
 
