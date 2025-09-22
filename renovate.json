@@ -3,8 +3,7 @@
   "extends": [
     "config:best-practices",
     ":dependencyDashboard",
-    ":semanticCommits",
-    ":automergeMinor"
+    ":semanticCommits"
   ],
   "minimumReleaseAge": "3 days",
   "packageRules": [
@@ -26,7 +25,7 @@
     },
     {
       "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
+      "automerge": false
     },
     {
       "matchPackagePatterns": ["^eslint", "^prettier", "^@types/"],
@@ -35,8 +34,5 @@
     }
   ],
   "rangeStrategy": "replace",
-  "prConcurrentLimit": 5,
-  "prHourlyLimit": 2,
-  "timezone": "Europe/Berlin",
-  "schedule": ["after 9am and before 5pm on monday"]
+  "timezone": "Europe/Berlin"
 }
