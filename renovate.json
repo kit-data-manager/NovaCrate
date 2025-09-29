@@ -34,5 +34,6 @@
     }
   ],
   "rangeStrategy": "replace",
-  "timezone": "Europe/Berlin"
+  "timezone": "Europe/Berlin",
+  "baseBranchPatterns": ["dev"]
 }
