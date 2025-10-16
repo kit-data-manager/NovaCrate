@@ -1,7 +1,7 @@
 "use client"
 
 import { ISchemaNode, SchemaNode } from "./SchemaNode"
-import { SchemaResolver } from "./SchemaResolver"
+import { DedupedSymbol, SchemaResolver } from "./SchemaResolver"
 import { SchemaFile } from "./types"
 
 // ! currently only works on rdf:Property and rdfs:Class but not on class/property instances
@@ -71,6 +71,7 @@ export class SchemaGraph {
         for (const result of results) {
             try {
                 const data = await result.data
+                if (data === DedupedSymbol) continue
                 this.addSchemaFromFile(result.schema.id, data)
             } catch (err) {
                 this.schemaIssues.set(result.schema.id, err)
