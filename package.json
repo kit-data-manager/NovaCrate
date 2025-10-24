@@ -47,7 +47,7 @@
     "immer": "^10.0.4",
     "js-file-download": "^0.4.12",
     "jszip": "^3.10.1",
-    "lucide-react": "^0.542.0",
+    "lucide-react": "^0.548.0",
     "luxon": "^3.4.4",
     "memoizee": "^0.4.17",
     "monaco-editor": "^0.52.2",
