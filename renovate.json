@@ -28,9 +28,9 @@
       "automerge": false
     },
     {
-      "matchPackagePatterns": ["^eslint", "^prettier", "^@types/"],
       "groupName": "Linting & Types",
-      "groupSlug": "lint-types"
+      "groupSlug": "lint-types",
+      "matchPackageNames": ["/^eslint/", "/^prettier/", "/^@types//"]
     }
   ],
   "rangeStrategy": "replace",
