@@ -3,6 +3,11 @@ import type { SchemaResolverStore } from "../state/schema-resolver"
 import { parse as parseTtl } from "@frogcat/ttl2jsonld"
 import { RO_CRATE_VERSION } from "@/lib/constants"
 
+export const DedupedSymbol = Symbol(
+    "return value for fetch operations that are deduped and therefore aborted"
+)
+type DedupedSymbol = typeof DedupedSymbol
+
 export class SchemaResolver {
     // SchemaResolver becomes ready with the first {@link SchemaResolver.updateRegisteredSchemas} call
     private ready = false
@@ -28,6 +33,7 @@ export class SchemaResolver {
 
             try {
                 const schema = await this.fetchSchema(registeredSchema.schemaUrl)
+                if (schema === DedupedSymbol) continue // schema is already being fetched elsewhere in parallel
                 loadedSchemas.set(registeredSchema.id, { schema })
             } catch (e) {
                 console.error(`Failed to get schema with key ${registeredSchema.id}:`, e)
@@ -80,7 +86,9 @@ export class SchemaResolver {
     async forceLoad(schemaId: string) {
         const schema = this.registeredSchemas.find((schema) => schema.id === schemaId)
         if (!schema) return
-        return this.fetchSchema(schema.schemaUrl)
+        const fetched = await this.fetchSchema(schema.schemaUrl)
+        if (fetched === DedupedSymbol) return
+        return fetched
     }
 
     loadAll(exclude: string[]) {
@@ -93,10 +101,12 @@ export class SchemaResolver {
         }))
     }
 
-    private fetchSchema(url: string): Promise<SchemaFile> {
+    private async fetchSchema(url: string): Promise<SchemaFile | DedupedSymbol> {
         const existing = this.runningFetches.get(url)
         if (existing) {
-            return existing
+            return existing.then(() => DedupedSymbol) // After the existing fetch is done, return with DedupedSymbol
+            // Because the existing fetch will actually fetch the schema and add it to the editor store, we do not need to fetch it again.
+            // We simply wait until the existing fetch is done.
         } else {
             const promise = fetch(url, {
                 headers: { Accept: "text/turtle" }
