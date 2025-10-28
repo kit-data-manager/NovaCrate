@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    ":dependencyDashboard",
+    ":semanticCommits"
+  ],
+  "minimumReleaseAge": "3 days",
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "groupName": "Alle npm Dependencies",
+      "groupSlug": "npm-all",
+      "separateMajorMinor": true
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "groupName": "DevDependencies",
+      "groupSlug": "npm-dev-deps"
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "prPriority": 1
+    },
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": false
+    },
+    {
+      "matchPackagePatterns": ["^eslint", "^prettier", "^@types/"],
+      "groupName": "Linting & Types",
+      "groupSlug": "lint-types"
+    }
+  ],
+  "rangeStrategy": "replace",
+  "timezone": "Europe/Berlin",
+  "baseBranchPatterns": ["dev"]
+}
