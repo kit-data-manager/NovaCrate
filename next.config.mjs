@@ -4,7 +4,7 @@ import bundleAnalyzer from "@next/bundle-analyzer"
 const basePath = process.env.BASE_PATH ?? undefined
 const nextConfig = {
     basePath: basePath,
-    output: "export",
+    output: process.env.OUTPUT ?? "export",
     env: {
         NEXT_PUBLIC_BASE_PATH: basePath
     }
