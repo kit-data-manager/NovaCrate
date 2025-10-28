@@ -23,7 +23,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           # list of Docker images to use as base name for tags
-          images: ghcr.io/${{ github.repository_owner }}/novacrate:latest
+          images: ghcr.io/${{ github.repository_owner }}/novacrate
           # generate Docker tags based on the following events/attributes
           tags: |
             type=semver,pattern={{version}}
