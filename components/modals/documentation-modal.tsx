@@ -5,7 +5,7 @@ import {
     DialogHeader,
     DialogTitle
 } from "@/components/ui/dialog"
-import { memo, useEffect, useState } from "react"
+import { memo, useState } from "react"
 import { ExternalLinkIcon } from "lucide-react"
 
 export const DocumentationModal = memo(function DocumentationModal(props: {
@@ -14,15 +14,13 @@ export const DocumentationModal = memo(function DocumentationModal(props: {
 }) {
     const [render, setRender] = useState(props.open)
 
-    useEffect(() => {
-        if (props.open) {
-            setRender(true)
-        } else {
-            setTimeout(() => {
-                setRender(false)
-            }, 100)
-        }
-    }, [props.open])
+    if (props.open && !render) {
+        setRender(true)
+    } else {
+        setTimeout(() => {
+            if (render) setRender(false)
+        }, 100)
+    }
 
     return render ? <DocumentationModalInner {...props} /> : null
 })
