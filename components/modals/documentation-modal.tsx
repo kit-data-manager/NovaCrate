@@ -16,7 +16,7 @@ export const DocumentationModal = memo(function DocumentationModal(props: {
 
     if (props.open && !render) {
         setRender(true)
-    } else {
+    } else if (!props.open && render) {
         setTimeout(() => {
             if (render) setRender(false)
         }, 100)

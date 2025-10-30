@@ -13,6 +13,8 @@ export function Footer() {
                 <Link
                     href={"https://github.com/kit-data-manager/NovaCrate"}
                     className="opacity-50 hover:opacity-80 self-center justify-self-start"
+                    target={"_blank"}
+                    rel="noopener noreferrer"
                 >
                     <Image src="/github.svg" alt="GitHub logo" width="16" height="16" />
                 </Link>
@@ -23,6 +25,7 @@ export function Footer() {
                     href={"https://matwerk.datamanager.kit.edu/docs/data-protection.html"}
                     target={"_blank"}
                     className="justify-self-center text-muted-foreground text-xs truncate"
+                    rel="noopener noreferrer"
                 >
                     Privacy Policy
                 </Link>
