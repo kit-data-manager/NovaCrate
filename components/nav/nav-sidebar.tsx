@@ -15,9 +15,9 @@ import {
 import { PropsWithChildren, useCallback, useContext, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import packageJson from "@/package.json"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { useEditorState } from "@/lib/state/editor-state"
+import { Footer } from "@/components/footer"
 
 function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>) {
     const pathname = usePathname()
@@ -61,8 +61,8 @@ export function NavSidebar({ children }: PropsWithChildren) {
     return (
         <ResizablePanelGroup direction="horizontal" autoSaveId="globalSidebarLayout">
             <ResizablePanel minSize={10} defaultSize={15}>
-                <div className="relative h-full flex flex-col">
-                    <div className="flex flex-col gap-2 p-2 pt-0 min-w-40 pb-4 grow">
+                <div className="relative h-full min-w-40 flex flex-col">
+                    <div className="flex flex-col gap-2 p-2 pb-4 pt-0 grow">
                         <NavSidebarLink page="entities">
                             <PackageSearch className="size-4 mr-2" />
                             Entities
@@ -110,11 +110,9 @@ export function NavSidebar({ children }: PropsWithChildren) {
                             <BookOpenText className="size-4 mr-2" />
                             Documentation
                         </Button>
-
-                        <div className="text-center text-sm text-muted-foreground">
-                            {packageJson.name} v{packageJson.version}
-                        </div>
                     </div>
+
+                    <Footer />
                 </div>
             </ResizablePanel>
             <ResizableHandle className="bg-transparent" />
