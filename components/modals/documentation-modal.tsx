@@ -48,10 +48,10 @@ export function DocumentationModalInner({
                 <div className="flex gap-1">
                     <a
                         className="hover:underline underline-offset-4"
-                        href="https://w3id.org/ro/crate/1.1"
+                        href="https://w3id.org/ro/crate/1.2"
                         target="_blank"
                     >
-                        RO-Crate Specification v1.1
+                        RO-Crate Specification v1.2
                     </a>
                     <ExternalLinkIcon className="size-4" />
                 </div>
