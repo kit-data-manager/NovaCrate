@@ -81,7 +81,7 @@
         "eslint-config-next": "16.0.0",
         "eslint-config-prettier": "10.1.8",
         "eslint-plugin-immer": "0.0.1",
-        "npm-run-all2": "5.0.0",
+        "npm-run-all2": "8.0.4",
         "postcss": "8.5.6",
         "serve": "14.2.5",
         "tailwindcss": "4.1.16",
