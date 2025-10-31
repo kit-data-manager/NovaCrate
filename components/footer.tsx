@@ -19,7 +19,6 @@ export function Footer() {
                     <Image src="/github.svg" alt="GitHub logo" width="16" height="16" />
                 </Link>
             </div>
-
             <div className="grid grid-cols-2 gap-2 truncate">
                 <Link
                     href={"https://matwerk.datamanager.kit.edu/docs/data-protection.html"}
@@ -36,6 +35,9 @@ export function Footer() {
                 >
                     Legals
                 </Link>
+            </div>
+            <div className="text-xs text-muted-foreground text-center">
+                © 2025 Karlsruhe Institute of Technology (KIT)
             </div>
         </div>
     )
