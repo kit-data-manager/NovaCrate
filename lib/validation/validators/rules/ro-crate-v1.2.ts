@@ -3,7 +3,6 @@ import {
     EntityRule,
     EntityValidationResult,
     PropertyRule,
-    PropertyValidationResult,
     RuleBuilder
 } from "@/lib/validation/validators/rule-based-validator"
 import {
@@ -11,16 +10,15 @@ import {
     isDataEntity,
     isFileDataEntity,
     isFolderDataEntity,
-    isValidUrl,
-    referenceCheck
+    isValidUrl
 } from "@/lib/utils"
 import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { DateTime } from "luxon"
 import { ValidationResultBuilder } from "@/lib/validation/validation-result-builder"
 
-const builder = new ValidationResultBuilder("RO-Crate v1.1")
+const builder = new ValidationResultBuilder("RO-Crate v1.2")
 
-export const RoCrateV1_1 = {
+export const RoCrateV1_2 = {
     crateRules: ((ctx) => [
         async (crate) => {
             if (
@@ -35,7 +33,7 @@ export const RoCrateV1_1 = {
                         resultTitle: "Missing metadata entity",
                         resultDescription: "The crate must have a metadata entity",
                         helpUrl:
-                            "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
+                            "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#ro-crate-metadata-descriptor"
                     })
                 ]
             } else return []
@@ -45,7 +43,9 @@ export const RoCrateV1_1 = {
                 return [
                     builder.rule("missingRootEntity").error({
                         resultTitle: "Missing root entity",
-                        resultDescription: "The crate must have a root entity"
+                        resultDescription: "The crate must have a root entity",
+                        helpUrl:
+                            "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity"
                     })
                 ]
             }
@@ -61,25 +61,15 @@ export const RoCrateV1_1 = {
                 return results
             }
 
-            if (rootId !== "./") {
+            if (rootId !== "./" || !isValidUrl(rootId)) {
                 results.push(
                     builder.rule("rootEntityId").warning({
                         resultTitle: "Root entity id is not `./`",
-                        resultDescription: "The id of the root entity should be `./`",
+                        resultDescription:
+                            "The id of the root entity should be `./` or an absolute URI",
                         entityId: rootId,
                         helpUrl:
-                            "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
-                    })
-                )
-            }
-            if (rootId && !rootId.endsWith("/")) {
-                results.push(
-                    builder.rule("rootEntityId").error({
-                        resultTitle: "Root entity id invalid",
-                        resultDescription: "The id of the root entity MUST end with `/`",
-                        entityId: rootId,
-                        helpUrl:
-                            "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
+                            "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#direct-properties-of-the-root-data-entity"
                     })
                 )
             }
@@ -95,7 +85,7 @@ export const RoCrateV1_1 = {
                             "The metadata file `ro-crate-metadata.jsonld` should be renamed to `ro-crate-metadata.json`",
                         entityId: entity["@id"],
                         helpUrl:
-                            "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
+                            "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#ro-crate-metadata-descriptor"
                     })
                 ]
             } else return []
@@ -113,7 +103,7 @@ export const RoCrateV1_1 = {
                                 "The metadata entity does not have a `conformsTo` property. It should be a versioned permalink URI of the RO-Crate specification that the RO-Crate JSON-LD conforms to`",
                             entityId: entity["@id"],
                             helpUrl:
-                                "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
+                                "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#ro-crate-metadata-descriptor"
                         })
                     ]
                 } else if (
@@ -128,7 +118,7 @@ export const RoCrateV1_1 = {
                                 "The conformsTo of the RO-Crate Metadata File Descriptor SHOULD be a versioned permalink URI of the RO-Crate specification that the RO-Crate JSON-LD conforms to",
                             entityId: entity["@id"],
                             helpUrl:
-                                "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
+                                "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#ro-crate-metadata-descriptor"
                         })
                     ]
                 }
@@ -148,7 +138,7 @@ export const RoCrateV1_1 = {
                                 "The metadata entity does not have an `about` property. The `about` property must reference the root data entity of the RO-Crate",
                             entityId: entity["@id"],
                             helpUrl:
-                                "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
+                                "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#ro-crate-metadata-descriptor"
                         })
                     ]
                 }
@@ -162,10 +152,11 @@ export const RoCrateV1_1 = {
                     results.push(
                         builder.rule("rootEntityType").error({
                             resultTitle: "Incorrect root entity type",
-                            resultDescription: "The type of the root entity MUST be `Dataset`",
+                            resultDescription:
+                                "The type of the root entity MUST be or MUST contain `Dataset`",
                             entityId: entity["@id"],
                             helpUrl:
-                                "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
+                                "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#direct-properties-of-the-root-data-entity"
                         })
                     )
                 }
@@ -177,7 +168,7 @@ export const RoCrateV1_1 = {
                                 "The root entity MUST have a `name` property to disambiguate it from other RO-Crates",
                             entityId: entity["@id"],
                             helpUrl:
-                                "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
+                                "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#direct-properties-of-the-root-data-entity"
                         })
                     )
                 }
@@ -189,7 +180,7 @@ export const RoCrateV1_1 = {
                                 "The root entity MUST have a `description` to provide a summary of the context in which the dataset is important",
                             entityId: entity["@id"],
                             helpUrl:
-                                "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
+                                "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#direct-properties-of-the-root-data-entity"
                         })
                     )
                 }
@@ -201,7 +192,7 @@ export const RoCrateV1_1 = {
                                 "The root entity MUST have a `datePublished` property containing an ISO 8601 date string denoting when the RO-Crate was published",
                             entityId: entity["@id"],
                             helpUrl:
-                                "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
+                                "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#direct-properties-of-the-root-data-entity"
                         })
                     )
                 } else if (!("license" in entity)) {
@@ -212,14 +203,13 @@ export const RoCrateV1_1 = {
                                 "The root entity MUST have a `license` property referencing a Contextual Entity or a URI. It MAY also be a textual description of a license.",
                             entityId: entity["@id"],
                             helpUrl:
-                                "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
+                                "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#direct-properties-of-the-root-data-entity"
                         })
                     )
                 }
             }
             return results
         },
-
         async (entity) => {
             const results: EntityValidationResult[] = []
             if (!ctx.serviceProvider || !ctx.crateData.crateId) return results
@@ -238,7 +228,7 @@ export const RoCrateV1_1 = {
                                 resultDescription: `This entity points to a file at \`${entity["@id"]}\`, but the \`type\` of the entity is not \`File\``,
                                 entityId: entity["@id"],
                                 helpUrl:
-                                    "https://www.researchobject.org/ro-crate/specification/1.1/data-entities.html"
+                                    "https://www.researchobject.org/ro-crate/specification/1.2/data-entities.html"
                             })
                         )
                     } else if (result.type === "directory" && !isFolderDataEntity(entity)) {
@@ -248,7 +238,7 @@ export const RoCrateV1_1 = {
                                 resultDescription: `This entity points to a directory at \`${entity["@id"]}\`, but the \`type\` of the entity is not \`Dataset\``,
                                 entityId: entity["@id"],
                                 helpUrl:
-                                    "https://www.researchobject.org/ro-crate/specification/1.1/data-entities.html"
+                                    "https://www.researchobject.org/ro-crate/specification/1.2/data-entities.html"
                             })
                         )
                     }
@@ -263,7 +253,7 @@ export const RoCrateV1_1 = {
                             resultDescription: `This data entity points to a file or directory at \`${entity["@id"]}\`, but the corresponding file or directory could not be found in the crate.`,
                             entityId: entity["@id"],
                             helpUrl:
-                                "https://www.researchobject.org/ro-crate/specification/1.1/data-entities.html"
+                                "https://www.researchobject.org/ro-crate/specification/1.2/data-entities.html"
                         })
                     )
                 }
@@ -289,7 +279,7 @@ export const RoCrateV1_1 = {
                             entityId: entity["@id"],
                             propertyName: "datePublished",
                             helpUrl:
-                                "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
+                                "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#direct-properties-of-the-root-data-entity"
                         })
                     ]
                 }
@@ -307,7 +297,7 @@ export const RoCrateV1_1 = {
                                 entityId: entity["@id"],
                                 propertyName: "license",
                                 helpUrl:
-                                    "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
+                                    "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#direct-properties-of-the-root-data-entity"
                             })
                         ]
                     } else if (
@@ -324,7 +314,7 @@ export const RoCrateV1_1 = {
                                 entityId: entity["@id"],
                                 propertyName: "license",
                                 helpUrl:
-                                    "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#direct-properties-of-the-root-data-entity"
+                                    "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#direct-properties-of-the-root-data-entity"
                             })
                         ]
                     }
@@ -362,46 +352,13 @@ export const RoCrateV1_1 = {
                                 entityId: entity["@id"],
                                 propertyName: "@type",
                                 helpUrl:
-                                    "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
+                                    "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#ro-crate-metadata-descriptor"
                             })
                         ]
                     }
                 }
 
             return []
-        },
-        async (entity, propertyName) => {
-            const results: PropertyValidationResult[] = []
-            try {
-                const propertyId = ctx.editorState.crateContext.resolve(propertyName)
-                if (!propertyId) return []
-                const range = await ctx.schemaWorker.worker.execute("getPropertyRange", propertyId)
-
-                if (!referenceCheck(range.map((s) => s["@id"]))) {
-                    // Values can't be references
-                    propertyValue(entity[propertyName]).forEach((v, i) => {
-                        // Exception: URLs seem to be allowed anywhere
-                        if (PropertyValueUtils.isRef(v) && !isValidUrl(v["@id"])) {
-                            results.push(
-                                builder.rule("unallowedRef").error({
-                                    resultTitle: `Property \`${propertyName}\` can't be a reference`,
-                                    resultDescription: `The property \`${propertyName}\` only allows textual values, but it contains a reference. Remove the reference.`,
-                                    entityId: entity["@id"],
-                                    propertyName,
-                                    propertyIndex: i
-                                })
-                            )
-                        }
-                    })
-                }
-                // Checking if text is allowed is not that simple, skipped for now...
-            } catch (e) {
-                console.error(
-                    `getPropertyRange failed on entity ${entity["@id"]} with property ${propertyName}`,
-                    e
-                )
-            }
-            return results
         }
     ]) satisfies RuleBuilder<PropertyRule>
 }
