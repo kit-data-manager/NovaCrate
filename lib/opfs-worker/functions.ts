@@ -121,6 +121,12 @@ export async function getFileInfo(crateId: string, filePath: string) {
 }
 
 export async function getCrates() {
+    // crate storage dir may not exist when app is started for the first time
+    const crateStorageExists = await fs.stat(`/${CRATE_STORAGE}`)
+    if (!crateStorageExists.isOk() || crateStorageExists.unwrap().kind !== "directory") {
+        return []
+    }
+
     const result = await fs.readDir(`/${CRATE_STORAGE}`)
     if (!result.isOk()) throw result.unwrapErr()
 

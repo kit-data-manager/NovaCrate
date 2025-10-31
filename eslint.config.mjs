@@ -10,7 +10,14 @@ const eslintConfig = defineConfig([
         "out/**",
         "build/**",
         "next-env.d.ts"
-    ])
+    ]),
+    [
+        {
+            rules: {
+                "react-hooks/refs": "warn"
+            }
+        }
+    ]
 ])
 
 export default eslintConfig

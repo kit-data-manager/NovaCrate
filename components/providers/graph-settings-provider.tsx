@@ -31,7 +31,7 @@ export function useGraphSettings<T>(selector: (store: GraphSettings) => T): T {
 export function useGraphSettingsNoSelector(): GraphSettings {
     const store = useContext(GraphSettingsContext)
 
-    if (!store) throw "useGraphState used outside of GraphSettingsContext"
+    if (!store) throw "useGraphSettingsNoSelector used outside of GraphSettingsContext"
 
     return useStore(store)
 }
