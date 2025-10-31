@@ -16,6 +16,7 @@ import EntityActions from "@/components/actions/entity-actions"
 import { EntityEditorTabsSupervisor } from "@/components/editor/entity-editor-tabs-supervisor"
 import { ValidationContextProvider } from "@/components/providers/validation-context"
 import { CrateValidationSupervisor } from "@/components/crate-validation-supervisor"
+import { DataSaveHint } from "@/components/data-save-hint"
 
 export default function EditorLayout(props: PropsWithChildren) {
     return (
@@ -50,6 +51,7 @@ const ProviderBoundary = memo(function ProviderBoundary(props: PropsWithChildren
             <RecentlyUsed />
             <EntityEditorTabsSupervisor />
             <CrateValidationSupervisor />
+            <DataSaveHint />
             <Nav>{props.children}</Nav>
         </>
     )
