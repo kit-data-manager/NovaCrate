@@ -9,6 +9,7 @@ import { useShallow } from "zustand/react/shallow"
 export function EntityEditorTabsSupervisor() {
     const entitiesChangelist = useEditorState(useShallow((store) => store.getEntitiesChangelist()))
     const entities = useEditorState((store) => store.entities)
+    const rootEntityId = useEditorState((store) => store.getRootEntityId())
     const tabs = useEntityEditorTabs((store) => store.tabs)
     const openTab = useEntityEditorTabs((store) => store.openTab)
 
@@ -25,9 +26,9 @@ export function EntityEditorTabsSupervisor() {
 
     const rootOpened = useRef(false)
     useEffect(() => {
-        if (rootOpened.current) return
+        if (rootOpened.current || !rootEntityId) return
 
-        const root = entities.get("./")
+        const root = entities.get(rootEntityId)
         if (root) {
             openTab(createEntityEditorTab(root), true)
             rootOpened.current = true
@@ -35,7 +36,7 @@ export function EntityEditorTabsSupervisor() {
             // Assume entities are done with loading and there is no root
             rootOpened.current = true
         }
-    }, [entities, openTab])
+    }, [entities, openTab, rootEntityId])
 
     return null
 }
