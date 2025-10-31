@@ -29,13 +29,13 @@ export function Footer() {
                 >
                     Privacy Policy
                 </Link>
-                {/*<Link*/}
-                {/*    href={`https://github.com/kit-data-manager/NovaCrate/blob/v${packageJson.version}/LICENSE`}*/}
-                {/*    target={"_blank"}*/}
-                {/*    className={"justify-self-center text-muted-foreground text-xs truncate"}*/}
-                {/*>*/}
-                {/*    Legal Notice*/}
-                {/*</Link>*/}
+                <Link
+                    href={`https://www.kit.edu/legals.php`}
+                    target={"_blank"}
+                    className={"justify-self-center text-muted-foreground text-xs truncate"}
+                >
+                    Legals
+                </Link>
             </div>
         </div>
     )
