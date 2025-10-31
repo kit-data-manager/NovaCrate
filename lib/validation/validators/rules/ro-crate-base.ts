@@ -9,7 +9,7 @@ import { findEntity, isValidUrl, toArray } from "@/lib/utils"
 import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { ValidationResultBuilder } from "@/lib/validation/validation-result-builder"
 
-const builder = new ValidationResultBuilder("RO-Crate Basics")
+const builder = new ValidationResultBuilder("spec-basics")
 
 export const RoCrateBase = {
     entityRules: (() => [

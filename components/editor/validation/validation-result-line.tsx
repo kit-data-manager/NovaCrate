@@ -103,7 +103,7 @@ export const ValidationResultLine = memo(function ValidationResultLine({
                 </div>
                 <div className={`text-muted-foreground text-xs ${truncate && "line-clamp-1"}`}>
                     <Markdown allowedElements={["a", "code", "pre", "em", "strong", "i", "p"]}>
-                        {`${result.resultDescription} (${result.validatorName}${result.ruleName ? ": " + result.ruleName : ""})`}
+                        {`${result.resultDescription} (${result.validatorName}${result.ruleName ? "/" + result.ruleName : ""})`}
                     </Markdown>
                 </div>
             </div>

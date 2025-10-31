@@ -18,7 +18,7 @@ import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { DateTime } from "luxon"
 import { ValidationResultBuilder } from "@/lib/validation/validation-result-builder"
 
-const builder = new ValidationResultBuilder("RO-Crate v1.1")
+const builder = new ValidationResultBuilder("spec-v1.1")
 
 export const RoCrateV1_1 = {
     crateRules: ((ctx) => [

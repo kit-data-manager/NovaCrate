@@ -16,7 +16,7 @@ import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { DateTime } from "luxon"
 import { ValidationResultBuilder } from "@/lib/validation/validation-result-builder"
 
-const builder = new ValidationResultBuilder("RO-Crate v1.2")
+const builder = new ValidationResultBuilder("spec-v1.2")
 
 export const RoCrateV1_2 = {
     crateRules: ((ctx) => [
@@ -61,7 +61,7 @@ export const RoCrateV1_2 = {
                 return results
             }
 
-            if (rootId !== "./" || !isValidUrl(rootId)) {
+            if (rootId !== "./" && !isValidUrl(rootId)) {
                 results.push(
                     builder.rule("rootEntityId").warning({
                         resultTitle: "Root entity id is not `./`",
