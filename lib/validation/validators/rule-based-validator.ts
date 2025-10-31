@@ -28,18 +28,22 @@ export class RuleBasedValidator extends Validator {
         context: ValidatorContext,
         private crateRuleBuilder: RuleBuilder<CrateRule>,
         private entityRuleBuilder: RuleBuilder<EntityRule>,
-        private propertyRuleBuilder: RuleBuilder<PropertyRule>
+        private propertyRuleBuilder: RuleBuilder<PropertyRule>,
+        // Hook to prevent running the validator depending on the context. Useful, for example, to prevent running the validator on the wrong spec.
+        private preflightHook?: (ctx: ValidatorContext) => boolean
     ) {
         super(context)
     }
 
     async validateCrate(crate: ICrate): Promise<ValidationResult[]> {
+        if (this.preflightHook && !this.preflightHook(super.getContext())) return []
+
         const crateRules = this.crateRuleBuilder(super.getContext())
         const results = await Promise.allSettled(crateRules.map((rule) => rule(crate)))
         return results
             .filter((result): result is PromiseFulfilledResult<CrateValidationResult[]> => {
                 if (result.status === "rejected") {
-                    console.error("[RuleBasedValidator] Crate rule failed:", result.reason)
+                    console.error(`[${this.name}] Crate rule failed:`, result.reason)
                     return false
                 }
                 return true
@@ -49,6 +53,8 @@ export class RuleBasedValidator extends Validator {
     }
 
     async validateProperty(entity: IEntity, propertyName: string): Promise<ValidationResult[]> {
+        if (this.preflightHook && !this.preflightHook(super.getContext())) return []
+
         const crateRules = this.propertyRuleBuilder(super.getContext())
         const results = await Promise.allSettled(
             crateRules.map((rule) => rule(entity, propertyName))
@@ -56,7 +62,7 @@ export class RuleBasedValidator extends Validator {
         return results
             .filter((result): result is PromiseFulfilledResult<PropertyValidationResult[]> => {
                 if (result.status === "rejected") {
-                    console.error("[RuleBasedValidator] Property rule failed:", result.reason)
+                    console.error(`[${this.name}] Property rule failed:`, result.reason)
                     return false
                 }
                 return true
@@ -66,12 +72,14 @@ export class RuleBasedValidator extends Validator {
     }
 
     async validateEntity(entity: IEntity): Promise<ValidationResult[]> {
+        if (this.preflightHook && !this.preflightHook(super.getContext())) return []
+
         const entityRules = this.entityRuleBuilder(super.getContext())
         const results = await Promise.allSettled(entityRules.map((rule) => rule(entity)))
         return results
             .filter((result): result is PromiseFulfilledResult<EntityValidationResult[]> => {
                 if (result.status === "rejected") {
-                    console.error("[RuleBasedValidator] Entity rule failed:", result.reason)
+                    console.error(`[${this.name}] Entity rule failed:`, result.reason)
                     return false
                 }
                 return true
