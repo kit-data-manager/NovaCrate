@@ -16,12 +16,18 @@ export function Footer() {
                     target={"_blank"}
                     rel="noopener noreferrer"
                 >
-                    <Image src="/github.svg" alt="GitHub logo" width="16" height="16" />
+                    <Image
+                        src="/github.svg"
+                        alt="GitHub logo"
+                        width="16"
+                        height="16"
+                        className="dark:invert"
+                    />
                 </Link>
             </div>
             <div className="grid grid-cols-2 gap-2 truncate">
                 <Link
-                    href={"https://matwerk.datamanager.kit.edu/docs/data-protection.html"}
+                    href={"https://www.kit.edu/privacypolicy.php"}
                     target={"_blank"}
                     className="justify-self-center text-muted-foreground text-xs truncate"
                     rel="noopener noreferrer"
