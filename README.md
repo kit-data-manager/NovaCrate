@@ -10,13 +10,13 @@ NovaCrate is in active development; we welcome feedback, feature requests, and b
 <summary>⚠️ There are two public instances</summary>
 
 Note that there are currently two public instances of NovaCrate:
- - On GitHub Pages at [kit-data-manager.github.io/NovaCrate/](https://kit-data-manager.github.io/NovaCrate/)
- - On our own servers at [novacrate.datamanager.kit.edu](https://novacrate.datamanager.kit.edu/)
+- On GitHub Pages at [kit-data-manager.github.io/NovaCrate/](https://kit-data-manager.github.io/NovaCrate/)
+- On our own servers at [novacrate.datamanager.kit.edu](https://novacrate.datamanager.kit.edu/)
 
 The crates you open and create on each instance are not shared between the instances, so you will have to return to the correct instance to see your recent crates.
 We can't guarantee that both instances will always be available. Make sure to download your work before leaving the app.
 
-All data you use in NovaCrate is exclusively stored in your browser's local storage and can therefore not be transferred to other instances.
+All data you use in NovaCrate is exclusively stored in your browser's local storage and therefore cannot be transferred to other instances.
 </details>
 
 <details>

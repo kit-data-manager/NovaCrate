@@ -41,6 +41,7 @@ export function Footer() {
                     href={`https://www.kit.edu/legals.php`}
                     target={"_blank"}
                     className={"justify-self-center text-muted-foreground text-xs truncate"}
+                    rel="noopener noreferrer"
                 >
                     Legals
                 </Link>
