@@ -87,7 +87,7 @@ export async function moveFileOrFolder(crateId: string, filePath: string, newFil
 export async function getCrateDirContents(crateId: string) {
     // First, check if crate storage dir exists and create it if not
     const crateDirExists = await fs.exists(resolveCratePath(crateId, crateId))
-    if (!crateDirExists.isOk) throw crateDirExists.unwrapErr()
+    if (!crateDirExists.isOk()) throw crateDirExists.unwrapErr()
     else if (!crateDirExists.unwrap()) {
         const mkdirResult = await fs.mkdir(resolveCratePath(crateId, crateId))
         if (!mkdirResult.isOk()) throw mkdirResult.unwrapErr()
