@@ -195,7 +195,8 @@ export const RoCrateV1_2 = {
                                 "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#direct-properties-of-the-root-data-entity"
                         })
                     )
-                } else if (!("license" in entity)) {
+                }
+                if (!("license" in entity)) {
                     results.push(
                         builder.rule("rootEntityLicense").error({
                             resultTitle: "Missing root entity property:  license",
