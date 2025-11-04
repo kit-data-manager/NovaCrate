@@ -187,7 +187,7 @@ export default function EditorLandingPage() {
         data: storedCrates,
         error: storedCratesError,
         mutate: revalidate
-    } = useSWR("stored-crates", storedCratesResolver)
+    } = useSWR("stored-crates", storedCratesResolver, { dedupingInterval: 500 })
 
     const openZipFilePicker = useCallback(() => {
         createUploadInputRef.current?.click()
