@@ -48,6 +48,7 @@ export function DocumentationModalInner({
                         className="hover:underline underline-offset-4"
                         href="https://w3id.org/ro/crate/1.2"
                         target="_blank"
+                        rel="noopener noreferrer"
                     >
                         RO-Crate Specification v1.2
                     </a>
@@ -59,6 +60,7 @@ export function DocumentationModalInner({
                         className="hover:underline underline-offset-4"
                         href="https://github.com/kit-data-manager/novacrate"
                         target="_blank"
+                        rel="noopener noreferrer"
                     >
                         NovaCrate Repository
                     </a>
