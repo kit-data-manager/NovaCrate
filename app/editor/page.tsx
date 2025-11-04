@@ -18,7 +18,6 @@ import {
     Sun
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import packageJson from "@/package.json"
 import { useTheme } from "next-themes"
 import {
     DropdownMenu,
@@ -41,6 +40,7 @@ import { GlobalModalContext } from "@/components/providers/global-modals-provide
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import useSWR from "swr"
+import { Footer } from "@/components/footer"
 
 export default function EditorLandingPage() {
     const router = useRouter()
@@ -233,7 +233,6 @@ export default function EditorLandingPage() {
                     <h2 className="text-5xl font-bold">NovaCrate</h2>
                     <h4>RO-Crate Editor</h4>
                 </div>
-
                 <div className="flex flex-col items-center pr-14">
                     <div className="flex items-start flex-col">
                         <Button
@@ -295,11 +294,7 @@ export default function EditorLandingPage() {
 
                 <div className="grow" />
 
-                <div className="flex flex-col items-center text-muted-foreground pb-4">
-                    <div>
-                        {packageJson.name} v{packageJson.version}
-                    </div>
-                </div>
+                <Footer />
             </div>
 
             <div
