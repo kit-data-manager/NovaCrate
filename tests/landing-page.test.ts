@@ -4,12 +4,6 @@ test("Landing Page Tests", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
     await expect(page.getByText("Your recently used crates")).toBeVisible()
     await page.getByRole("tab", { name: "All Crates" }).click()
-    await page
-        .getByLabel("All Crates")
-        .locator("div")
-        .filter({ hasText: "An Error occured while" })
-        .nth(1)
-        .click()
     await page.getByRole("button", { name: "Open Crate" }).click()
     await page.getByTestId("create-upload-input").setInputFiles("tests/data/TestCrate.zip")
     await page.getByRole("menuitem", { name: "Editor" }).click()
