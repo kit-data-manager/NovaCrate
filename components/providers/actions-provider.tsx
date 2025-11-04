@@ -23,13 +23,13 @@ export function ActionsProvider(props: PropsWithChildren) {
 export function useActionsStore<T>(selector: (store: ActionStore) => T): T {
     const actions = useContext(ActionsContext)
 
-    if (!actions) throw "useActions used outside of ActionsContext"
+    if (!actions) throw "useActionsStore used outside of ActionsContext"
     return useStoreWithEqualityFn(actions, selector, shallow)
 }
 
 export function useActionsNoSelector(): ActionStore {
     const actions = useContext(ActionsContext)
 
-    if (!actions) throw "useActions used outside of ActionsContext"
+    if (!actions) throw "useActionsNoSelector used outside of ActionsContext"
     return useStore(actions)
 }
