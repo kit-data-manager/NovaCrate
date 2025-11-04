@@ -2,7 +2,10 @@ import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useRe
 import { ValidationProvider } from "@/lib/validation/validation-provider"
 import { useEditorState } from "@/lib/state/editor-state"
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
-import { makeSpecificationValidator } from "@/lib/validation/validators/specification-validator"
+import {
+    makeBaseValidator,
+    makeSpecificationValidators
+} from "@/lib/validation/validators/specification-validator"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 
 export interface ValidationContext {
@@ -28,7 +31,12 @@ export function ValidationContextProvider({ children }: PropsWithChildren) {
     const validation = useRef<ValidationProvider>(null!)
     if (!validation.current) {
         validation.current = new ValidationProvider(ctx)
-        validation.current.addValidator(makeSpecificationValidator())
+
+        const specValidators = makeSpecificationValidators()
+        for (const validator of specValidators) {
+            validation.current.addValidator(validator)
+        }
+        validation.current.addValidator(makeBaseValidator())
     }
 
     useEffect(() => {

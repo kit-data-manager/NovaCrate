@@ -87,7 +87,7 @@ export async function moveFileOrFolder(crateId: string, filePath: string, newFil
 export async function getCrateDirContents(crateId: string) {
     // First, check if crate storage dir exists and create it if not
     const crateDirExists = await fs.exists(resolveCratePath(crateId, crateId))
-    if (!crateDirExists.isOk) throw crateDirExists.unwrapErr()
+    if (!crateDirExists.isOk()) throw crateDirExists.unwrapErr()
     else if (!crateDirExists.unwrap()) {
         const mkdirResult = await fs.mkdir(resolveCratePath(crateId, crateId))
         if (!mkdirResult.isOk()) throw mkdirResult.unwrapErr()
@@ -121,6 +121,12 @@ export async function getFileInfo(crateId: string, filePath: string) {
 }
 
 export async function getCrates() {
+    // crate storage dir may not exist when app is started for the first time
+    const crateStorageExists = await fs.stat(`/${CRATE_STORAGE}`)
+    if (!crateStorageExists.isOk() || crateStorageExists.unwrap().kind !== "directory") {
+        return []
+    }
+
     const result = await fs.readDir(`/${CRATE_STORAGE}`)
     if (!result.isOk()) throw result.unwrapErr()
 
