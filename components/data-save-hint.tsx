@@ -1,3 +1,5 @@
+"use client"
+
 import { useGlobalSettings } from "@/components/providers/global-settings-provider"
 import { useCallback, useEffect, useRef } from "react"
 import { toast } from "sonner"
