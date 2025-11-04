@@ -4,7 +4,7 @@ import Image from "next/image"
 
 export function Footer() {
     return (
-        <div className="bg-muted py-3 px-2 flex flex-col gap-3 shrink-0">
+        <div className="bg-muted py-3 px-2 flex flex-col gap-1 shrink-0">
             <div className="grid grid-cols-[1fr_auto_1fr] text-sm text-muted-foreground">
                 <div />
                 <div className="self-center justify-self-center px-3">
@@ -25,6 +25,9 @@ export function Footer() {
                     />
                 </Link>
             </div>
+            <div className="text-xs text-muted-foreground text-center">
+                © 2025 Karlsruhe Institute of Technology (KIT)
+            </div>
             <div className="grid grid-cols-2 gap-2 truncate">
                 <Link
                     href={"https://www.kit.edu/privacypolicy.php"}
@@ -41,9 +44,6 @@ export function Footer() {
                 >
                     Legals
                 </Link>
-            </div>
-            <div className="text-xs text-muted-foreground text-center">
-                © 2025 Karlsruhe Institute of Technology (KIT)
             </div>
         </div>
     )
