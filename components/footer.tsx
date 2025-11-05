@@ -1,6 +1,7 @@
 import packageJson from "@/package.json"
 import Link from "next/link"
 import Image from "next/image"
+import { addBasePath } from "next/dist/client/add-base-path"
 
 export function Footer() {
     return (
@@ -17,7 +18,7 @@ export function Footer() {
                     rel="noopener noreferrer"
                 >
                     <Image
-                        src="/github.svg"
+                        src={addBasePath("/github.svg")}
                         alt="GitHub logo"
                         width="16"
                         height="16"
