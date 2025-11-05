@@ -38,7 +38,6 @@ test("Edit Properties", async ({ page }) => {
 })
 
 test("Edit different Property Types (no links), then save", async ({ page }) => {
-    await page.goto("http://localhost:3000/editor")
     await loadTestCrate(page)
 
     await page.getByRole("textbox").first().dblclick()
@@ -94,7 +93,6 @@ test("Edit different Property Types (no links), then save", async ({ page }) => 
 })
 
 test("Change field type and change back", async ({ page }) => {
-    await page.goto("http://localhost:3000/editor")
     await loadTestCrate(page)
 
     await expect(page.locator("body")).toMatchAriaSnapshot(
@@ -152,7 +150,6 @@ test("Change field type and change back", async ({ page }) => {
 })
 
 test("Change field type and revert", async ({ page }) => {
-    await page.goto("http://localhost:3000/editor")
     await loadTestCrate(page)
 
     await page.getByRole("spinbutton").click()
@@ -180,7 +177,6 @@ test("Change field type and revert", async ({ page }) => {
 })
 
 test("Add Entries of different types and save", async ({ page }) => {
-    await page.goto("http://localhost:3000/editor")
     await loadTestCrate(page)
 
     await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
@@ -220,7 +216,6 @@ test("Add Entries of different types and save", async ({ page }) => {
 })
 
 test("Add Reference and follow it", async ({ page }) => {
-    await page.goto("http://localhost:3000/editor")
     await loadTestCrate(page)
 
     await page.locator("#property-editor-hasPart-right #add-property-dropdown-trigger").click()
@@ -302,7 +297,6 @@ test("Add Reference and follow it", async ({ page }) => {
 })
 
 test("Add many properties and test pagination", async ({ page }) => {
-    await page.goto("http://localhost:3000/editor")
     await loadTestCrate(page)
 
     await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
