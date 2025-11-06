@@ -138,6 +138,27 @@ export default function Home() {
                             </Button>
                         </Link>
                     </div>
+                    <div className="text-center text-muted-foreground text-sm">
+                        RO-Crates used as examples on this page are{" "}
+                        <Link
+                            className="underline"
+                            href={
+                                "https://github.com/TheELNConsortium/TheELNFileFormat/tree/master/examples/elabftw"
+                            }
+                        >
+                            eLabFTW examples
+                        </Link>{" "}
+                        (MIT license) as well as the{" "}
+                        <Link
+                            className="underline"
+                            href={
+                                "https://www.researchobject.org/ro-crate/specification/1.2/index.html"
+                            }
+                        >
+                            RO-Crate Specification v1.2 JSON-LD
+                        </Link>{" "}
+                        (Apache-2.0 license)
+                    </div>
                 </div>
             </div>
 
