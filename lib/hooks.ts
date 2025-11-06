@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { crateDetailsKey } from "@/components/landing/util"
 import { useEditorState } from "@/lib/state/editor-state"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { encodeFilePath, getEntityDisplayName } from "@/lib/utils"
@@ -360,4 +360,38 @@ export function useDemoCrateLoader() {
             return null
         }
     }, [])
+}
+
+// https://github.com/vercel/next.js/discussions/49465#discussioncomment-12001315
+export const useHash = () => {
+    const router = useRouter()
+    const path = usePathname()
+    const search = useSearchParams()
+
+    const [hash, setHash] = useState("")
+
+    useEffect(() => {
+        const onHashChanged = () => setHash(window.location.hash)
+        const { pushState, replaceState } = window.history
+        window.history.pushState = function (...args) {
+            pushState.apply(window.history, args)
+            setTimeout(() => setHash(window.location.hash))
+        }
+        window.history.replaceState = function (...args) {
+            replaceState.apply(window.history, args)
+            setTimeout(() => setHash(window.location.hash))
+        }
+        window.addEventListener("hashchange", onHashChanged)
+        return () => {
+            window.removeEventListener("hashchange", onHashChanged)
+        }
+    }, [])
+
+    const removeHash = () => {
+        let newPath = path ?? ""
+        if (search) newPath += `?${search.toString()}`
+        router.replace(newPath, { scroll: false })
+    }
+
+    return { hash, removeHash }
 }
