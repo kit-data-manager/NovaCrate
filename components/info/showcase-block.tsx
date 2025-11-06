@@ -24,8 +24,8 @@ export function ShowcaseBlock({
     const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
-        if (!mounted) setMounted(true)
-    }, [mounted])
+        setMounted(true)
+    }, [])
 
     const text = (
         <div className="self-center justify-self-center">

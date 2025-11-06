@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { RotatingText } from "@/components/ui/rotating-text"
-import { ShowcaseBlock } from "@/components/info/ShowcaseBlock"
+import { ShowcaseBlock } from "@/components/info/showcase-block"
 import Link from "next/link"
 import { ArrowDown, ArrowRight, Moon, PackageIcon, Sun } from "lucide-react"
 import { Footer } from "@/components/footer"
@@ -18,10 +18,12 @@ export default function Home() {
                     size="lg"
                     variant="link"
                     className="col-start-2 rounded-none border-r-0 h-12"
-                    onClick={() => theme.setTheme(theme.theme === "light" ? "dark" : "light")}
+                    onClick={() =>
+                        theme.setTheme(theme.resolvedTheme === "light" ? "dark" : "light")
+                    }
                     suppressHydrationWarning
                 >
-                    {theme.theme === "light" ? (
+                    {theme.resolvedTheme === "light" ? (
                         <Sun className="w-6 h-6 mr-3 shrink-0" suppressHydrationWarning />
                     ) : (
                         <Moon className="w-6 h-6 mr-3 shrink-0" suppressHydrationWarning />
