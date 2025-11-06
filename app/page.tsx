@@ -53,6 +53,7 @@ export default function Home() {
                         title={"Editor"}
                         imgLight={"/img/editor-light2.png"}
                         imgDark={"/img/editor-dark2.png"}
+                        alt={"NovaCrate Editor capabilities showcase"}
                         tip={
                             "While working on an entity, NovaCrate will show you which properties have been added, removed or modified using colored highlights."
                         }
@@ -68,6 +69,7 @@ export default function Home() {
                         title={"File Explorer"}
                         imgLight={"/img/file-explorer-light2.png"}
                         imgDark={"/img/file-explorer-dark2.png"}
+                        alt={"NovaCrate File Explorer capabilities showcase"}
                         rtl
                         tip={
                             " You can view some supported file types directly in the editor, which can be very handy when manually extracting metadata from a PDF file for example."
@@ -81,6 +83,7 @@ export default function Home() {
                         title={"Graph"}
                         imgLight={"/img/graph-light2.png"}
                         imgDark={"/img/graph-dark2.png"}
+                        alt={"NovaCrate Graph capabilities showcase"}
                         tip={
                             "You can drag-and-drop new connections between entities or remove existing ones directly in the graph."
                         }
@@ -102,6 +105,7 @@ export default function Home() {
                         imgLight={"/img/validation-light2.png"}
                         imgDark={"/img/validation-dark2.png"}
                         rtl
+                        alt={"NovaCrate Validation capabilities showcase"}
                         tip={
                             "  Validation may be incomplete or inconsistent. You can disable the validation in the settings."
                         }
@@ -116,6 +120,7 @@ export default function Home() {
                         imgLight={"/img/settings-light2.png"}
                         imgDark={"/img/settings-dark.png"}
                         tip={"Schemas are loaded on-demand, only when they are needed."}
+                        alt={"NovaCrate Configuration capabilities showcase"}
                     >
                         The underlying schemas used for type inference and validation can be
                         configured on the fly. By setting a download URL for a schema in the JSON-LD
@@ -128,6 +133,7 @@ export default function Home() {
                         imgLight={"/img/quickstart-light.png"}
                         imgDark={"/img/quickstart-dark.png"}
                         tip={"Feel free to bring your own RO-Crate to try out NovaCrate!"}
+                        alt={"NovaCrate Quickstart capabilities showcase"}
                         rtl
                     >
                         Ready to try out NovaCrate? Simply use the Quickstart button at the top of

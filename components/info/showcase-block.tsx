@@ -10,6 +10,7 @@ export function ShowcaseBlock({
     imgLight,
     imgDark,
     title,
+    alt,
     children,
     rtl,
     tip
@@ -17,6 +18,7 @@ export function ShowcaseBlock({
     imgLight: string
     imgDark: string
     title: string
+    alt: string
     rtl?: boolean
     tip?: string
 }>) {
@@ -51,7 +53,7 @@ export function ShowcaseBlock({
             <Image
                 src={addBasePath(resolvedTheme === "dark" && mounted ? imgDark : imgLight)}
                 className="shadow-lg rounded-md justify-self-center self-center"
-                alt={"NovaCrate Editor showcase"}
+                alt={alt}
                 width={1000}
                 height={1000}
             />
