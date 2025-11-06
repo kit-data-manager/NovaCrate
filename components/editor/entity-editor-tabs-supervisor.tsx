@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react"
 import { Diff } from "@/lib/utils"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useShallow } from "zustand/react/shallow"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useHash } from "@/lib/hooks"
 
 /**
@@ -29,6 +29,7 @@ export function EntityEditorTabsSupervisor() {
     const openTab = useEntityEditorTabs((store) => store.openTab)
     const router = useRouter()
     const { hash } = useHash()
+    const path = usePathname()
 
     /**
      * Searches for any changed or new entities and opens a tab for each
@@ -68,10 +69,10 @@ export function EntityEditorTabsSupervisor() {
 
     useEffect(() => {
         const newHash = "#" + encodeURIComponent(activeTabEntityID)
-        if (newHash === hashRef.current) return
+        if (newHash === hashRef.current || path !== "/editor/full/entities") return
         router.push(newHash)
         console.log("pushing new hash because of entity change: ", activeTabEntityID)
-    }, [activeTabEntityID, router])
+    }, [activeTabEntityID, path, router])
 
     const activeTabEntityIDRef = useRef(activeTabEntityID)
     useEffect(() => {
