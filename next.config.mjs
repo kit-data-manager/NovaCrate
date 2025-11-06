@@ -7,7 +7,8 @@ const nextConfig = {
     output: process.env.OUTPUT ?? "export",
     env: {
         NEXT_PUBLIC_BASE_PATH: basePath
-    }
+    },
+    images: { unoptimized: true }
 }
 
 const withBundleAnalyzer = bundleAnalyzer({
