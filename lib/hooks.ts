@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { crateDetailsKey } from "@/components/landing/util"
 import { useEditorState } from "@/lib/state/editor-state"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { encodeFilePath, getEntityDisplayName } from "@/lib/utils"
@@ -364,10 +364,6 @@ export function useDemoCrateLoader() {
 
 // https://github.com/vercel/next.js/discussions/49465#discussioncomment-12001315
 export const useHash = () => {
-    const router = useRouter()
-    const path = usePathname()
-    const search = useSearchParams()
-
     const [hash, setHash] = useState("")
 
     useEffect(() => {
@@ -383,15 +379,11 @@ export const useHash = () => {
         }
         window.addEventListener("hashchange", onHashChanged)
         return () => {
+            window.history.pushState = pushState
+            window.history.replaceState = replaceState
             window.removeEventListener("hashchange", onHashChanged)
         }
     }, [])
 
-    const removeHash = () => {
-        let newPath = path ?? ""
-        if (search) newPath += `?${search.toString()}`
-        router.replace(newPath, { scroll: false })
-    }
-
-    return { hash, removeHash }
+    return { hash }
 }
