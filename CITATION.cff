@@ -4,7 +4,7 @@ type: software
 title: novacrate
 abstract: Web-based interactive editor for creating, editing and visualising 
   research object crates.
-version: 1.3.2
+version: 1.4.0
 keywords:
   - ro-crate
   - ro
