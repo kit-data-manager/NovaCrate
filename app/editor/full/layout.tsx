@@ -17,22 +17,26 @@ import { EntityEditorTabsSupervisor } from "@/components/editor/entity-editor-ta
 import { ValidationContextProvider } from "@/components/providers/validation-context"
 import { CrateValidationSupervisor } from "@/components/crate-validation-supervisor"
 import { DataSaveHint } from "@/components/data-save-hint"
+import { UnsavedChangesProtector } from "@/components/UnsavedChangesProtector"
+import { NavigationGuardProvider } from "next-navigation-guard"
 
 export default function EditorLayout(props: PropsWithChildren) {
     return (
-        <ActionsProvider>
-            <SchemaWorkerProvider>
-                <GlobalModalProvider>
-                    <GraphStateProvider>
-                        <GraphSettingsProvider>
-                            <ValidationContextProvider>
-                                <ProviderBoundary>{props.children}</ProviderBoundary>
-                            </ValidationContextProvider>
-                        </GraphSettingsProvider>
-                    </GraphStateProvider>
-                </GlobalModalProvider>
-            </SchemaWorkerProvider>
-        </ActionsProvider>
+        <NavigationGuardProvider>
+            <ActionsProvider>
+                <SchemaWorkerProvider>
+                    <GlobalModalProvider>
+                        <GraphStateProvider>
+                            <GraphSettingsProvider>
+                                <ValidationContextProvider>
+                                    <ProviderBoundary>{props.children}</ProviderBoundary>
+                                </ValidationContextProvider>
+                            </GraphSettingsProvider>
+                        </GraphStateProvider>
+                    </GlobalModalProvider>
+                </SchemaWorkerProvider>
+            </ActionsProvider>
+        </NavigationGuardProvider>
     )
 }
 
@@ -52,6 +56,7 @@ const ProviderBoundary = memo(function ProviderBoundary(props: PropsWithChildren
             <EntityEditorTabsSupervisor />
             <CrateValidationSupervisor />
             <DataSaveHint />
+            <UnsavedChangesProtector />
             <Nav>{props.children}</Nav>
         </>
     )
