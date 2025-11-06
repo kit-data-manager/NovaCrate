@@ -3,7 +3,7 @@ import { Draft, enableMapSet } from "immer"
 import { AutoReference, Diff, isEntityEqual } from "@/lib/utils"
 import { CrateContext } from "@/lib/crate-context"
 import { createWithEqualityFn } from "zustand/traditional"
-import { useStore } from "zustand/index"
+import { useStore } from "zustand"
 import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
 import { PropertyValueUtils } from "@/lib/property-value-utils"
 
@@ -98,7 +98,8 @@ export const editorState = createWithEqualityFn<EditorState>()(
         entities: new Map<string, IEntity>(),
 
         updateCrateContext(crateContext: CrateContextType) {
-            if (getState().crateContext.isSameAs(crateContext)) return
+            if (getState().crateContextReady && getState().crateContext.isSameAs(crateContext))
+                return
 
             setState((s) => {
                 s.crateContextReady = false
