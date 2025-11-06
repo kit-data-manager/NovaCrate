@@ -17,6 +17,8 @@ import { useHash } from "@/lib/hooks"
  * a corresponding tab is opened if it doesn't already exist. Additionally, it ensures that
  * the root entity tab is opened once during initialization.
  *
+ * This function also takes care of the hash-based entity tab navigation.
+ *
  * @return Always returns `null` as this function does not render any UI components
  * directly but handles state-side operations for editor tabs.
  */
@@ -67,11 +69,13 @@ export function EntityEditorTabsSupervisor() {
         hashRef.current = hash
     }, [hash])
 
+    /**
+     * Updates the URL hash when the active tab changes.
+     */
     useEffect(() => {
         const newHash = "#" + encodeURIComponent(activeTabEntityID)
         if (newHash === hashRef.current || path !== "/editor/full/entities") return
         router.push(newHash)
-        console.log("pushing new hash because of entity change: ", activeTabEntityID)
     }, [activeTabEntityID, path, router])
 
     const activeTabEntityIDRef = useRef(activeTabEntityID)
@@ -79,11 +83,13 @@ export function EntityEditorTabsSupervisor() {
         activeTabEntityIDRef.current = activeTabEntityID
     }, [activeTabEntityID])
 
+    /**
+     * Whenever the current hash changes, it checks if the entity ID matches the active tab. If not, the corresponding tab is opened.
+     */
     useEffect(() => {
         const entityId = decodeURIComponent(hash.slice(1))
         if (entityId === activeTabEntityIDRef.current) return
 
-        console.log(`navigating to ${entityId} because of hash change`)
         const entities = editorState.getState().entities
         if (entities.has(entityId)) {
             const tab = useEntityEditorTabs.getState().tabs.find((tab) => tab.entityId === entityId)

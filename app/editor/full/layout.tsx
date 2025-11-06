@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, PropsWithChildren, useContext, useEffect } from "react"
+import { memo, PropsWithChildren, Suspense, useContext, useEffect } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Nav } from "@/components/nav/nav"
 import { usePathname } from "next/navigation"
@@ -53,7 +53,9 @@ const ProviderBoundary = memo(function ProviderBoundary(props: PropsWithChildren
             <EntityActions />
             <ActionKeyboardShortcuts />
             <RecentlyUsed />
-            <EntityEditorTabsSupervisor />
+            <Suspense>
+                <EntityEditorTabsSupervisor />
+            </Suspense>
             <CrateValidationSupervisor />
             <DataSaveHint />
             <UnsavedChangesProtector />
