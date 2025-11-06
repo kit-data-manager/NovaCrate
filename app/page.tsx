@@ -1,14 +1,32 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { RotatingText } from "@/components/ui/rotating-text"
 import { ShowcaseBlock } from "@/components/info/ShowcaseBlock"
 import Link from "next/link"
-import { ArrowDown, ArrowRight, PackageIcon } from "lucide-react"
+import { ArrowDown, ArrowRight, Moon, PackageIcon, Sun } from "lucide-react"
 import { Footer } from "@/components/footer"
+import { useTheme } from "next-themes"
 
 export default function Home() {
+    const theme = useTheme()
+
     return (
         <div>
-            <div className="grid grid-cols-[1fr_max(1200px)_1fr] mb-16">
+            <div className="grid grid-cols-[1fr_max(1600px)_1fr] mb-16">
+                <Button
+                    size="lg"
+                    variant="link"
+                    className="col-start-2 rounded-none border-r-0 h-12"
+                    onClick={() => theme.setTheme(theme.theme === "light" ? "dark" : "light")}
+                    suppressHydrationWarning
+                >
+                    {theme.theme === "light" ? (
+                        <Sun className="w-6 h-6 mr-3 shrink-0" suppressHydrationWarning />
+                    ) : (
+                        <Moon className="w-6 h-6 mr-3 shrink-0" suppressHydrationWarning />
+                    )}
+                </Button>
                 <div className="col-start-2 h-[calc(100vh-300px)] min-h-[300px] flex flex-col justify-center items-center gap-4">
                     <h1 className="flex items-center gap-4 text-6xl font-extrabold">
                         <PackageIcon className="h-full w-auto aspect-square" /> NovaCrate
@@ -31,8 +49,8 @@ export default function Home() {
                     </div>
                     <ShowcaseBlock
                         title={"Editor"}
-                        imgLight={"/img/editor-light.png"}
-                        imgDark={"/img/editor-dark.png"}
+                        imgLight={"/img/editor-light2.png"}
+                        imgDark={"/img/editor-dark2.png"}
                         tip={
                             "While working on an entity, NovaCrate will show you which properties have been added, removed or modified using colored highlights."
                         }
@@ -46,8 +64,8 @@ export default function Home() {
                     </ShowcaseBlock>
                     <ShowcaseBlock
                         title={"File Explorer"}
-                        imgLight={"/img/file-explorer-light.png"}
-                        imgDark={"/img/file-explorer-dark.png"}
+                        imgLight={"/img/file-explorer-light2.png"}
+                        imgDark={"/img/file-explorer-dark2.png"}
                         rtl
                         tip={
                             " You can view some supported file types directly in the editor, which can be very handy when manually extracting metadata from a PDF file for example."
@@ -59,8 +77,8 @@ export default function Home() {
                     </ShowcaseBlock>
                     <ShowcaseBlock
                         title={"Graph"}
-                        imgLight={"/img/graph-light.png"}
-                        imgDark={"/img/graph-dark.png"}
+                        imgLight={"/img/graph-light2.png"}
+                        imgDark={"/img/graph-dark2.png"}
                         tip={
                             "You can drag-and-drop new connections between entities or remove existing ones directly in the graph."
                         }
@@ -70,10 +88,17 @@ export default function Home() {
                         graph. NovaCrate provides a graph view to make it easy to see the
                         relationships between your entities.
                     </ShowcaseBlock>
+                    <div className="flex justify-center">
+                        <Link href={"/editor"}>
+                            <Button size="lg">
+                                Open NovaCrate <ArrowRight />
+                            </Button>
+                        </Link>
+                    </div>
                     <ShowcaseBlock
                         title={"Validation"}
-                        imgLight={"/img/validation-light.png"}
-                        imgDark={"/img/validation-dark.png"}
+                        imgLight={"/img/validation-light2.png"}
+                        imgDark={"/img/validation-dark2.png"}
                         rtl
                         tip={
                             "  Validation may be incomplete or inconsistent. You can disable the validation in the settings."
@@ -86,7 +111,7 @@ export default function Home() {
                     </ShowcaseBlock>
                     <ShowcaseBlock
                         title={"Configuration"}
-                        imgLight={"/img/settings-light.png"}
+                        imgLight={"/img/settings-light2.png"}
                         imgDark={"/img/settings-dark.png"}
                         tip={"Schemas are loaded on-demand, only when they are needed."}
                     >
@@ -96,8 +121,26 @@ export default function Home() {
                         the editor. Note that you have to take care of maintaining a proper JSON-LD
                         context in your crate by yourself - if you extend the default context.
                     </ShowcaseBlock>
+                    <ShowcaseBlock
+                        title={"Quickstart"}
+                        imgLight={"/img/quickstart-light.png"}
+                        imgDark={"/img/quickstart-dark.png"}
+                        tip={"Feel free to bring your own RO-Crate to try out NovaCrate!"}
+                        rtl
+                    >
+                        Ready to try out NovaCrate? Simply use the Quickstart button at the top of
+                        the main menu after opening NovaCrate.
+                    </ShowcaseBlock>
+                    <div className="flex justify-center">
+                        <Link href={"/editor"}>
+                            <Button size="lg">
+                                Open NovaCrate <ArrowRight />
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
             </div>
+
             <Footer />
         </div>
     )

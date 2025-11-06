@@ -19,12 +19,7 @@ export default function RootLayout({
     return (
         <html lang="en" className="w-full h-full" suppressHydrationWarning>
             <body className={"w-full h-full " + inter.className}>
-                <ThemeProvider
-                    attribute="class"
-                    defaultTheme="dark"
-                    enableSystem
-                    disableTransitionOnChange
-                >
+                <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
                     <TooltipProvider>{children}</TooltipProvider>
                     <Toaster />
                 </ThemeProvider>

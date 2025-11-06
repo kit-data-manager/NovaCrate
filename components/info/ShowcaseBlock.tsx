@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { addBasePath } from "next/dist/client/add-base-path"
-import { PropsWithChildren } from "react"
+import { PropsWithChildren, useEffect, useState } from "react"
 import { useTheme } from "next-themes"
 import { Lightbulb } from "lucide-react"
 
@@ -21,6 +21,11 @@ export function ShowcaseBlock({
     tip?: string
 }>) {
     const { resolvedTheme } = useTheme()
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        if (!mounted) setMounted(true)
+    }, [mounted])
 
     const text = (
         <div className="self-center justify-self-center">
@@ -44,11 +49,11 @@ export function ShowcaseBlock({
         <div className="grid grid-cols-2 gap-8 border border-border rounded-lg p-8 overflow-hidden">
             {rtl && text}
             <Image
-                src={addBasePath(resolvedTheme === "dark" ? imgDark : imgLight)}
+                src={addBasePath(resolvedTheme === "dark" && mounted ? imgDark : imgLight)}
                 className="shadow-lg rounded-md justify-self-center self-center"
                 alt={"NovaCrate Editor showcase"}
-                width={500}
-                height={500}
+                width={1000}
+                height={1000}
             />
             {!rtl && text}
         </div>
