@@ -8,6 +8,7 @@ import {
     changeEntityId,
     encodeFilePath,
     extractOrcidIdentifier,
+    extractRorIdentifier,
     isDataEntity,
     isFolderDataEntity
 } from "@/lib/utils"
@@ -328,8 +329,35 @@ export class BrowserBasedCrateService extends CrateServiceBase {
         }
     }
 
-    importOrganizationFromRor(): Promise<string> {
-        throw "Not supported in browser-based environment yet"
+    async importOrganizationFromRor(crateId: string, url: string): Promise<string> {
+        const orcid = extractRorIdentifier(url)
+
+        const req = await fetch(`https://api.ror.org/v2/organizations/${orcid}`, {
+            headers: {
+                Accept: "application/json"
+            }
+        })
+        if (req.ok) {
+            const json = (await req.json()) as RorRecord
+
+            const entity: IEntity = {
+                "@id": json.id,
+                "@type": "Organization",
+                name:
+                    json.names.find(
+                        (n) => n.types.includes("ror_display") || n.types.includes("label")
+                    )?.value ?? "",
+                url: json.links.find((l) => l.type === "website")?.value ?? json.id
+            }
+
+            if (await this.createEntity(crateId, entity)) {
+                return entity["@id"]
+            } else {
+                throw "Could not create entity. Is the identifier already in use?"
+            }
+        } else {
+            throw `Could not fetch ROR organization (${req.status})`
+        }
     }
 
     async addCustomContextPair(crateId: string, key: string, value: string) {
