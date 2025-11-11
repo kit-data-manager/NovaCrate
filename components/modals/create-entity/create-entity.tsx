@@ -262,7 +262,6 @@ export function CreateEntity({
                             <TabsTrigger value="with-file">
                                 <HardDrive className="size-4" /> Local File
                             </TabsTrigger>
-                            or
                             <TabsTrigger value="without-file">
                                 <Globe className="size-4" /> Web Resource
                             </TabsTrigger>
@@ -298,7 +297,6 @@ export function CreateEntity({
                             <TabsTrigger value="with-file">
                                 <HardDrive className="size-4" /> Local Folder
                             </TabsTrigger>
-                            or
                             <TabsTrigger value="without-file">
                                 <Globe className="size-4" /> Web Resource
                             </TabsTrigger>
