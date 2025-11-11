@@ -213,7 +213,7 @@ export function CreateEntity({
         )
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 min-w-0">
             <DialogHeader>
                 <DialogTitle>Create a new {camelCaseReadable(selectedType)} Entity</DialogTitle>
 
@@ -271,9 +271,17 @@ export function CreateEntity({
                         <>
                             <Label>File</Label>
                             <div>
-                                <Button variant="outline" onClick={openFilePicker}>
-                                    <File className="size-4 mr-2" />
-                                    {plainFiles.length == 0 ? "Select File" : plainFiles[0].name}
+                                <Button
+                                    className="min-w-0 max-w-full truncate"
+                                    variant="outline"
+                                    onClick={openFilePicker}
+                                >
+                                    <File className="size-4 mr-2 shrink-0" />
+                                    <span className="truncate min-w-0">
+                                        {plainFiles.length == 0
+                                            ? "Select File"
+                                            : plainFiles[0].name}
+                                    </span>
                                 </Button>
                                 <span className="ml-2 text-muted-foreground">
                                     {plainFiles.length == 0 ? "" : prettyBytes(plainFiles[0].size)}
@@ -307,11 +315,17 @@ export function CreateEntity({
                             <Label>Folder</Label>
                             <div className="flex items-center">
                                 {!emptyFolder ? (
-                                    <Button variant="outline" onClick={openFolderPicker}>
+                                    <Button
+                                        className="min-w-0 max-w-full truncate shrink"
+                                        variant="outline"
+                                        onClick={openFolderPicker}
+                                    >
                                         <Folder className="size-4 mr-2" />
-                                        {folderFiles.length == 0
-                                            ? "Select Folder"
-                                            : folderFiles[0].webkitRelativePath.split("/")[0]}
+                                        <span className={"truncate min-w-0"}>
+                                            {folderFiles.length == 0
+                                                ? "Select Folder"
+                                                : folderFiles[0].webkitRelativePath.split("/")[0]}
+                                        </span>
                                     </Button>
                                 ) : null}
                                 {baseFileName || emptyFolder ? null : (
