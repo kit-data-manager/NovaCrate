@@ -374,6 +374,30 @@ export function sortValidationResultByName(a: ValidationResult, b: ValidationRes
     return strA.localeCompare(strB)
 }
 
+/**
+ * Extracts the ORCID identifier from a URL or returns the identifier if already provided.
+ * @param input - Either an ORCID URL (e.g., "https://orcid.org/0009-0003-2196-9187")
+ *                or an ORCID identifier (e.g., "0009-0003-2196-9187")
+ * @returns The ORCID identifier
+ * @throws Error if no valid ORCID identifier is found
+ */
+export function extractOrcidIdentifier(input: string): string {
+    // Remove leading/trailing whitespace
+    const trimmed = input.trim()
+
+    // ORCID identifier pattern: XXXX-XXXX-XXXX-XXXX (where X is a digit, last char can be X)
+    const orcidPattern = /\d{4}-\d{4}-\d{4}-\d{3}[\dX]/
+
+    // Try to match the pattern in the input string
+    const match = trimmed.match(orcidPattern)
+
+    if (match) {
+        return match[0]
+    }
+
+    throw new Error(`No valid ORCID identifier found in: "${input}"`)
+}
+
 export interface AutoReference {
     entityId: string
     propertyName: string
