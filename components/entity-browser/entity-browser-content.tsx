@@ -6,6 +6,7 @@ import { useContext } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EntityBrowserItem } from "@/components/entity-browser/entity-browser-item"
+import { useEditorState } from "@/lib/state/editor-state"
 
 export function EntityBrowserContent({
     defaultSectionOpen,
@@ -15,6 +16,7 @@ export function EntityBrowserContent({
     onSectionOpenChange(): void
 }) {
     const crate = useContext(CrateDataContext)
+    const rootEntityId = useEditorState((s) => s.getRootEntityId())
 
     if (!crate.crateData)
         return (
@@ -33,7 +35,7 @@ export function EntityBrowserContent({
 
     return (
         <div id="entity-browser-content" className="flex flex-col p-2 overflow-y-auto">
-            <EntityBrowserItem entityId={"./"} />
+            {rootEntityId && <EntityBrowserItem entityId={rootEntityId} />}
             <EntityBrowserSection
                 section={"Data"}
                 defaultSectionOpen={defaultSectionOpen}
