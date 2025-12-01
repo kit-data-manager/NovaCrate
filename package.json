@@ -44,7 +44,7 @@
     "cmdk": "^1.1.1",
     "dagre": "^0.8.5",
     "happy-opfs": "file:happy-opfs-1.8.4.tgz",
-    "immer": "^10.0.4",
+    "immer": "^11.0.0",
     "js-file-download": "^0.4.12",
     "jszip": "^3.10.1",
     "lucide-react": "^0.553.0",
