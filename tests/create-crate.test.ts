@@ -24,13 +24,7 @@ test("Quickstart", async ({ page }) => {
     ).toBeVisible()
     await expect(page.locator("#entity-browser-content")).toMatchAriaSnapshot(`
     - button "R RO-Crate specification datasetDataset"
-    - button "Data Entities":
-      - img
-      - text: ""
-    - button "D Packaging research artefacts with RO-Crate (RO-Crate)Dataset"
-    - button "F RO-Crate JSON-LD ContextFile"
-    - button "F RO-Crate Metadata Specification 1.1CreativeWork, File"
-    - button "Contextual Entities":
+    - button /Contextual Entities \\(\\d+\\)/:
       - img
       - text: ""
     - button "C A lightweight approach to research object data packagingScholarlyArticle"
@@ -124,5 +118,11 @@ test("Quickstart", async ({ page }) => {
     - button "C Tomasz MiksaPerson"
     - button "C Workflows and scriptsWebPage, CreativeWork"
     - button "C Xuanqi LiPerson"
+    - button "Data Entities (3)":
+      - img
+      - text: ""
+    - button "D Packaging research artefacts with RO-Crate (RO-Crate)Dataset"
+    - button "F RO-Crate JSON-LD ContextFile"
+    - button "F RO-Crate Metadata Specification 1.1CreativeWork, File"
     `)
 })

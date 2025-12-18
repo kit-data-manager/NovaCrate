@@ -31,14 +31,17 @@ test("Rename Contextual Entity", async ({ page }) => {
     `)
     await expect(page.locator("#entity-browser-content")).toMatchAriaSnapshot(`
     - button "R TestCrateDataset"
-    - button "Data Entities":
+    - button "Contextual Entities (4)":
       - img
-    - button "F JSON Result FileFile"
-    - button "Contextual Entities":
-      - img
+      - text: ""
     - button "C Example OrgOrganization"
     - button "C KarlsruhePlace"
+    - button "C ro-crate-metadata.jsonCreativeWork"
     - button "C Test PersonPerson"
+    - button "Data Entities (1)":
+      - img
+      - text: ""
+    - button "F JSON Result FileFile"
     `)
 })
 
