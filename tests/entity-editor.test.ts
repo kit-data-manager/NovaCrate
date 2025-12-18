@@ -5,14 +5,17 @@ test("Edit Properties", async ({ page }) => {
     await loadTestFolder(page)
     await expect(page.locator("#entity-browser-content")).toMatchAriaSnapshot(`
     - button "R Testing FolderDataset"
-    - button "Data Entities":
+    - button "Contextual Entities (1)":
       - img
+      - text: "Contextual Entities (1)"
+    - button "C ro-crate-metadata.jsonCreativeWork"
+    - button "Data Entities (4)":
+      - img
+      - text: "Data Entities (4)"
     - button "F candles-9247498_1280.jpgFile"
     - button "F description.txtFile"
     - button "F empty-fileFile"
     - button "F example.jsonFile"
-    - button "Contextual Entities":
-      - img
     `)
     await page.getByRole("textbox").first().click()
     await page.getByRole("textbox").first().press("ControlOrMeta+a")
