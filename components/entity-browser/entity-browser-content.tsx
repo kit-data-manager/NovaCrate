@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { useEditorState } from "@/lib/state/editor-state"
 import { isDataEntity, toArray } from "@/lib/utils"
+import { GithubDiscontinuationWarning } from "@/components/github-discontinuation-warning"
 
 export function EntityBrowserContent({
     defaultSectionOpen,
@@ -79,6 +80,7 @@ export function EntityBrowserContent({
 
     return (
         <div id="entity-browser-content" className="flex flex-col p-2 overflow-y-auto">
+            <GithubDiscontinuationWarning />
             {structure.map(([sectionTitle, entities]) => (
                 <EntityBrowserSection
                     key={sectionTitle}
