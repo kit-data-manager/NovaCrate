@@ -156,10 +156,6 @@ export function NavHeader() {
     const crateName = useCrateName()
     const searchAction = useAction("editor.global-search")
 
-    useEffect(() => {
-        console.log("search action changed")
-    }, [searchAction])
-
     const menubar = useMemo(() => {
         return (
             <Menubar>
