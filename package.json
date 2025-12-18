@@ -53,7 +53,6 @@
     "monaco-editor": "^0.55.0",
     "motion": "^12.23.24",
     "next": "^16.0.10",
-    "next-navigation-guard": "^0.2.0",
     "next-themes": "^0.4.4",
     "prettier": "^3.2.5",
     "pretty-bytes": "^7.0.0",
@@ -93,11 +92,6 @@
     "webpack": "5.103.0",
     "webpack-bundle-analyzer": "5.1.0",
     "webpack-cli": "6.0.1"
-  },
-  "overrides": {
-    "next-navigation-guard": {
-      "next": "^16.0.0"
-    }
   },
   "description": "Web-based interactive editor for creating, editing and visualising research object crates.",
   "keywords": [

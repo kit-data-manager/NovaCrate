@@ -18,25 +18,22 @@ import { ValidationContextProvider } from "@/components/providers/validation-con
 import { CrateValidationSupervisor } from "@/components/crate-validation-supervisor"
 import { DataSaveHint } from "@/components/data-save-hint"
 import { UnsavedChangesProtector } from "@/components/UnsavedChangesProtector"
-import { NavigationGuardProvider } from "next-navigation-guard"
 
 export default function EditorLayout(props: PropsWithChildren) {
     return (
-        <NavigationGuardProvider>
-            <ActionsProvider>
-                <SchemaWorkerProvider>
-                    <GlobalModalProvider>
-                        <GraphStateProvider>
-                            <GraphSettingsProvider>
-                                <ValidationContextProvider>
-                                    <ProviderBoundary>{props.children}</ProviderBoundary>
-                                </ValidationContextProvider>
-                            </GraphSettingsProvider>
-                        </GraphStateProvider>
-                    </GlobalModalProvider>
-                </SchemaWorkerProvider>
-            </ActionsProvider>
-        </NavigationGuardProvider>
+        <ActionsProvider>
+            <SchemaWorkerProvider>
+                <GlobalModalProvider>
+                    <GraphStateProvider>
+                        <GraphSettingsProvider>
+                            <ValidationContextProvider>
+                                <ProviderBoundary>{props.children}</ProviderBoundary>
+                            </ValidationContextProvider>
+                        </GraphSettingsProvider>
+                    </GraphStateProvider>
+                </GlobalModalProvider>
+            </SchemaWorkerProvider>
+        </ActionsProvider>
     )
 }
 
