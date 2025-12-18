@@ -1,30 +1,36 @@
 import { useStoreWithEqualityFn } from "zustand/traditional"
 import { editorState } from "@/lib/state/editor-state"
-import { getEntityDisplayName, isContextualEntity, isDataEntity } from "@/lib/utils"
 import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ChevronDown } from "lucide-react"
 import { EntityBrowserItem } from "@/components/entity-browser/entity-browser-item"
+import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
+import { getEntityDisplayName, toArray } from "@/lib/utils"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 
 export function EntityBrowserSection(props: {
-    section: "Data" | "Contextual"
+    entities: Set<string>
+    sectionTitle?: string
     defaultSectionOpen: DefaultSectionOpen
     onSectionOpenChange(): void
 }) {
+    const sortBy = useEntityBrowserSettings((store) => store.sortBy)
     const entities = useStoreWithEqualityFn(
         editorState,
         (store) => {
             return Array.from(store.entities.entries())
                 .map(([key, item]) => [key, item] as [string, IEntity])
-                .filter(([, item]) => item["@id"] !== store.getRootEntityId())
-                .filter(([, item]) =>
-                    props.section === "Data" ? isDataEntity(item) : isContextualEntity(item)
-                )
-                .sort((a, b) =>
-                    getEntityDisplayName(a[1]).localeCompare(getEntityDisplayName(b[1]))
-                )
+                .filter(([id]) => props.entities.has(id))
+                .sort((a, b) => {
+                    if (sortBy === "id") return a[1]["@id"].localeCompare(b[1]["@id"])
+                    else if (sortBy === "type")
+                        return toArray(a[1]["@type"])
+                            .sort()
+                            .join(", ")
+                            .localeCompare(toArray(b[1]["@type"]).sort().join(", "))
+                    else return getEntityDisplayName(a[1]).localeCompare(getEntityDisplayName(b[1]))
+                })
         },
         (a, b) => {
             if (a.length !== b.length) return false
@@ -48,6 +54,15 @@ export function EntityBrowserSection(props: {
         props.onSectionOpenChange()
     }, [open, props])
 
+    if (!props.sectionTitle)
+        return (
+            <div className="shrink-0 flex flex-col">
+                {entities.map(([key]) => {
+                    return <EntityBrowserItem entityId={key} key={key} />
+                })}
+            </div>
+        )
+
     return (
         <div className="shrink-0">
             <Button
@@ -60,7 +75,9 @@ export function EntityBrowserSection(props: {
                     className="w-5 h-5 mr-2 aria-disabled:-rotate-90 shrink-0"
                     aria-disabled={!open}
                 />
-                <div className="truncate mr-2">{props.section} Entities</div>
+                <div className="truncate mr-2">
+                    {props.sectionTitle} ({entities.length})
+                </div>
             </Button>
             {open ? (
                 <div className="flex flex-col pl-4">
