@@ -56,7 +56,7 @@ export function EntityBrowserContent({
                 }
             }
         } else {
-            throw "Unknown structureBy " + structureBy
+            throw new Error("Unknown structureBy " + structureBy)
         }
 
         return [...result.entries()].sort()

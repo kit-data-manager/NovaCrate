@@ -39,7 +39,6 @@ export function EntityEditor({
     const addPropertyEntry = useEditorState((store) => store.addPropertyEntry)
     const modifyPropertyEntry = useEditorState((store) => store.modifyPropertyEntry)
     const removePropertyEntry = useEditorState((store) => store.removePropertyEntry)
-    const getRootEntityId = useEditorState((store) => store.getRootEntityId)
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
 
@@ -79,8 +78,8 @@ export function EntityEditor({
     const showInFileExplorer = useGoToFileExplorer(entity)
 
     const isBeingPreviewed = useMemo(() => {
-        return previewingFilePath === entity?.["@id"]
-    }, [entity, previewingFilePath])
+        return previewingFilePath === entityId
+    }, [entityId, previewingFilePath])
 
     const hasUnsavedChanges = useMemo(() => {
         const diff = entitiesChangelist.get(entityId)
