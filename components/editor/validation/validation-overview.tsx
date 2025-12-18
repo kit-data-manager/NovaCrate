@@ -125,7 +125,9 @@ export const ValidationOverview = memo(function ValidationOverview({
         >
             <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant={"outline"}>{icon}</Button>
+                    <Button variant={"outline"} className={"validation-overview"}>
+                        {icon}
+                    </Button>
                 </PopoverTrigger>
                 <PopoverContent className="p-2 pb-0 pr-0 w-[600px]">
                     <div className="text-xs font-medium p-1 mb-1 flex justify-between">
