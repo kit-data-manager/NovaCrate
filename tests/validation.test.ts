@@ -1,0 +1,48 @@
+import { test, expect } from "@playwright/test"
+import { loadTestCrate } from "@/tests/common"
+
+test("Basic validation functionality", async ({ page }) => {
+    await loadTestCrate(page)
+    await expect(page.locator("#header-right-side")).toMatchAriaSnapshot(`- button "1 1"`)
+    await page.locator("#header-right-side").getByRole("button", { name: "1" }).click()
+    await page.getByRole("button", { name: "Show Details" }).click()
+    // Hide the validation overview popover by clicking somewhere else on the page
+    await page.getByText("ValidationF").click()
+    await expect(page.getByText("Error (1)")).toBeVisible()
+    await expect(page.getByText("Warning (1)")).toBeVisible()
+    await expect(
+        page.getByText("Missing root entity property: datePublished./").last()
+    ).toBeVisible()
+    await expect(page.getByText("Missing root entity property: license./").last()).toBeVisible()
+    await page.getByRole("button", { name: "Add Property" }).first().click()
+    await page.getByPlaceholder("Search...").fill("licen")
+    await page.getByPlaceholder("Search...").press("Enter")
+    await page.getByPlaceholder("Search...").press("Enter")
+    await page.locator("#single-property-editor-license-0").getByRole("textbox").click()
+    await page.locator("#single-property-editor-license-0").getByRole("textbox").fill("Apache-2.0")
+    await expect(page.getByText("There are unsaved changes")).toBeVisible()
+    await page.waitForTimeout(500)
+    await page.getByRole("button", { name: "Save" }).click()
+    await expect(page.getByText("Soft Warning (1)")).toBeVisible()
+    await expect(page.getByText("License field should be a reference./license")).toBeVisible()
+    await expect(page.getByText("Missing root entity property: datePublished./")).toBeVisible()
+    await page.getByRole("button", { name: "Add Property" }).first().click()
+    await page.getByPlaceholder("Search...").fill("datePub")
+    await page.getByPlaceholder("Search...").press("Enter")
+    await page.getByPlaceholder("Search...").press("ArrowDown")
+    await page.getByPlaceholder("Search...").press("Enter")
+    await page.getByRole("button", { name: "Save" }).click()
+    await expect(page.locator("#header-right-side")).toMatchAriaSnapshot(`- button "1"`)
+})
+
+test("Validation deactivation across page reloads", async ({ page }) => {
+    await loadTestCrate(page)
+    await expect(page.locator("#header-right-side")).toMatchAriaSnapshot(`- button "1 1"`)
+    await page.locator('button[name="settings"]').click()
+    await page.getByRole("button", { name: "Validation" }).click()
+    await page.getByRole("checkbox", { name: "Enable Validation" }).click()
+    await page.getByRole("button", { name: "Close" }).click()
+    await expect(page.locator("#header-right-side .validation-overview")).not.toBeVisible()
+    await page.goto("http://localhost:3000/editor/full/entities")
+    await expect(page.locator("#header-right-side .validation-overview")).not.toBeVisible()
+})

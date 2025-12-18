@@ -298,7 +298,7 @@ export function NavHeader() {
 
             <div />
 
-            <div className="flex justify-end items-center gap-2">
+            <div className="flex justify-end items-center gap-2" id={"header-right-side"}>
                 <ValidationOverview />
                 {error || saveError.size > 0 || healthTestError || schemaIssues.size > 0 ? (
                     <Popover>
@@ -332,6 +332,7 @@ export function NavHeader() {
                 <ActionButton
                     variant="outline"
                     actionId={"editor.global-search"}
+                    name={"search"}
                     noShortcut
                     hideName
                     className="text-muted-foreground font-normal hover:bg-background cursor-text"
@@ -341,7 +342,12 @@ export function NavHeader() {
                         <KeyboardShortcut action={searchAction} />
                     </span>
                 </ActionButton>
-                <ActionButton variant="secondary" actionId={"editor.settings"} iconOnly />
+                <ActionButton
+                    variant="secondary"
+                    name={"settings"}
+                    actionId={"editor.settings"}
+                    iconOnly
+                />
             </div>
         </div>
     )
