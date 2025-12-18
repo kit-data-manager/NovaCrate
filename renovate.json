@@ -4,29 +4,10 @@
     "minimumReleaseAge": "3 days",
     "packageRules": [
         {
+            "groupName": "high confidence minor and patch dependencies",
             "matchManagers": ["npm"],
-            "groupName": "npm Dependencies",
-            "groupSlug": "npm-all",
-            "separateMajorMinor": true
-        },
-        {
-            "matchDepTypes": ["devDependencies"],
-            "groupName": "npm DevDependencies",
-            "groupSlug": "npm-dev-deps"
-        },
-        {
-            "matchUpdateTypes": ["major"],
-            "automerge": false,
-            "prPriority": 1
-        },
-        {
             "matchUpdateTypes": ["minor", "patch"],
-            "automerge": false
-        },
-        {
-            "groupName": "Linting & Types",
-            "groupSlug": "lint-types",
-            "matchPackageNames": ["/^eslint/", "/^prettier/", "/^@types//"]
+            "matchConfidence": ["very high", "high"]
         }
     ],
     "rangeStrategy": "replace",

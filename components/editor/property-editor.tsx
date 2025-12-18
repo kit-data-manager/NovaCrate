@@ -130,7 +130,7 @@ export const PropertyEditor = memo(function PropertyEditor({
         setExpandComment((v) => !v)
     }, [])
 
-    const Comment = useCallback(() => {
+    const commentElement = useMemo(() => {
         if (commentIsPending || !crateContextReady) {
             return <Skeleton className="h-3 w-4/12 mt-1" />
         } else if (resolvedPropertyName === null) {
@@ -209,7 +209,7 @@ export const PropertyEditor = memo(function PropertyEditor({
                 <div
                     className={`${commentIsPending ? "text-background" : "text-muted-foreground"} text-sm transition`}
                 >
-                    <Comment />
+                    {commentElement}
                 </div>
                 {!!propertyRangeError && !commentError && (
                     <Tooltip>

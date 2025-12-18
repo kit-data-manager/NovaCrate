@@ -1,12 +1,12 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
+    ArrowDownNarrowWide,
     ChevronsDownUp,
     ChevronsUpDown,
     EllipsisVertical,
-    LayoutGrid,
     PackageSearch
 } from "lucide-react"
 import {
@@ -22,7 +22,6 @@ import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { ActionButton, ActionDropdownMenuItem } from "@/components/actions/action-buttons"
 import { PropertyOverview } from "@/components/editor/property-overview"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { DefaultSectionOpen } from "@/components/entity-browser/entity-browser-section"
 import { EntityBrowserContent } from "@/components/entity-browser/entity-browser-content"
 import { ImperativePanelHandle } from "react-resizable-panels"
@@ -31,10 +30,11 @@ export function EntityBrowser() {
     const state = useEntityBrowserSettings()
     const [defaultSectionOpen, setDefaultSectionOpen] = useState<DefaultSectionOpen>(true)
     const showPropertyOverview = useEntityBrowserSettings((store) => store.showPropertyOverview)
-    const setShowPropertyOverview = useEntityBrowserSettings(
-        (store) => store.setShowPropertyOverview
-    )
     const propertyOverviewPanel = useRef<ImperativePanelHandle>(null)
+    const sortBy = useEntityBrowserSettings((store) => store.sortBy)
+    const structureBy = useEntityBrowserSettings((store) => store.structureBy)
+    const setSortBy = useEntityBrowserSettings((store) => store.setSortBy)
+    const setStructureBy = useEntityBrowserSettings((store) => store.setStructureBy)
 
     const collapseAllSections = useCallback(() => {
         setDefaultSectionOpen(false)
@@ -48,10 +48,6 @@ export function EntityBrowser() {
         setDefaultSectionOpen("indeterminate")
     }, [])
 
-    const togglePropertyOverview = useCallback(() => {
-        setShowPropertyOverview(!showPropertyOverview)
-    }, [setShowPropertyOverview, showPropertyOverview])
-
     useEffect(() => {
         if (propertyOverviewPanel.current) {
             if (showPropertyOverview) {
@@ -62,7 +58,7 @@ export function EntityBrowser() {
         }
     }, [showPropertyOverview])
 
-    const EntityBrowserPanel = useCallback(() => {
+    const entityBrowserPanel = useMemo(() => {
         return (
             <div className="h-full w-full flex flex-col">
                 <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
@@ -86,14 +82,54 @@ export function EntityBrowser() {
                         iconOnly
                     />
 
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="outline" size="sm" onClick={togglePropertyOverview}>
-                                <LayoutGrid className="size-4" />
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                                <ArrowDownNarrowWide className="size-4" />
                             </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Toggle Property Overview</TooltipContent>
-                    </Tooltip>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                            <DropdownMenuCheckboxItem
+                                checked={sortBy === "name"}
+                                onClick={() => setSortBy("name")}
+                            >
+                                Name
+                            </DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem
+                                checked={sortBy === "id"}
+                                onClick={() => setSortBy("id")}
+                            >
+                                Identifier
+                            </DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem
+                                checked={sortBy === "type"}
+                                onClick={() => setSortBy("type")}
+                            >
+                                Type
+                            </DropdownMenuCheckboxItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel>Structure by</DropdownMenuLabel>
+                            <DropdownMenuCheckboxItem
+                                checked={structureBy === "none"}
+                                onClick={() => setStructureBy("none")}
+                            >
+                                None
+                            </DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem
+                                checked={structureBy === "general-type"}
+                                onClick={() => setStructureBy("general-type")}
+                            >
+                                Category
+                            </DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem
+                                checked={structureBy === "@type"}
+                                onClick={() => setStructureBy("@type")}
+                            >
+                                Type
+                            </DropdownMenuCheckboxItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -116,6 +152,14 @@ export function EntityBrowser() {
                                 }
                             >
                                 Show ID instead of Name
+                            </DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem
+                                checked={state.showPropertyOverview}
+                                onClick={() =>
+                                    state.setShowPropertyOverview(!state.showPropertyOverview)
+                                }
+                            >
+                                Show Property Overview
                             </DropdownMenuCheckboxItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={collapseAllSections}>
@@ -140,14 +184,17 @@ export function EntityBrowser() {
         defaultSectionOpen,
         expandAllSections,
         onSectionOpenChange,
+        setSortBy,
+        setStructureBy,
+        sortBy,
         state,
-        togglePropertyOverview
+        structureBy
     ])
 
     return (
         <ResizablePanelGroup direction={"vertical"}>
             <ResizablePanel defaultSize={100} minSize={10}>
-                <EntityBrowserPanel />
+                {entityBrowserPanel}
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel defaultSize={0} minSize={10} ref={propertyOverviewPanel} collapsible>
