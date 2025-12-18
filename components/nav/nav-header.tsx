@@ -28,7 +28,7 @@ import {
     MenubarTrigger
 } from "@/components/ui/menubar"
 import { useTheme } from "next-themes"
-import React, { useCallback, useContext, useMemo, useState } from "react"
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
@@ -156,6 +156,121 @@ export function NavHeader() {
     const crateName = useCrateName()
     const searchAction = useAction("editor.global-search")
 
+    useEffect(() => {
+        console.log("search action changed")
+    }, [searchAction])
+
+    const menubar = useMemo(() => {
+        return (
+            <Menubar>
+                <MenubarMenu>
+                    <MenubarTrigger>
+                        Editor <ChevronDown className="size-4 ml-1 text-muted-foreground" />
+                    </MenubarTrigger>
+                    <MenubarContent>
+                        <ActionMenubarItem actionId="editor.global-search" />
+                        <MenubarSeparator />
+                        <MenubarSub>
+                            <MenubarSubTrigger>
+                                <Palette className="size-4 mr-2" /> Theme
+                            </MenubarSubTrigger>
+                            <MenubarSubContent>
+                                <MenubarCheckboxItem
+                                    checked={theme.theme === "dark"}
+                                    onClick={() => theme.setTheme("dark")}
+                                >
+                                    Dark Theme
+                                </MenubarCheckboxItem>
+                                <MenubarCheckboxItem
+                                    checked={theme.theme === "light"}
+                                    onClick={() => theme.setTheme("light")}
+                                >
+                                    Light Theme
+                                </MenubarCheckboxItem>
+                            </MenubarSubContent>
+                        </MenubarSub>
+                        <ActionMenubarItem actionId="editor.settings" />
+                        <MenubarItem disabled>
+                            <Info className="size-4 mr-2" /> Info
+                        </MenubarItem>
+                        <MenubarSeparator />
+                        <ActionMenubarItem actionId="editor.close" />
+                    </MenubarContent>
+                </MenubarMenu>
+                <MenubarMenu>
+                    <MenubarTrigger>
+                        Crate <ChevronDown className="size-4 ml-1 text-muted-foreground" />
+                    </MenubarTrigger>
+                    <MenubarContent>
+                        <ActionMenubarItem actionId="crate.add-entity" />
+                        <MenubarSeparator />
+                        <MenubarItem onClick={() => showUploadFileModal()}>
+                            <FileUp className="size-4 mr-2" /> Upload File
+                        </MenubarItem>
+                        <MenubarItem onClick={() => showUploadFolderModal()}>
+                            <FolderUp className="size-4 mr-2" /> Upload Folder
+                        </MenubarItem>
+                        <MenubarSeparator />
+                        <ActionMenubarItem
+                            disabled={isSaving || !hasUnsavedChanges}
+                            actionId="crate.save-all-entities"
+                        />
+                        <ActionMenubarItem
+                            disabled={isSaving || !hasUnsavedChanges}
+                            actionId="crate.revert-all-entities"
+                        />
+                        <MenubarSeparator />
+                        <ActionMenubarItem actionId="crate.reload-entities" />
+                        <MenubarSeparator />
+                        <MenubarSub>
+                            <MenubarSubTrigger>
+                                <Copy className="size-4 mr-2" /> Copy Crate...
+                            </MenubarSubTrigger>
+                            <MenubarSubContent>
+                                <MenubarItem onClick={() => copy(crateId || "")}>
+                                    <Copy className="size-4 mr-2" /> Copy Crate ID
+                                </MenubarItem>
+                                <MenubarItem onClick={() => copy(crateName)}>
+                                    <Copy className="size-4 mr-2" /> Copy Crate Name
+                                </MenubarItem>
+                            </MenubarSubContent>
+                        </MenubarSub>
+                        <MenubarSub>
+                            <MenubarSubTrigger>
+                                <Download className="size-4 mr-2" /> Export
+                            </MenubarSubTrigger>
+                            <MenubarSubContent>
+                                <MenubarItem onClick={downloadCrateZip}>
+                                    <FolderArchive className="size-4 mr-2" /> As .zip Archive
+                                </MenubarItem>
+                                <MenubarItem onClick={downloadCrateEln}>
+                                    <Notebook className="size-4 mr-2" /> As ELN
+                                </MenubarItem>
+                                <MenubarItem onClick={downloadRoCrateMetadataFile}>
+                                    <File className="size-4 mr-2" /> ro-crate-metadata.json
+                                </MenubarItem>
+                            </MenubarSubContent>
+                        </MenubarSub>
+                        <ActionMenubarItem actionId="crate.generate-html-preview" />
+                    </MenubarContent>
+                </MenubarMenu>
+                <EntityMenu />
+            </Menubar>
+        )
+    }, [
+        copy,
+        crateId,
+        crateName,
+        downloadCrateEln,
+        downloadCrateZip,
+        downloadRoCrateMetadataFile,
+        hasUnsavedChanges,
+        isSaving,
+        showUploadFileModal,
+        showUploadFolderModal,
+        theme
+    ])
+
     return (
         <div className="p-4 py-3 w-full grid grid-cols-[1fr_auto_1fr]">
             <div className="flex items-center">
@@ -169,100 +284,7 @@ export function NavHeader() {
                     </div>
                 )}
 
-                <Menubar>
-                    <MenubarMenu>
-                        <MenubarTrigger>
-                            Editor <ChevronDown className="size-4 ml-1 text-muted-foreground" />
-                        </MenubarTrigger>
-                        <MenubarContent>
-                            <ActionMenubarItem actionId="editor.global-search" />
-                            <MenubarSeparator />
-                            <MenubarSub>
-                                <MenubarSubTrigger>
-                                    <Palette className="size-4 mr-2" /> Theme
-                                </MenubarSubTrigger>
-                                <MenubarSubContent>
-                                    <MenubarCheckboxItem
-                                        checked={theme.theme === "dark"}
-                                        onClick={() => theme.setTheme("dark")}
-                                    >
-                                        Dark Theme
-                                    </MenubarCheckboxItem>
-                                    <MenubarCheckboxItem
-                                        checked={theme.theme === "light"}
-                                        onClick={() => theme.setTheme("light")}
-                                    >
-                                        Light Theme
-                                    </MenubarCheckboxItem>
-                                </MenubarSubContent>
-                            </MenubarSub>
-                            <ActionMenubarItem actionId="editor.settings" />
-                            <MenubarItem disabled>
-                                <Info className="size-4 mr-2" /> Info
-                            </MenubarItem>
-                            <MenubarSeparator />
-                            <ActionMenubarItem actionId="editor.close" />
-                        </MenubarContent>
-                    </MenubarMenu>
-                    <MenubarMenu>
-                        <MenubarTrigger>
-                            Crate <ChevronDown className="size-4 ml-1 text-muted-foreground" />
-                        </MenubarTrigger>
-                        <MenubarContent>
-                            <ActionMenubarItem actionId="crate.add-entity" />
-                            <MenubarSeparator />
-                            <MenubarItem onClick={() => showUploadFileModal()}>
-                                <FileUp className="size-4 mr-2" /> Upload File
-                            </MenubarItem>
-                            <MenubarItem onClick={() => showUploadFolderModal()}>
-                                <FolderUp className="size-4 mr-2" /> Upload Folder
-                            </MenubarItem>
-                            <MenubarSeparator />
-                            <ActionMenubarItem
-                                disabled={isSaving || !hasUnsavedChanges}
-                                actionId="crate.save-all-entities"
-                            />
-                            <ActionMenubarItem
-                                disabled={isSaving || !hasUnsavedChanges}
-                                actionId="crate.revert-all-entities"
-                            />
-                            <MenubarSeparator />
-                            <ActionMenubarItem actionId="crate.reload-entities" />
-                            <MenubarSeparator />
-                            <MenubarSub>
-                                <MenubarSubTrigger>
-                                    <Copy className="size-4 mr-2" /> Copy Crate...
-                                </MenubarSubTrigger>
-                                <MenubarSubContent>
-                                    <MenubarItem onClick={() => copy(crateId || "")}>
-                                        <Copy className="size-4 mr-2" /> Copy Crate ID
-                                    </MenubarItem>
-                                    <MenubarItem onClick={() => copy(crateName)}>
-                                        <Copy className="size-4 mr-2" /> Copy Crate Name
-                                    </MenubarItem>
-                                </MenubarSubContent>
-                            </MenubarSub>
-                            <MenubarSub>
-                                <MenubarSubTrigger>
-                                    <Download className="size-4 mr-2" /> Export
-                                </MenubarSubTrigger>
-                                <MenubarSubContent>
-                                    <MenubarItem onClick={downloadCrateZip}>
-                                        <FolderArchive className="size-4 mr-2" /> As .zip Archive
-                                    </MenubarItem>
-                                    <MenubarItem onClick={downloadCrateEln}>
-                                        <Notebook className="size-4 mr-2" /> As ELN
-                                    </MenubarItem>
-                                    <MenubarItem onClick={downloadRoCrateMetadataFile}>
-                                        <File className="size-4 mr-2" /> ro-crate-metadata.json
-                                    </MenubarItem>
-                                </MenubarSubContent>
-                            </MenubarSub>
-                            <ActionMenubarItem actionId="crate.generate-html-preview" />
-                        </MenubarContent>
-                    </MenubarMenu>
-                    <EntityMenu />
-                </Menubar>
+                {menubar}
                 {/* Disabled until a proper implementation is done */}
                 {/*<Button size="sm" variant="ghost" className="mx-2 text-sm" onClick={() => undo()}>*/}
                 {/*    <Undo className="size-4 mr-2" />*/}

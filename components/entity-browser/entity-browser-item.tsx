@@ -1,13 +1,13 @@
 import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useCallback, useMemo } from "react"
+import { memo, useCallback, useMemo } from "react"
 import { Diff, getEntityDisplayName, toArray } from "@/lib/utils"
 import { EntityContextMenu } from "@/components/entity/entity-context-menu"
 import { Button } from "@/components/ui/button"
 import { EntityIcon } from "@/components/entity/entity-icon"
 
-export function EntityBrowserItem(props: { entityId: string }) {
+export const EntityBrowserItem = memo(function EntityBrowserItem(props: { entityId: string }) {
     const showEntityType = useEntityBrowserSettings((store) => store.showEntityType)
     const showIdInsteadOfName = useEntityBrowserSettings((store) => store.showIdInsteadOfName)
     const openTab = useEntityEditorTabs((store) => store.openTab)
@@ -53,4 +53,4 @@ export function EntityBrowserItem(props: { entityId: string }) {
             </Button>
         </EntityContextMenu>
     )
-}
+})

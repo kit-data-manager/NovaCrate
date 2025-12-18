@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useContext, useMemo, useState } from "react"
+import { useCallback, useContext, useMemo, useRef, useState } from "react"
 import { PropertyEditor } from "@/components/editor/property-editor"
 import {
     Diff,
@@ -23,7 +23,7 @@ import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useShallow } from "zustand/react/shallow"
 import { TypeSelectModal } from "@/components/modals/type-select-modal"
 import { ValidationOverview } from "@/components/editor/validation/validation-overview"
-import { mapEntityToProperties, PropertyType } from "@/lib/property"
+import { EntityEditorProperty, mapEntityToProperties, PropertyType } from "@/lib/property"
 
 export function EntityEditor({
     entityId,
@@ -65,14 +65,14 @@ export function EntityEditor({
     }, [entity])
 
     const togglePreview = useCallback(() => {
-        if (entity) {
-            if (previewingFilePath === entity["@id"]) {
+        if (canHavePreview) {
+            if (previewingFilePath === entityId) {
                 setPreviewingFilePath("")
             } else {
-                setPreviewingFilePath(entity["@id"])
+                setPreviewingFilePath(entityId)
             }
         }
-    }, [entity, previewingFilePath, setPreviewingFilePath])
+    }, [canHavePreview, entityId, previewingFilePath, setPreviewingFilePath])
 
     const showInGraph = useGoToGraph()
 
@@ -112,11 +112,14 @@ export function EntityEditor({
         [entityId, removePropertyEntry]
     )
 
+    const prevProperties = useRef<Map<string, EntityEditorProperty>>(new Map())
     const properties = useMemo(() => {
         if (!entity) return []
-        return mapEntityToProperties(entity, originalEntity).filter(
+        const result = mapEntityToProperties(entity, prevProperties.current, originalEntity).filter(
             (e) => e.propertyName !== "@reverse"
         )
+        prevProperties.current = new Map(result.map((entry) => [entry.propertyName, entry]))
+        return result
     }, [entity, originalEntity])
 
     const propertiesChangelist = useMemo(() => {

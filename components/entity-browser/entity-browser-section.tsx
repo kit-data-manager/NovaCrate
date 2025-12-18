@@ -1,6 +1,6 @@
 import { useStoreWithEqualityFn } from "zustand/traditional"
 import { editorState } from "@/lib/state/editor-state"
-import { useCallback, useEffect, useState } from "react"
+import { memo, useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ChevronDown } from "lucide-react"
 import { EntityBrowserItem } from "@/components/entity-browser/entity-browser-item"
@@ -9,7 +9,7 @@ import { getEntityDisplayName, toArray } from "@/lib/utils"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 
-export function EntityBrowserSection(props: {
+export const EntityBrowserSection = memo(function EntityBrowserSection(props: {
     entities: Set<string>
     sectionTitle?: string
     defaultSectionOpen: DefaultSectionOpen
@@ -88,4 +88,4 @@ export function EntityBrowserSection(props: {
             ) : null}
         </div>
     )
-}
+})
