@@ -202,7 +202,7 @@ export function EntityEditor({
                         <EntityBadge entity={entity} size="lg" />
                         <span className="break-all">{displayName}</span>
                     </h2>
-                    <div className="gap-2 flex">
+                    <div className="gap-2 flex entity-validation-overview">
                         <ValidationOverview entityId={entityId} />
                     </div>
                 </div>
