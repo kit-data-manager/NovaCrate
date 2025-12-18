@@ -4,24 +4,25 @@ Web-based fully-featured interactive editor for **creating, editing, and visuali
 
 NovaCrate is in active development; we welcome feedback, feature requests, and bug reports on the [issues page](https://github.com/kit-data-manager/NovaCrate/issues).
 
-## [▶️ Open NovaCrate](https://kit-data-manager.github.io/NovaCrate/)
+## [▶️ Open NovaCrate](https://novacrate.datamanager.kit.edu/)
 
 <details>
-<summary>⚠️ There are two public instances</summary>
+<summary>⚠️ Save your RO-Crates before the GitHub Pages deployment is discontinued</summary>
 
-Note that there are currently two public instances of NovaCrate:
-- On GitHub Pages at [kit-data-manager.github.io/NovaCrate/](https://kit-data-manager.github.io/NovaCrate/)
-- On our own servers at [novacrate.datamanager.kit.edu](https://novacrate.datamanager.kit.edu/)
+Note that NovaCrate is moving from GitHub Pages to a self-hosted instance. If you have RO-Crates stored on the GitHub instance, you will not be able to access them anymore in the future. Download them to make sure you don't lose any work.
+- Old GitHub Pages deployment: [kit-data-manager.github.io/NovaCrate/](https://kit-data-manager.github.io/NovaCrate/)
+- New deployment on our own servers: [novacrate.datamanager.kit.edu](https://novacrate.datamanager.kit.edu/)
 
-The crates you open and create on each instance are not shared between the instances, so you will have to return to the correct instance to see your recent crates.
-We can't guarantee that both instances will always be available. Make sure to download your work before leaving the app.
+The crates you open and create on each instance are not shared between the instances, so you will have to return to the correct instance to see your recent crates. Make sure to download your work before leaving the app.
 
-All data you use in NovaCrate is exclusively stored in your browser's local storage and therefore cannot be transferred to other instances.
+All data you use in NovaCrate is exclusively stored in your browser's local storage and therefore cannot be transferred to other instances. Your data is stored in the [origin private file system (OPFS)](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system), which will not allow accessing any files unless you are on the domain that placed them there. Hence, when the GitHub instance goes down, you cannot access files in the OPFS for kit-data-manager.github.io anymore (at least not easily). But your data never leaves your browser, so all the files are theoretically stored somewhere on your disk.
 </details>
 
 <details>
 <summary>Where is my data stored?</summary>
-All data is stored in your browser's local storage (origin-private file system).
+All data is stored in your browser's [origin private file system (OPFS)](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system). It will never leave your browser nor your device. No data is stored on our servers.
+
+For more information, see our  [privacy policy](https://www.kit.edu/privacypolicy.php).
 </details>
 
 ## 🚀 Features
@@ -67,7 +68,7 @@ NovaCrate currently does not include mechanisms for authentication, access contr
 
 ### Prerequisites
 
-- Install Node.js >= 20
+- Install Node.js >= 22
 - Clone the NovaCrate repository
 
 ### Quickstart
@@ -132,11 +133,3 @@ This project was first created as part of a [bachelor thesis](https://doi.org/10
 Most of the structure of the editor and many implementation and design details are outlined in the bachelor thesis.
 
 To summarize: This is a Next.js app. Pages are located in /app, components in /components, and anything else is probably in /lib.
-
-## 📸 Screenshots
-
-> Note: These screenshots are out of date.
-
-![](docs/teaser.png)
-![](docs/teaser2.png)
-![](docs/teaser3.png)
