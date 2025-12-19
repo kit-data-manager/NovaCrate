@@ -1,16 +1,19 @@
 import { test, expect, Page } from "@playwright/test"
 
 async function testCrateContent(page: Page) {
-    await expect(page.locator("body")).toMatchAriaSnapshot(`
+    await expect(page.locator("#entity-browser-content")).toMatchAriaSnapshot(`
     - button "R TestCrateDataset"
-    - button "Data Entities":
+    - button "Contextual Entities (4)":
       - img
-    - button "F JSON Result FileFile"
-    - button "Contextual Entities":
-      - img
+      - text: ""
     - button "C Example OrgOrganization"
     - button "C KarlsruhePlace"
+    - button "C ro-crate-metadata.jsonCreativeWork"
     - button "C Test PersonPerson"
+    - button "Data Entities (1)":
+      - img
+      - text: ""
+    - button "F JSON Result FileFile"
     `)
     await expect(page.locator("body")).toMatchAriaSnapshot(`
     - heading "Crate Root TestCrate" [level=2]:
@@ -142,16 +145,19 @@ test("Import Folder", async ({ page }) => {
     await page.getByRole("textbox", { name: "Name" }).click()
     await page.getByRole("textbox", { name: "Name" }).fill("Uploaded from Folder")
     await page.getByRole("button", { name: "Create" }).click()
-    await expect(page.locator("body")).toMatchAriaSnapshot(`
+    await expect(page.locator("#entity-browser-content")).toMatchAriaSnapshot(`
     - button "R Uploaded from FolderDataset"
-    - button "Data Entities":
+    - button "Contextual Entities (1)":
       - img
+      - text: ""
+    - button "C ro-crate-metadata.jsonCreativeWork"
+    - button "Data Entities (4)":
+      - img
+      - text: ""
     - button "F candles-9247498_1280.jpgFile"
     - button "F description.txtFile"
     - button "F empty-fileFile"
     - button "F example.jsonFile"
-    - button "Contextual Entities":
-      - img
     `)
     await expect(page.getByRole("textbox").first()).toHaveValue("Uploaded from Folder")
     await expect(page.getByRole("textbox").nth(1)).toHaveValue("Custom Description Text")

@@ -43,9 +43,9 @@ export function ValidationContextProvider({ children }: PropsWithChildren) {
         validation.current.updateContext(ctx)
     }, [ctx])
 
-    return (
-        <ValidationContext.Provider value={{ validation: validation.current }}>
-            {children}
-        </ValidationContext.Provider>
-    )
+    const value = useMemo(() => {
+        return { validation: validation.current }
+    }, [])
+
+    return <ValidationContext.Provider value={value}>{children}</ValidationContext.Provider>
 }

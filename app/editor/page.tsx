@@ -41,6 +41,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Input } from "@/components/ui/input"
 import useSWR from "swr"
 import { Footer } from "@/components/footer"
+import { GithubDiscontinuationWarning } from "@/components/github-discontinuation-warning"
 
 export default function EditorLandingPage() {
     const router = useRouter()
@@ -232,6 +233,7 @@ export default function EditorLandingPage() {
                     <Package className="w-32 h-32 mb-10" />
                     <h2 className="text-5xl font-bold">NovaCrate</h2>
                     <h4>RO-Crate Editor</h4>
+                    <GithubDiscontinuationWarning className="mt-10" />
                 </div>
                 <div className="flex flex-col items-center pr-14">
                     <div className="flex items-start flex-col">

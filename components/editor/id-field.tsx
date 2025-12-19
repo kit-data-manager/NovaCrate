@@ -39,14 +39,14 @@ export function IDField({ value }: { value: string }) {
     const showInFileExplorer = useGoToFileExplorer(entity)
 
     const togglePreview = useCallback(() => {
-        if (entity?.["@type"]) {
+        if (canHavePreview) {
             if (previewingFilePath === value) {
                 setPreviewingFilePath("")
             } else {
                 setPreviewingFilePath(value)
             }
         }
-    }, [entity, previewingFilePath, setPreviewingFilePath, value])
+    }, [canHavePreview, previewingFilePath, setPreviewingFilePath, value])
 
     const copyFn = useCallback(() => {
         copy(value).then()

@@ -2,7 +2,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button"
 import { CheckIcon, CircleAlert, InfoIcon, PanelBottomOpen, TriangleAlert } from "lucide-react"
 import React, { memo, useEffect, useMemo, useState } from "react"
-import { useStore } from "zustand/index"
+import { useStore } from "zustand"
 import { useShallow } from "zustand/react/shallow"
 import { ValidationResultLine } from "@/components/editor/validation/validation-result-line"
 import { sortValidationResultByName } from "@/lib/utils"
@@ -125,7 +125,9 @@ export const ValidationOverview = memo(function ValidationOverview({
         >
             <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant={"outline"}>{icon}</Button>
+                    <Button variant={"outline"} className={"validation-overview"}>
+                        {icon}
+                    </Button>
                 </PopoverTrigger>
                 <PopoverContent className="p-2 pb-0 pr-0 w-[600px]">
                     <div className="text-xs font-medium p-1 mb-1 flex justify-between">

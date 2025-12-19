@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useValidation, useValidationStore } from "@/lib/validation/hooks"
 import { useDebounceCallback } from "usehooks-ts"
@@ -66,7 +66,7 @@ export function CrateValidationSupervisor() {
     )
 }
 
-function EntitySupervisor({ entity }: { entity: IEntity }) {
+const EntitySupervisor = memo(function EntitySupervisor({ entity }: { entity: IEntity }) {
     const validation = useValidation()
     const validationStore = useValidationStore()
     const clearResults = useStore(validationStore, (s) => s.clearResults)
@@ -113,9 +113,9 @@ function EntitySupervisor({ entity }: { entity: IEntity }) {
             ))}
         </>
     )
-}
+})
 
-function PropertySupervisor({
+const PropertySupervisor = memo(function PropertySupervisor({
     name,
     value,
     entityId
@@ -156,4 +156,4 @@ function PropertySupervisor({
     }, [unmount])
 
     return null
-}
+})
