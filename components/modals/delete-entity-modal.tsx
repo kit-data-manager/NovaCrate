@@ -21,7 +21,6 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
     const entity = useEditorState((store) => store.entities.get(entityId))
     const context = useEditorState((store) => store.crateContext)
     const { deleteEntity, serviceProvider, crateId } = useContext(CrateDataContext)
-    const removeEntity = useEditorState((store) => store.removeEntity)
     const [isDeleting, setIsDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState<unknown>()
     // const [deleteContent, setDeleteContent] = useState(false)
@@ -44,7 +43,6 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
                 .then((success) => {
                     if (success) {
                         setDeleteError(undefined)
-                        removeEntity(entity["@id"])
                         onOpenChange(false)
                     } else setDeleteError("Unknown error while deleting")
                 })
@@ -79,16 +77,7 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
                     setIsDeleting(false)
                 })
         }
-    }, [
-        entity,
-        serviceProvider,
-        crateId,
-        onOpenChange,
-        deleteEntity,
-        removeEntity,
-        entityId,
-        context
-    ])
+    }, [entity, serviceProvider, crateId, onOpenChange, deleteEntity, entityId, context])
 
     // const couldBeFolder = useMemo(() => {
     //     if (entity && isFolderDataEntity(entity)) return true

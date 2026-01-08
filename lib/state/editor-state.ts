@@ -101,7 +101,7 @@ export interface EditorState {
         properties?: Record<string, EntityPropertyTypes>,
         autoReference?: AutoReference
     ): IEntity | undefined
-    removeEntity(entityId: string): void
+
     /**
      * Add a property of the given name to the given entity. The type or value of the property can optionally be specified.
      * @param entityId Id of the entity where the property should be added.
@@ -145,7 +145,7 @@ export interface EditorState {
     removePropertyEntry(
         entityId: string,
         propertyName: string,
-        valueOrValueIdx: number | EntitySinglePropertyTypes
+        valueOrValueIdx: number | IReference
     ): void
 
     /**
@@ -346,12 +346,6 @@ export const editorState = createWithEqualityFn<EditorState>()(
             } else return undefined
         },
 
-        removeEntity(entityId: string) {
-            setState((state) => {
-                state.entities.delete(entityId)
-            })
-        },
-
         addProperty(entityId: string, propertyName: string, value?: EntityPropertyTypes) {
             const target = getState().entities.get(entityId)
             if (target && !(propertyName in target)) {
@@ -395,14 +389,14 @@ export const editorState = createWithEqualityFn<EditorState>()(
         removePropertyEntry(
             entityId: string,
             propertyName: string,
-            valueOrValueIdx: number | EntitySinglePropertyTypes
+            valueOrValueIdx: number | IReference
         ) {
             if (
                 getState().entities.get(entityId) &&
                 propertyName in getState().entities.get(entityId)!
             ) {
                 setState((state) => {
-                    const target = state.entities.get(entityId)!
+                    let target = state.entities.get(entityId)!
                     const prop = target[propertyName]
                     if (Array.isArray(prop)) {
                         if (prop.length === 1) {
@@ -411,19 +405,11 @@ export const editorState = createWithEqualityFn<EditorState>()(
                             if (typeof valueOrValueIdx === "number") {
                                 prop.splice(valueOrValueIdx, 1)
                             } else {
-                                if (typeof valueOrValueIdx === "object") {
-                                    const i = prop.findIndex((val) =>
-                                        typeof val === "object"
-                                            ? val["@id"] === valueOrValueIdx["@id"]
-                                            : false
-                                    )
-                                    if (i >= 0) prop.splice(i, 1)
-                                } else {
-                                    const i = prop.findIndex((val) =>
-                                        typeof val === "string" ? val === valueOrValueIdx : false
-                                    )
-                                    if (i >= 0) prop.splice(i, 1)
-                                }
+                                target[propertyName] = prop.filter((val) =>
+                                    typeof val === "object"
+                                        ? val["@id"] !== valueOrValueIdx["@id"]
+                                        : true
+                                )
                             }
                         }
                     } else {
