@@ -379,19 +379,6 @@ export const editorState = createWithEqualityFn<EditorState>()(
             }
         },
 
-        setPropertyValue(
-            entityId: string,
-            propertyName: string,
-            value: EntitySinglePropertyTypes,
-            valueIdx?: number
-        ) {
-            if (getState().entities.get(entityId)) {
-                setState((state) => {
-                    setPropertyValue(state.entities.get(entityId)!, propertyName, value, valueIdx)
-                })
-            }
-        },
-
         modifyPropertyEntry(
             entityId: string,
             propertyName: string,

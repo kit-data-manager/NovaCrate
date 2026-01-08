@@ -27,7 +27,7 @@ export function OrganizationImport({
     const [creating, setCreating] = useState(false)
     const [error, setError] = useState<unknown>()
     const { importOrganizationFromRor } = useContext(CrateDataContext)
-    const setPropertyValue = useEditorState((store) => store.setPropertyValue)
+    const setPropertyValue = useEditorState((store) => store.modifyPropertyEntry)
 
     const onImportPress = useCallback(async () => {
         try {
@@ -37,8 +37,8 @@ export function OrganizationImport({
                 setPropertyValue(
                     autoReference.entityId,
                     autoReference.propertyName,
-                    { "@id": id },
-                    autoReference.valueIdx
+                    autoReference.valueIdx,
+                    { "@id": id }
                 )
             }
             setCreating(false)
