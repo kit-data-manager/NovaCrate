@@ -114,10 +114,6 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
 
     abstract healthCheck(): Promise<void>
 
-    abstract importEntityFromOrcid(crateId: string, url: string): Promise<string>
-
-    abstract importOrganizationFromRor(crateId: string, url: string): Promise<string>
-
     abstract removeCustomContextPair(crateId: string, key: string): Promise<void>
 
     abstract saveRoCrateMetadataJSON(crateId: string, json: string): Promise<void>
