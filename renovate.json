@@ -4,10 +4,9 @@
     "minimumReleaseAge": "3 days",
     "packageRules": [
         {
-            "groupName": "high confidence minor and patch dependencies",
+            "groupName": "minor and patch dependencies",
             "matchManagers": ["npm"],
-            "matchUpdateTypes": ["minor", "patch"],
-            "matchConfidence": ["very high", "high"]
+            "matchUpdateTypes": ["minor", "patch"]
         }
     ],
     "rangeStrategy": "replace",
