@@ -25,6 +25,8 @@ All data is stored in your browser's [origin private file system (OPFS)](https:/
 For more information, see our  [privacy policy](https://www.kit.edu/privacypolicy.php).
 </details>
 
+[Documentation on deploying NovaCrate](./docs/deployment.md)
+
 ## 🚀 Features
 
 - ✅ Create, read, and edit RO-Crates
@@ -124,12 +126,12 @@ You can run the tests using:
     # In a different terminal:
     npm run test
 
-## 🎓 Thesis
+## ℹ️ Documentation
 
-This project was first created as part of a [bachelor thesis](https://doi.org/10.5445/IR/1000178790)
+There is limited technical documentation available in the `docs` folder (WIP). 
 
-## ℹ️ Structure
+There is currently no usage documentation available, but we hope that the editor is easy to use and understand nonetheless.
 
-Most of the structure of the editor and many implementation and design details are outlined in the bachelor thesis.
+## 📨 Contact
 
-To summarize: This is a Next.js app. Pages are located in /app, components in /components, and anything else is probably in /lib.
+NovaCrate is being developed at the [Data Exploitation Methods](https://www.scc.kit.edu/en/aboutus/dem.php) Group of the [Scientific Computing Center](https://scc.kit.edu/) at [Karlsruhe Institute of Technology (KIT)](https://kit.edu). Feel free to contact us for any questions or feedback through the contact details available in the `codemeta.json` file.
