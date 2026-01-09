@@ -4,8 +4,8 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>580</x>
-      <y>230</y>
+      <x>610</x>
+      <y>240</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -16,8 +16,8 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>580</x>
-      <y>310</y>
+      <x>610</x>
+      <y>320</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -28,8 +28,8 @@ EntityEditor</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>660</x>
-      <y>270</y>
+      <x>690</x>
+      <y>280</y>
       <w>30</w>
       <h>60</h>
     </coordinates>
@@ -39,8 +39,8 @@ EntityEditor</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>580</x>
-      <y>580</y>
+      <x>610</x>
+      <y>590</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -51,8 +51,8 @@ EditorState</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>660</x>
-      <y>350</y>
+      <x>690</x>
+      <y>360</y>
       <w>30</w>
       <h>250</h>
     </coordinates>
@@ -64,8 +64,8 @@ fg=RED</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>780</x>
-      <y>230</y>
+      <x>810</x>
+      <y>240</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -76,8 +76,8 @@ fg=RED</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>980</x>
-      <y>230</y>
+      <x>1010</x>
+      <y>240</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -88,8 +88,8 @@ fg=RED</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>380</x>
-      <y>230</y>
+      <x>410</x>
+      <y>240</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -100,8 +100,8 @@ fg=RED</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>180</x>
-      <y>230</y>
+      <x>210</x>
+      <y>240</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -112,8 +112,8 @@ fg=RED</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>780</x>
-      <y>310</y>
+      <x>810</x>
+      <y>320</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -124,8 +124,8 @@ ContextPage</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>980</x>
-      <y>310</y>
+      <x>1010</x>
+      <y>320</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -136,8 +136,8 @@ FileExplorer</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>380</x>
-      <y>310</y>
+      <x>410</x>
+      <y>320</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -148,8 +148,8 @@ EntityGraph</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>180</x>
-      <y>310</y>
+      <x>210</x>
+      <y>320</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -160,8 +160,8 @@ JSONEditorPage</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>860</x>
-      <y>270</y>
+      <x>890</x>
+      <y>280</y>
       <w>30</w>
       <h>60</h>
     </coordinates>
@@ -171,8 +171,8 @@ JSONEditorPage</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1060</x>
-      <y>270</y>
+      <x>1090</x>
+      <y>280</y>
       <w>30</w>
       <h>60</h>
     </coordinates>
@@ -182,8 +182,8 @@ JSONEditorPage</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>460</x>
-      <y>270</y>
+      <x>490</x>
+      <y>280</y>
       <w>30</w>
       <h>60</h>
     </coordinates>
@@ -193,8 +193,8 @@ JSONEditorPage</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>260</x>
-      <y>270</y>
+      <x>290</x>
+      <y>280</y>
       <w>30</w>
       <h>60</h>
     </coordinates>
@@ -204,8 +204,8 @@ JSONEditorPage</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>660</x>
-      <y>350</y>
+      <x>690</x>
+      <y>360</y>
       <w>230</w>
       <h>250</h>
     </coordinates>
@@ -217,8 +217,8 @@ fg=RED</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>660</x>
-      <y>350</y>
+      <x>690</x>
+      <y>360</y>
       <w>430</w>
       <h>250</h>
     </coordinates>
@@ -230,8 +230,8 @@ fg=RED</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>460</x>
-      <y>350</y>
+      <x>490</x>
+      <y>360</y>
       <w>230</w>
       <h>250</h>
     </coordinates>
@@ -243,8 +243,8 @@ fg=RED</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>260</x>
-      <y>350</y>
+      <x>290</x>
+      <y>360</y>
       <w>430</w>
       <h>250</h>
     </coordinates>
@@ -256,8 +256,8 @@ fg=RED</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>210</x>
-      <y>470</y>
+      <x>240</x>
+      <y>480</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -268,8 +268,8 @@ CrateDataContext</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>290</x>
-      <y>350</y>
+      <x>320</x>
+      <y>360</y>
       <w>30</w>
       <h>140</h>
     </coordinates>
@@ -280,8 +280,8 @@ fg=BLUE</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>380</x>
-      <y>580</y>
+      <x>410</x>
+      <y>590</y>
       <w>220</w>
       <h>40</h>
     </coordinates>
@@ -292,8 +292,8 @@ synchronizes to</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>210</x>
-      <y>680</y>
+      <x>240</x>
+      <y>690</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -304,8 +304,8 @@ CrateServiceAdapter</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>290</x>
-      <y>620</y>
+      <x>320</x>
+      <y>630</y>
       <w>170</w>
       <h>80</h>
     </coordinates>
@@ -316,8 +316,8 @@ updates and fetches</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>290</x>
-      <y>350</y>
+      <x>320</x>
+      <y>360</y>
       <w>150</w>
       <h>140</h>
     </coordinates>
@@ -328,8 +328,8 @@ fg=BLUE</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>410</x>
-      <y>350</y>
+      <x>440</x>
+      <y>360</y>
       <w>230</w>
       <h>100</h>
     </coordinates>
@@ -340,8 +340,8 @@ fg=BLUE</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>610</x>
-      <y>350</y>
+      <x>640</x>
+      <y>360</y>
       <w>230</w>
       <h>100</h>
     </coordinates>
@@ -352,8 +352,8 @@ fg=BLUE</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>810</x>
-      <y>350</y>
+      <x>840</x>
+      <y>360</y>
       <w>230</w>
       <h>100</h>
     </coordinates>
@@ -364,8 +364,8 @@ fg=BLUE</panel_attributes>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>430</x>
-      <y>720</y>
+      <x>460</x>
+      <y>730</y>
       <w>120</w>
       <h>30</h>
     </coordinates>
@@ -376,8 +376,8 @@ fg=BLUE</panel_attributes>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>430</x>
-      <y>510</y>
+      <x>460</x>
+      <y>520</y>
       <w>100</w>
       <h>30</h>
     </coordinates>
@@ -387,8 +387,8 @@ fg=BLUE</panel_attributes>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>790</x>
-      <y>620</y>
+      <x>820</x>
+      <y>630</y>
       <w>120</w>
       <h>30</h>
     </coordinates>
@@ -398,8 +398,8 @@ fg=BLUE</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>750</x>
-      <y>620</y>
+      <x>780</x>
+      <y>630</y>
       <w>60</w>
       <h>40</h>
     </coordinates>
@@ -409,8 +409,8 @@ fg=BLUE</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>380</x>
-      <y>510</y>
+      <x>410</x>
+      <y>520</y>
       <w>70</w>
       <h>40</h>
     </coordinates>
@@ -420,8 +420,8 @@ fg=BLUE</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>380</x>
-      <y>720</y>
+      <x>410</x>
+      <y>730</y>
       <w>70</w>
       <h>40</h>
     </coordinates>
@@ -431,8 +431,8 @@ fg=BLUE</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>200</x>
-      <y>790</y>
+      <x>230</x>
+      <y>800</y>
       <w>200</w>
       <h>50</h>
     </coordinates>
@@ -443,8 +443,8 @@ BrowserBasedCrateService</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>290</x>
-      <y>720</y>
+      <x>320</x>
+      <y>730</y>
       <w>30</w>
       <h>90</h>
     </coordinates>
@@ -454,8 +454,8 @@ BrowserBasedCrateService</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>480</x>
-      <y>790</y>
+      <x>510</x>
+      <y>800</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -466,8 +466,8 @@ opfs-worker</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>390</x>
-      <y>790</y>
+      <x>420</x>
+      <y>800</y>
       <w>110</w>
       <h>40</h>
     </coordinates>
@@ -478,21 +478,21 @@ opfs-worker</panel_attributes>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>980</x>
-      <y>520</y>
+      <x>1010</x>
+      <y>530</y>
       <w>360</w>
       <h>140</h>
     </coordinates>
     <panel_attributes>style=wordwrap
-Used for saving working state to backend state. Local state is an optimistically updated replica of backend state, to hide network latencies. Most pages use the CrateDataContext to simply display if a save is in progress or an error ocurred. The saving feature is implemented in a specific save action that is reused across pages.
+Used for saving working state to backend state. Local state is an optimistically updated replica of backend state, to hide network latencies. Most pages use the CrateDataContext to simply display if a save is in progress or an error occurred. The saving feature is implemented in a specific save action that is reused across pages.
 fg=BLUE</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>1120</x>
-      <y>410</y>
+      <x>1150</x>
+      <y>420</y>
       <w>240</w>
       <h>80</h>
     </coordinates>
@@ -504,8 +504,8 @@ fg=RED</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>980</x>
-      <y>420</y>
+      <x>1010</x>
+      <y>430</y>
       <w>60</w>
       <h>120</h>
     </coordinates>
@@ -516,8 +516,8 @@ fg=BLUE</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1060</x>
-      <y>390</y>
+      <x>1090</x>
+      <y>400</y>
       <w>80</w>
       <h>100</h>
     </coordinates>
@@ -528,8 +528,8 @@ fg=RED</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>210</x>
-      <y>580</y>
+      <x>240</x>
+      <y>590</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -540,8 +540,8 @@ CrateDataProvider</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>290</x>
-      <y>510</y>
+      <x>320</x>
+      <y>520</y>
       <w>30</w>
       <h>90</h>
     </coordinates>
@@ -551,8 +551,8 @@ CrateDataProvider</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>30</x>
-      <y>160</y>
+      <x>60</x>
+      <y>170</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -563,8 +563,8 @@ CrateDataProvider</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>110</x>
-      <y>200</y>
+      <x>140</x>
+      <y>210</y>
       <w>120</w>
       <h>420</h>
     </coordinates>
@@ -574,8 +574,8 @@ CrateDataProvider</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>200</x>
-      <y>170</y>
+      <x>230</x>
+      <y>180</y>
       <w>90</w>
       <h>80</h>
     </coordinates>
@@ -585,8 +585,8 @@ CrateDataProvider</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>260</x>
-      <y>170</y>
+      <x>290</x>
+      <y>180</y>
       <w>230</w>
       <h>80</h>
     </coordinates>
@@ -596,8 +596,8 @@ CrateDataProvider</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>460</x>
-      <y>170</y>
+      <x>490</x>
+      <y>180</y>
       <w>230</w>
       <h>80</h>
     </coordinates>
@@ -607,8 +607,8 @@ CrateDataProvider</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>660</x>
-      <y>170</y>
+      <x>690</x>
+      <y>180</y>
       <w>230</w>
       <h>80</h>
     </coordinates>
@@ -618,8 +618,8 @@ CrateDataProvider</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>860</x>
-      <y>170</y>
+      <x>890</x>
+      <y>180</y>
       <w>230</w>
       <h>80</h>
     </coordinates>

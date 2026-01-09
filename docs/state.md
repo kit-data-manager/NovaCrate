@@ -41,7 +41,7 @@ actually need to render. The frequency of state changes as well as the dependenc
 
 > Implemented as CrateDataProvider
 
-The local state is a replica of the backend state. It is optimistically updated whenever an update is sent to the backend state (meaning the changes of the state update are applied immediately to the local state in many changes, even if then backend has not responded with the actual result of the operation yet. This is only done for operations where the outcome can easily be anticipated). 
+The local state is a replica of the backend state. It is optimistically updated whenever an update is sent to the backend state (meaning the changes of the state update are applied immediately to the local state in many cases, even if the backend has not responded with the actual result of the operation yet. This is only done for operations where the outcome can easily be anticipated). 
 The local state is used to remove network latencies in case of simple operations. It is also used to partially optimistically update the local state based on a state change that requires heavy work in the backend. The changes that result within the backend as part of the unanticipated heavy worked are silently merged into the local state once they are known.
 
 This was originally implemented for a smooth REST-based editing experience, but is not needed for the current browser-based crate editing implementation. The local state was not removed, as a REST-based backend might be desired in the future, and because the current local state works as expected without issues. 
