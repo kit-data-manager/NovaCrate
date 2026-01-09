@@ -23,7 +23,7 @@ export async function importPersonFromOrcid(url: string): Promise<IEntity> {
                 json.person.name["given-names"].value + " " + json.person.name["family-name"].value
         }
     } else {
-        throw `Could not fetch ORCID profile (${req.status})`
+        throw new Error(`Could not fetch ORCID profile (${req.status})`)
     }
 }
 
@@ -51,7 +51,7 @@ export async function importOrganizationFromRor(url: string): Promise<IEntity> {
             url: json.links.find((l) => l.type === "website")?.value ?? json.id
         }
     } else {
-        throw `Could not fetch ROR organization (${req.status})`
+        throw new Error(`Could not fetch ROR organization (${req.status})`)
     }
 }
 
