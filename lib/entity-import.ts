@@ -32,9 +32,9 @@ export async function importPersonFromOrcid(url: string): Promise<IEntity> {
  * @param url Either a ROR URL or a ROR identifier
  */
 export async function importOrganizationFromRor(url: string): Promise<IEntity> {
-    const orcid = extractRorIdentifier(url)
+    const ror = extractRorIdentifier(url)
 
-    const req = await fetch(`https://api.ror.org/v2/organizations/${orcid}`, {
+    const req = await fetch(`https://api.ror.org/v2/organizations/${ror}`, {
         headers: {
             Accept: "application/json"
         }
