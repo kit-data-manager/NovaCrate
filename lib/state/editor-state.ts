@@ -9,65 +9,188 @@ import { PropertyValueUtils } from "@/lib/property-value-utils"
 
 enableMapSet()
 
+/**
+ * This is the central state of the editor, holding a working copy of the crate state as well as some additional state.
+ * The editor state works on a best-effort basis and will optimistically handle unexpected state changes.
+ * Most methods return void, indicating that the state change will always succeed.
+ */
 export interface EditorState {
+    /**
+     * Corresponds to the current remote crate context, used to determine changes in the local context
+     */
     initialCrateContext: CrateContext
+    /**
+     * Current local crate context
+     */
     crateContext: CrateContext
+    /**
+     * Whether the crate context is ready to be used
+     */
     crateContextReady: boolean
 
+    /**
+     * Updates the initial crate context. Called by the {@link CrateDataProvider} whenever the remote context changes
+     */
     updateInitialCrateContext(crateContext: CrateContextType): void
+
+    /**
+     * Update the local crate context
+     */
     updateCrateContext(crateContext: CrateContextType): void
 
+    /**
+     * Corresponds to the current remote crate state, used to determine changes in the local state
+     */
     initialEntities: Map<string, IEntity>
+    /**
+     * Current local crate state. Map of entity ids to entities.
+     */
     entities: Map<string, IEntity>
 
+    /**
+     * Updates the initial crate state. Called by the {@link CrateDataProvider} whenever the remote state changes
+     */
     setInitialEntities(data: Map<string, IEntity>): void
+    /**
+     * Updates the editor crate state. Called by the {@link CrateDataProvider} when conflicts between local and remote state are being resolved.
+     */
     setEntities(data: Map<string, IEntity>): void
 
+    /**
+     * Returns the current entities as a map of entity ids to entities. Utility for getting the entities field
+     */
     getEntities(): Map<string, IEntity>
+
+    /**
+     * Get a map of entity ids to their change status compared to the remote crate state. Can either be changed (different to backend), unchanged, or new (not created in backend).
+     */
     getEntitiesChangelist(): Map<string, Diff>
+
+    /**
+     * Get the change status of a single entity compared to the remote crate state. Can either be null, changed (different to backend), unchanged, or new (not created in backend). Returns null if the entity does not exist in the remote crate state.
+     * @param id
+     */
     getEntityDiff(id: string): Diff | null
+
+    /**
+     * Find the root entity id as outlined in the ro-crate specification. Returns undefined if no root entity is found.
+     */
     getRootEntityId(): string | undefined
+
+    /**
+     * Get a list of all entities whose change status is not None.
+     */
     getChangedEntities(): IEntity[]
+
+    /**
+     * Returns true if there are entities whose change status is not None.
+     */
     getHasUnsavedChanges(): boolean
+
+    /**
+     * Create an entity with the given @id and @type. May also include additional properties, as well as the option to automatically reference the newly created entity from another entity.
+     * @param entityId The id of the new entity to create
+     * @param types The type(s) of the new entity
+     * @param properties Optional. Additional properties that will be added to the entity.
+     * @param autoReference An AutoReference object that allows creating a reference to the newly created entity in the entity described by the AutoReference. This is used when creating a new entity in an empty reference field. This way, the reference will be added directly after the new entity is created, and also after the id of the entity has been sanitized and formatted.
+     * @returns Returns the newly created entity, or undefined if an entity with the same id already exists.
+     */
     addEntity(
         entityId: string,
         types: string[],
         properties?: Record<string, EntityPropertyTypes>,
         autoReference?: AutoReference
     ): IEntity | undefined
-    removeEntity(entityId: string): void
+
+    /**
+     * Add a property of the given name to the given entity. The type or value of the property can optionally be specified.
+     * @param entityId Id of the entity where the property should be added.
+     * @param propertyName Name of the property to add.
+     * @param value Value of the property or type of the property to add. Optional but recommended.
+     */
     addProperty(entityId: string, propertyName: string, value?: EntityPropertyTypes): void
+
+    /**
+     * Add a new entry to a property of the given entity. The type or value of the entry can be specified. New entries are always added to the end of the values of a property.
+     * @param entityId Id of the entity where the property should be added.
+     * @param propertyName Name of the property to add the entry to.
+     * @param typeOrValue Value of the entry or type of the entry to add. It is possible to have a property with multiple entries of different types.
+     */
     addPropertyEntry(
         entityId: string,
         propertyName: string,
         typeOrValue: PropertyType | EntitySinglePropertyTypes
     ): void
-    setPropertyValue(
-        entityId: string,
-        propertyName: string,
-        value: EntitySinglePropertyTypes,
-        valueIdx?: number
-    ): void
+
+    /**
+     * Set the value of a specific property entry. If the property does not exist, it will be created and the value will be inserted at index 0. If the entry at the given index does not exist, it will be created.
+     * @param entityId Id of the entity where the property value should be set.
+     * @param propertyName Name of the affected property.
+     * @param valueIdx Index of the property entry to update. Must be at least 0.
+     * @param value New value of the property entry.
+     */
     modifyPropertyEntry(
         entityId: string,
         propertyName: string,
         valueIdx: number,
         value: EntitySinglePropertyTypes
     ): void
+
+    /**
+     * Remove a property entry by index of by its value. In the latter case, can only be used if the value is a reference ({@link IReference}). Will remove all entries matching the given reference.
+     * @param entityId Id of the entity where the property should be removed.
+     * @param propertyName Name of the affected property.
+     * @param valueOrValueIdx Value of the property entry to remove. Can be either the index of the entry to remove, or the value of the entry to remove. The value must in this case be a reference ({@link IReference}). Entries with non-reference values cannot be removed by value.
+     */
     removePropertyEntry(
         entityId: string,
         propertyName: string,
-        valueOrValueIdx: number | EntitySinglePropertyTypes
+        valueOrValueIdx: number | IReference
     ): void
+
+    /**
+     * Revert an entity back to the backend state. Will result in the change status of this entity to become None.
+     * @param entityId Id of the entity to revert.
+     */
     revertEntity(entityId: string): void
+
+    /**
+     * Revert all entities back to the backend state.
+     */
     revertAllEntities(): void
 
     showValidationDrawer: boolean
     setShowValidationDrawer(show: boolean): void
+
+    /**
+     * Used to set focus on a specific validation result. Allows the validation drawer to scroll to the result.
+     */
     focusedValidationResultId?: string
+    /**
+     * Used to set focus on a specific validation result. Allows the validation drawer to scroll to the result.
+     */
     setFocusedValidationResultId(id?: string): void
 }
 
+/**
+ * Helper method that sets the value of a property by changing or creating the property.
+ *
+ * Follows these mutually exclusive rules:
+ *  - If the property does not exist, it will be created and the value will be inserted at index 0.
+ *  - If the property exists and has multiple entries, the value will be set at the specified valueIdx.
+ *      - If no valueIdx is specified, the value will be appended to the end of the property instead.
+ *  - If the property exists and has a single entry...
+ *      - and valueIdx is specified and not 0, the value will be inserted at the specified valueIdx.
+ *      - and valueIdx is not specified, the value will be inserted at index 1.
+ *      - and valueIdx is 0, the value will replace the existing entry.
+ *
+ * This makes sure that values are only overwritten if the user intends to.
+ *
+ * @param entity Entity where the property should be set.
+ * @param propertyName Name of the property to set.
+ * @param value Value of the property to set.
+ * @param valueIdx Optional index of the entry.
+ */
 function setPropertyValue(
     entity: Draft<IEntity>,
     propertyName: string,
@@ -223,12 +346,6 @@ export const editorState = createWithEqualityFn<EditorState>()(
             } else return undefined
         },
 
-        removeEntity(entityId: string) {
-            setState((state) => {
-                state.entities.delete(entityId)
-            })
-        },
-
         addProperty(entityId: string, propertyName: string, value?: EntityPropertyTypes) {
             const target = getState().entities.get(entityId)
             if (target && !(propertyName in target)) {
@@ -256,19 +373,6 @@ export const editorState = createWithEqualityFn<EditorState>()(
             }
         },
 
-        setPropertyValue(
-            entityId: string,
-            propertyName: string,
-            value: EntitySinglePropertyTypes,
-            valueIdx?: number
-        ) {
-            if (getState().entities.get(entityId)) {
-                setState((state) => {
-                    setPropertyValue(state.entities.get(entityId)!, propertyName, value, valueIdx)
-                })
-            }
-        },
-
         modifyPropertyEntry(
             entityId: string,
             propertyName: string,
@@ -285,14 +389,14 @@ export const editorState = createWithEqualityFn<EditorState>()(
         removePropertyEntry(
             entityId: string,
             propertyName: string,
-            valueOrValueIdx: number | EntitySinglePropertyTypes
+            valueOrValueIdx: number | IReference
         ) {
             if (
                 getState().entities.get(entityId) &&
                 propertyName in getState().entities.get(entityId)!
             ) {
                 setState((state) => {
-                    const target = state.entities.get(entityId)!
+                    let target = state.entities.get(entityId)!
                     const prop = target[propertyName]
                     if (Array.isArray(prop)) {
                         if (prop.length === 1) {
@@ -301,19 +405,11 @@ export const editorState = createWithEqualityFn<EditorState>()(
                             if (typeof valueOrValueIdx === "number") {
                                 prop.splice(valueOrValueIdx, 1)
                             } else {
-                                if (typeof valueOrValueIdx === "object") {
-                                    const i = prop.findIndex((val) =>
-                                        typeof val === "object"
-                                            ? val["@id"] === valueOrValueIdx["@id"]
-                                            : false
-                                    )
-                                    if (i >= 0) prop.splice(i, 1)
-                                } else {
-                                    const i = prop.findIndex((val) =>
-                                        typeof val === "string" ? val === valueOrValueIdx : false
-                                    )
-                                    if (i >= 0) prop.splice(i, 1)
-                                }
+                                target[propertyName] = prop.filter((val) =>
+                                    typeof val === "object"
+                                        ? val["@id"] !== valueOrValueIdx["@id"]
+                                        : true
+                                )
                             }
                         }
                     } else {
