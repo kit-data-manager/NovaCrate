@@ -42,8 +42,6 @@ export interface ICrateDataProvider {
     addCustomContextPair(key: string, value: string): Promise<void>
     removeCustomContextPair(key: string): Promise<void>
     saveRoCrateMetadataJSON(json: string): Promise<void>
-    importEntityFromOrcid(url: string): Promise<string>
-    importOrganizationFromRor(url: string): Promise<string>
     reload(): void
     isSaving: boolean
     saveError: Map<string, unknown>
@@ -80,12 +78,6 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     saveRoCrateMetadataJSON() {
-        return Promise.reject("Crate Data Provider not mounted yet")
-    },
-    importEntityFromOrcid(): Promise<string> {
-        return Promise.reject("Crate Data Provider not mounted yet")
-    },
-    importOrganizationFromRor(): Promise<string> {
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     reload: () => {
@@ -472,30 +464,6 @@ export function CrateDataProvider({
         [mutate, crateId, serviceProvider]
     )
 
-    const importEntityFromOrcid = useCallback(
-        async (url: string) => {
-            if (crateId) {
-                const id = await serviceProvider.importEntityFromOrcid(crateId, url)
-                await mutate()
-                return id
-            }
-            throw "crateId is undefined"
-        },
-        [mutate, crateId, serviceProvider]
-    )
-
-    const importOrganizationFromRor = useCallback(
-        async (url: string) => {
-            if (crateId) {
-                const id = await serviceProvider.importOrganizationFromRor(crateId, url)
-                await mutate()
-                return id
-            }
-            throw "crateId is undefined"
-        },
-        [mutate, crateId, serviceProvider]
-    )
-
     useEffect(() => {
         if (crateId) {
             console.log("CrateID known, saving")
@@ -538,8 +506,6 @@ export function CrateDataProvider({
                 renameEntity,
                 isSaving,
                 reload: mutate,
-                importEntityFromOrcid,
-                importOrganizationFromRor,
                 saveError,
                 error,
                 addCustomContextPair,

@@ -1,14 +1,14 @@
-import React, { useCallback, useContext, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ExternalLink, Import, LoaderCircle, TextCursor } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Error } from "@/components/error"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AutoReference } from "@/lib/utils"
+import { AutoReference, toArray } from "@/lib/utils"
+import { importPersonFromOrcid } from "@/lib/entity-import"
 
 export function PersonImport({
     createManually,
@@ -20,35 +20,27 @@ export function PersonImport({
     createManually: boolean
     setCreateManually: (val: boolean) => void
     backToTypeSelect: () => void
-    onProviderCreate: (entity: string) => void
+    onProviderCreate: (entity: IEntity) => void
     autoReference?: AutoReference
 }) {
     const [value, setValue] = useState("")
     const [creating, setCreating] = useState(false)
     const [error, setError] = useState<unknown>()
-    const { importEntityFromOrcid } = useContext(CrateDataContext)
-    const setPropertyValue = useEditorState((store) => store.setPropertyValue)
+    const addEntity = useEditorState((store) => store.addEntity)
 
     const onImportPress = useCallback(async () => {
         try {
             setCreating(true)
-            const id = await importEntityFromOrcid(value)
-            if (autoReference) {
-                setPropertyValue(
-                    autoReference.entityId,
-                    autoReference.propertyName,
-                    { "@id": id },
-                    autoReference.valueIdx
-                )
-            }
+            const entity = await importPersonFromOrcid(value)
+            addEntity(entity["@id"], toArray(entity["@type"]), entity, autoReference)
             setCreating(false)
             setError(undefined)
-            onProviderCreate(id)
+            onProviderCreate(entity)
         } catch (e) {
             setCreating(false)
             setError(e)
         }
-    }, [autoReference, importEntityFromOrcid, onProviderCreate, setPropertyValue, value])
+    }, [addEntity, autoReference, onProviderCreate, value])
 
     const onKeyDown = useCallback(
         (e: React.KeyboardEvent) => {
