@@ -8,22 +8,33 @@ import { OrcidProfile } from "@/lib/backend/types/OrcidProfileInterface"
 export async function importPersonFromOrcid(url: string): Promise<IEntity> {
     const orcid = extractOrcidIdentifier(url)
 
-    const req = await fetch(`https://pub.orcid.org/v3.0/${orcid}`, {
-        headers: {
-            Accept: "application/json"
-        }
-    })
-    if (req.ok) {
-        const json = (await req.json()) as OrcidProfile
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000)
 
-        return {
-            "@id": "https://orcid.org/" + json["orcid-identifier"].path,
-            "@type": "Person",
-            name:
-                json.person.name["given-names"].value + " " + json.person.name["family-name"].value
+    try {
+        const req = await fetch(`https://pub.orcid.org/v3.0/${orcid}`, {
+            headers: {
+                Accept: "application/vnd.orcid+json"
+            },
+            signal: controller.signal
+        })
+        if (req.ok) {
+            const json = (await req.json()) as OrcidProfile
+
+            const givenName = json.person?.name?.["given-names"]?.value
+            const familyName = json.person?.name?.["family-name"]?.value
+            const name = [givenName, familyName].filter(Boolean).join(" ")
+
+            return {
+                "@id": "https://orcid.org/" + orcid,
+                "@type": "Person",
+                name: name || []
+            }
+        } else {
+            throw new Error(`Could not fetch ORCID profile (${req.status})`)
         }
-    } else {
-        throw new Error(`Could not fetch ORCID profile (${req.status})`)
+    } finally {
+        clearTimeout(timeoutId)
     }
 }
 
@@ -34,24 +45,36 @@ export async function importPersonFromOrcid(url: string): Promise<IEntity> {
 export async function importOrganizationFromRor(url: string): Promise<IEntity> {
     const ror = extractRorIdentifier(url)
 
-    const req = await fetch(`https://api.ror.org/v2/organizations/${ror}`, {
-        headers: {
-            Accept: "application/json"
-        }
-    })
-    if (req.ok) {
-        const json = (await req.json()) as RorRecord
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000)
 
-        return {
-            "@id": json.id,
-            "@type": "Organization",
-            name:
+    try {
+        const req = await fetch(`https://api.ror.org/v2/organizations/${ror}`, {
+            headers: {
+                Accept: "application/json"
+            },
+            signal: controller.signal
+        })
+        if (req.ok) {
+            const json = (await req.json()) as RorRecord
+
+            const name =
                 json.names.find((n) => n.types.includes("ror_display") || n.types.includes("label"))
-                    ?.value ?? "",
-            url: json.links.find((l) => l.type === "website")?.value ?? json.id
+                    ?.value ??
+                json.names[0]?.value ??
+                json.id
+
+            return {
+                "@id": json.id,
+                "@type": "Organization",
+                name: name,
+                url: json.links.find((l) => l.type === "website")?.value ?? json.id
+            }
+        } else {
+            throw new Error(`Could not fetch ROR organization (${req.status})`)
         }
-    } else {
-        throw new Error(`Could not fetch ROR organization (${req.status})`)
+    } finally {
+        clearTimeout(timeoutId)
     }
 }
 
