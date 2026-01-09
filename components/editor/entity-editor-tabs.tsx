@@ -99,24 +99,22 @@ function Tab({
                     onClick={focus}
                     variant="tab"
                     data-active={active}
-                    className={`cursor-default ${active ? "pr-1" : ""}`}
+                    className={`cursor-default px-1.5 gap-1 group`}
                     ref={button}
                 >
                     <EntityIcon entity={entity} unsavedChanges={dirty} />
-                    <div className={`ml-1 transition-colors max-w-[300px] truncate`}>
+                    <div className={`transition-colors max-w-75 truncate`}>
                         {getEntityDisplayName(entity)}
                     </div>
-                    {active ? (
-                        <div
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                close()
-                            }}
-                            className="ml-2 shrink-0 hover:bg-background p-1 text-xs rounded transition cursor-pointer"
-                        >
-                            <XIcon className="size-4" />
-                        </div>
-                    ) : null}
+                    <div
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            close()
+                        }}
+                        className={`shrink-0 hover:bg-background p-1 text-xs rounded cursor-pointer ${active ? "" : "opacity-0 group-hover:opacity-100"}`}
+                    >
+                        <XIcon className="size-3" />
+                    </div>
                 </Button>
             </ContextMenuTrigger>
             <ContextMenuContent>
@@ -141,7 +139,7 @@ function Tabs({ tabs, currentTab }: { tabs: IEntityEditorTab[]; currentTab?: IEn
     return (
         <div
             ref={container}
-            className="flex overflow-x-auto shrink-0 no-scrollbar h-10"
+            className="flex overflow-x-auto shrink-0 no-scrollbar h-10 p-1 gap-2"
             onWheel={(s) => {
                 if (s.deltaY !== 0 && container.current) {
                     // noinspection JSSuspiciousNameCombination
@@ -181,7 +179,7 @@ export function EntityEditorTabs({
 
     if (tabs.length == 0) {
         return (
-            <div className="relative flex flex-col justify-center items-center h-full">
+            <div className="relative flex flex-col justify-center items-center h-full rounded-lg overflow-hidden bg-background border">
                 <Button
                     className="absolute top-2 left-2"
                     size="icon"
@@ -200,7 +198,7 @@ export function EntityEditorTabs({
         )
     } else {
         return (
-            <div className="h-full flex flex-col">
+            <div className="bg-background h-full flex flex-col overflow-hidden rounded-lg border border-t-2">
                 <Tabs tabs={tabs} currentTab={currentTab} />
                 <div className="overflow-auto">
                     {currentTab ? (

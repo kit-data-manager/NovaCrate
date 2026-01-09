@@ -40,8 +40,8 @@ function NavSidebarLink({ children, page }: PropsWithChildren<{ page: string }>)
     return (
         <Link href={href}>
             <Button
-                variant="link"
-                className={`justify-start w-full bg-background ${isActive ? "bg-accent" : ""} transition`}
+                variant="ghost"
+                className={`justify-center transition aspect-square h-auto ${isActive && "bg-accent"}`}
             >
                 {children}
             </Button>
@@ -59,68 +59,52 @@ export function NavSidebar({ children }: PropsWithChildren) {
     }, [setShowValidationDrawer, showValidationDrawer])
 
     return (
-        <ResizablePanelGroup direction="horizontal" autoSaveId="globalSidebarLayout">
-            <ResizablePanel minSize={10} defaultSize={15}>
-                <div className="relative h-full min-w-40 flex flex-col">
-                    <div className="flex flex-col gap-2 p-2 pb-4 pt-0 grow">
-                        <NavSidebarLink page="entities">
-                            <PackageSearch className="size-4 mr-2" />
-                            Entities
-                        </NavSidebarLink>
-                        <NavSidebarLink page="file-explorer">
-                            <Folder className="size-4 mr-2" />
-                            File Explorer
-                        </NavSidebarLink>
-                        <NavSidebarLink page="graph">
-                            <GitFork className="size-4 mr-2" />
-                            Graph
-                        </NavSidebarLink>
-                        <NavSidebarLink page="json-editor">
-                            <Braces className="size-4 mr-2" />
-                            JSON Editor
-                        </NavSidebarLink>
-                        <NavSidebarLink page="context">
-                            <Library className="size-4 mr-2" />
-                            Context
-                        </NavSidebarLink>
+        <div className="grid grid-cols-[58px_auto] h-full">
+            <div className="relative h-full flex flex-col">
+                <div className="flex flex-col gap-2 p-2 pb-4 pt-0 grow">
+                    <NavSidebarLink page="entities">
+                        <PackageSearch className="size-5" />
+                    </NavSidebarLink>
+                    <NavSidebarLink page="file-explorer">
+                        <Folder className="size-5" />
+                    </NavSidebarLink>
+                    <NavSidebarLink page="graph">
+                        <GitFork className="size-5" />
+                    </NavSidebarLink>
+                    <NavSidebarLink page="json-editor">
+                        <Braces className="size-5" />
+                    </NavSidebarLink>
+                    <NavSidebarLink page="context">
+                        <Library className="size-5" />
+                    </NavSidebarLink>
 
-                        <div className="grow"></div>
+                    <div className="grow"></div>
 
-                        <Button
-                            variant="link"
-                            className={`justify-start w-full ${showValidationDrawer && "bg-accent"}`}
-                            onClick={toggleShowValidationDrawer}
-                        >
-                            <Bug className="size-4 mr-2" />
-                            Validation
+                    <Button
+                        variant="link"
+                        className={`justify-start w-full ${showValidationDrawer && "bg-accent"}`}
+                        onClick={toggleShowValidationDrawer}
+                    >
+                        <Bug className="size-4 mr-2" />
+                    </Button>
+
+                    <Link href={"https://github.com/kit-data-manager/NovaCrate/issues"}>
+                        <Button variant="link" className={`justify-start w-full`}>
+                            <MessageSquare className="size-4 mr-2" />
                         </Button>
+                    </Link>
 
-                        <Link href={"https://github.com/kit-data-manager/NovaCrate/issues"}>
-                            <Button variant="link" className={`justify-start w-full`}>
-                                <MessageSquare className="size-4 mr-2" />
-                                Send Feedback
-                            </Button>
-                        </Link>
-
-                        <Button
-                            variant="link"
-                            className={`justify-start w-full`}
-                            onClick={showDocumentationModal}
-                        >
-                            <BookOpenText className="size-4 mr-2" />
-                            Documentation
-                        </Button>
-                    </div>
-
-                    <Footer />
+                    <Button
+                        variant="link"
+                        className={`justify-start w-full`}
+                        onClick={showDocumentationModal}
+                    >
+                        <BookOpenText className="size-4 mr-2" />
+                    </Button>
                 </div>
-            </ResizablePanel>
-            <ResizableHandle className="bg-transparent" />
-            <ResizablePanel minSize={50} defaultSize={85}>
-                <div className="relative w-full h-full rounded-tl-lg overflow-hidden border-l border-t">
-                    {children}
-                </div>
-            </ResizablePanel>
-        </ResizablePanelGroup>
+            </div>
+
+            <div className="relative w-full h-full overflow-hidden pb-2 pr-2">{children}</div>
+        </div>
     )
 }

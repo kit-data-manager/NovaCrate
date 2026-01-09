@@ -55,7 +55,7 @@ function EntityMenu() {
 
     return currentEntity !== undefined ? (
         <MenubarMenu>
-            <MenubarTrigger>
+            <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
                 Entity
                 <ChevronDown className="size-4 ml-1 text-muted-foreground" />
             </MenubarTrigger>
@@ -158,9 +158,9 @@ export function NavHeader() {
 
     const menubar = useMemo(() => {
         return (
-            <Menubar>
+            <Menubar className="bg-transparent">
                 <MenubarMenu>
-                    <MenubarTrigger>
+                    <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
                         Editor <ChevronDown className="size-4 ml-1 text-muted-foreground" />
                     </MenubarTrigger>
                     <MenubarContent>
@@ -199,7 +199,7 @@ export function NavHeader() {
                     </MenubarContent>
                 </MenubarMenu>
                 <MenubarMenu>
-                    <MenubarTrigger>
+                    <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
                         Crate <ChevronDown className="size-4 ml-1 text-muted-foreground" />
                     </MenubarTrigger>
                     <MenubarContent>
@@ -273,7 +273,7 @@ export function NavHeader() {
     ])
 
     return (
-        <div className="p-4 py-3 w-full grid grid-cols-[1fr_auto_1fr]">
+        <div className="p-4 py-2 w-full grid grid-cols-[1fr_auto_1fr]">
             <div className="flex items-center">
                 <Package className="w-7 h-7 mr-2" />
                 {crateDataIsLoading || !crateName ? (
@@ -344,7 +344,7 @@ export function NavHeader() {
                     </span>
                 </ActionButton>
                 <ActionButton
-                    variant="secondary"
+                    variant="outline"
                     name={"settings"}
                     actionId={"editor.settings"}
                     iconOnly

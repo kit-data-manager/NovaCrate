@@ -20,7 +20,7 @@ export function NavDrawer({ children }: PropsWithChildren) {
     return (
         <ResizablePanelGroup direction={"vertical"}>
             <ResizablePanel defaultSize={100}>{children}</ResizablePanel>
-            <ResizableHandle />
+            <ResizableHandle className="m-0.5" />
             <ResizablePanel collapsible ref={ref} defaultSize={0} minSize={10}>
                 <ValidationDrawer />
             </ResizablePanel>

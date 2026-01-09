@@ -17,7 +17,6 @@ export function PropertyOverview() {
         (store) => store.setShowPropertyOverview
     )
     const [search, setSearch] = useState("")
-    const rootEntityId = useEditorState((s) => s.getRootEntityId())
 
     const properties = useMemo(() => {
         if (!currentEntity) return []
@@ -48,8 +47,8 @@ export function PropertyOverview() {
     )
 
     return (
-        <div className="h-full w-full flex flex-col">
-            <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
+        <div className="bg-background h-full w-full flex flex-col overflow-hidden rounded-lg border">
+            <div className="pl-4 text-sm h-10 flex items-center shrink-0 border-b">
                 <LayoutGrid className="size-4 shrink-0 mr-2" /> Property Overview
                 <div className="grow" />
                 <Popover>

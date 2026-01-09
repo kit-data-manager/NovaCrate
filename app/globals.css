@@ -234,6 +234,25 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Global scrollbar styles */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+  }
+
+  * {
+    scrollbar-color: var(--muted) transparent;
+    scrollbar-width: thin;
+  }
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

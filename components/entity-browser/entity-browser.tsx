@@ -60,11 +60,11 @@ export function EntityBrowser() {
 
     const entityBrowserPanel = useMemo(() => {
         return (
-            <div className="h-full w-full flex flex-col">
-                <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
+            <div className="bg-background h-full w-full flex flex-col rounded-lg overflow-hidden border">
+                <div className="pl-4 text-sm h-10 flex items-center shrink-0">
                     <PackageSearch className="size-4 shrink-0 mr-2" /> Entities
                 </div>
-                <div className="flex gap-2 top-0 z-10 p-2 bg-accent shrink-0">
+                <div className="flex gap-2 top-0 z-10 p-2 border-b shrink-0">
                     <ActionButton
                         actionId="crate.add-entity"
                         size="sm"
@@ -196,7 +196,7 @@ export function EntityBrowser() {
             <ResizablePanel defaultSize={100} minSize={10}>
                 {entityBrowserPanel}
             </ResizablePanel>
-            <ResizableHandle />
+            <ResizableHandle className="m-0.5" />
             <ResizablePanel defaultSize={0} minSize={10} ref={propertyOverviewPanel} collapsible>
                 <PropertyOverview />
             </ResizablePanel>
