@@ -171,6 +171,14 @@ export function NavHeader() {
                                 <Palette className="size-4 mr-2" /> Theme
                             </MenubarSubTrigger>
                             <MenubarSubContent>
+                                {theme.systemTheme && (
+                                    <MenubarCheckboxItem
+                                        checked={theme.theme === "system"}
+                                        onClick={() => theme.setTheme("system")}
+                                    >
+                                        System Default ({theme.systemTheme})
+                                    </MenubarCheckboxItem>
+                                )}
                                 <MenubarCheckboxItem
                                     checked={theme.theme === "dark"}
                                     onClick={() => theme.setTheme("dark")}
@@ -186,9 +194,6 @@ export function NavHeader() {
                             </MenubarSubContent>
                         </MenubarSub>
                         <ActionMenubarItem actionId="editor.settings" />
-                        <MenubarItem disabled>
-                            <Info className="size-4 mr-2" /> Info
-                        </MenubarItem>
                         <MenubarSeparator />
                         <ActionMenubarItem actionId="editor.close" />
                     </MenubarContent>

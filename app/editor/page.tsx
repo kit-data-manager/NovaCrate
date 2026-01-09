@@ -280,11 +280,11 @@ export default function EditorLandingPage() {
                             variant="link"
                             className="rounded-none border-r-0 h-12"
                             onClick={() =>
-                                theme.setTheme(theme.theme === "light" ? "dark" : "light")
+                                theme.setTheme(theme.resolvedTheme === "light" ? "dark" : "light")
                             }
                             suppressHydrationWarning
                         >
-                            {theme.theme === "light" ? (
+                            {theme.resolvedTheme === "light" ? (
                                 <Sun className="w-6 h-6 mr-3 shrink-0" suppressHydrationWarning />
                             ) : (
                                 <Moon className="w-6 h-6 mr-3 shrink-0" suppressHydrationWarning />
@@ -302,7 +302,7 @@ export default function EditorLandingPage() {
             <div
                 className={`h-full overflow-y-auto ${fadeOutAnimation ? "animate-fade-out opacity-0" : "animate-fade-in"}`}
             >
-                <div className="grid grid-cols-2 p-20 pb-0 gap-8 max-w-[1000px] ml-auto mr-auto">
+                <div className="grid grid-cols-2 p-20 pb-0 gap-8 max-w-250 ml-auto mr-auto">
                     <button
                         className="h-40 flex justify-center gap-4 border rounded-lg items-center p-4 hover:bg-accent transition"
                         onClick={createCrateFromFolder}
@@ -329,7 +329,7 @@ export default function EditorLandingPage() {
                     </button>
 
                     <div
-                        className={`max-w-[1000px] ml-auto mr-auto border flex col-span-2 w-full rounded-lg p-4 items-center`}
+                        className={`max-w-250 ml-auto mr-auto border flex col-span-2 w-full rounded-lg p-4 items-center`}
                     >
                         <CirclePlay className="size-4 mr-2" />
                         <div className="font-bold mr-2">Quickstart</div>
