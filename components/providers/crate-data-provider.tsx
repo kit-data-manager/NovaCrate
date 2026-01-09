@@ -23,33 +23,122 @@ import { useInterval } from "usehooks-ts"
 const CRATE_ID_STORAGE_KEY = "crate-id"
 
 export interface ICrateDataProvider {
+    /**
+     * Implementation of the CrateServiceAdapter interface.
+     */
     readonly serviceProvider?: CrateServiceAdapter
+    /**
+     * Id of the currently opened crate.
+     */
     crateId?: string
+
+    /**
+     * Change the currently opened crate.
+     * @param crateId Id of the crate to be opened.
+     */
     setCrateId(crateId: string): void
+    /**
+     * Unsets the crateId. This will result in a redirect to the main menu. This function should be called
+     * when the current crate should be "closed".
+     */
     unsetCrateId(): void
+    /**
+     * Local copy of the crate state.
+     */
     crateData?: ICrate
+    /**
+     * True while the crate state is still being fetched from the backend.
+     */
     crateDataIsLoading: boolean
+    /**
+     * Saves or creates an entity based on its content. It is automatically determined whether the entity has to be created or updated.
+     * @param entity The entity to be saved or created.
+     * @returns {boolean} Whether the operation was successful. When the operation is not successful returns false and updates the saveError map. Also directly toasts a success or failure message to the interface.
+     */
     saveEntity(entity: IEntity): Promise<boolean>
+    /**
+     * Calls saveEntity for each entity in the given entities array.
+     */
     saveAllEntities(entities: IEntity[]): Promise<void>
-    createFileEntity(entity: IEntity, file: File, overwrite?: false): Promise<boolean>
+    /**
+     * Creates an entity based on the passed file. Will not optimistically update the local crate state. Calls serviceProvider.createFileEntity template method. The passed file will be forwarded to the CrateServiceAdapter implementation, so its contents can be uploaded to a remote backend.
+     * @param entity The user can define name and @id of the file entity beforehand, which are given through this entity object.
+     * @param file The file to be uploaded to the backend.
+     * @param overwrite Whether to overwrite the file if it already exists. Defaults to false.
+     * @returns {Promise<boolean>} Whether the operation was successful.
+     */
+    createFileEntity(entity: IEntity, file: File, overwrite?: boolean): Promise<boolean>
+    /**
+     * Creates one or more entities based on the passed folder. Will optimistically update the local crate state in case of entities for folders, as there is no method in the CrateServiceAdapter interface to do so. Calls serviceProvider.createFileEntity template method.
+     * @param entity The user can define name and @id of the folder entity beforehand, which are given through this entity object.
+     * @param files The files to be uploaded to the backend.
+     * @param progressCallback Optional callback that is called with the current progress on file upload to the backend
+     * @returns {Promise<boolean>} Whether the operation was successful.
+     */
     createFolderEntity(
         entity: IEntity,
         files: IEntityWithFile[],
         progressCallback?: (current: number, max: number, errors: unknown[]) => void
     ): Promise<boolean>
+    /**
+     * Delete an entity. Will optimistically update the local crate state.
+     * @param entity While an IEntity object is expected, only @id and @type have to be provided. Other properties can be omitted.
+     * @returns {Promise<boolean>} Whether the operation was successful.
+     */
     deleteEntity(entity: IEntity): Promise<boolean>
+    /**
+     * Changes the @id of the passed crate to the given newEntityId. Optimistically updates the local crate state. The serviceProvider is responsible for updating
+     * all incoming references to the entity.
+     * @param entityData The entity to be renamed.
+     * @param newEntityId The new @id of the entity.
+     * @returns {Promise<boolean>} Whether the operation was successful.
+     */
     renameEntity(entityData: IEntity, newEntityId: string): Promise<boolean>
+    /**
+     * Adds a key-value pair to the custom @context of the crate. The key and value are strings. The key must be unique within the crate.
+     */
     addCustomContextPair(key: string, value: string): Promise<void>
+    /**
+     * Removes a key-value pair from the custom @context of the crate. The key must be unique within the crate.
+     */
     removeCustomContextPair(key: string): Promise<void>
+    /**
+     * Directly overwrites the ro-crate-metadata.json file with the passed JSON string. This should result in the entire remote crate state to be overwritten.
+     * Local crate state is not optimistically updated.
+     */
     saveRoCrateMetadataJSON(json: string): Promise<void>
     reload(): void
+    /**
+     * True while waiting for the remote to respond to an update operation.
+     */
     isSaving: boolean
+    /**
+     * Map of entity ids to the most recent error encountered while updating the entity.
+     */
     saveError: Map<string, unknown>
+    /**
+     * Removes the save error for the given entity id, or all entities, from the saveError map.
+     */
     clearSaveError(id?: string): void
+
+    /**
+     * Error that occurred while trying to fetch the remote crate state. Undefined if no error was encountered.
+     */
     error: unknown
+    /**
+     * Error that occurred during the last health test. Undefined if no error was encountered. If the last health test failed, it can be assumed that the backend is unavailable.
+     */
     healthTestError: unknown
 }
 
+/**
+ * The CrateDataContext is the gateway between the local editor state and the CrateServiceAdapter interface, which acts as an interface to the backend editor state. The backend can either be hosted
+ * remotely (e.g. REST API) or locally (in-browser). The CrateServiceAdapter implementation is responsible for the interaction with the backend.
+ *
+ * This context is provided through the {@link CrateDataProvider} component, which contains some more documentation on the inner workings and purpose of this gateway.
+ *
+ * The backend may sometimes be referred to as the remote, even though it might be locally implemented.
+ */
 export const CrateDataContext = createContext<ICrateDataProvider>({
     serviceProvider: undefined,
     crateId: undefined,
@@ -99,6 +188,26 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
     }
 })
 
+/**
+ * The CrateDataProvider is a context provider that is responsible for the interaction with the NovaCrate backend (`serviceProvider` prop).
+ * This provider can work with any backend (`serviceProvider`) that implements the CrateServiceAdapter interface. Note that the backend can either
+ * be accessed remotely (e.g. REST API) or locally (in-browser), as this is completely up to the CrateServiceAdapter implementation.
+ *
+ * The CrateDataProvider is a large assortment of template methods, corresponding to the methods of the CrateServiceAdapter interface. The template methods
+ * are filled in from the serviceProvider prop. It is mainly responsible for the following things:
+ *  1. Maintaining a local copy of the crate state (whose original is stored in the backend) and updating it optimistically whenever a change is triggered. This is done to hide network latency and heavy backend operations.
+ *  2. Merging the remote crate state with the local copy of the crate state as well as the editor state.
+ *  3. In case of a conflict between the local copy of the crate state and the remote crate state, the local state and the editor state are discarded and overwritten by the remote state in all places necessary.
+ *
+ *  Note that the local crate state held in this component is not the editor state. The editor state contains a working copy of the entities in the crate, while this provider contains a more static local copy that closely reflects the backend crate state, only serving to hide network latency.
+ *  The editor state (working state) is found in the {@link editorState}.
+ *
+ * @example For example, when adding an entity, it is immediately added to the local copy of the crate state on a best-effort basis. At the same time, the request to the serviceProvider is sent. Once the serviceProvider responds with the actual result of adding the entity to the crate (which might include side effects), this result is then merged into the local state.
+ *
+ * @param serviceProvider Implementation of the CrateServiceAdapter interface.
+ * @param children
+ * @constructor
+ */
 export function CrateDataProvider({
     serviceProvider,
     children
@@ -118,9 +227,12 @@ export function CrateDataProvider({
     // Might be unrelated to general crate error
     const [healthTestError, setHealthTestError] = useState<unknown>()
 
+    /**
+     * This effect is responsible for the continuous merging of the remote crate state into the local crate state
+     */
     useEffect(() => {
         if (data) {
-            // Initial crate context is currently useless as the context is always updated to the server state
+            // Initial crate context is currently useless as the context is always updated to the remote state
             // Might be used in the future if the context becomes more complex
             updateCrateContext(data["@context"])
             updateInitialCrateContext(data["@context"])
@@ -177,12 +289,20 @@ export function CrateDataProvider({
         }
     }, [serviceProvider])
 
+    // Performs a health test every 10 seconds
     useInterval(healthTest, 10000)
+    // Performs a health test immediately on mount or when the serviceProvider changes
     useEffect(() => {
         healthTest().then()
     }, [healthTest])
 
+    /**
+     * True while waiting for the remote to respond to an update operation.
+     */
     const [isSaving, setIsSaving] = useState(false)
+    /**
+     * Map of entity ids to the most recent error encountered while updating the entity.
+     */
     const [saveError, setSaveError] = useState<Map<string, unknown>>(new Map())
 
     const clearSaveError = useCallback((id?: string) => {
@@ -197,10 +317,19 @@ export function CrateDataProvider({
         }
     }, [])
 
+    /**
+     * Automatically clears all save errors when the crateId changes.
+     */
     useEffect(() => {
         clearSaveError()
     }, [clearSaveError, crateId])
 
+    /**
+     * Saves or creates an entity based on its content. It is automatically determined whether the entity has to be created or updated.
+     * @param entityData The entity to be saved or created.
+     * @param mutateNow Setting mutateNow to false will not optimistically update the local crate state. This should be done when updating many entities at once for performance reasons. The local state will be updated on the next backend sync automatically.
+     * @returns {boolean} Whether the operation was successful. When the operation is not successful, returns false and updates the saveError map. Also directly toasts a success or failure message to the interface.
+     */
     const saveEntity = useCallback(
         async (entityData: IEntity, mutateNow: boolean = true) => {
             if (crateId) {
@@ -464,6 +593,11 @@ export function CrateDataProvider({
         [mutate, crateId, serviceProvider]
     )
 
+    /**
+     * This effect handles retrieving the crateId of the current crate. Once a crate is selected in the main menu, its crateId is saved
+     * to local storage and then retrieved by this hook when in the editor. When no crateId is found in local storage and it is not known
+     * otherwise, this hook redirects to the main menu.
+     */
     useEffect(() => {
         if (crateId) {
             console.log("CrateID known, saving")
@@ -486,6 +620,9 @@ export function CrateDataProvider({
         localStorage.removeItem(CRATE_ID_STORAGE_KEY)
     }, [])
 
+    /**
+     * True iff the CrateDataProvider is done with loading the crate state from the backend.
+     */
     const ready = useMemo(() => {
         return crateContextReady && data !== undefined && !isLoading
     }, [data, crateContextReady, isLoading])
