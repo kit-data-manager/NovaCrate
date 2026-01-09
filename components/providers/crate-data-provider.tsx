@@ -107,17 +107,6 @@ export interface ICrateDataProvider {
      * Local crate state is not optimistically updated.
      */
     saveRoCrateMetadataJSON(json: string): Promise<void>
-    /**
-     * Execute the serviceProvider.importEntityFromOrcid template method. Local crate state is not optimistically updated.
-     */
-    importEntityFromOrcid(url: string): Promise<string>
-    /**
-     * Execute the serviceProvider.importOrganizationFromRor template method. Local crate state is not optimistically updated.
-     */
-    importOrganizationFromRor(url: string): Promise<string>
-    /**
-     * Invalidate the local crate state and reload it from the backend.
-     */
     reload(): void
     /**
      * True while waiting for the remote to respond to an update operation.
@@ -178,12 +167,6 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     saveRoCrateMetadataJSON() {
-        return Promise.reject("Crate Data Provider not mounted yet")
-    },
-    importEntityFromOrcid(): Promise<string> {
-        return Promise.reject("Crate Data Provider not mounted yet")
-    },
-    importOrganizationFromRor(): Promise<string> {
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     reload: () => {
@@ -610,30 +593,6 @@ export function CrateDataProvider({
         [mutate, crateId, serviceProvider]
     )
 
-    const importEntityFromOrcid = useCallback(
-        async (url: string) => {
-            if (crateId) {
-                const id = await serviceProvider.importEntityFromOrcid(crateId, url)
-                await mutate()
-                return id
-            }
-            throw "crateId is undefined"
-        },
-        [mutate, crateId, serviceProvider]
-    )
-
-    const importOrganizationFromRor = useCallback(
-        async (url: string) => {
-            if (crateId) {
-                const id = await serviceProvider.importOrganizationFromRor(crateId, url)
-                await mutate()
-                return id
-            }
-            throw "crateId is undefined"
-        },
-        [mutate, crateId, serviceProvider]
-    )
-
     /**
      * This effect handles retrieving the crateId of the current crate. Once a crate is selected in the main menu, its crateId is saved
      * to local storage and then retrieved by this hook when in the editor. When no crateId is found in local storage and it is not known
@@ -684,8 +643,6 @@ export function CrateDataProvider({
                 renameEntity,
                 isSaving,
                 reload: mutate,
-                importEntityFromOrcid,
-                importOrganizationFromRor,
                 saveError,
                 error,
                 addCustomContextPair,

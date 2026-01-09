@@ -292,14 +292,6 @@ export class BrowserBasedCrateService extends CrateServiceBase {
         }
     }
 
-    importEntityFromOrcid(): Promise<string> {
-        throw "Not supported in browser-based environment yet"
-    }
-
-    importOrganizationFromRor(): Promise<string> {
-        throw "Not supported in browser-based environment yet"
-    }
-
     async addCustomContextPair(crateId: string, key: string, value: string) {
         const crate = await this.getCrate(crateId)
         const context = crate["@context"]

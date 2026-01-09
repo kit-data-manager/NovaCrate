@@ -23,6 +23,7 @@ import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { Button } from "@/components/ui/button"
 import { RenameEntityModal } from "@/components/modals/rename-entity-modal"
 import { useGoToFileExplorer } from "@/lib/hooks"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export function IDField({ value }: { value: string }) {
     const [, copy] = useCopyToClipboard()
@@ -71,7 +72,7 @@ export function IDField({ value }: { value: string }) {
     }, [value])
 
     return (
-        <div className="flex grow justify-start pl-3 items-center rounded-lg">
+        <div className="flex grow justify-start pl-3 items-center rounded-lg min-w-0">
             <RenameEntityModal
                 entityId={value}
                 onOpenChange={setRenameEntityModalOpen}
@@ -79,7 +80,13 @@ export function IDField({ value }: { value: string }) {
             />
 
             <Icon className="size-4 pointer-events-none text-muted-foreground mr-2 shrink-0" />
-            <span className="truncate grow">{value}</span>
+            <Tooltip delayDuration={500}>
+                <TooltipTrigger asChild>
+                    <span className="truncate grow">{value}</span>
+                </TooltipTrigger>
+                <TooltipContent>{value}</TooltipContent>
+            </Tooltip>
+
             <DropdownMenu>
                 <DropdownMenuTrigger className="p-2" asChild>
                     <Button variant={"outline"} id={"id-dropdown-trigger"}>
