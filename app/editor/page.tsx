@@ -69,7 +69,6 @@ export default function EditorLandingPage() {
     })
     const [createCrateModalState, setCreateCrateModalState] = useState({
         open: false,
-        fromFolder: false,
         fromFile: undefined as File | undefined
     })
     const [search, setSearch] = useState("")
@@ -95,17 +94,8 @@ export default function EditorLandingPage() {
         }))
     }, [])
 
-    const createEmptyCrate = useCallback(() => {
+    const createCrate = useCallback(() => {
         setCreateCrateModalState({
-            fromFolder: false,
-            fromFile: undefined,
-            open: true
-        })
-    }, [])
-
-    const createCrateFromFolder = useCallback(() => {
-        setCreateCrateModalState({
-            fromFolder: true,
             fromFile: undefined,
             open: true
         })
@@ -153,7 +143,6 @@ export default function EditorLandingPage() {
             createUploadInputRef.current.files.length > 0
         ) {
             setCreateCrateModalState({
-                fromFolder: false,
                 fromFile: createUploadInputRef.current.files[0],
                 open: true
             })
@@ -289,7 +278,7 @@ export default function EditorLandingPage() {
                         <PackageOpen className="size-4" />
                         Import RO-Crate
                     </Button>
-                    <Button variant="outline" onClick={createCrateFromFolder}>
+                    <Button variant="outline" onClick={createCrate}>
                         <PackagePlus className="size-4" />
                         New RO-Crate
                     </Button>

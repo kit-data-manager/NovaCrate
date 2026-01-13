@@ -19,13 +19,11 @@ import { UploadProgressBar } from "@/components/upload-progress-bar"
 export function CreateCrateModal({
     open,
     onOpenChange,
-    fromFolder,
     fromFile,
     openEditor
 }: {
     open: boolean
     onOpenChange: (isOpen: boolean) => void
-    fromFolder: boolean
     fromFile?: File
     openEditor(id: string): void
 }) {
@@ -143,12 +141,12 @@ export function CreateCrateModal({
     }, [files])
 
     const onCreateClick = useCallback(() => {
-        if (fromFolder) {
+        if (files.length > 0) {
             createCrateFromCrateFiles()
         } else {
             createEmptyCrate()
         }
-    }, [createCrateFromCrateFiles, createEmptyCrate, fromFolder])
+    }, [createCrateFromCrateFiles, createEmptyCrate, files.length])
 
     const openFolderPicker = useCallback(() => {
         if (createFolderUploadInputRef.current) {
@@ -176,55 +174,47 @@ export function CreateCrateModal({
                 ) : (
                     <>
                         <Error title="Could not create a new Crate" error={error} />
-                        {fromFolder ? (
-                            <div>
-                                <Label>Folder</Label>
-                                <div>
-                                    <Button variant="outline" onClick={openFolderPicker}>
-                                        <Folder className="size-4 mr-2" />{" "}
-                                        {files.length == 0
-                                            ? "Select Folder"
-                                            : files[0].webkitRelativePath.split("/")[0]}
-                                    </Button>
-                                    <span className="ml-2 text-muted-foreground">
-                                        {files.length > 0
-                                            ? `${files.length} file${files.length === 1 ? "" : "s"} selected (${prettyBytes([...files].map((f) => f.size).reduce(sum))} total)`
-                                            : "No files selected"}
-                                    </span>
-                                </div>
-                            </div>
-                        ) : null}
 
-                        {!fromFile ? (
-                            <>
-                                <div>
-                                    <Label>Name</Label>
-                                    <Input
-                                        placeholder="Name"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        autoFocus
-                                    />
-                                </div>
-                                <div>
-                                    <Label>Description</Label>
-                                    <Input
-                                        placeholder="Description"
-                                        value={description}
-                                        onChange={(e) => setDescription(e.target.value)}
-                                    />
-                                </div>
-                            </>
-                        ) : null}
+                        <div>
+                            <Label>Folder</Label>
+                            <div>
+                                <Button variant="outline" onClick={openFolderPicker}>
+                                    <Folder className="size-4 mr-2" />{" "}
+                                    {files.length == 0
+                                        ? "Select Folder"
+                                        : files[0].webkitRelativePath.split("/")[0]}
+                                </Button>
+                                <span className="ml-2 text-muted-foreground">
+                                    {files.length > 0
+                                        ? `${files.length} file${files.length === 1 ? "" : "s"} selected (${prettyBytes([...files].map((f) => f.size).reduce(sum))} total)`
+                                        : "No files selected"}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <Label>Name</Label>
+                            <Input
+                                placeholder="Name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+                        <div>
+                            <Label>Description</Label>
+                            <Input
+                                placeholder="Description"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                            />
+                        </div>
 
                         <div className="mt-4 flex justify-between">
                             <Button variant="secondary" onClick={() => localOnOpenChange(false)}>
                                 <ArrowLeft className="size-4 mr-2" /> Abort
                             </Button>
-                            <Button
-                                onClick={onCreateClick}
-                                disabled={(fromFolder && files.length == 0) || !!fromFile}
-                            >
+                            <Button onClick={onCreateClick}>
                                 <PackagePlus className="size-4 mr-2" /> Create
                             </Button>
                         </div>
