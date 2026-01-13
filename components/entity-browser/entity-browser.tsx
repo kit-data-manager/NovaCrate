@@ -30,6 +30,9 @@ export function EntityBrowser() {
     const state = useEntityBrowserSettings()
     const [defaultSectionOpen, setDefaultSectionOpen] = useState<DefaultSectionOpen>(true)
     const showPropertyOverview = useEntityBrowserSettings((store) => store.showPropertyOverview)
+    const setShowPropertyOverview = useEntityBrowserSettings(
+        (store) => store.setShowPropertyOverview
+    )
     const propertyOverviewPanel = useRef<ImperativePanelHandle>(null)
     const sortBy = useEntityBrowserSettings((store) => store.sortBy)
     const structureBy = useEntityBrowserSettings((store) => store.structureBy)
@@ -196,8 +199,15 @@ export function EntityBrowser() {
             <ResizablePanel defaultSize={100} minSize={10}>
                 {entityBrowserPanel}
             </ResizablePanel>
-            <ResizableHandle className="m-0.5" />
-            <ResizablePanel defaultSize={0} minSize={10} ref={propertyOverviewPanel} collapsible>
+            {showPropertyOverview && <ResizableHandle className="m-0.5" />}
+            <ResizablePanel
+                defaultSize={0}
+                minSize={10}
+                ref={propertyOverviewPanel}
+                collapsible
+                onExpand={() => setShowPropertyOverview(true)}
+                onCollapse={() => setShowPropertyOverview(false)}
+            >
                 <PropertyOverview />
             </ResizablePanel>
         </ResizablePanelGroup>

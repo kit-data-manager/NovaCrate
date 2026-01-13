@@ -6,6 +6,7 @@ import { ImperativePanelHandle } from "react-resizable-panels"
 
 export function NavDrawer({ children }: PropsWithChildren) {
     const showDrawer = useEditorState((s) => s.showValidationDrawer)
+    const setShowDrawer = useEditorState((s) => s.setShowValidationDrawer)
     const ref = useRef<ImperativePanelHandle>(null)
 
     useEffect(() => {
@@ -21,7 +22,14 @@ export function NavDrawer({ children }: PropsWithChildren) {
         <ResizablePanelGroup direction={"vertical"}>
             <ResizablePanel defaultSize={100}>{children}</ResizablePanel>
             <ResizableHandle className="m-0.5" />
-            <ResizablePanel collapsible ref={ref} defaultSize={0} minSize={10}>
+            <ResizablePanel
+                collapsible
+                ref={ref}
+                defaultSize={0}
+                minSize={10}
+                onExpand={() => setShowDrawer(true)}
+                onCollapse={() => setShowDrawer(false)}
+            >
                 <ValidationDrawer />
             </ResizablePanel>
         </ResizablePanelGroup>
