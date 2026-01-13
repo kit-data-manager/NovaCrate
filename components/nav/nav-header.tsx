@@ -194,6 +194,7 @@ export function NavHeader() {
                             </MenubarSubContent>
                         </MenubarSub>
                         <ActionMenubarItem actionId="editor.settings" />
+                        <ActionMenubarItem actionId="editor.about" />
                         <MenubarSeparator />
                         <ActionMenubarItem actionId="editor.close" />
                     </MenubarContent>
