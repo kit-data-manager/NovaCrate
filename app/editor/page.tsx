@@ -1,31 +1,28 @@
 "use client"
 
 import {
-    BookOpen,
     ChevronDown,
     CirclePlay,
     Clock,
-    FolderOpen,
     HardDrive,
+    Info,
     LinkIcon,
-    Loader,
     LoaderCircle,
-    Moon,
-    Package,
     PackageOpen,
     PackagePlus,
-    Search,
-    Sun
+    Palette,
+    Search
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 import {
     DropdownMenu,
+    DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { Fragment, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { CrateEntry } from "@/components/landing/crate-entry"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
@@ -56,7 +53,7 @@ export default function EditorLandingPage() {
         healthTestError: error
     } = useContext(CrateDataContext)
     const createUploadInputRef = useRef<HTMLInputElement>(null)
-    const { showDocumentationModal } = useContext(GlobalModalContext)
+    const { showAboutModal } = useContext(GlobalModalContext)
     const demoLoader = useDemoCrateLoader()
     const [demoLoaderError, setDemoLoaderError] = useState<unknown>()
     const [demoLoading, setDemoLoading] = useState(false)
@@ -210,7 +207,7 @@ export default function EditorLandingPage() {
     }, [search])
 
     return (
-        <div className="w-full h-full grid grid-cols-[1fr_2fr]">
+        <div className="w-full h-full grid md:grid-cols-[1fr_2fr]">
             <DeleteCrateModal
                 open={deleteCrateModalState.open}
                 onOpenChange={onDeleteCrateModalOpenChange}
@@ -227,172 +224,129 @@ export default function EditorLandingPage() {
                 openEditor={openEditor}
             />
 
-            <div
-                className={`bg-accent h-full flex flex-col ${fadeOutAnimation ? "animate-slide-left" : "animate-slide-left-reverse"}`}
-            >
-                <div className="flex flex-col items-center justify-center h-[max(45vh,200px)] p-10">
-                    <Image
-                        src={"/novacrate-nobg.svg"}
-                        alt={"NovaCrate Logo"}
-                        width={500}
-                        height={162}
-                        className="dark:invert"
-                    />
-                    <GithubDiscontinuationWarning className="mt-10" />
-                </div>
-                <div className="flex flex-col items-center pr-14">
-                    <div className="flex items-start flex-col">
-                        <Button
-                            size="lg"
-                            variant="link"
-                            className="border-r-0 rounded-r-none h-12"
-                            onClick={() => openZipFilePicker()}
-                        >
-                            <PackageOpen className="w-6 h-6 mr-3" /> Open Crate
-                        </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    size="lg"
-                                    variant="link"
-                                    className="rounded-none border-r-0 h-12"
-                                >
-                                    <PackagePlus className="w-6 h-6 mr-3" /> New Crate{" "}
-                                    <ChevronDown className="size-4 ml-2" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuItem onClick={createCrateFromFolder}>
-                                    <FolderOpen className="size-4 mr-2" /> Start with Data
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={createEmptyCrate}>
-                                    <Loader className="size-4 mr-2" />
-                                    Start from scratch
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+            <div className="md:p-20 md:pr-0">
+                <div
+                    className={`bg-accent h-full flex flex-col ${fadeOutAnimation ? "animate-fade-out opacity-0" : "animate-fade-in"} rounded-lg overflow-hidden border grid grid-rows-[1fr_auto_1fr]`}
+                >
+                    <div />
+                    <div className="flex flex-col items-center justify-center p-10">
+                        <Image
+                            src={"/novacrate-nobg.svg"}
+                            alt={"NovaCrate Logo"}
+                            width={600}
+                            height={195}
+                            className="dark:invert"
+                        />
+                        <GithubDiscontinuationWarning className="mt-10" />
+                    </div>
 
-                        <Button
-                            size="lg"
-                            variant="link"
-                            className="rounded-none border-r-0 h-12"
-                            onClick={showDocumentationModal}
-                        >
-                            <BookOpen className="w-6 h-6 mr-3" /> Documentation
-                        </Button>
-                        <Button
-                            size="lg"
-                            variant="link"
-                            className="rounded-none border-r-0 h-12"
-                            onClick={() =>
-                                theme.setTheme(theme.resolvedTheme === "light" ? "dark" : "light")
-                            }
-                            suppressHydrationWarning
-                        >
-                            {theme.resolvedTheme === "light" ? (
-                                <Sun className="w-6 h-6 mr-3 shrink-0" suppressHydrationWarning />
-                            ) : (
-                                <Moon className="w-6 h-6 mr-3 shrink-0" suppressHydrationWarning />
-                            )}{" "}
-                            Toggle Theme
-                        </Button>
+                    <div className="content-end">
+                        <div className="flex justify-center items-center gap-2 pb-4">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline">
+                                        <Palette className="size-4" /> Theme
+                                        <ChevronDown className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    {theme.systemTheme && (
+                                        <DropdownMenuCheckboxItem
+                                            checked={theme.theme === "system"}
+                                            onClick={() => theme.setTheme("system")}
+                                        >
+                                            System Default ({theme.systemTheme})
+                                        </DropdownMenuCheckboxItem>
+                                    )}
+                                    <DropdownMenuCheckboxItem
+                                        checked={theme.theme === "dark"}
+                                        onClick={() => theme.setTheme("dark")}
+                                    >
+                                        Dark Theme
+                                    </DropdownMenuCheckboxItem>
+                                    <DropdownMenuCheckboxItem
+                                        checked={theme.theme === "light"}
+                                        onClick={() => theme.setTheme("light")}
+                                    >
+                                        Light Theme
+                                    </DropdownMenuCheckboxItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <Button variant="outline" onClick={showAboutModal}>
+                                <Info /> About
+                            </Button>
+                        </div>
+                        <Footer />
                     </div>
                 </div>
-
-                <div className="grow" />
-
-                <Footer />
             </div>
 
             <div
-                className={`h-full overflow-y-auto ${fadeOutAnimation ? "animate-fade-out opacity-0" : "animate-fade-in"}`}
+                className={`overflow-y-auto ${fadeOutAnimation ? "animate-fade-out opacity-0" : "animate-fade-in"} pt-2 md:p-20 md:pl-2 flex flex-col`}
             >
-                <div className="grid grid-cols-2 p-20 pb-0 gap-8 max-w-250 ml-auto mr-auto">
-                    <button
-                        className="h-40 flex justify-center gap-4 border rounded-lg items-center p-4 hover:bg-accent transition"
-                        onClick={createCrateFromFolder}
-                    >
-                        <FolderOpen className="text-muted-foreground w-12 h-12 m-4 shrink-0" />
-                        <div className="flex flex-col gap-4 grow">
-                            <div className="text-lg font-bold">Start with data</div>
-                            <div className="text-muted-foreground">
-                                Open a local folder and start adding metadata to your files.
-                            </div>
-                        </div>
-                    </button>
-                    <button
-                        className="h-40 flex justify-center gap-4 border rounded-lg items-center p-4 hover:bg-accent transition"
-                        onClick={createEmptyCrate}
-                    >
-                        <Loader className="text-muted-foreground w-12 h-12 m-4 shrink-0" />
-                        <div className="flex flex-col gap-4 grow">
-                            <div className="text-lg font-bold">Start from scratch</div>
-                            <div className="text-muted-foreground">
-                                Start with an empty crate. You can add files later on.
-                            </div>
-                        </div>
-                    </button>
-
-                    <div
-                        className={`max-w-250 ml-auto mr-auto border flex col-span-2 w-full rounded-lg p-4 items-center`}
-                    >
-                        <CirclePlay className="size-4 mr-2" />
-                        <div className="font-bold mr-2">Quickstart</div>
-                        <div>Try out NovaCrate with one of these demo crates</div>
-                        <div className="grow" />
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" disabled={demoLoading}>
-                                    {demoLoading && (
-                                        <LoaderCircle className="animate-spin mr-2 size-4" />
-                                    )}{" "}
-                                    Quickstart <ChevronDown className="size-4 ml-2" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuItem
-                                    onClick={() => createCrateFromExample("ro-crate-spec")}
-                                >
-                                    <CirclePlay className="size-4 mr-2" />
-                                    RO-Crate Specification Crate
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={() =>
-                                        window.open(
-                                            "https://www.researchobject.org/ro-crate/eln",
-                                            "_blank"
-                                        )
-                                    }
-                                >
-                                    <LinkIcon className="size-4 mr-2" />
-                                    Download ELNs
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+                <div className="p-4 border rounded-lg flex gap-2 mb-2">
+                    <Button onClick={openZipFilePicker}>
+                        <PackageOpen className="size-4" />
+                        Import RO-Crate
+                    </Button>
+                    <Button variant="outline" onClick={createCrateFromFolder}>
+                        <PackagePlus className="size-4" />
+                        New RO-Crate
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" disabled={demoLoading}>
+                                {demoLoading ? (
+                                    <LoaderCircle className="animate-spin size-4" />
+                                ) : (
+                                    <CirclePlay className="size-4" />
+                                )}
+                                Quickstart <ChevronDown className="size-4 ml-2" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem
+                                onClick={() => createCrateFromExample("ro-crate-spec")}
+                            >
+                                <CirclePlay className="size-4 mr-2" />
+                                RO-Crate Specification Crate
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    window.open(
+                                        "https://www.researchobject.org/ro-crate/eln",
+                                        "_blank"
+                                    )
+                                }
+                            >
+                                <LinkIcon className="size-4 mr-2" />
+                                Download ELNs
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
+                <Error title="Demo could not be started" error={demoLoaderError} className="mb-2" />
+                <Error title="Crate service is not reachable" error={error} className="mb-2" />
                 <Error
-                    title="Demo could not be started"
-                    error={demoLoaderError}
-                    className="m-20 mb-0"
+                    title="Crate storage unavailable"
+                    error={storedCratesError}
+                    className="mb-2"
                 />
-                <Error title="Crate service is not reachable" error={error} className="m-20 mb-0" />
 
-                <div className="pt-16">
-                    <Tabs defaultValue="recent">
-                        <div className="flex justify-center pb-4 gap-4">
-                            <TabsList>
-                                <TabsTrigger value={"recent"}>
-                                    <Clock className="size-4 mr-2" /> Recent Crates
-                                </TabsTrigger>
-                                <TabsTrigger value={"stored"}>
-                                    <HardDrive className="size-4 mr-2" /> All Crates
-                                </TabsTrigger>
-                            </TabsList>
+                <div className="border rounded-lg grow">
+                    <Tabs defaultValue="recent" className="h-full">
+                        <TabsList className="h-auto rounded-none border-b w-full justify-start bg-transparent p-2">
+                            <TabsTrigger value={"recent"}>
+                                <Clock className="size-4 mr-2" /> Recent Crates
+                            </TabsTrigger>
+                            <TabsTrigger value={"stored"}>
+                                <HardDrive className="size-4 mr-2" /> All Crates
+                            </TabsTrigger>
+                            <div className="grow" />
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button variant="secondary" size="icon">
+                                    <Button variant="outline" size="sm">
                                         <Search className="size-4" />
                                     </Button>
                                 </PopoverTrigger>
@@ -405,126 +359,100 @@ export default function EditorLandingPage() {
                                     />
                                 </PopoverContent>
                             </Popover>
-                        </div>
+                        </TabsList>
+
                         <TabsContent value={"recent"}>
-                            <div className="flex justify-center p-20 pt-0">
-                                <div className="flex flex-col gap-2 w-[min(90vw,1000px)]">
-                                    <div className="grid grid-cols-[20px_4fr_2fr_120px] gap-4 w-full pl-2">
-                                        <Clock className="w-6 h-6 mr-3" />
-                                        <div className="font-semibold text-xl flex items-center">
-                                            Recent Crates
-                                        </div>
-                                        <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
-                                            Last Opened
-                                        </div>
-                                        <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
-                                            Actions
-                                        </div>
-                                    </div>
-                                    {searchInfo}
-                                    <Pagination pageSize={10}>
-                                        {!recentCrates ? (
-                                            <div>
-                                                {[0, 0, 0].map((_, i) => {
-                                                    return (
-                                                        <div key={i}>
-                                                            <Skeleton className="w-full h-8 mb-2" />
-                                                        </div>
-                                                    )
-                                                })}
-                                            </div>
-                                        ) : recentCrates.length === 0 ? (
-                                            <>
-                                                <div />
-                                                <div className="col-span-3">
-                                                    Your recently used crates will be shown here
-                                                    once you start working on a crate.
-                                                </div>
-                                            </>
-                                        ) : (
-                                            recentCrates.map((recentCrate) => {
-                                                return (
-                                                    <CrateEntry
-                                                        key={recentCrate}
-                                                        crateId={recentCrate}
-                                                        openEditor={openEditor}
-                                                        removeFromRecentCrates={
-                                                            removeFromRecentCrates
-                                                        }
-                                                        isRecentCrate={recentCrates.includes(
-                                                            recentCrate
-                                                        )}
-                                                        deleteCrate={showDeleteCrateModal}
-                                                        search={search}
-                                                    />
-                                                )
-                                            })
-                                        )}
-                                    </Pagination>
+                            <div className="flex flex-col gap-2 p-4 h-full">
+                                <div className="grid grid-cols-[20px_4fr_2fr_120px] gap-4 w-full pl-2">
+                                    <div />
+                                    <div className="text-muted-foreground text-xs">Name</div>
+                                    <div className="text-muted-foreground text-xs">Last Opened</div>
+                                    <div className="text-muted-foreground text-xs">Actions</div>
                                 </div>
+                                {searchInfo}
+                                <Pagination pageSize={15}>
+                                    {!recentCrates ? (
+                                        <div>
+                                            {[0, 0, 0].map((_, i) => {
+                                                return (
+                                                    <div key={i}>
+                                                        <Skeleton className="w-full h-8 mb-2" />
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    ) : recentCrates.length === 0 ? (
+                                        <>
+                                            <div />
+                                            <div className="col-span-3">
+                                                Your local crates will be shown here once you start
+                                                working on a crate.
+                                            </div>
+                                        </>
+                                    ) : (
+                                        recentCrates.map((recentCrate) => {
+                                            return (
+                                                <CrateEntry
+                                                    key={recentCrate}
+                                                    crateId={recentCrate}
+                                                    openEditor={openEditor}
+                                                    removeFromRecentCrates={removeFromRecentCrates}
+                                                    isRecentCrate={true}
+                                                    deleteCrate={showDeleteCrateModal}
+                                                    search={search}
+                                                />
+                                            )
+                                        })
+                                    )}
+                                </Pagination>
                             </div>
                         </TabsContent>
-                        <TabsContent value={"stored"}>
-                            <div className="flex justify-center p-20 pt-0">
-                                <div className="flex flex-col gap-2 w-[min(90vw,1000px)]">
-                                    <Error
-                                        title="An Error occured while fetching stored crates"
-                                        error={storedCratesError}
-                                    />
-                                    <div className="grid grid-cols-[20px_4fr_2fr_120px] gap-4 w-full pl-2">
-                                        <HardDrive className="w-6 h-6 mr-3" />
-                                        <div className="font-semibold text-xl flex items-center">
-                                            All Crates
-                                        </div>
-                                        <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
-                                            Last Opened
-                                        </div>
-                                        <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
-                                            Actions
-                                        </div>
-                                    </div>
-                                    {searchInfo}
-                                    <Pagination pageSize={10}>
-                                        {!storedCrates ? (
-                                            [0, 0, 0].map((_, i) => {
-                                                return (
-                                                    <Fragment key={i}>
-                                                        <Skeleton className="size-4" />
-                                                        <Skeleton className="w-full h-8" />
-                                                        <Skeleton className="w-full h-8" />
-                                                        <Skeleton className="w-full h-8" />
-                                                    </Fragment>
-                                                )
-                                            })
-                                        ) : storedCrates.length === 0 ? (
-                                            <>
-                                                <div />
-                                                <div className="col-span-3">
-                                                    Your local crates will be shown here once you
-                                                    start working on a crate.
-                                                </div>
-                                            </>
-                                        ) : (
-                                            storedCrates.map((recentCrate) => {
-                                                return (
-                                                    <CrateEntry
-                                                        key={recentCrate}
-                                                        crateId={recentCrate}
-                                                        openEditor={openEditor}
-                                                        removeFromRecentCrates={
-                                                            removeFromRecentCrates
-                                                        }
-                                                        isRecentCrate={recentCrates?.includes(
-                                                            recentCrate
-                                                        )}
-                                                        deleteCrate={showDeleteCrateModal}
-                                                        search={search}
-                                                    />
-                                                )
-                                            })
-                                        )}
-                                    </Pagination>
+                        <TabsContent value={"stored"} className="grow">
+                            <div className="flex flex-col gap-2 p-4 h-full">
+                                <div className="grid grid-cols-[20px_4fr_2fr_120px] gap-4 w-full pl-2">
+                                    <div />
+                                    <div className="text-muted-foreground text-xs">Name</div>
+                                    <div className="text-muted-foreground text-xs">Last Opened</div>
+                                    <div className="text-muted-foreground text-xs">Actions</div>
                                 </div>
+                                {searchInfo}
+                                <Pagination pageSize={15}>
+                                    {!storedCrates ? (
+                                        <div>
+                                            {[0, 0, 0].map((_, i) => {
+                                                return (
+                                                    <div key={i}>
+                                                        <Skeleton className="w-full h-8 mb-2" />
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    ) : storedCrates.length === 0 ? (
+                                        <>
+                                            <div />
+                                            <div className="col-span-3">
+                                                Your local crates will be shown here once you start
+                                                working on a crate.
+                                            </div>
+                                        </>
+                                    ) : (
+                                        storedCrates.map((recentCrate) => {
+                                            return (
+                                                <CrateEntry
+                                                    key={recentCrate}
+                                                    crateId={recentCrate}
+                                                    openEditor={openEditor}
+                                                    removeFromRecentCrates={removeFromRecentCrates}
+                                                    isRecentCrate={recentCrates?.includes(
+                                                        recentCrate
+                                                    )}
+                                                    deleteCrate={showDeleteCrateModal}
+                                                    search={search}
+                                                />
+                                            )
+                                        })
+                                    )}
+                                </Pagination>
                             </div>
                         </TabsContent>
                     </Tabs>

@@ -119,7 +119,7 @@ export function CrateEntry({
                     warn={!!(crateDetails && crateDetails.name)}
                 />
             </div>
-            <div className="flex flex-col items-center justify-center text-muted-foreground text-sm">
+            <div className="flex items-center text-muted-foreground text-sm">
                 {crateDetails && crateDetails.lastOpened
                     ? DateTime.fromISO(crateDetails.lastOpened).toLocaleString({
                           timeStyle: "medium",
