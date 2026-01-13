@@ -1,6 +1,6 @@
 import { useCurrentEntity } from "@/lib/hooks"
 import { useCallback, useMemo, useState } from "react"
-import { AtSign, LayoutGrid, Minus, SearchIcon, XIcon } from "lucide-react"
+import { AtSign, Minus, SearchIcon, TableOfContents, XIcon } from "lucide-react"
 import { camelCaseReadable } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
@@ -8,7 +8,6 @@ import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import { sortByPropertyName } from "@/lib/property"
-import { useEditorState } from "@/lib/state/editor-state"
 
 export function PropertyOverview() {
     const currentEntity = useCurrentEntity()
@@ -49,7 +48,7 @@ export function PropertyOverview() {
     return (
         <div className="bg-background h-full w-full flex flex-col overflow-hidden rounded-lg border">
             <div className="pl-4 pr-2 text-sm h-10 flex items-center shrink-0 border-b">
-                <LayoutGrid className="size-4 shrink-0 mr-2" /> Property Overview
+                <TableOfContents className="size-4 shrink-0 mr-2" /> Property Overview
                 <div className="grow" />
                 <Popover>
                     <PopoverTrigger asChild>

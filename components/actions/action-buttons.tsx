@@ -27,12 +27,10 @@ function GenericActionContent(props: GenericActionContentProps) {
 
     return (
         <>
-            {Icon && (
-                <Icon className={`size-4 ${props.iconOnly || props.hideName ? "" : "mr-2"}`} />
-            )}{" "}
+            {Icon && <Icon className={`size-4`} />}
             {props.iconOnly || props.hideName ? null : action.name}
             {!props.iconOnly && !props.noShortcut && action.keyboardShortcut ? (
-                <span className="flex ml-auto pl-2 text-xs tracking-widest text-muted-foreground">
+                <span className="flex ml-auto text-xs tracking-widest text-muted-foreground">
                     <KeyboardShortcut action={action} />
                 </span>
             ) : null}

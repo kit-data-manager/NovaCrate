@@ -7,7 +7,8 @@ import {
     ChevronsDownUp,
     ChevronsUpDown,
     EllipsisVertical,
-    PackageSearch
+    PackageSearch,
+    TableOfContents
 } from "lucide-react"
 import {
     DropdownMenu,
@@ -25,6 +26,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { DefaultSectionOpen } from "@/components/entity-browser/entity-browser-section"
 import { EntityBrowserContent } from "@/components/entity-browser/entity-browser-content"
 import { ImperativePanelHandle } from "react-resizable-panels"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export function EntityBrowser() {
     const state = useEntityBrowserSettings()
@@ -77,62 +79,87 @@ export function EntityBrowser() {
                     />
                     <div className="grow"></div>
 
-                    <ActionButton
-                        actionId={"editor.global-search"}
-                        variant={"outline"}
-                        size={"sm"}
-                        noShortcut
-                        iconOnly
-                    />
+                    <Tooltip delayDuration={300}>
+                        <TooltipTrigger>
+                            <ActionButton
+                                actionId={"editor.global-search"}
+                                variant={"outline"}
+                                size={"sm"}
+                                noShortcut
+                                iconOnly
+                            />
+                        </TooltipTrigger>
+                        <TooltipContent>Global Search</TooltipContent>
+                    </Tooltip>
 
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                                <ArrowDownNarrowWide className="size-4" />
+                    <Tooltip delayDuration={300}>
+                        <TooltipTrigger>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                    state.setShowPropertyOverview(!state.showPropertyOverview)
+                                }
+                            >
+                                <TableOfContents />
                             </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                            <DropdownMenuCheckboxItem
-                                checked={sortBy === "name"}
-                                onClick={() => setSortBy("name")}
-                            >
-                                Name
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem
-                                checked={sortBy === "id"}
-                                onClick={() => setSortBy("id")}
-                            >
-                                Identifier
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem
-                                checked={sortBy === "type"}
-                                onClick={() => setSortBy("type")}
-                            >
-                                Type
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuLabel>Structure by</DropdownMenuLabel>
-                            <DropdownMenuCheckboxItem
-                                checked={structureBy === "none"}
-                                onClick={() => setStructureBy("none")}
-                            >
-                                None
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem
-                                checked={structureBy === "general-type"}
-                                onClick={() => setStructureBy("general-type")}
-                            >
-                                Category
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem
-                                checked={structureBy === "@type"}
-                                onClick={() => setStructureBy("@type")}
-                            >
-                                Type
-                            </DropdownMenuCheckboxItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                        </TooltipTrigger>
+                        <TooltipContent>Toggle Property Overview</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip delayDuration={300}>
+                        <TooltipTrigger>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm">
+                                        <ArrowDownNarrowWide className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                                    <DropdownMenuCheckboxItem
+                                        checked={sortBy === "name"}
+                                        onClick={() => setSortBy("name")}
+                                    >
+                                        Name
+                                    </DropdownMenuCheckboxItem>
+                                    <DropdownMenuCheckboxItem
+                                        checked={sortBy === "id"}
+                                        onClick={() => setSortBy("id")}
+                                    >
+                                        Identifier
+                                    </DropdownMenuCheckboxItem>
+                                    <DropdownMenuCheckboxItem
+                                        checked={sortBy === "type"}
+                                        onClick={() => setSortBy("type")}
+                                    >
+                                        Type
+                                    </DropdownMenuCheckboxItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuLabel>Structure by</DropdownMenuLabel>
+                                    <DropdownMenuCheckboxItem
+                                        checked={structureBy === "none"}
+                                        onClick={() => setStructureBy("none")}
+                                    >
+                                        None
+                                    </DropdownMenuCheckboxItem>
+                                    <DropdownMenuCheckboxItem
+                                        checked={structureBy === "general-type"}
+                                        onClick={() => setStructureBy("general-type")}
+                                    >
+                                        Category
+                                    </DropdownMenuCheckboxItem>
+                                    <DropdownMenuCheckboxItem
+                                        checked={structureBy === "@type"}
+                                        onClick={() => setStructureBy("@type")}
+                                    >
+                                        Type
+                                    </DropdownMenuCheckboxItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TooltipTrigger>
+                        <TooltipContent>Sort and Structure</TooltipContent>
+                    </Tooltip>
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -155,14 +182,6 @@ export function EntityBrowser() {
                                 }
                             >
                                 Show ID instead of Name
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem
-                                checked={state.showPropertyOverview}
-                                onClick={() =>
-                                    state.setShowPropertyOverview(!state.showPropertyOverview)
-                                }
-                            >
-                                Show Property Overview
                             </DropdownMenuCheckboxItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={collapseAllSections}>
