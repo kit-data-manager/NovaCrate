@@ -20,13 +20,11 @@ export function AboutModal({
             <DialogContent>
                 <DialogTitle>About</DialogTitle>
                 <Image
-                    src={addBasePath(
-                        theme.resolvedTheme === "dark" ? "/novacrate-dark.svg" : "/novacrate.svg"
-                    )}
+                    src={addBasePath("/novacrate-nobg.svg")}
                     alt={"NovaCrate Logo"}
                     height={150}
                     width={463}
-                    className={"rounded-lg overflow-hidden"}
+                    className={"rounded-lg overflow-hidden dark:invert"}
                 />
                 <div>
                     <div>NovaCrate v{packageJson.version}</div>

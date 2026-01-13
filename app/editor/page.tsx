@@ -42,6 +42,7 @@ import { Input } from "@/components/ui/input"
 import useSWR from "swr"
 import { Footer } from "@/components/footer"
 import { GithubDiscontinuationWarning } from "@/components/github-discontinuation-warning"
+import Image from "next/image"
 
 export default function EditorLandingPage() {
     const router = useRouter()
@@ -230,9 +231,13 @@ export default function EditorLandingPage() {
                 className={`bg-accent h-full flex flex-col ${fadeOutAnimation ? "animate-slide-left" : "animate-slide-left-reverse"}`}
             >
                 <div className="flex flex-col items-center justify-center h-[max(45vh,200px)] p-10">
-                    <Package className="w-32 h-32 mb-10" />
-                    <h2 className="text-5xl font-bold">NovaCrate</h2>
-                    <h4>RO-Crate Editor</h4>
+                    <Image
+                        src={"/novacrate-nobg.svg"}
+                        alt={"NovaCrate Logo"}
+                        width={500}
+                        height={162}
+                        className="dark:invert"
+                    />
                     <GithubDiscontinuationWarning className="mt-10" />
                 </div>
                 <div className="flex flex-col items-center pr-14">
