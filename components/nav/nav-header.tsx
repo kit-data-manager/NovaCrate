@@ -273,7 +273,7 @@ export function NavHeader() {
     ])
 
     return (
-        <div className="p-4 py-2 w-full grid grid-cols-[1fr_auto_1fr]">
+        <div className="p-4 py-2 pr-3 w-full grid grid-cols-[1fr_auto_1fr]">
             <div className="flex items-center">
                 <Package className="w-7 h-7 mr-2" />
                 {crateDataIsLoading || !crateName ? (

@@ -198,7 +198,7 @@ export function EntityEditorTabs({
         )
     } else {
         return (
-            <div className="bg-background h-full flex flex-col overflow-hidden rounded-lg border border-t-2">
+            <div className="bg-background h-full flex flex-col overflow-hidden rounded-lg border">
                 <Tabs tabs={tabs} currentTab={currentTab} />
                 <div className="overflow-auto">
                     {currentTab ? (
