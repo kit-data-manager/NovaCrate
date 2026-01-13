@@ -60,8 +60,8 @@ export function FilePreview({
     }, [error])
 
     return (
-        <div className="flex flex-col h-full">
-            <div className="pl-4 pr-2 bg-accent text-sm h-10 flex items-center shrink-0">
+        <div className="flex flex-col h-full bg-background rounded-lg overflow-hidden border">
+            <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center shrink-0">
                 <Eye className="size-4 shrink-0 mr-2" />{" "}
                 <span className="shrink-0">File Preview</span>
                 <HelpTooltip className="ml-2">
@@ -79,13 +79,18 @@ export function FilePreview({
                 {doubleHeight ? null : (
                     <>
                         {previewingFilePath ? (
-                            <Button variant="header" size="sm" onClick={downloadFile}>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="mr-2"
+                                onClick={downloadFile}
+                            >
                                 <Download className="size-4 mr-2" /> Download
                             </Button>
                         ) : null}
                         {closeable ? (
                             <Button
-                                variant="header"
+                                variant="outline"
                                 size="sm"
                                 onClick={() => setPreviewingFilePath("")}
                             >

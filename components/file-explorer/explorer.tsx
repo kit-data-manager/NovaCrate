@@ -73,8 +73,8 @@ export function FileExplorer() {
     }, [])
 
     return (
-        <div className="flex flex-col h-full">
-            <div className="pl-4 pr-2 bg-accent text-sm h-10 flex items-center gap-2 truncate shrink-0">
+        <div className="flex flex-col h-full bg-background rounded-lg overflow-hidden border">
+            <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center gap-2 truncate shrink-0">
                 <Folder className="size-4 shrink-0" /> File Explorer
                 <HelpTooltip>
                     <div>
@@ -119,7 +119,7 @@ export function FileExplorer() {
                 />
                 <DropdownMenu>
                     <DropdownMenuTrigger className="px-1" asChild>
-                        <Button variant="header" size="sm">
+                        <Button variant="outline" size="sm">
                             <EllipsisVertical className="size-4 shrink-0" />
                         </Button>
                     </DropdownMenuTrigger>
