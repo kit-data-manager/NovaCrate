@@ -119,9 +119,9 @@ export default function JSONEditorPage() {
     const saveAllEntities = useSaveAllEntities()
 
     return (
-        <div className="w-full h-full flex flex-col relative">
+        <div className="w-full h-full flex flex-col relative bg-background rounded-lg border overflow-hidden">
             <Metadata page={"JSON Editor"} />
-            <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
+            <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center shrink-0">
                 <Braces className="size-4 shrink-0 mr-2" />
                 JSON Editor
                 <span className="flex gap-1 items-center text-muted-foreground ml-1">
@@ -138,15 +138,17 @@ export default function JSONEditorPage() {
                     ) : null}
                 </div>
                 <Button
-                    variant="header"
+                    variant="outline"
+                    size={"sm"}
                     onClick={saveChanges}
                     disabled={saving || editorHasErrors || !editorHasChanges}
+                    className="mr-2"
                 >
                     <Save className="size-4 mr-2" />
                     <span className="text-sm">Save</span>
                     <div className="ml-1 text-xs text-muted-foreground">⌘S</div>
                 </Button>
-                <Button variant="header" onClick={download}>
+                <Button size="sm" variant="outline" onClick={download}>
                     <Download className="size-4 mr-2" /> Download
                 </Button>
             </div>

@@ -48,12 +48,12 @@ export function PropertyOverview() {
 
     return (
         <div className="bg-background h-full w-full flex flex-col overflow-hidden rounded-lg border">
-            <div className="pl-4 text-sm h-10 flex items-center shrink-0 border-b">
+            <div className="pl-4 pr-2 text-sm h-10 flex items-center shrink-0 border-b">
                 <LayoutGrid className="size-4 shrink-0 mr-2" /> Property Overview
                 <div className="grow" />
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="header" size="sm">
+                        <Button variant="outline" size="sm" className="mr-2">
                             <SearchIcon className="size-4" />
                         </Button>
                     </PopoverTrigger>
@@ -66,7 +66,7 @@ export function PropertyOverview() {
                         />
                     </PopoverContent>
                 </Popover>
-                <Button variant="header" size="sm" onClick={() => setShowPropertyOverview(false)}>
+                <Button variant="outline" size="sm" onClick={() => setShowPropertyOverview(false)}>
                     <XIcon className="size-4" />
                 </Button>
             </div>
