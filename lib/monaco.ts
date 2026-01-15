@@ -24,8 +24,8 @@ export function useHandleMonacoMount() {
                 rules: [],
                 encodedTokensColors: []
             })
-            if (theme.theme === "dark") monaco.editor.setTheme("crate-dark")
+            if (theme.resolvedTheme === "dark") monaco.editor.setTheme("crate-dark")
         },
-        [theme.theme]
+        [theme.resolvedTheme]
     )
 }

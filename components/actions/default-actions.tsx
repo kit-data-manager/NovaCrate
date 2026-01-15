@@ -3,12 +3,12 @@ import { GlobalModalContext } from "@/components/providers/global-modals-provide
 import { useGoToMainMenu, useRegisterAction, useSaveAllEntities } from "@/lib/hooks"
 import { useEditorState } from "@/lib/state/editor-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { ArrowLeft, Cog, Plus, RefreshCw, SaveAll, Search, Undo2, File } from "lucide-react"
+import { ArrowLeft, Cog, Plus, RefreshCw, SaveAll, Search, Undo2, File, Info } from "lucide-react"
 import { generateCratePreview } from "@/lib/ro-crate-preview"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 
 export default function DefaultActions() {
-    const { showCreateEntityModal, showGlobalSearchModal, showSettingsModal } =
+    const { showCreateEntityModal, showGlobalSearchModal, showSettingsModal, showAboutModal } =
         useContext(GlobalModalContext)
     const crateData = useContext(CrateDataContext)
     const revertAllEntities = useEditorState((store) => store.revertAllEntities)
@@ -66,6 +66,10 @@ export default function DefaultActions() {
     useRegisterAction("editor.settings", "Settings", showSettingsModal, {
         icon: Cog,
         keyboardShortcut: ["command", "alt", "s"]
+    })
+
+    useRegisterAction("editor.about", "About", showAboutModal, {
+        icon: Info
     })
 
     return null

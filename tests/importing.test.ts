@@ -122,22 +122,21 @@ async function testCrateContent(page: Page) {
 
 test("Import Crate .zip", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
-    await page.getByRole("button", { name: "Open Crate" }).click()
+    await page.getByRole("button", { name: "Import RO-Crate" }).click()
     await page.getByTestId("create-upload-input").setInputFiles("tests/data/TestCrate.zip")
     await testCrateContent(page)
 })
 
 test("Import Crate .eln", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
-    await page.getByRole("button", { name: "Open Crate" }).click()
+    await page.getByRole("button", { name: "Import RO-Crate" }).click()
     await page.getByTestId("create-upload-input").setInputFiles("tests/data/TestCrate.eln")
     await testCrateContent(page)
 })
 
 test("Import Folder", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
-    await page.getByRole("button", { name: "New Crate" }).click()
-    await page.getByRole("menuitem", { name: "Start with Data" }).click()
+    await page.getByRole("button", { name: "New RO-Crate" }).click()
     await page.getByRole("button", { name: "Select Folder" }).click()
     await page.getByTestId("create-folder-upload-input").setInputFiles("tests/data/TestFolder")
     await page.getByRole("textbox", { name: "Description" }).click()
@@ -176,7 +175,7 @@ test("Import Folder", async ({ page }) => {
     - button
     - button "Add another entry"
     `)
-    await page.getByRole("button", { name: "File Explorer" }).click()
+    await page.getByRole("link", { name: "File Explorer" }).getByRole("button").click()
     await expect(page.locator("body")).toMatchAriaSnapshot(`
     - button "img":
       - img

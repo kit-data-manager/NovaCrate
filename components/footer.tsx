@@ -4,6 +4,7 @@ import Image from "next/image"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { LockKeyhole, Section } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { GITHUB_REPO, LEGALS, PRIVACY_POLICY } from "@/lib/legals"
 
 export function Footer() {
     return (
@@ -16,7 +17,7 @@ export function Footer() {
                     <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
                             <Link
-                                href={"https://github.com/kit-data-manager/NovaCrate"}
+                                href={GITHUB_REPO}
                                 className="opacity-50 hover:opacity-80 self-center justify-self-start"
                                 target={"_blank"}
                                 rel="noopener noreferrer"
@@ -36,7 +37,7 @@ export function Footer() {
                     <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
                             <Link
-                                href={"https://www.kit.edu/privacypolicy.php"}
+                                href={PRIVACY_POLICY}
                                 target={"_blank"}
                                 className="text-muted-foreground text-xs truncate hover:text-foreground"
                                 rel="noopener noreferrer"
@@ -49,7 +50,7 @@ export function Footer() {
                     <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
                             <Link
-                                href={`https://www.kit.edu/legals.php`}
+                                href={LEGALS}
                                 target={"_blank"}
                                 className={
                                     "text-muted-foreground text-xs truncate hover:text-foreground"

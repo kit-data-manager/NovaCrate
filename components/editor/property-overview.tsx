@@ -1,6 +1,6 @@
 import { useCurrentEntity } from "@/lib/hooks"
 import { useCallback, useMemo, useState } from "react"
-import { AtSign, LayoutGrid, Minus, SearchIcon, XIcon } from "lucide-react"
+import { AtSign, Minus, SearchIcon, TableOfContents, XIcon } from "lucide-react"
 import { camelCaseReadable } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
@@ -8,7 +8,6 @@ import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import { sortByPropertyName } from "@/lib/property"
-import { useEditorState } from "@/lib/state/editor-state"
 
 export function PropertyOverview() {
     const currentEntity = useCurrentEntity()
@@ -17,7 +16,6 @@ export function PropertyOverview() {
         (store) => store.setShowPropertyOverview
     )
     const [search, setSearch] = useState("")
-    const rootEntityId = useEditorState((s) => s.getRootEntityId())
 
     const properties = useMemo(() => {
         if (!currentEntity) return []
@@ -48,13 +46,13 @@ export function PropertyOverview() {
     )
 
     return (
-        <div className="h-full w-full flex flex-col">
-            <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
-                <LayoutGrid className="size-4 shrink-0 mr-2" /> Property Overview
+        <div className="bg-background h-full w-full flex flex-col overflow-hidden rounded-lg border">
+            <div className="pl-4 pr-2 text-sm h-10 flex items-center shrink-0 border-b bg-accent">
+                <TableOfContents className="size-4 shrink-0 mr-2" /> Property Overview
                 <div className="grow" />
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="header" size="sm">
+                        <Button variant="outline" size="sm" className="mr-2">
                             <SearchIcon className="size-4" />
                         </Button>
                     </PopoverTrigger>
@@ -67,7 +65,7 @@ export function PropertyOverview() {
                         />
                     </PopoverContent>
                 </Popover>
-                <Button variant="header" size="sm" onClick={() => setShowPropertyOverview(false)}>
+                <Button variant="outline" size="sm" onClick={() => setShowPropertyOverview(false)}>
                     <XIcon className="size-4" />
                 </Button>
             </div>

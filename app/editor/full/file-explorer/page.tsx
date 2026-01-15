@@ -14,7 +14,7 @@ function Content() {
             <ResizablePanel defaultSize={34} minSize={15}>
                 <FileExplorer />
             </ResizablePanel>
-            <ResizableHandle />
+            <ResizableHandle className="m-0.5" />
             <ResizablePanel defaultSize={66} minSize={15}>
                 <FilePreview
                     previewingFilePath={previewingFilePath}

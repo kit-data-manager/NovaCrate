@@ -27,12 +27,10 @@ function GenericActionContent(props: GenericActionContentProps) {
 
     return (
         <>
-            {Icon && (
-                <Icon className={`size-4 ${props.iconOnly || props.hideName ? "" : "mr-2"}`} />
-            )}{" "}
+            {Icon && <Icon className={`size-4`} />}
             {props.iconOnly || props.hideName ? null : action.name}
             {!props.iconOnly && !props.noShortcut && action.keyboardShortcut ? (
-                <span className="flex ml-auto pl-2 text-xs tracking-widest text-muted-foreground">
+                <span className="flex ml-auto text-xs tracking-widest text-muted-foreground">
                     <KeyboardShortcut action={action} />
                 </span>
             ) : null}
@@ -75,7 +73,7 @@ export const ActionDropdownMenuItem = memo(function ActionDropdownMenuItem(
     const action = useAction(props.actionId)
 
     return (
-        <DropdownMenuItem onClick={() => action.execute()} {...cleanProps(props)}>
+        <DropdownMenuItem className="gap-2" onClick={() => action.execute()} {...cleanProps(props)}>
             <GenericActionContent {...props} />
         </DropdownMenuItem>
     )
@@ -87,7 +85,7 @@ export const ActionContextMenuItem = memo(function ActionContextMenuItem(
     const action = useAction(props.actionId)
 
     return (
-        <ContextMenuItem onClick={() => action.execute()} {...cleanProps(props)}>
+        <ContextMenuItem className="gap-2" onClick={() => action.execute()} {...cleanProps(props)}>
             <GenericActionContent {...props} />
         </ContextMenuItem>
     )

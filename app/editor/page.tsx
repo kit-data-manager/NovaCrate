@@ -1,31 +1,27 @@
 "use client"
 
 import {
-    BookOpen,
     ChevronDown,
     CirclePlay,
-    Clock,
-    FolderOpen,
-    HardDrive,
+    Info,
     LinkIcon,
-    Loader,
     LoaderCircle,
-    Moon,
     Package,
     PackageOpen,
     PackagePlus,
-    Search,
-    Sun
+    Palette,
+    Search
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 import {
     DropdownMenu,
+    DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { Fragment, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { CrateEntry } from "@/components/landing/crate-entry"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
@@ -35,18 +31,21 @@ import { DeleteCrateModal } from "@/components/landing/delete-crate-modal"
 import { CreateCrateModal } from "@/components/landing/create-crate-modal"
 import { Error } from "@/components/error"
 import { Pagination } from "@/components/pagination"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import useSWR from "swr"
 import { Footer } from "@/components/footer"
 import { GithubDiscontinuationWarning } from "@/components/github-discontinuation-warning"
+import Image from "next/image"
 
 export default function EditorLandingPage() {
     const router = useRouter()
     const theme = useTheme()
     const { recentCrates, removeFromRecentCrates } = useRecentCrates()
+    const recentCratesLoading = useMemo(() => {
+        return recentCrates === undefined
+    }, [recentCrates])
     const [fadeOutAnimation, setFadeOutAnimation] = useState(false)
     const {
         serviceProvider,
@@ -55,7 +54,7 @@ export default function EditorLandingPage() {
         healthTestError: error
     } = useContext(CrateDataContext)
     const createUploadInputRef = useRef<HTMLInputElement>(null)
-    const { showDocumentationModal } = useContext(GlobalModalContext)
+    const { showAboutModal } = useContext(GlobalModalContext)
     const demoLoader = useDemoCrateLoader()
     const [demoLoaderError, setDemoLoaderError] = useState<unknown>()
     const [demoLoading, setDemoLoading] = useState(false)
@@ -71,7 +70,6 @@ export default function EditorLandingPage() {
     })
     const [createCrateModalState, setCreateCrateModalState] = useState({
         open: false,
-        fromFolder: false,
         fromFile: undefined as File | undefined
     })
     const [search, setSearch] = useState("")
@@ -97,17 +95,8 @@ export default function EditorLandingPage() {
         }))
     }, [])
 
-    const createEmptyCrate = useCallback(() => {
+    const createCrate = useCallback(() => {
         setCreateCrateModalState({
-            fromFolder: false,
-            fromFile: undefined,
-            open: true
-        })
-    }, [])
-
-    const createCrateFromFolder = useCallback(() => {
-        setCreateCrateModalState({
-            fromFolder: true,
             fromFile: undefined,
             open: true
         })
@@ -155,7 +144,6 @@ export default function EditorLandingPage() {
             createUploadInputRef.current.files.length > 0
         ) {
             setCreateCrateModalState({
-                fromFolder: false,
                 fromFile: createUploadInputRef.current.files[0],
                 open: true
             })
@@ -187,6 +175,7 @@ export default function EditorLandingPage() {
     const {
         data: storedCrates,
         error: storedCratesError,
+        isLoading: storedCratesLoading,
         mutate: revalidate
     } = useSWR("stored-crates", storedCratesResolver, { dedupingInterval: 500 })
 
@@ -208,14 +197,20 @@ export default function EditorLandingPage() {
         ) : null
     }, [search])
 
+    const localCrates = useMemo(() => {
+        const local = recentCrates?.filter((id) => storedCrates?.includes(id)) || []
+        storedCrates?.forEach((id) => (local.includes(id) ? "" : local.push(id)))
+        return local
+    }, [recentCrates, storedCrates])
+
     return (
-        <div className="w-full h-full grid grid-cols-[1fr_2fr]">
+        <div className="w-full h-full grid md:grid-cols-[1fr_2fr]">
             <DeleteCrateModal
                 open={deleteCrateModalState.open}
                 onOpenChange={onDeleteCrateModalOpenChange}
                 crateId={deleteCrateModalState.crateId}
                 onDeleted={(crateId) => {
-                    revalidate()
+                    revalidate().then()
                     onDeleteCrateModalOpenChange(false)
                     removeFromRecentCrates(crateId)
                 }}
@@ -226,303 +221,177 @@ export default function EditorLandingPage() {
                 openEditor={openEditor}
             />
 
-            <div
-                className={`bg-accent h-full flex flex-col ${fadeOutAnimation ? "animate-slide-left" : "animate-slide-left-reverse"}`}
-            >
-                <div className="flex flex-col items-center justify-center h-[max(45vh,200px)] p-10">
-                    <Package className="w-32 h-32 mb-10" />
-                    <h2 className="text-5xl font-bold">NovaCrate</h2>
-                    <h4>RO-Crate Editor</h4>
-                    <GithubDiscontinuationWarning className="mt-10" />
-                </div>
-                <div className="flex flex-col items-center pr-14">
-                    <div className="flex items-start flex-col">
-                        <Button
-                            size="lg"
-                            variant="link"
-                            className="border-r-0 rounded-r-none h-12"
-                            onClick={() => openZipFilePicker()}
-                        >
-                            <PackageOpen className="w-6 h-6 mr-3" /> Open Crate
-                        </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    size="lg"
-                                    variant="link"
-                                    className="rounded-none border-r-0 h-12"
-                                >
-                                    <PackagePlus className="w-6 h-6 mr-3" /> New Crate{" "}
-                                    <ChevronDown className="size-4 ml-2" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuItem onClick={createCrateFromFolder}>
-                                    <FolderOpen className="size-4 mr-2" /> Start with Data
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={createEmptyCrate}>
-                                    <Loader className="size-4 mr-2" />
-                                    Start from scratch
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+            <div className="md:p-20 md:pr-0">
+                <div
+                    className={`bg-accent h-full ${fadeOutAnimation ? "animate-fade-out opacity-0" : "animate-fade-in"} rounded-lg overflow-hidden border grid grid-rows-[1fr_auto_1fr]`}
+                >
+                    <div />
+                    <div className="flex flex-col items-center justify-center p-10">
+                        <Image
+                            src={"/novacrate-nobg.svg"}
+                            alt={"NovaCrate Logo"}
+                            width={600}
+                            height={195}
+                            className="dark:invert"
+                        />
+                        <GithubDiscontinuationWarning className="mt-10" />
+                    </div>
 
-                        <Button
-                            size="lg"
-                            variant="link"
-                            className="rounded-none border-r-0 h-12"
-                            onClick={showDocumentationModal}
-                        >
-                            <BookOpen className="w-6 h-6 mr-3" /> Documentation
-                        </Button>
-                        <Button
-                            size="lg"
-                            variant="link"
-                            className="rounded-none border-r-0 h-12"
-                            onClick={() =>
-                                theme.setTheme(theme.theme === "light" ? "dark" : "light")
-                            }
-                            suppressHydrationWarning
-                        >
-                            {theme.theme === "light" ? (
-                                <Sun className="w-6 h-6 mr-3 shrink-0" suppressHydrationWarning />
-                            ) : (
-                                <Moon className="w-6 h-6 mr-3 shrink-0" suppressHydrationWarning />
-                            )}{" "}
-                            Toggle Theme
-                        </Button>
+                    <div className="content-end">
+                        <div className="flex justify-center items-center gap-2 pb-4">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline">
+                                        <Palette className="size-4" /> Theme
+                                        <ChevronDown className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    {theme.systemTheme && (
+                                        <DropdownMenuCheckboxItem
+                                            checked={theme.theme === "system"}
+                                            onClick={() => theme.setTheme("system")}
+                                        >
+                                            System Default ({theme.systemTheme})
+                                        </DropdownMenuCheckboxItem>
+                                    )}
+                                    <DropdownMenuCheckboxItem
+                                        checked={theme.theme === "dark"}
+                                        onClick={() => theme.setTheme("dark")}
+                                    >
+                                        Dark Theme
+                                    </DropdownMenuCheckboxItem>
+                                    <DropdownMenuCheckboxItem
+                                        checked={theme.theme === "light"}
+                                        onClick={() => theme.setTheme("light")}
+                                    >
+                                        Light Theme
+                                    </DropdownMenuCheckboxItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <Button variant="outline" onClick={showAboutModal}>
+                                <Info /> About
+                            </Button>
+                        </div>
+                        <Footer />
                     </div>
                 </div>
-
-                <div className="grow" />
-
-                <Footer />
             </div>
 
             <div
-                className={`h-full overflow-y-auto ${fadeOutAnimation ? "animate-fade-out opacity-0" : "animate-fade-in"}`}
+                className={`${fadeOutAnimation ? "animate-fade-out opacity-0" : "animate-fade-in"} pt-2 md:p-20 md:pl-2 flex flex-col max-h-full min-h-0`}
             >
-                <div className="grid grid-cols-2 p-20 pb-0 gap-8 max-w-[1000px] ml-auto mr-auto">
-                    <button
-                        className="h-40 flex justify-center gap-4 border rounded-lg items-center p-4 hover:bg-accent transition"
-                        onClick={createCrateFromFolder}
-                    >
-                        <FolderOpen className="text-muted-foreground w-12 h-12 m-4 shrink-0" />
-                        <div className="flex flex-col gap-4 grow">
-                            <div className="text-lg font-bold">Start with data</div>
-                            <div className="text-muted-foreground">
-                                Open a local folder and start adding metadata to your files.
-                            </div>
-                        </div>
-                    </button>
-                    <button
-                        className="h-40 flex justify-center gap-4 border rounded-lg items-center p-4 hover:bg-accent transition"
-                        onClick={createEmptyCrate}
-                    >
-                        <Loader className="text-muted-foreground w-12 h-12 m-4 shrink-0" />
-                        <div className="flex flex-col gap-4 grow">
-                            <div className="text-lg font-bold">Start from scratch</div>
-                            <div className="text-muted-foreground">
-                                Start with an empty crate. You can add files later on.
-                            </div>
-                        </div>
-                    </button>
-
-                    <div
-                        className={`max-w-[1000px] ml-auto mr-auto border flex col-span-2 w-full rounded-lg p-4 items-center`}
-                    >
-                        <CirclePlay className="size-4 mr-2" />
-                        <div className="font-bold mr-2">Quickstart</div>
-                        <div>Try out NovaCrate with one of these demo crates</div>
-                        <div className="grow" />
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" disabled={demoLoading}>
-                                    {demoLoading && (
-                                        <LoaderCircle className="animate-spin mr-2 size-4" />
-                                    )}{" "}
-                                    Quickstart <ChevronDown className="size-4 ml-2" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuItem
-                                    onClick={() => createCrateFromExample("ro-crate-spec")}
-                                >
-                                    <CirclePlay className="size-4 mr-2" />
-                                    RO-Crate Specification Crate
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={() =>
-                                        window.open(
-                                            "https://www.researchobject.org/ro-crate/eln",
-                                            "_blank"
-                                        )
-                                    }
-                                >
-                                    <LinkIcon className="size-4 mr-2" />
-                                    Download ELNs
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+                <div className="p-4 border rounded-lg flex gap-2 mb-2">
+                    <Button onClick={openZipFilePicker}>
+                        <PackageOpen className="size-4" />
+                        Import RO-Crate
+                    </Button>
+                    <Button variant="outline" onClick={createCrate}>
+                        <PackagePlus className="size-4" />
+                        New RO-Crate
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" disabled={demoLoading}>
+                                {demoLoading ? (
+                                    <LoaderCircle className="animate-spin size-4" />
+                                ) : (
+                                    <CirclePlay className="size-4" />
+                                )}
+                                Quickstart <ChevronDown className="size-4 ml-2" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem
+                                onClick={() => createCrateFromExample("ro-crate-spec")}
+                            >
+                                <CirclePlay className="size-4 mr-2" />
+                                RO-Crate Specification Crate
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    window.open(
+                                        "https://www.researchobject.org/ro-crate/eln",
+                                        "_blank"
+                                    )
+                                }
+                            >
+                                <LinkIcon className="size-4 mr-2" />
+                                Download ELNs
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
+                <Error title="Demo could not be started" error={demoLoaderError} className="mb-2" />
+                <Error title="Crate service is not reachable" error={error} className="mb-2" />
                 <Error
-                    title="Demo could not be started"
-                    error={demoLoaderError}
-                    className="m-20 mb-0"
+                    title="Crate storage unavailable"
+                    error={storedCratesError}
+                    className="mb-2"
                 />
-                <Error title="Crate service is not reachable" error={error} className="m-20 mb-0" />
 
-                <div className="pt-16">
-                    <Tabs defaultValue="recent">
-                        <div className="flex justify-center pb-4 gap-4">
-                            <TabsList>
-                                <TabsTrigger value={"recent"}>
-                                    <Clock className="size-4 mr-2" /> Recent Crates
-                                </TabsTrigger>
-                                <TabsTrigger value={"stored"}>
-                                    <HardDrive className="size-4 mr-2" /> All Crates
-                                </TabsTrigger>
-                            </TabsList>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button variant="secondary" size="icon">
-                                        <Search className="size-4" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="grid grid-cols-1 gap-2">
-                                    <h4 className="font-medium leading-none">Search for Crates</h4>
-                                    <Input
-                                        placeholder="Search..."
-                                        value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                    />
-                                </PopoverContent>
-                            </Popover>
+                <div className="border rounded-lg grow max-h-full min-h-0 flex flex-col">
+                    <div className="border-b flex justify-between items-center pr-2">
+                        <div className="pl-4 text-sm h-10 flex items-center shrink-0">
+                            <Package className="size-4 shrink-0 mr-2" /> Local RO-Crates
                         </div>
-                        <TabsContent value={"recent"}>
-                            <div className="flex justify-center p-20 pt-0">
-                                <div className="flex flex-col gap-2 w-[min(90vw,1000px)]">
-                                    <div className="grid grid-cols-[20px_4fr_2fr_120px] gap-4 w-full pl-2">
-                                        <Clock className="w-6 h-6 mr-3" />
-                                        <div className="font-semibold text-xl flex items-center">
-                                            Recent Crates
-                                        </div>
-                                        <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
-                                            Last Opened
-                                        </div>
-                                        <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
-                                            Actions
-                                        </div>
-                                    </div>
-                                    {searchInfo}
-                                    <Pagination pageSize={10}>
-                                        {!recentCrates ? (
-                                            <div>
-                                                {[0, 0, 0].map((_, i) => {
-                                                    return (
-                                                        <div key={i}>
-                                                            <Skeleton className="w-full h-8 mb-2" />
-                                                        </div>
-                                                    )
-                                                })}
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <Search className="size-4" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="grid grid-cols-1 gap-2">
+                                <h4 className="font-medium leading-none">Search for Crates</h4>
+                                <Input
+                                    placeholder="Search..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+
+                    <div className="flex flex-col gap-2 p-4 min-h-0 overflow-auto max-h-full">
+                        {searchInfo}
+                        <div className="grid grid-cols-[4fr_2fr_120px] gap-4 w-full pl-2">
+                            <div className="text-muted-foreground text-xs">Name</div>
+                            <div className="text-muted-foreground text-xs">Last Opened</div>
+                            <div className="text-muted-foreground text-xs">Actions</div>
+                        </div>
+
+                        <Pagination pageSize={15}>
+                            {recentCratesLoading || storedCratesLoading ? (
+                                <div>
+                                    {[0, 0, 0].map((_, i) => {
+                                        return (
+                                            <div key={i}>
+                                                <Skeleton className="w-full h-8 mb-2" />
                                             </div>
-                                        ) : recentCrates.length === 0 ? (
-                                            <>
-                                                <div />
-                                                <div className="col-span-3">
-                                                    Your recently used crates will be shown here
-                                                    once you start working on a crate.
-                                                </div>
-                                            </>
-                                        ) : (
-                                            recentCrates.map((recentCrate) => {
-                                                return (
-                                                    <CrateEntry
-                                                        key={recentCrate}
-                                                        crateId={recentCrate}
-                                                        openEditor={openEditor}
-                                                        removeFromRecentCrates={
-                                                            removeFromRecentCrates
-                                                        }
-                                                        isRecentCrate={recentCrates.includes(
-                                                            recentCrate
-                                                        )}
-                                                        deleteCrate={showDeleteCrateModal}
-                                                        search={search}
-                                                    />
-                                                )
-                                            })
-                                        )}
-                                    </Pagination>
+                                        )
+                                    })}
                                 </div>
-                            </div>
-                        </TabsContent>
-                        <TabsContent value={"stored"}>
-                            <div className="flex justify-center p-20 pt-0">
-                                <div className="flex flex-col gap-2 w-[min(90vw,1000px)]">
-                                    <Error
-                                        title="An Error occured while fetching stored crates"
-                                        error={storedCratesError}
-                                    />
-                                    <div className="grid grid-cols-[20px_4fr_2fr_120px] gap-4 w-full pl-2">
-                                        <HardDrive className="w-6 h-6 mr-3" />
-                                        <div className="font-semibold text-xl flex items-center">
-                                            All Crates
-                                        </div>
-                                        <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
-                                            Last Opened
-                                        </div>
-                                        <div className="flex flex-col items-center text-muted-foreground text-sm justify-center">
-                                            Actions
-                                        </div>
-                                    </div>
-                                    {searchInfo}
-                                    <Pagination pageSize={10}>
-                                        {!storedCrates ? (
-                                            [0, 0, 0].map((_, i) => {
-                                                return (
-                                                    <Fragment key={i}>
-                                                        <Skeleton className="size-4" />
-                                                        <Skeleton className="w-full h-8" />
-                                                        <Skeleton className="w-full h-8" />
-                                                        <Skeleton className="w-full h-8" />
-                                                    </Fragment>
-                                                )
-                                            })
-                                        ) : storedCrates.length === 0 ? (
-                                            <>
-                                                <div />
-                                                <div className="col-span-3">
-                                                    Your local crates will be shown here once you
-                                                    start working on a crate.
-                                                </div>
-                                            </>
-                                        ) : (
-                                            storedCrates.map((recentCrate) => {
-                                                return (
-                                                    <CrateEntry
-                                                        key={recentCrate}
-                                                        crateId={recentCrate}
-                                                        openEditor={openEditor}
-                                                        removeFromRecentCrates={
-                                                            removeFromRecentCrates
-                                                        }
-                                                        isRecentCrate={recentCrates?.includes(
-                                                            recentCrate
-                                                        )}
-                                                        deleteCrate={showDeleteCrateModal}
-                                                        search={search}
-                                                    />
-                                                )
-                                            })
-                                        )}
-                                    </Pagination>
+                            ) : localCrates.length === 0 ? (
+                                <div className="col-span-3">
+                                    Your local RO-Crates will be shown here. Start by importing an
+                                    RO-Crate or by creating a new one.
                                 </div>
-                            </div>
-                        </TabsContent>
-                    </Tabs>
+                            ) : (
+                                localCrates.map((recentCrate) => {
+                                    return (
+                                        <CrateEntry
+                                            key={recentCrate}
+                                            crateId={recentCrate}
+                                            openEditor={openEditor}
+                                            deleteCrate={showDeleteCrateModal}
+                                            search={search}
+                                        />
+                                    )
+                                })
+                            )}
+                        </Pagination>
+                    </div>
                 </div>
             </div>
 
