@@ -9,7 +9,6 @@ import {
     FileUp,
     FolderArchive,
     FolderUp,
-    Info,
     Notebook,
     Package,
     Palette
@@ -28,7 +27,7 @@ import {
     MenubarTrigger
 } from "@/components/ui/menubar"
 import { useTheme } from "next-themes"
-import React, { useCallback, useContext, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useContext, useMemo, useState } from "react"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
@@ -60,7 +59,7 @@ function EntityMenu() {
                 <ChevronDown className="size-4 ml-1 text-muted-foreground" />
             </MenubarTrigger>
             <MenubarContent>
-                <MenubarLabel className="max-w-[300px] truncate flex">
+                <MenubarLabel className="max-w-75 truncate flex">
                     <EntityIcon entity={currentEntity} /> {currentEntityName}
                 </MenubarLabel>
                 <MenubarSeparator />
@@ -168,7 +167,7 @@ export function NavHeader() {
                         <MenubarSeparator />
                         <MenubarSub>
                             <MenubarSubTrigger>
-                                <Palette className="size-4 mr-2" /> Theme
+                                <Palette className="size-4" /> Theme
                             </MenubarSubTrigger>
                             <MenubarSubContent>
                                 {theme.systemTheme && (
@@ -207,10 +206,10 @@ export function NavHeader() {
                         <ActionMenubarItem actionId="crate.add-entity" />
                         <MenubarSeparator />
                         <MenubarItem onClick={() => showUploadFileModal()}>
-                            <FileUp className="size-4 mr-2" /> Upload File
+                            <FileUp className="size-4" /> Upload File
                         </MenubarItem>
                         <MenubarItem onClick={() => showUploadFolderModal()}>
-                            <FolderUp className="size-4 mr-2" /> Upload Folder
+                            <FolderUp className="size-4" /> Upload Folder
                         </MenubarItem>
                         <MenubarSeparator />
                         <ActionMenubarItem
@@ -226,30 +225,30 @@ export function NavHeader() {
                         <MenubarSeparator />
                         <MenubarSub>
                             <MenubarSubTrigger>
-                                <Copy className="size-4 mr-2" /> Copy Crate...
+                                <Copy className="size-4" /> Copy Crate...
                             </MenubarSubTrigger>
                             <MenubarSubContent>
                                 <MenubarItem onClick={() => copy(crateId || "")}>
-                                    <Copy className="size-4 mr-2" /> Copy Crate ID
+                                    <Copy className="size-4" /> Copy Crate ID
                                 </MenubarItem>
                                 <MenubarItem onClick={() => copy(crateName)}>
-                                    <Copy className="size-4 mr-2" /> Copy Crate Name
+                                    <Copy className="size-4" /> Copy Crate Name
                                 </MenubarItem>
                             </MenubarSubContent>
                         </MenubarSub>
                         <MenubarSub>
                             <MenubarSubTrigger>
-                                <Download className="size-4 mr-2" /> Export
+                                <Download className="size-4" /> Export
                             </MenubarSubTrigger>
                             <MenubarSubContent>
                                 <MenubarItem onClick={downloadCrateZip}>
-                                    <FolderArchive className="size-4 mr-2" /> As .zip Archive
+                                    <FolderArchive className="size-4" /> As .zip Archive
                                 </MenubarItem>
                                 <MenubarItem onClick={downloadCrateEln}>
-                                    <Notebook className="size-4 mr-2" /> As ELN
+                                    <Notebook className="size-4" /> As ELN
                                 </MenubarItem>
                                 <MenubarItem onClick={downloadRoCrateMetadataFile}>
-                                    <File className="size-4 mr-2" /> ro-crate-metadata.json
+                                    <File className="size-4" /> ro-crate-metadata.json
                                 </MenubarItem>
                             </MenubarSubContent>
                         </MenubarSub>
@@ -280,7 +279,7 @@ export function NavHeader() {
                 {crateDataIsLoading || !crateName ? (
                     <Skeleton className="bg-background h-8 w-32" />
                 ) : (
-                    <div className="mr-6 font-bold max-w-[300px] truncate animate-in">
+                    <div className="mr-6 font-bold max-w-75 truncate animate-in">
                         <div className="text-xs font-normal">NovaCrate</div>
                         {crateName}
                     </div>
@@ -309,7 +308,7 @@ export function NavHeader() {
                                 <CircleAlert className="size-4 animate-pulse" />
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[400px] flex flex-col gap-2">
+                        <PopoverContent className="w-100 flex flex-col gap-2">
                             <div className="text-sm font-bold">Internal Error Log</div>
                             <Error title="Crate service is not reachable" error={healthTestError} />
                             <Error title="Error while loading crate data" error={error} />
