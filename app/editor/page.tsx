@@ -3,11 +3,10 @@
 import {
     ChevronDown,
     CirclePlay,
-    Clock,
-    HardDrive,
     Info,
     LinkIcon,
     LoaderCircle,
+    Package,
     PackageOpen,
     PackagePlus,
     Palette,
@@ -32,7 +31,6 @@ import { DeleteCrateModal } from "@/components/landing/delete-crate-modal"
 import { CreateCrateModal } from "@/components/landing/create-crate-modal"
 import { Error } from "@/components/error"
 import { Pagination } from "@/components/pagination"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
@@ -45,6 +43,9 @@ export default function EditorLandingPage() {
     const router = useRouter()
     const theme = useTheme()
     const { recentCrates, removeFromRecentCrates } = useRecentCrates()
+    const recentCratesLoading = useMemo(() => {
+        return recentCrates === undefined
+    }, [recentCrates])
     const [fadeOutAnimation, setFadeOutAnimation] = useState(false)
     const {
         serviceProvider,
@@ -174,6 +175,7 @@ export default function EditorLandingPage() {
     const {
         data: storedCrates,
         error: storedCratesError,
+        isLoading: storedCratesLoading,
         mutate: revalidate
     } = useSWR("stored-crates", storedCratesResolver, { dedupingInterval: 500 })
 
@@ -194,6 +196,12 @@ export default function EditorLandingPage() {
             </div>
         ) : null
     }, [search])
+
+    const localCrates = useMemo(() => {
+        const local = recentCrates || []
+        storedCrates?.forEach((id) => (local.includes(id) ? "" : local.push(id)))
+        return local
+    }, [recentCrates, storedCrates])
 
     return (
         <div className="w-full h-full grid md:grid-cols-[1fr_2fr]">
@@ -271,7 +279,7 @@ export default function EditorLandingPage() {
             </div>
 
             <div
-                className={`overflow-y-auto ${fadeOutAnimation ? "animate-fade-out opacity-0" : "animate-fade-in"} pt-2 md:p-20 md:pl-2 flex flex-col`}
+                className={`${fadeOutAnimation ? "animate-fade-out opacity-0" : "animate-fade-in"} pt-2 md:p-20 md:pl-2 flex flex-col max-h-full min-h-0`}
             >
                 <div className="p-4 border rounded-lg flex gap-2 mb-2">
                     <Button onClick={openZipFilePicker}>
@@ -323,128 +331,69 @@ export default function EditorLandingPage() {
                     className="mb-2"
                 />
 
-                <div className="border rounded-lg grow">
-                    <Tabs defaultValue="recent" className="h-full">
-                        <TabsList className="h-auto rounded-none border-b w-full justify-start bg-transparent p-2">
-                            <TabsTrigger value={"recent"}>
-                                <Clock className="size-4 mr-2" /> Recent Crates
-                            </TabsTrigger>
-                            <TabsTrigger value={"stored"}>
-                                <HardDrive className="size-4 mr-2" /> All Crates
-                            </TabsTrigger>
-                            <div className="grow" />
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button variant="outline" size="sm">
-                                        <Search className="size-4" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="grid grid-cols-1 gap-2">
-                                    <h4 className="font-medium leading-none">Search for Crates</h4>
-                                    <Input
-                                        placeholder="Search..."
-                                        value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                        </TabsList>
+                <div className="border rounded-lg grow max-h-full min-h-0 flex flex-col">
+                    <div className="border-b flex justify-between items-center pr-2">
+                        <div className="pl-4 text-sm h-10 flex items-center shrink-0">
+                            <Package className="size-4 shrink-0 mr-2" /> Local RO-Crates
+                        </div>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <Search className="size-4" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="grid grid-cols-1 gap-2">
+                                <h4 className="font-medium leading-none">Search for Crates</h4>
+                                <Input
+                                    placeholder="Search..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
 
-                        <TabsContent value={"recent"}>
-                            <div className="flex flex-col gap-2 p-4 h-full">
-                                <div className="grid grid-cols-[20px_4fr_2fr_120px] gap-4 w-full pl-2">
-                                    <div />
-                                    <div className="text-muted-foreground text-xs">Name</div>
-                                    <div className="text-muted-foreground text-xs">Last Opened</div>
-                                    <div className="text-muted-foreground text-xs">Actions</div>
-                                </div>
-                                {searchInfo}
-                                <Pagination pageSize={15}>
-                                    {!recentCrates ? (
-                                        <div>
-                                            {[0, 0, 0].map((_, i) => {
-                                                return (
-                                                    <div key={i}>
-                                                        <Skeleton className="w-full h-8 mb-2" />
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    ) : recentCrates.length === 0 ? (
-                                        <>
-                                            <div />
-                                            <div className="col-span-3">
-                                                Your local crates will be shown here once you start
-                                                working on a crate.
+                    <div className="flex flex-col gap-2 p-4 min-h-0 overflow-auto max-h-full">
+                        {searchInfo}
+                        <div className="grid grid-cols-[4fr_2fr_120px] gap-4 w-full pl-2">
+                            <div className="text-muted-foreground text-xs">Name</div>
+                            <div className="text-muted-foreground text-xs">Last Opened</div>
+                            <div className="text-muted-foreground text-xs">Actions</div>
+                        </div>
+
+                        <Pagination pageSize={15}>
+                            {recentCratesLoading || storedCratesLoading ? (
+                                <div>
+                                    {[0, 0, 0].map((_, i) => {
+                                        return (
+                                            <div key={i}>
+                                                <Skeleton className="w-full h-8 mb-2" />
                                             </div>
-                                        </>
-                                    ) : (
-                                        recentCrates.map((recentCrate) => {
-                                            return (
-                                                <CrateEntry
-                                                    key={recentCrate}
-                                                    crateId={recentCrate}
-                                                    openEditor={openEditor}
-                                                    removeFromRecentCrates={removeFromRecentCrates}
-                                                    isRecentCrate={true}
-                                                    deleteCrate={showDeleteCrateModal}
-                                                    search={search}
-                                                />
-                                            )
-                                        })
-                                    )}
-                                </Pagination>
-                            </div>
-                        </TabsContent>
-                        <TabsContent value={"stored"} className="grow">
-                            <div className="flex flex-col gap-2 p-4 h-full">
-                                <div className="grid grid-cols-[20px_4fr_2fr_120px] gap-4 w-full pl-2">
-                                    <div />
-                                    <div className="text-muted-foreground text-xs">Name</div>
-                                    <div className="text-muted-foreground text-xs">Last Opened</div>
-                                    <div className="text-muted-foreground text-xs">Actions</div>
+                                        )
+                                    })}
                                 </div>
-                                {searchInfo}
-                                <Pagination pageSize={15}>
-                                    {!storedCrates ? (
-                                        <div>
-                                            {[0, 0, 0].map((_, i) => {
-                                                return (
-                                                    <div key={i}>
-                                                        <Skeleton className="w-full h-8 mb-2" />
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    ) : storedCrates.length === 0 ? (
-                                        <>
-                                            <div />
-                                            <div className="col-span-3">
-                                                Your local crates will be shown here once you start
-                                                working on a crate.
-                                            </div>
-                                        </>
-                                    ) : (
-                                        storedCrates.map((recentCrate) => {
-                                            return (
-                                                <CrateEntry
-                                                    key={recentCrate}
-                                                    crateId={recentCrate}
-                                                    openEditor={openEditor}
-                                                    removeFromRecentCrates={removeFromRecentCrates}
-                                                    isRecentCrate={recentCrates?.includes(
-                                                        recentCrate
-                                                    )}
-                                                    deleteCrate={showDeleteCrateModal}
-                                                    search={search}
-                                                />
-                                            )
-                                        })
-                                    )}
-                                </Pagination>
-                            </div>
-                        </TabsContent>
-                    </Tabs>
+                            ) : localCrates.length === 0 ? (
+                                <div className="col-span-3">
+                                    Your local RO-Crates will be shown here. Start by importing an
+                                    RO-Crate or by creating a new one.
+                                </div>
+                            ) : (
+                                localCrates.map((recentCrate) => {
+                                    return (
+                                        <CrateEntry
+                                            key={recentCrate}
+                                            crateId={recentCrate}
+                                            openEditor={openEditor}
+                                            removeFromRecentCrates={removeFromRecentCrates}
+                                            isRecentCrate={true}
+                                            deleteCrate={showDeleteCrateModal}
+                                            search={search}
+                                        />
+                                    )
+                                })
+                            )}
+                        </Pagination>
+                    </div>
                 </div>
             </div>
 

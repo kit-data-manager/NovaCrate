@@ -4,7 +4,6 @@ import {
     EllipsisVertical,
     FileIcon,
     FolderArchive,
-    Package,
     Trash,
     XIcon
 } from "lucide-react"
@@ -107,10 +106,7 @@ export function CrateEntry({
     if (search && !crateDetails?.name?.toUpperCase().includes(search.toUpperCase())) return null
 
     return (
-        <div className="grid grid-cols-[20px_4fr_2fr_112px] gap-4 w-full transition hover:bg-secondary p-2 rounded-lg">
-            <div className="flex flex-col items-center justify-center">
-                <Package className="size-4" />
-            </div>
+        <div className="grid grid-cols-[4fr_2fr_112px] gap-4 w-full transition hover:bg-secondary p-2 rounded-lg">
             <div className="flex flex-col justify-center">
                 {title}
                 <Error
