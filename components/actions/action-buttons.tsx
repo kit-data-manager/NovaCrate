@@ -85,7 +85,7 @@ export const ActionContextMenuItem = memo(function ActionContextMenuItem(
     const action = useAction(props.actionId)
 
     return (
-        <ContextMenuItem onClick={() => action.execute()} {...cleanProps(props)}>
+        <ContextMenuItem className="gap-2" onClick={() => action.execute()} {...cleanProps(props)}>
             <GenericActionContent {...props} />
         </ContextMenuItem>
     )
