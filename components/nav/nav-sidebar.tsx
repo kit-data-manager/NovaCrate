@@ -26,7 +26,7 @@ function NavSidebarButton({
     return (
         <Button
             variant="ghost"
-            className={`justify-center transition aspect-square h-auto hover:bg-background! ${isActive && "bg-background"}`}
+            className={`justify-center transition aspect-square h-auto ${isActive && "bg-accent"}`}
             {...props}
         >
             {children}

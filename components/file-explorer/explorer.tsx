@@ -74,7 +74,7 @@ export function FileExplorer() {
 
     return (
         <div className="flex flex-col h-full bg-background rounded-lg overflow-hidden border">
-            <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center gap-2 truncate shrink-0">
+            <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center gap-2 truncate shrink-0 bg-accent">
                 <Folder className="size-4 shrink-0" /> File Explorer
                 <HelpTooltip>
                     <div>

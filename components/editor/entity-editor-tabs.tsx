@@ -99,7 +99,7 @@ function Tab({
                     onClick={focus}
                     variant="tab"
                     data-active={active}
-                    className={`cursor-default px-1.5 gap-1 group`}
+                    className={`cursor-default px-1.5 gap-1 group transition-colors`}
                     ref={button}
                 >
                     <EntityIcon entity={entity} unsavedChanges={dirty} />
@@ -139,7 +139,7 @@ function Tabs({ tabs, currentTab }: { tabs: IEntityEditorTab[]; currentTab?: IEn
     return (
         <div
             ref={container}
-            className="flex overflow-x-auto shrink-0 no-scrollbar h-10 p-1 gap-2"
+            className="flex overflow-x-auto shrink-0 no-scrollbar h-10 p-1 gap-2 bg-accent"
             onWheel={(s) => {
                 if (s.deltaY !== 0 && container.current) {
                     // noinspection JSSuspiciousNameCombination

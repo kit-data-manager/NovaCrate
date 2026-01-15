@@ -61,7 +61,7 @@ export function FilePreview({
 
     return (
         <div className="flex flex-col h-full bg-background rounded-lg overflow-hidden border">
-            <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center shrink-0">
+            <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center shrink-0 bg-accent">
                 <Eye className="size-4 shrink-0 mr-2" />{" "}
                 <span className="shrink-0">File Preview</span>
                 <HelpTooltip className="ml-2">

@@ -25,7 +25,7 @@ export function ContextPage() {
     }, [])
 
     return (
-        <div className="bg-background rounded-lg overflow-hidden border">
+        <div className="bg-background rounded-lg overflow-hidden border h-full">
             <Metadata page={"Context"} />
 
             <SpecificationModal
@@ -33,7 +33,7 @@ export function ContextPage() {
                 onOpenChange={onSpecificationModalOpenChange}
             />
 
-            <div className="pl-4 text-sm h-10 flex items-center border-b">
+            <div className="pl-4 text-sm h-10 flex items-center border-b bg-accent">
                 <Library className="size-4 shrink-0 mr-2" /> Context
             </div>
 

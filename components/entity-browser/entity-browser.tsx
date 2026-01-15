@@ -66,10 +66,10 @@ export function EntityBrowser() {
     const entityBrowserPanel = useMemo(() => {
         return (
             <div className="bg-background h-full w-full flex flex-col rounded-lg overflow-hidden border">
-                <div className="pl-4 text-sm h-10 flex items-center shrink-0">
+                <div className="pl-4 text-sm h-10 flex items-center shrink-0 bg-accent">
                     <PackageSearch className="size-4 shrink-0 mr-2" /> Entities
                 </div>
-                <div className="flex gap-2 top-0 z-10 p-2 border-b shrink-0">
+                <div className="flex gap-2 top-0 z-10 p-2 border-b border-t border-t-accent shrink-0 bg-accent overflow-x-auto no-scrollbar">
                     <ActionButton
                         actionId="crate.add-entity"
                         size="sm"

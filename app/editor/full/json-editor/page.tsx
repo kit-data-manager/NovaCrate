@@ -121,7 +121,7 @@ export default function JSONEditorPage() {
     return (
         <div className="w-full h-full flex flex-col relative bg-background rounded-lg border overflow-hidden">
             <Metadata page={"JSON Editor"} />
-            <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center shrink-0">
+            <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center shrink-0 bg-accent overflow-x-hidden no-scrollbar">
                 <Braces className="size-4 shrink-0 mr-2" />
                 JSON Editor
                 <span className="flex gap-1 items-center text-muted-foreground ml-1">

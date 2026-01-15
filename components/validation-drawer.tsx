@@ -136,7 +136,7 @@ export function ValidationDrawer() {
 
     return (
         <div className="bg-background flex flex-col max-h-full min-h-0 h-full overflow-hidden rounded-lg border">
-            <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center gap-2 truncate shrink-0">
+            <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center gap-2 truncate shrink-0 bg-accent">
                 <BugIcon className="size-4 shrink-0" /> Validation
                 <div className="flex items-center">
                     <Tooltip>
