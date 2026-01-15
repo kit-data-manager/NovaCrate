@@ -223,7 +223,7 @@ export default function EditorLandingPage() {
 
             <div className="md:p-20 md:pr-0">
                 <div
-                    className={`bg-accent h-full flex flex-col ${fadeOutAnimation ? "animate-fade-out opacity-0" : "animate-fade-in"} rounded-lg overflow-hidden border grid grid-rows-[1fr_auto_1fr]`}
+                    className={`bg-accent h-full ${fadeOutAnimation ? "animate-fade-out opacity-0" : "animate-fade-in"} rounded-lg overflow-hidden border grid grid-rows-[1fr_auto_1fr]`}
                 >
                     <div />
                     <div className="flex flex-col items-center justify-center p-10">

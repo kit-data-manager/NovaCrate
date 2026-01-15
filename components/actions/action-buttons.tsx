@@ -73,7 +73,7 @@ export const ActionDropdownMenuItem = memo(function ActionDropdownMenuItem(
     const action = useAction(props.actionId)
 
     return (
-        <DropdownMenuItem onClick={() => action.execute()} {...cleanProps(props)}>
+        <DropdownMenuItem className="gap-2" onClick={() => action.execute()} {...cleanProps(props)}>
             <GenericActionContent {...props} />
         </DropdownMenuItem>
     )
