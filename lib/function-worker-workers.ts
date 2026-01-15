@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 const HEALTH_TEST_FN = "__healthTest__"
 
 interface FunctionWorkerMessage {

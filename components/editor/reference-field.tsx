@@ -81,13 +81,12 @@ export const ReferenceField = memo(function ReferenceField({
         try {
             z.url().parse(value["@id"])
             return referencedEntity === undefined
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (_) {
             return false
         }
     }, [referencedEntity, value])
 
-    const ReferenceText = useCallback(() => {
+    const ReferenceText = useMemo(() => {
         if (referencedEntityName) {
             return <span className="truncate">{referencedEntityName}</span>
         } else if (isExternalLink) {
@@ -158,7 +157,7 @@ export const ReferenceField = memo(function ReferenceField({
                                     <EntityIcon className="mr-1" entity={referencedEntity} />
                                 )}
                                 <div className="flex items-end truncate grow">
-                                    <ReferenceText />
+                                    {ReferenceText}
                                     <div className="flex items-center self-center grow justify-end">
                                         {referencedEntity && <Eye className="size-4" />}
                                     </div>

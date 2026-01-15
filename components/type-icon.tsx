@@ -21,6 +21,7 @@ import {
     SCHEMA_ORG_SCHOLARLY_ARTICLE
 } from "@/lib/constants"
 import { useEditorState } from "@/lib/state/editor-state"
+import { useMemo } from "react"
 
 export const CommonIcons: Record<string, LucideIcon> = {
     [SCHEMA_ORG_PERSON]: User,
@@ -34,15 +35,17 @@ export const CommonIcons: Record<string, LucideIcon> = {
 }
 
 /**
- * Hook to retrieve the icon for a given type. Will resolve the type name in the local context if
+ * Renders a matching icon for the given type. Will resolve the type name in the local context if
  * necessary
- * @param type Type, either the name (e.g. Person) or the full URL (e.g. https://schema.org/Person)
+ * @param type Type, either the name (e.g., Person) or the full URL (e.g., https://schema.org/Person)
+ * @param className Optional class name to apply to the icon
  */
-export function useTypeIcon(type: string) {
+export function TypeIcon({ type, className }: { type: string; className?: string }) {
     const context = useEditorState((state) => state.crateContext)
 
-    const icon = CommonIcons[type.startsWith("http") ? type : context.resolve(type) || type]
-    if (icon) {
-        return icon
-    } else return Shapes
+    const PredefinedIcon = useMemo(() => {
+        return CommonIcons[type.startsWith("http") ? type : context.resolve(type) || type]
+    }, [context, type])
+
+    return <PredefinedIcon className={className} />
 }

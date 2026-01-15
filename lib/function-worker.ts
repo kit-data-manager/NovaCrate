@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import memoizee, { Memoized } from "memoizee"
 
 const HEALTH_TEST_FN = "__healthTest__"
