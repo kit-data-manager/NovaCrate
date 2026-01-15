@@ -59,7 +59,7 @@ function NavSidebarLink({
     return (
         <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
-                <Link href={href}>
+                <Link href={href} title={name}>
                     <NavSidebarButton isActive={isActive}>{children}</NavSidebarButton>
                 </Link>
             </TooltipTrigger>

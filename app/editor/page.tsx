@@ -198,7 +198,7 @@ export default function EditorLandingPage() {
     }, [search])
 
     const localCrates = useMemo(() => {
-        const local = recentCrates || []
+        const local = recentCrates?.filter((id) => storedCrates?.includes(id)) || []
         storedCrates?.forEach((id) => (local.includes(id) ? "" : local.push(id)))
         return local
     }, [recentCrates, storedCrates])
@@ -210,7 +210,7 @@ export default function EditorLandingPage() {
                 onOpenChange={onDeleteCrateModalOpenChange}
                 crateId={deleteCrateModalState.crateId}
                 onDeleted={(crateId) => {
-                    revalidate()
+                    revalidate().then()
                     onDeleteCrateModalOpenChange(false)
                     removeFromRecentCrates(crateId)
                 }}
@@ -384,8 +384,6 @@ export default function EditorLandingPage() {
                                             key={recentCrate}
                                             crateId={recentCrate}
                                             openEditor={openEditor}
-                                            removeFromRecentCrates={removeFromRecentCrates}
-                                            isRecentCrate={true}
                                             deleteCrate={showDeleteCrateModal}
                                             search={search}
                                         />

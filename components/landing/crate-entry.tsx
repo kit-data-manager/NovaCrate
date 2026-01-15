@@ -1,12 +1,4 @@
-import {
-    Copy,
-    Download,
-    EllipsisVertical,
-    FileIcon,
-    FolderArchive,
-    Trash,
-    XIcon
-} from "lucide-react"
+import { Copy, Download, EllipsisVertical, FileIcon, FolderArchive, Trash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
@@ -35,13 +27,9 @@ export function CrateEntry({
     crateId,
     openEditor,
     deleteCrate,
-    removeFromRecentCrates,
-    isRecentCrate,
     search
 }: {
     crateId: string
-    isRecentCrate?: boolean
-    removeFromRecentCrates(id: string): void
     openEditor(id: string): void
     deleteCrate(id: string): void
     search: string
@@ -134,21 +122,12 @@ export function CrateEntry({
                 </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" title={"More"}>
                             <EllipsisVertical className="size-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuSub>
-                            {isRecentCrate ? (
-                                <DropdownMenuItem
-                                    onClick={() => {
-                                        removeFromRecentCrates(crateId)
-                                    }}
-                                >
-                                    <XIcon className="size-4 mr-2" /> Remove from recently used
-                                </DropdownMenuItem>
-                            ) : null}
                             <DropdownMenuSubTrigger>
                                 <Download className="size-4 mr-2" /> Export...
                             </DropdownMenuSubTrigger>
