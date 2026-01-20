@@ -38,6 +38,7 @@ import useSWR from "swr"
 import { Footer } from "@/components/footer"
 import { GithubDiscontinuationWarning } from "@/components/github-discontinuation-warning"
 import Image from "next/image"
+import { ChangelogModal } from "@/components/changelog-modal"
 
 export default function EditorLandingPage() {
     const router = useRouter()
@@ -272,6 +273,7 @@ export default function EditorLandingPage() {
                             <Button variant="outline" onClick={showAboutModal}>
                                 <Info /> About
                             </Button>
+                            <ChangelogModal />
                         </div>
                         <Footer />
                     </div>
