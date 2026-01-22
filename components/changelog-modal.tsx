@@ -3,7 +3,7 @@
 import useSWR from "swr"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import packageJson from "../package.json"
 import {
     Dialog,
@@ -36,7 +36,7 @@ function isNewerVersion(test: string, currentVersion: string) {
 const useChangelogStore = create<ChangelogStore>()(
     persist(
         (set) => ({
-            lastSeenVersion: packageJson.version,
+            lastSeenVersion: "",
             setLastSeenVersion: (version) => {
                 set({ lastSeenVersion: version })
             }
@@ -53,7 +53,14 @@ const fetcher = (url: string) => fetch(url).then((res) => res.text())
 export function ChangelogModal() {
     const [unreadUpdates, setUnreadUpdates] = useState(false)
     const changelogStore = useChangelogStore()
-    const [previousVersion] = useState(changelogStore.lastSeenVersion)
+    const [previousVersion, setPreviousVersion] = useState("0.0.0")
+
+    // Set the last seen version to the current version if it is not set yet. This ensures that the store is persised to local storage
+    useEffect(() => {
+        if (changelogStore.lastSeenVersion === "") {
+            changelogStore.setLastSeenVersion(packageJson.version)
+        }
+    }, [changelogStore])
 
     const { data, error } = useSWR("/api/changelog", fetcher, {
         revalidateOnFocus: false,
@@ -61,19 +68,20 @@ export function ChangelogModal() {
     })
     const latestVersion = data ? /\[(\d+\.\d+\.\d+)]/gm.exec(data)?.[1] : undefined
 
-    console.log(
-        latestVersion,
-        changelogStore.lastSeenVersion,
-        latestVersion && isNewerVersion(latestVersion, changelogStore.lastSeenVersion)
-    )
-
-    if (latestVersion && isNewerVersion(latestVersion, changelogStore.lastSeenVersion)) {
-        console.log("is newer!")
+    if (
+        latestVersion &&
+        isNewerVersion(latestVersion, changelogStore.lastSeenVersion) &&
+        !unreadUpdates
+    ) {
         setUnreadUpdates(true)
     }
 
     const markAsRead = useCallback(() => {
-        if (latestVersion) changelogStore.setLastSeenVersion(latestVersion)
+        if (latestVersion) {
+            setPreviousVersion(changelogStore.lastSeenVersion)
+            changelogStore.setLastSeenVersion(latestVersion)
+            setUnreadUpdates(false)
+        }
     }, [changelogStore, latestVersion])
 
     const separator = data ? data.indexOf("---") : undefined

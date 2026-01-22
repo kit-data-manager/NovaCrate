@@ -239,7 +239,7 @@ export default function EditorLandingPage() {
                     </div>
 
                     <div className="content-end">
-                        <div className="flex justify-center items-center gap-2 pb-4">
+                        <div className="flex justify-center items-center gap-2 pb-4 flex-wrap">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline">
