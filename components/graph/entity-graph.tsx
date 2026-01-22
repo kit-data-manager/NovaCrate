@@ -23,8 +23,7 @@ import { isReference, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
 import { useEditorState } from "@/lib/state/editor-state"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { nodeTypes } from "@/components/graph/nodes"
-import { useGraphStateNoSelector } from "@/components/providers/graph-state-provider"
-import { useGraphSettingsNoSelector } from "@/components/providers/graph-settings-provider"
+import { useGraphState } from "@/lib/state/graph-state"
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -37,6 +36,7 @@ import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Error } from "@/components/error"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ActionButton, ActionContextMenuItem } from "@/components/actions/action-buttons"
+import { useGraphSettings } from "@/lib/state/graph-settings"
 
 export const DEFAULT_POS = { x: 0, y: 0 }
 
@@ -155,14 +155,14 @@ export function EntityGraph() {
         autoLayout,
         handleEdgesChange,
         setSelectedEntityID
-    } = useGraphStateNoSelector()
+    } = useGraphState()
 
     const {
         showTextProperties,
         setAggregateProperties,
         setShowTextProperties,
         aggregateProperties
-    } = useGraphSettingsNoSelector()
+    } = useGraphSettings()
 
     const { fitView } = useReactFlow()
 
@@ -430,7 +430,7 @@ export function EntityGraph() {
                 </Panel>
 
                 <Panel position="bottom-left">
-                    <div className="max-h-[200px] overflow-y-auto flex gap-2 flex-col">
+                    <div className="max-h-50 overflow-y-auto flex gap-2 flex-col">
                         {Array.from(saveError.entries()).map(([key, value]) => (
                             <Error
                                 title="Error while saving"
@@ -444,10 +444,10 @@ export function EntityGraph() {
 
                 {crateDataIsLoading || !crateId ? (
                     <div className="w-full h-full flex justify-center items-center gap-8">
-                        <Skeleton className="w-[200px] h-[100px]" />
+                        <Skeleton className="w-50 h-25" />
                         <div className="space-y-8">
-                            <Skeleton className="w-[200px] h-[100px]" />
-                            <Skeleton className="w-[200px] h-[100px]" />
+                            <Skeleton className="w-50 h-25" />
+                            <Skeleton className="w-50 h-25" />
                         </div>
                     </div>
                 ) : null}

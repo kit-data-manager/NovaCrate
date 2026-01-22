@@ -4,7 +4,7 @@ import { camelCaseReadable, Diff, getEntityDisplayName, toArray } from "@/lib/ut
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { Plus } from "lucide-react"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useGraphSettings } from "@/components/providers/graph-settings-provider"
+import { useGraphSettings } from "@/lib/state/graph-settings"
 import { useShallow } from "zustand/react/shallow"
 import { EntityContextMenu } from "@/components/entity/entity-context-menu"
 

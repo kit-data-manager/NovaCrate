@@ -6,6 +6,7 @@ import { createWithEqualityFn } from "zustand/traditional"
 import { useStore } from "zustand"
 import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
 import { PropertyValueUtils } from "@/lib/property-value-utils"
+import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 
 enableMapSet()
 
@@ -213,244 +214,253 @@ function setPropertyValue(
 }
 
 export const editorState = createWithEqualityFn<EditorState>()(
-    immer<EditorState>((setState, getState) => ({
-        initialCrateContext: new CrateContext(),
-        crateContext: new CrateContext(),
-        crateContextReady: false,
-        initialEntities: new Map<string, IEntity>(),
-        entities: new Map<string, IEntity>(),
+    ssrSafe(
+        immer<EditorState>((setState, getState) => ({
+            initialCrateContext: new CrateContext(),
+            crateContext: new CrateContext(),
+            crateContextReady: false,
+            initialEntities: new Map<string, IEntity>(),
+            entities: new Map<string, IEntity>(),
 
-        updateCrateContext(crateContext: CrateContextType) {
-            if (getState().crateContextReady && getState().crateContext.isSameAs(crateContext))
-                return
+            updateCrateContext(crateContext: CrateContextType) {
+                if (getState().crateContextReady && getState().crateContext.isSameAs(crateContext))
+                    return
 
-            setState((s) => {
-                s.crateContextReady = false
-            })
-            const newContext = new CrateContext()
-            newContext.setup(crateContext).then(() => {
-                setState((state) => {
-                    state.crateContextReady = true
-                    state.crateContext = newContext
+                setState((s) => {
+                    s.crateContextReady = false
                 })
-            })
-        },
-
-        updateInitialCrateContext(crateContext: CrateContextType) {
-            if (getState().initialCrateContext.isSameAs(crateContext)) return
-
-            const newContext = new CrateContext()
-            newContext.setup(crateContext).then(() => {
-                setState((state) => {
-                    state.initialCrateContext = newContext
+                const newContext = new CrateContext()
+                newContext.setup(crateContext).then(() => {
+                    setState((state) => {
+                        state.crateContextReady = true
+                        state.crateContext = newContext
+                    })
                 })
-            })
-        },
+            },
 
-        getEntities(): Map<string, IEntity> {
-            return getState().entities
-        },
+            updateInitialCrateContext(crateContext: CrateContextType) {
+                if (getState().initialCrateContext.isSameAs(crateContext)) return
 
-        setEntities(data: Map<string, IEntity>) {
-            setState((state) => {
-                state.entities = data
-            })
-        },
+                const newContext = new CrateContext()
+                newContext.setup(crateContext).then(() => {
+                    setState((state) => {
+                        state.initialCrateContext = newContext
+                    })
+                })
+            },
 
-        setInitialEntities(data: Map<string, IEntity>) {
-            setState((state) => {
-                state.initialEntities = data
-            })
-        },
+            getEntities(): Map<string, IEntity> {
+                return getState().entities
+            },
 
-        getEntitiesChangelist(): Map<string, Diff> {
-            const changelist = new Map<string, Diff>()
-            const entities = getState().entities
-            for (const [entityId] of entities) {
-                const diff = getState().getEntityDiff(entityId)
-                if (diff !== null) changelist.set(entityId, diff)
-            }
-            return changelist
-        },
-
-        getEntityDiff(id: string): Diff | null {
-            const entity = getState().entities.get(id)
-            if (!entity) return null
-            const initialEntity = getState().initialEntities.get(id)
-            if (!initialEntity) return Diff.New
-            if (isEntityEqual(entity, initialEntity)) {
-                return Diff.None
-            } else return Diff.Changed
-        },
-
-        getRootEntityId(): string | undefined {
-            const entities = getState().entities
-            const meta = entities.get("ro-crate-metadata.json")
-            const legacy = entities.get("ro-crate-metadata.jsonld")
-            if (meta && "about" in meta && PropertyValueUtils.isRef(meta.about))
-                return meta.about["@id"]
-            if (legacy && "about" in legacy && PropertyValueUtils.isRef(legacy.about))
-                return legacy.about["@id"]
-        },
-
-        getChangedEntities(): IEntity[] {
-            const result = []
-            for (const [id, diff] of getState().getEntitiesChangelist().entries()) {
-                if (diff !== Diff.None) {
-                    result.push(id)
-                }
-            }
-
-            const entities = getState().getEntities()
-            return result.map((id) => entities.get(id)).filter((e) => e !== undefined) as IEntity[]
-        },
-
-        getHasUnsavedChanges(): boolean {
-            return (
-                Array.from(getState().getEntitiesChangelist().values()).find(
-                    (diff) => diff === Diff.Changed || diff === Diff.New
-                ) !== undefined
-            )
-        },
-
-        addEntity(
-            entityId: string,
-            types: string[],
-            properties?: Record<string, EntityPropertyTypes>,
-            autoReference?: AutoReference
-        ): IEntity | undefined {
-            if (!getState().entities.has(entityId)) {
-                const entity = {
-                    ...properties,
-                    "@id": entityId,
-                    "@type": types
-                }
-
+            setEntities(data: Map<string, IEntity>) {
                 setState((state) => {
-                    state.entities.set(entityId, entity)
+                    state.entities = data
+                })
+            },
 
-                    if (autoReference) {
-                        const target = state.entities.get(autoReference.entityId)
-                        if (target) {
-                            setPropertyValue(
-                                target,
-                                autoReference.propertyName,
-                                { "@id": entityId },
-                                autoReference.valueIdx
-                            )
-                        }
+            setInitialEntities(data: Map<string, IEntity>) {
+                setState((state) => {
+                    state.initialEntities = data
+                })
+            },
+
+            getEntitiesChangelist(): Map<string, Diff> {
+                const changelist = new Map<string, Diff>()
+                const entities = getState().entities
+                for (const [entityId] of entities) {
+                    const diff = getState().getEntityDiff(entityId)
+                    if (diff !== null) changelist.set(entityId, diff)
+                }
+                return changelist
+            },
+
+            getEntityDiff(id: string): Diff | null {
+                const entity = getState().entities.get(id)
+                if (!entity) return null
+                const initialEntity = getState().initialEntities.get(id)
+                if (!initialEntity) return Diff.New
+                if (isEntityEqual(entity, initialEntity)) {
+                    return Diff.None
+                } else return Diff.Changed
+            },
+
+            getRootEntityId(): string | undefined {
+                const entities = getState().entities
+                const meta = entities.get("ro-crate-metadata.json")
+                const legacy = entities.get("ro-crate-metadata.jsonld")
+                if (meta && "about" in meta && PropertyValueUtils.isRef(meta.about))
+                    return meta.about["@id"]
+                if (legacy && "about" in legacy && PropertyValueUtils.isRef(legacy.about))
+                    return legacy.about["@id"]
+            },
+
+            getChangedEntities(): IEntity[] {
+                const result = []
+                for (const [id, diff] of getState().getEntitiesChangelist().entries()) {
+                    if (diff !== Diff.None) {
+                        result.push(id)
                     }
-                })
+                }
 
-                return entity
-            } else return undefined
-        },
+                const entities = getState().getEntities()
+                return result
+                    .map((id) => entities.get(id))
+                    .filter((e) => e !== undefined) as IEntity[]
+            },
 
-        addProperty(entityId: string, propertyName: string, value?: EntityPropertyTypes) {
-            const target = getState().entities.get(entityId)
-            if (target && !(propertyName in target)) {
-                setState((state) => {
-                    state.entities.get(entityId)![propertyName] = value || []
-                })
-            }
-        },
+            getHasUnsavedChanges(): boolean {
+                return (
+                    Array.from(getState().getEntitiesChangelist().values()).find(
+                        (diff) => diff === Diff.Changed || diff === Diff.New
+                    ) !== undefined
+                )
+            },
 
-        addPropertyEntry(
-            entityId: string,
-            propertyName: string,
-            typeOrValue: PropertyType | EntitySinglePropertyTypes
-        ) {
-            if (getState().entities.get(entityId)) {
-                setState((state) => {
-                    setPropertyValue(
-                        state.entities.get(entityId)!,
-                        propertyName,
-                        typeof typeOrValue === "number"
-                            ? getPropertyTypeDefaultValue(typeOrValue)
-                            : typeOrValue
-                    )
-                })
-            }
-        },
+            addEntity(
+                entityId: string,
+                types: string[],
+                properties?: Record<string, EntityPropertyTypes>,
+                autoReference?: AutoReference
+            ): IEntity | undefined {
+                if (!getState().entities.has(entityId)) {
+                    const entity = {
+                        ...properties,
+                        "@id": entityId,
+                        "@type": types
+                    }
 
-        modifyPropertyEntry(
-            entityId: string,
-            propertyName: string,
-            valueIdx: number,
-            value: EntitySinglePropertyTypes
-        ) {
-            if (getState().entities.get(entityId)) {
-                setState((state) => {
-                    setPropertyValue(state.entities.get(entityId)!, propertyName, value, valueIdx)
-                })
-            }
-        },
+                    setState((state) => {
+                        state.entities.set(entityId, entity)
 
-        removePropertyEntry(
-            entityId: string,
-            propertyName: string,
-            valueOrValueIdx: number | IReference
-        ) {
-            if (
-                getState().entities.get(entityId) &&
-                propertyName in getState().entities.get(entityId)!
-            ) {
-                setState((state) => {
-                    let target = state.entities.get(entityId)!
-                    const prop = target[propertyName]
-                    if (Array.isArray(prop)) {
-                        if (prop.length === 1) {
-                            delete target[propertyName]
-                        } else {
-                            if (typeof valueOrValueIdx === "number") {
-                                prop.splice(valueOrValueIdx, 1)
-                            } else {
-                                target[propertyName] = prop.filter((val) =>
-                                    typeof val === "object"
-                                        ? val["@id"] !== valueOrValueIdx["@id"]
-                                        : true
+                        if (autoReference) {
+                            const target = state.entities.get(autoReference.entityId)
+                            if (target) {
+                                setPropertyValue(
+                                    target,
+                                    autoReference.propertyName,
+                                    { "@id": entityId },
+                                    autoReference.valueIdx
                                 )
                             }
                         }
-                    } else {
-                        delete target[propertyName]
-                    }
+                    })
+
+                    return entity
+                } else return undefined
+            },
+
+            addProperty(entityId: string, propertyName: string, value?: EntityPropertyTypes) {
+                const target = getState().entities.get(entityId)
+                if (target && !(propertyName in target)) {
+                    setState((state) => {
+                        state.entities.get(entityId)![propertyName] = value || []
+                    })
+                }
+            },
+
+            addPropertyEntry(
+                entityId: string,
+                propertyName: string,
+                typeOrValue: PropertyType | EntitySinglePropertyTypes
+            ) {
+                if (getState().entities.get(entityId)) {
+                    setState((state) => {
+                        setPropertyValue(
+                            state.entities.get(entityId)!,
+                            propertyName,
+                            typeof typeOrValue === "number"
+                                ? getPropertyTypeDefaultValue(typeOrValue)
+                                : typeOrValue
+                        )
+                    })
+                }
+            },
+
+            modifyPropertyEntry(
+                entityId: string,
+                propertyName: string,
+                valueIdx: number,
+                value: EntitySinglePropertyTypes
+            ) {
+                if (getState().entities.get(entityId)) {
+                    setState((state) => {
+                        setPropertyValue(
+                            state.entities.get(entityId)!,
+                            propertyName,
+                            value,
+                            valueIdx
+                        )
+                    })
+                }
+            },
+
+            removePropertyEntry(
+                entityId: string,
+                propertyName: string,
+                valueOrValueIdx: number | IReference
+            ) {
+                if (
+                    getState().entities.get(entityId) &&
+                    propertyName in getState().entities.get(entityId)!
+                ) {
+                    setState((state) => {
+                        let target = state.entities.get(entityId)!
+                        const prop = target[propertyName]
+                        if (Array.isArray(prop)) {
+                            if (prop.length === 1) {
+                                delete target[propertyName]
+                            } else {
+                                if (typeof valueOrValueIdx === "number") {
+                                    prop.splice(valueOrValueIdx, 1)
+                                } else {
+                                    target[propertyName] = prop.filter((val) =>
+                                        typeof val === "object"
+                                            ? val["@id"] !== valueOrValueIdx["@id"]
+                                            : true
+                                    )
+                                }
+                            }
+                        } else {
+                            delete target[propertyName]
+                        }
+                    })
+                }
+            },
+
+            revertEntity(entityId: string) {
+                const original = getState().initialEntities.get(entityId)
+                if (original) {
+                    setState((state) => {
+                        state.entities.set(entityId, original)
+                    })
+                } else {
+                    setState((state) => {
+                        state.entities.delete(entityId)
+                    })
+                }
+            },
+
+            revertAllEntities() {
+                setState((state) => {
+                    state.entities = new Map(state.initialEntities)
+                })
+            },
+
+            showValidationDrawer: false,
+            setShowValidationDrawer(show: boolean) {
+                setState((state) => {
+                    state.showValidationDrawer = show
+                })
+            },
+            focusedValidationResultId: undefined,
+            setFocusedValidationResultId(id?: string) {
+                setState((state) => {
+                    state.focusedValidationResultId = id
                 })
             }
-        },
-
-        revertEntity(entityId: string) {
-            const original = getState().initialEntities.get(entityId)
-            if (original) {
-                setState((state) => {
-                    state.entities.set(entityId, original)
-                })
-            } else {
-                setState((state) => {
-                    state.entities.delete(entityId)
-                })
-            }
-        },
-
-        revertAllEntities() {
-            setState((state) => {
-                state.entities = new Map(state.initialEntities)
-            })
-        },
-
-        showValidationDrawer: false,
-        setShowValidationDrawer(show: boolean) {
-            setState((state) => {
-                state.showValidationDrawer = show
-            })
-        },
-        focusedValidationResultId: undefined,
-        setFocusedValidationResultId(id?: string) {
-            setState((state) => {
-                state.focusedValidationResultId = id
-            })
-        }
-    }))
+        }))
+    )
 )
 
 export function useEditorState<T>(selector: (store: EditorState) => T): T {

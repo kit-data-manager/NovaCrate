@@ -1,9 +1,10 @@
-import { create } from "zustand/index"
+import { create } from "zustand"
 import { immer } from "zustand/middleware/immer"
 import { persist } from "zustand/middleware"
 import { enableMapSet } from "immer"
 import { RO_CRATE_VERSION } from "@/lib/constants"
 import { addBasePath } from "next/dist/client/add-base-path"
+import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 
 export interface RegisteredSchema {
     id: string
@@ -93,73 +94,78 @@ const defaultSchemas = [
 ]
 
 export const schemaResolverStore = create<SchemaResolverStore>()(
-    persist(
-        immer((set, get) => ({
-            registeredSchemas: structuredClone(defaultSchemas),
+    ssrSafe(
+        persist(
+            immer((set, get) => ({
+                registeredSchemas: structuredClone(defaultSchemas),
 
-            deleteSchema: (name: string) => {
-                set((draft) => {
-                    draft.registeredSchemas = draft.registeredSchemas.filter(
-                        (schema) => schema.id !== name
-                    )
-                })
-            },
+                deleteSchema: (name: string) => {
+                    set((draft) => {
+                        draft.registeredSchemas = draft.registeredSchemas.filter(
+                            (schema) => schema.id !== name
+                        )
+                    })
+                },
 
-            addSchema: (schema: RegisteredSchema) => {
-                if (get().registeredSchemas.find((s) => s.id === schema.id)) {
-                    return get().updateSchema(schema.id, schema)
-                }
-
-                set((draft) => {
-                    draft.registeredSchemas.push(schema)
-                })
-            },
-
-            updateSchema: (id: string, schema: RegisteredSchema) => {
-                set((draft) => {
-                    const i = draft.registeredSchemas.findIndex((s) => s.id === id)
-                    draft.registeredSchemas[i] = schema
-                })
-            }
-        })),
-        {
-            name: "schema-resolver",
-            version: 2,
-            migrate: (_persisted: unknown, persistedVersion) => {
-                if (!_persisted) return { registeredSchemas: [...defaultSchemas] }
-                const persisted = _persisted as Partial<SchemaResolverStore>
-                const existing = Array.isArray(persisted?.registeredSchemas)
-                    ? [...persisted!.registeredSchemas!]
-                    : []
-                const merged = [...existing]
-
-                // activeOnSpec was added in version 2 of the store
-                if (persistedVersion < 2) {
-                    for (const schema of merged) {
-                        const defaults = defaultSchemas.find((d) => d.id === schema.id)
-                        if (defaults && !schema.activeOnSpec) {
-                            schema.activeOnSpec = defaults.activeOnSpec
-                        } else if (!schema.activeOnSpec) {
-                            // Activate on all specs if the actual spec usage is unknown
-                            schema.activeOnSpec = [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
-                        }
+                addSchema: (schema: RegisteredSchema) => {
+                    if (get().registeredSchemas.find((s) => s.id === schema.id)) {
+                        return get().updateSchema(schema.id, schema)
                     }
 
-                    if (!merged.find((s) => s.id === "prof-voc"))
-                        merged.push(defaultSchemas.find((d) => d.id === "prof-voc")!)
+                    set((draft) => {
+                        draft.registeredSchemas.push(schema)
+                    })
+                },
 
-                    if (!merged.find((s) => s.id === "geosparql"))
-                        merged.push(defaultSchemas.find((d) => d.id === "geosparql")!)
-
-                    if (!merged.find((s) => s.id === "codemeta3"))
-                        merged.push(defaultSchemas.find((d) => d.id === "codemeta3")!)
-
-                    if (!merged.find((s) => s.id === "pcdm"))
-                        merged.push(defaultSchemas.find((d) => d.id === "pcdm")!)
+                updateSchema: (id: string, schema: RegisteredSchema) => {
+                    set((draft) => {
+                        const i = draft.registeredSchemas.findIndex((s) => s.id === id)
+                        draft.registeredSchemas[i] = schema
+                    })
                 }
+            })),
+            {
+                name: "schema-resolver",
+                version: 2,
+                migrate: (_persisted: unknown, persistedVersion) => {
+                    if (!_persisted) return { registeredSchemas: [...defaultSchemas] }
+                    const persisted = _persisted as Partial<SchemaResolverStore>
+                    const existing = Array.isArray(persisted?.registeredSchemas)
+                        ? [...persisted!.registeredSchemas!]
+                        : []
+                    const merged = [...existing]
 
-                return { registeredSchemas: merged }
+                    // activeOnSpec was added in version 2 of the store
+                    if (persistedVersion < 2) {
+                        for (const schema of merged) {
+                            const defaults = defaultSchemas.find((d) => d.id === schema.id)
+                            if (defaults && !schema.activeOnSpec) {
+                                schema.activeOnSpec = defaults.activeOnSpec
+                            } else if (!schema.activeOnSpec) {
+                                // Activate on all specs if the actual spec usage is unknown
+                                schema.activeOnSpec = [
+                                    RO_CRATE_VERSION.V1_1_3,
+                                    RO_CRATE_VERSION.V1_2_0
+                                ]
+                            }
+                        }
+
+                        if (!merged.find((s) => s.id === "prof-voc"))
+                            merged.push(defaultSchemas.find((d) => d.id === "prof-voc")!)
+
+                        if (!merged.find((s) => s.id === "geosparql"))
+                            merged.push(defaultSchemas.find((d) => d.id === "geosparql")!)
+
+                        if (!merged.find((s) => s.id === "codemeta3"))
+                            merged.push(defaultSchemas.find((d) => d.id === "codemeta3")!)
+
+                        if (!merged.find((s) => s.id === "pcdm"))
+                            merged.push(defaultSchemas.find((d) => d.id === "pcdm")!)
+                    }
+
+                    return { registeredSchemas: merged }
+                }
             }
-        }
+        )
     )
 )

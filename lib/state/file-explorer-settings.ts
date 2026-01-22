@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 
 interface FileExplorerSettings {
     showEntities: boolean
@@ -7,13 +8,15 @@ interface FileExplorerSettings {
 }
 
 export const fileExplorerSettings = create<FileExplorerSettings>()(
-    persist(
-        (set, get) => ({
-            showEntities: false,
-            toggleShowEntities: () => {
-                set({ showEntities: !get().showEntities })
-            }
-        }),
-        { name: "file-explorer-settings" }
+    ssrSafe(
+        persist(
+            (set, get) => ({
+                showEntities: false,
+                toggleShowEntities: () => {
+                    set({ showEntities: !get().showEntities })
+                }
+            }),
+            { name: "file-explorer-settings" }
+        )
     )
 )

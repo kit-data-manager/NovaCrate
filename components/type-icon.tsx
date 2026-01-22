@@ -44,7 +44,7 @@ export function TypeIcon({ type, className }: { type: string; className?: string
     const context = useEditorState((state) => state.crateContext)
 
     const PredefinedIcon = useMemo(() => {
-        return CommonIcons[type.startsWith("http") ? type : context.resolve(type) || type]
+        return CommonIcons[type.startsWith("http") ? type : context.resolve(type) || type] ?? Shapes
     }, [context, type])
 
     return <PredefinedIcon className={className} />
