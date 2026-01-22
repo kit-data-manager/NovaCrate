@@ -1,6 +1,7 @@
 import path from "node:path"
 import { readFile } from "node:fs/promises"
 
+// This API route is compiled to static markdown, so the CHANGELOG.md file is only read once at build time.
 export const dynamic = "force-static"
 
 export async function GET() {
