@@ -48,7 +48,7 @@ export function ShowcaseBlock({
     )
 
     return (
-        <div className="grid grid-cols-2 gap-8 border border-border rounded-lg p-8 overflow-hidden">
+        <div className="grid md:grid-cols-2 gap-8 border border-border rounded-lg p-8 overflow-hidden">
             {rtl && text}
             <Image
                 src={addBasePath(resolvedTheme === "dark" && mounted ? imgDark : imgLight)}

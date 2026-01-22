@@ -27,7 +27,7 @@ export function TextViewer(props: ViewerProps) {
                 options={{ readOnly: true }}
                 defaultLanguage={props.data.type}
                 onMount={handleMount}
-                theme={theme.theme === "dark" ? "crate-dark" : "light"}
+                theme={theme.resolvedTheme === "dark" ? "crate-dark" : "light"}
             />
         </div>
     )

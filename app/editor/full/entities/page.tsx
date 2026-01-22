@@ -18,7 +18,7 @@ function EntityEditorFilePreview(props: PropsWithChildren) {
             <ResizablePanel defaultSize={66} minSize={20}>
                 <div className="h-full w-full overflow-auto">{props.children}</div>
             </ResizablePanel>
-            <ResizableHandle />
+            <ResizableHandle className="m-0.5" />
             <ResizablePanel defaultSize={34} minSize={20}>
                 <div className="h-full w-full overflow-auto">
                     <FilePreview
@@ -62,7 +62,7 @@ export default function Entities() {
                         <EntityBrowser />
                     </div>
                 </ResizablePanel>
-                <ResizableHandle />
+                <ResizableHandle className="m-0.5" />
                 <ResizablePanel defaultSize={70} minSize={30}>
                     {previewingFilePath ? (
                         <EntityEditorFilePreview>

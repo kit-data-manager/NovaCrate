@@ -234,6 +234,25 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Global scrollbar styles */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+  }
+
+  * {
+    scrollbar-color: var(--muted) transparent;
+    scrollbar-width: thin;
+  }
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -245,4 +264,24 @@
 .no-scrollbar {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+}
+
+.typography h1 {
+  @apply font-bold text-2xl;
+}
+
+.typography h2 {
+  @apply font-bold text-xl mt-6;
+}
+
+.typography h3 {
+  @apply font-bold mt-2;
+}
+
+.typography ul {
+  @apply list-disc pl-6;
+}
+
+.typography a {
+  @apply underline;
 }

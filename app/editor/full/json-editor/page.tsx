@@ -119,9 +119,9 @@ export default function JSONEditorPage() {
     const saveAllEntities = useSaveAllEntities()
 
     return (
-        <div className="w-full h-full flex flex-col relative">
+        <div className="w-full h-full flex flex-col relative bg-background rounded-lg border overflow-hidden">
             <Metadata page={"JSON Editor"} />
-            <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
+            <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center shrink-0 bg-accent overflow-x-hidden no-scrollbar">
                 <Braces className="size-4 shrink-0 mr-2" />
                 JSON Editor
                 <span className="flex gap-1 items-center text-muted-foreground ml-1">
@@ -138,21 +138,23 @@ export default function JSONEditorPage() {
                     ) : null}
                 </div>
                 <Button
-                    variant="header"
+                    variant="outline"
+                    size={"sm"}
                     onClick={saveChanges}
                     disabled={saving || editorHasErrors || !editorHasChanges}
+                    className="mr-2"
                 >
                     <Save className="size-4 mr-2" />
                     <span className="text-sm">Save</span>
                     <div className="ml-1 text-xs text-muted-foreground">⌘S</div>
                 </Button>
-                <Button variant="header" onClick={download}>
+                <Button size="sm" variant="outline" onClick={download}>
                     <Download className="size-4 mr-2" /> Download
                 </Button>
             </div>
             {hasUnsavedChanges ? (
                 <div className="flex justify-center items-center grow">
-                    <div className="p-4 border rounded-lg max-w-[600px] flex flex-col gap-4">
+                    <div className="p-4 border rounded-lg max-w-150 flex flex-col gap-4">
                         <h3 className="text-lg font-semibold">Unsaved Changes</h3>
                         <div>
                             The JSON Editor is not available while there are unsaved changes in the
@@ -176,13 +178,13 @@ export default function JSONEditorPage() {
             ) : (
                 <>
                     <Error error={saveError} title="Failed to save changes" />
-                    <div className="flex gap-2 absolute top-12 right-[140px] z-10 bg-accent/60 items-center rounded-lg">
+                    <div className="flex gap-2 absolute top-12 right-35 z-10 bg-accent/60 items-center rounded-lg">
                         <Noticer hasErrors={editorHasErrors} hasChanges={editorHasChanges} />
                     </div>
                     <Editor
                         value={JSON.stringify(crateDataProxy)}
                         defaultLanguage="json"
-                        theme={theme.theme === "dark" ? "crate-dark" : "light"}
+                        theme={theme.resolvedTheme === "dark" ? "crate-dark" : "light"}
                         onMount={handleMount}
                         onChange={handleChange}
                         onValidate={handleValidate}

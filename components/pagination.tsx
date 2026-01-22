@@ -106,6 +106,7 @@ export function Pagination({
     return active ? (
         <>
             {toArray(children).slice(sliceStart, sliceEnd)}
+            <div className="grow" />
             <div className="flex justify-between items-start">
                 {leftContent ? <div className="mt-[-16px]">{leftContent}</div> : <div />}
                 <div className="flex">

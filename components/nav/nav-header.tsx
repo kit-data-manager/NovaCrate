@@ -9,7 +9,6 @@ import {
     FileUp,
     FolderArchive,
     FolderUp,
-    Info,
     Notebook,
     Package,
     Palette
@@ -28,7 +27,7 @@ import {
     MenubarTrigger
 } from "@/components/ui/menubar"
 import { useTheme } from "next-themes"
-import React, { useCallback, useContext, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useContext, useMemo, useState } from "react"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
@@ -55,12 +54,12 @@ function EntityMenu() {
 
     return currentEntity !== undefined ? (
         <MenubarMenu>
-            <MenubarTrigger>
+            <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
                 Entity
                 <ChevronDown className="size-4 ml-1 text-muted-foreground" />
             </MenubarTrigger>
             <MenubarContent>
-                <MenubarLabel className="max-w-[300px] truncate flex">
+                <MenubarLabel className="max-w-75 truncate flex">
                     <EntityIcon entity={currentEntity} /> {currentEntityName}
                 </MenubarLabel>
                 <MenubarSeparator />
@@ -158,9 +157,9 @@ export function NavHeader() {
 
     const menubar = useMemo(() => {
         return (
-            <Menubar>
+            <Menubar className="bg-transparent">
                 <MenubarMenu>
-                    <MenubarTrigger>
+                    <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
                         Editor <ChevronDown className="size-4 ml-1 text-muted-foreground" />
                     </MenubarTrigger>
                     <MenubarContent>
@@ -168,9 +167,17 @@ export function NavHeader() {
                         <MenubarSeparator />
                         <MenubarSub>
                             <MenubarSubTrigger>
-                                <Palette className="size-4 mr-2" /> Theme
+                                <Palette className="size-4" /> Theme
                             </MenubarSubTrigger>
                             <MenubarSubContent>
+                                {theme.systemTheme && (
+                                    <MenubarCheckboxItem
+                                        checked={theme.theme === "system"}
+                                        onClick={() => theme.setTheme("system")}
+                                    >
+                                        System Default ({theme.systemTheme})
+                                    </MenubarCheckboxItem>
+                                )}
                                 <MenubarCheckboxItem
                                     checked={theme.theme === "dark"}
                                     onClick={() => theme.setTheme("dark")}
@@ -186,25 +193,23 @@ export function NavHeader() {
                             </MenubarSubContent>
                         </MenubarSub>
                         <ActionMenubarItem actionId="editor.settings" />
-                        <MenubarItem disabled>
-                            <Info className="size-4 mr-2" /> Info
-                        </MenubarItem>
+                        <ActionMenubarItem actionId="editor.about" />
                         <MenubarSeparator />
                         <ActionMenubarItem actionId="editor.close" />
                     </MenubarContent>
                 </MenubarMenu>
                 <MenubarMenu>
-                    <MenubarTrigger>
+                    <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
                         Crate <ChevronDown className="size-4 ml-1 text-muted-foreground" />
                     </MenubarTrigger>
                     <MenubarContent>
                         <ActionMenubarItem actionId="crate.add-entity" />
                         <MenubarSeparator />
                         <MenubarItem onClick={() => showUploadFileModal()}>
-                            <FileUp className="size-4 mr-2" /> Upload File
+                            <FileUp className="size-4" /> Upload File
                         </MenubarItem>
                         <MenubarItem onClick={() => showUploadFolderModal()}>
-                            <FolderUp className="size-4 mr-2" /> Upload Folder
+                            <FolderUp className="size-4" /> Upload Folder
                         </MenubarItem>
                         <MenubarSeparator />
                         <ActionMenubarItem
@@ -220,30 +225,30 @@ export function NavHeader() {
                         <MenubarSeparator />
                         <MenubarSub>
                             <MenubarSubTrigger>
-                                <Copy className="size-4 mr-2" /> Copy Crate...
+                                <Copy className="size-4" /> Copy Crate...
                             </MenubarSubTrigger>
                             <MenubarSubContent>
                                 <MenubarItem onClick={() => copy(crateId || "")}>
-                                    <Copy className="size-4 mr-2" /> Copy Crate ID
+                                    <Copy className="size-4" /> Copy Crate ID
                                 </MenubarItem>
                                 <MenubarItem onClick={() => copy(crateName)}>
-                                    <Copy className="size-4 mr-2" /> Copy Crate Name
+                                    <Copy className="size-4" /> Copy Crate Name
                                 </MenubarItem>
                             </MenubarSubContent>
                         </MenubarSub>
                         <MenubarSub>
                             <MenubarSubTrigger>
-                                <Download className="size-4 mr-2" /> Export
+                                <Download className="size-4" /> Export
                             </MenubarSubTrigger>
                             <MenubarSubContent>
                                 <MenubarItem onClick={downloadCrateZip}>
-                                    <FolderArchive className="size-4 mr-2" /> As .zip Archive
+                                    <FolderArchive className="size-4" /> As .zip Archive
                                 </MenubarItem>
                                 <MenubarItem onClick={downloadCrateEln}>
-                                    <Notebook className="size-4 mr-2" /> As ELN
+                                    <Notebook className="size-4" /> As ELN
                                 </MenubarItem>
                                 <MenubarItem onClick={downloadRoCrateMetadataFile}>
-                                    <File className="size-4 mr-2" /> ro-crate-metadata.json
+                                    <File className="size-4" /> ro-crate-metadata.json
                                 </MenubarItem>
                             </MenubarSubContent>
                         </MenubarSub>
@@ -268,13 +273,13 @@ export function NavHeader() {
     ])
 
     return (
-        <div className="p-4 py-3 w-full grid grid-cols-[1fr_auto_1fr]">
+        <div className="p-4 py-2 pr-3 w-full grid grid-cols-[1fr_auto_1fr]">
             <div className="flex items-center">
                 <Package className="w-7 h-7 mr-2" />
                 {crateDataIsLoading || !crateName ? (
-                    <Skeleton className="h-8 w-32" />
+                    <Skeleton className="bg-background h-8 w-32" />
                 ) : (
-                    <div className="mr-6 font-bold max-w-[300px] truncate animate-in">
+                    <div className="mr-6 font-bold max-w-75 truncate animate-in">
                         <div className="text-xs font-normal">NovaCrate</div>
                         {crateName}
                     </div>
@@ -303,7 +308,7 @@ export function NavHeader() {
                                 <CircleAlert className="size-4 animate-pulse" />
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[400px] flex flex-col gap-2">
+                        <PopoverContent className="w-100 flex flex-col gap-2">
                             <div className="text-sm font-bold">Internal Error Log</div>
                             <Error title="Crate service is not reachable" error={healthTestError} />
                             <Error title="Error while loading crate data" error={error} />
@@ -339,7 +344,7 @@ export function NavHeader() {
                     </span>
                 </ActionButton>
                 <ActionButton
-                    variant="secondary"
+                    variant="outline"
                     name={"settings"}
                     actionId={"editor.settings"}
                     iconOnly

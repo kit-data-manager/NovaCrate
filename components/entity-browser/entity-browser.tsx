@@ -7,7 +7,8 @@ import {
     ChevronsDownUp,
     ChevronsUpDown,
     EllipsisVertical,
-    PackageSearch
+    PackageSearch,
+    TableOfContents
 } from "lucide-react"
 import {
     DropdownMenu,
@@ -25,11 +26,15 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { DefaultSectionOpen } from "@/components/entity-browser/entity-browser-section"
 import { EntityBrowserContent } from "@/components/entity-browser/entity-browser-content"
 import { ImperativePanelHandle } from "react-resizable-panels"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export function EntityBrowser() {
     const state = useEntityBrowserSettings()
     const [defaultSectionOpen, setDefaultSectionOpen] = useState<DefaultSectionOpen>(true)
     const showPropertyOverview = useEntityBrowserSettings((store) => store.showPropertyOverview)
+    const setShowPropertyOverview = useEntityBrowserSettings(
+        (store) => store.setShowPropertyOverview
+    )
     const propertyOverviewPanel = useRef<ImperativePanelHandle>(null)
     const sortBy = useEntityBrowserSettings((store) => store.sortBy)
     const structureBy = useEntityBrowserSettings((store) => store.structureBy)
@@ -60,11 +65,11 @@ export function EntityBrowser() {
 
     const entityBrowserPanel = useMemo(() => {
         return (
-            <div className="h-full w-full flex flex-col">
-                <div className="pl-4 bg-accent text-sm h-10 flex items-center shrink-0">
+            <div className="bg-background h-full w-full flex flex-col rounded-lg overflow-hidden border">
+                <div className="pl-4 text-sm h-10 flex items-center shrink-0 bg-accent">
                     <PackageSearch className="size-4 shrink-0 mr-2" /> Entities
                 </div>
-                <div className="flex gap-2 top-0 z-10 p-2 bg-accent shrink-0">
+                <div className="flex gap-2 top-0 z-10 p-2 border-b border-t border-t-accent shrink-0 bg-accent overflow-x-auto no-scrollbar">
                     <ActionButton
                         actionId="crate.add-entity"
                         size="sm"
@@ -74,13 +79,33 @@ export function EntityBrowser() {
                     />
                     <div className="grow"></div>
 
-                    <ActionButton
-                        actionId={"editor.global-search"}
-                        variant={"outline"}
-                        size={"sm"}
-                        noShortcut
-                        iconOnly
-                    />
+                    <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                            <ActionButton
+                                actionId={"editor.global-search"}
+                                variant={"outline"}
+                                size={"sm"}
+                                noShortcut
+                                iconOnly
+                            />
+                        </TooltipTrigger>
+                        <TooltipContent>Global Search</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                    state.setShowPropertyOverview(!state.showPropertyOverview)
+                                }
+                            >
+                                <TableOfContents />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Toggle Property Overview</TooltipContent>
+                    </Tooltip>
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -153,14 +178,6 @@ export function EntityBrowser() {
                             >
                                 Show ID instead of Name
                             </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem
-                                checked={state.showPropertyOverview}
-                                onClick={() =>
-                                    state.setShowPropertyOverview(!state.showPropertyOverview)
-                                }
-                            >
-                                Show Property Overview
-                            </DropdownMenuCheckboxItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={collapseAllSections}>
                                 <ChevronsDownUp className={"size-4 mr-2"} /> Collapse All
@@ -196,8 +213,15 @@ export function EntityBrowser() {
             <ResizablePanel defaultSize={100} minSize={10}>
                 {entityBrowserPanel}
             </ResizablePanel>
-            <ResizableHandle />
-            <ResizablePanel defaultSize={0} minSize={10} ref={propertyOverviewPanel} collapsible>
+            {showPropertyOverview && <ResizableHandle className="m-0.5" />}
+            <ResizablePanel
+                defaultSize={0}
+                minSize={10}
+                ref={propertyOverviewPanel}
+                collapsible
+                onExpand={() => setShowPropertyOverview(true)}
+                onCollapse={() => setShowPropertyOverview(false)}
+            >
                 <PropertyOverview />
             </ResizablePanel>
         </ResizablePanelGroup>
