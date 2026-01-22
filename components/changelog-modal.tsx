@@ -112,7 +112,8 @@ export function ChangelogModal() {
     }, [changelogStore, latestVersion])
 
     const separator = data ? data.indexOf("---") : undefined
-    const separatedText = data && separator ? data.slice(separator) : ""
+    const separatedText =
+        data && separator !== undefined && separator > 0 ? data.slice(separator) : ""
 
     return (
         <Dialog>
