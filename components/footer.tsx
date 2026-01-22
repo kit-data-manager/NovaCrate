@@ -65,7 +65,7 @@ export function Footer() {
                 </div>
             </div>
             <div className="text-xs text-muted-foreground text-center">
-                © 2025 Karlsruhe Institute of Technology (KIT)
+                © {new Date().getFullYear()} Karlsruhe Institute of Technology (KIT)
             </div>
             <div className="grid grid-cols-2 gap-2 truncate"></div>
         </div>
