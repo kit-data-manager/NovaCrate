@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import Markdown from "react-markdown"
-import { Error } from "@/components/error"
+import { Error as ErrorDisplay } from "@/components/error"
 import { FileClock, LoaderCircle } from "lucide-react"
 
 /**
@@ -65,7 +65,11 @@ const useChangelogStore = create<ChangelogStore>()(
     )
 )
 
-const fetcher = (url: string) => fetch(url).then((res) => res.text())
+const fetcher = (url: string) =>
+    fetch(url).then((res) => {
+        if (res.ok) return res.text()
+        else throw new Error(`Failed to fetch changelog: ${res.statusText}`)
+    })
 
 /**
  * Component that displays a changelog button that, when clicked, opens a changelog modal. Automatically stores the last seen version
@@ -157,7 +161,7 @@ export function ChangelogModal() {
                             {separatedText}
                         </Markdown>
                     </div>
-                    <Error error={error} title="Failed to fetch changelog." />
+                    <ErrorDisplay error={error} title="Failed to fetch changelog." />
                 </DialogHeader>
             </DialogContent>
         </Dialog>
