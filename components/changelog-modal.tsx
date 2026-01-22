@@ -32,9 +32,15 @@ interface ChangelogStore {
  * @param currentVersion Semver version in the format d+.d+.d+ (1.5.0 or 20.5000.12, not 1.5.0-beta)
  */
 function isNewerVersion(test: string, currentVersion: string) {
-    const testVersion = test.split(".")
-    const currentVersionParts = currentVersion.split(".")
-    for (let i = 0; i < testVersion.length; i++) {
+    const testVersion = test.split(".").map((n) => parseInt(n))
+    const currentVersionParts = currentVersion.split(".").map((n) => parseInt(n))
+    for (let i = 0; i < 3; i++) {
+        if (Number.isNaN(testVersion[i]) || Number.isNaN(currentVersionParts[i])) {
+            console.error(
+                `Invalid semver version: ${test} (test) or ${currentVersion} (currentVersion)`
+            )
+            return false
+        }
         if (testVersion[i] > currentVersionParts[i]) return true
         if (testVersion[i] < currentVersionParts[i]) return false
     }
