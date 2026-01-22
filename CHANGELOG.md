@@ -7,10 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.7.0] - 2026-01-20
+## [Unreleased]
+
+### Added
+- Added a CHANGELOG.md file to the repository
+- Added a Changelog modal in the main menu of the editor (/editor)
 
 ### Changed
-
 - The landing page has been redesigned to improve the user experience.
 - The design of the editor has been slightly changed, introducing additional spacing and rounded corners.
 
