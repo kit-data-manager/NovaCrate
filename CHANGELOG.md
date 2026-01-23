@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- Include the font (Geist) used in the logo SVG to properly display it on all systems
+
 ## [1.7.0] - 2026-01-22
 
 ### Added
