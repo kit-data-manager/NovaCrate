@@ -39,6 +39,9 @@ import { Footer } from "@/components/footer"
 import { GithubDiscontinuationWarning } from "@/components/github-discontinuation-warning"
 import Image from "next/image"
 import { ChangelogModal } from "@/components/changelog-modal"
+import { Geist } from "next/font/google"
+
+const geist = Geist({ subsets: ["latin"] })
 
 export default function EditorLandingPage() {
     const router = useRouter()
@@ -233,7 +236,7 @@ export default function EditorLandingPage() {
                             alt={"NovaCrate Logo"}
                             width={600}
                             height={195}
-                            className="dark:invert"
+                            className={`dark:invert ${geist.className}`}
                         />
                         <GithubDiscontinuationWarning className="mt-10" />
                     </div>
