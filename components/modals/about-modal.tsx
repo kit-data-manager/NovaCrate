@@ -5,6 +5,9 @@ import { useTheme } from "next-themes"
 import packageJson from "./../../package.json"
 import Link from "next/link"
 import { GITHUB_REPO, LEGALS, PRIVACY_POLICY } from "@/lib/legals"
+import { Geist } from "next/font/google"
+
+const geist = Geist({ subsets: ["latin"] })
 
 export function AboutModal({
     open,
@@ -24,11 +27,13 @@ export function AboutModal({
                     alt={"NovaCrate Logo"}
                     height={150}
                     width={463}
-                    className={"rounded-lg overflow-hidden dark:invert"}
+                    className={`rounded-lg overflow-hidden dark:invert ${geist.className}`}
                 />
                 <div>
                     <div>NovaCrate v{packageJson.version}</div>
-                    <div>Copyright 2026 Karlsruhe Institute of Technology (KIT)</div>
+                    <div>
+                        Copyright {new Date().getFullYear()} Karlsruhe Institute of Technology (KIT)
+                    </div>
                     <div className="my-4 text-sm">
                         NovaCrate is being developed at the Data Exploitation Methods Group of the
                         Scientific Computing Center at Karlsruhe Institute of Technology (KIT).

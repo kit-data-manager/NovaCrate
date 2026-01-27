@@ -29,12 +29,12 @@ export function isReference(value: EntitySinglePropertyTypes): value is IReferen
 }
 
 /**
- * Convert a value to an array. If an array is supplied as the input, it will be returned without changes.
+ * Convert a value to an array. If an array is supplied as the input, a new array will be constructed.
  * @param input
  */
 export function toArray<T>(input: T | T[]): T[] {
     if (Array.isArray(input)) {
-        return input
+        return Array.from(input)
     } else {
         return [input]
     }
