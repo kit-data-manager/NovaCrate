@@ -1,5 +1,5 @@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { ChevronDown, ChevronRight } from "lucide-react"
+import { ChevronDown, ChevronRight, Lightbulb } from "lucide-react"
 import { PropsWithChildren, ReactNode, useCallback, useState } from "react"
 
 export function CollapsibleHint(props: PropsWithChildren<{ title: ReactNode }>) {
@@ -11,13 +11,15 @@ export function CollapsibleHint(props: PropsWithChildren<{ title: ReactNode }>) 
 
     return (
         <Collapsible className="border rounded-lg mb-2" open={isOpen} onOpenChange={onOpenChange}>
-            <CollapsibleTrigger className="p-2 flex items-center w-full">
+            <CollapsibleTrigger className="p-2 flex items-center w-full hover:bg-accent">
                 {isOpen ? (
-                    <ChevronDown className="size-4 mr-2" />
+                    <ChevronDown className="size-4 mr-2 text-muted-foreground" />
                 ) : (
-                    <ChevronRight className="size-4 mr-2" />
+                    <ChevronRight className="size-4 mr-2 text-muted-foreground" />
                 )}
-                <div className="font-medium text-sm grow text-left">{props.title}</div>
+                <div className="font-medium text-sm grow flex items-center">
+                    <Lightbulb className="size-4 mr-2" /> {props.title}
+                </div>
             </CollapsibleTrigger>
             <CollapsibleContent className="p-2 pt-0 ml-6">{props.children}</CollapsibleContent>
         </Collapsible>
