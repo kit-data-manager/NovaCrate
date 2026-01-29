@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a popup that appears after exporting a crate to ask for feedback and show how to cite the editor
   - The feedback popup can be disabled by checking "Don't show again" at the bottom of the popup
 - Added citing guidance to the about modal
+- Added hints about person identifier and organization identifier to the entity creation modal
+
+### Changed
+- Improved explanation of the identifier field during entity creation
+- Hide auto-filled fields like name and path until a file or folder is uploaded during entity creation
+
+### Removed
+- Removed ability to copy the internal crate identifier. This feature was included for the java backend that is not used anymore.
 
 ## [1.7.1] - 2026-01-27
 
