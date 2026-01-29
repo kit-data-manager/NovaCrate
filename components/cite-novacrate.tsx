@@ -19,7 +19,7 @@ export function CiteNovaCrate() {
             <div className="font-bold">Cite NovaCrate</div>
             <Link href={"https://doi.org/10.5281/zenodo.15183573"} target={"_blank"}>
                 <Image
-                    src={"https://zenodo.org/badge/DOI/10.5281/zenodo.18391323.svg"}
+                    src={"https://zenodo.org/badge/DOI/10.5281/zenodo.15183573.svg"}
                     alt={"NovaCrate DOI"}
                     width={200}
                     height={20}
