@@ -14,6 +14,7 @@ import { SettingsModal } from "@/components/modals/settings/settings-modal"
 import { DocumentationModal } from "@/components/modals/documentation-modal"
 import { AutoReference } from "@/lib/utils"
 import { AboutModal } from "@/components/modals/about-modal"
+import { CrateExportedModal } from "@/components/modals/crate-exported-modal"
 
 export interface IGlobalModalContext {
     showCreateEntityModal(
@@ -35,6 +36,7 @@ export interface IGlobalModalContext {
     showSettingsModal(): void
     showDocumentationModal(): void
     showAboutModal(): void
+    showCrateExportedModal(): void
 }
 
 export type AddPropertyModalCallback = (
@@ -52,7 +54,8 @@ export const GlobalModalContext = createContext<IGlobalModalContext>({
     showSaveAsModal() {},
     showSettingsModal() {},
     showDocumentationModal() {},
-    showAboutModal() {}
+    showAboutModal() {},
+    showCrateExportedModal() {}
 })
 
 export function GlobalModalProvider(props: PropsWithChildren) {
@@ -100,6 +103,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     const [settingsModalState, setSettingsModalState] = useState({ open: false })
     const [documentationModalState, setDocumentationModalState] = useState({ open: false })
     const [aboutModalState, setAboutModalState] = useState({ open: false })
+    const [crateExportedModalState, setCrateExportedModalState] = useState({ open: false })
 
     const showCreateEntityModal = useCallback(
         (
@@ -175,6 +179,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         setDocumentationModalState({ open: true })
     }, [])
 
+    const showCrateExportedModal = useCallback(() => {
+        setCrateExportedModalState({ open: true })
+    }, [])
+
     const showAboutModal = useCallback(() => {
         setAboutModalState({ open: true })
     }, [])
@@ -230,6 +238,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         setAboutModalState({ open })
     }, [])
 
+    const onCrateExportedModalOpenChange = useCallback((open: boolean) => {
+        setCrateExportedModalState({ open })
+    }, [])
+
     const onEntityCreated = useCallback(
         (entity?: IEntity) => {
             setCreateEntityModalState({
@@ -252,7 +264,8 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 showSaveAsModal,
                 showSettingsModal,
                 showDocumentationModal,
-                showAboutModal
+                showAboutModal,
+                showCrateExportedModal
             }}
         >
             <CreateEntityModal
@@ -304,6 +317,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 onOpenChange={onDocumentationModalOpenChange}
             />
             <AboutModal open={aboutModalState.open} onOpenChange={onAboutModalOpenChange} />
+            <CrateExportedModal
+                open={crateExportedModalState.open}
+                onOpenChange={onCrateExportedModalOpenChange}
+            />
 
             {props.children}
         </GlobalModalContext.Provider>

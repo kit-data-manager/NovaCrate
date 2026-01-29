@@ -6,6 +6,8 @@ import packageJson from "./../../package.json"
 import Link from "next/link"
 import { GITHUB_REPO, LEGALS, PRIVACY_POLICY } from "@/lib/legals"
 import { Geist } from "next/font/google"
+import { CiteNovaCrate } from "@/components/cite-novacrate"
+import { Button } from "@/components/ui/button"
 
 const geist = Geist({ subsets: ["latin"] })
 
@@ -34,31 +36,23 @@ export function AboutModal({
                     <div>
                         Copyright {new Date().getFullYear()} Karlsruhe Institute of Technology (KIT)
                     </div>
-                    <div className="my-4 text-sm">
+                    <div className="mt-4 text-sm">
                         NovaCrate is being developed at the Data Exploitation Methods Group of the
                         Scientific Computing Center at Karlsruhe Institute of Technology (KIT).
-                        <br />
-                        <br />
-                        Author:{" "}
-                        <Link
-                            className={"hover:underline"}
-                            href={"https://www.scc.kit.edu/personen/christopher.raquet.php"}
-                            target={"_blank"}
-                        >
-                            Christopher Raquet
-                        </Link>
-                        <br />
                     </div>
+                </div>
+                <CiteNovaCrate />
+                <div className="flex gap-2 justify-center">
                     <Link className="hover:underline" href={GITHUB_REPO} target={"_blank"}>
-                        GitHub Repository
+                        <Button variant="outline">NovaCrate on GitHub</Button>
                     </Link>
                     <br />
                     <Link className="hover:underline" href={PRIVACY_POLICY} target={"_blank"}>
-                        Privacy Policy
+                        <Button variant={"outline"}>Privacy Policy</Button>
                     </Link>
                     <br />
                     <Link className="hover:underline" href={LEGALS} target={"_blank"}>
-                        Legals
+                        <Button variant={"outline"}>Legals</Button>
                     </Link>
                 </div>
             </DialogContent>
