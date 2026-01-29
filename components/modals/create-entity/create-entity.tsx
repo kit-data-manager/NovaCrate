@@ -424,8 +424,9 @@ export function CreateEntity({
                     </Label>
                     <Input
                         placeholder={
-                            autoId ||
-                            (externalResource ? "https://..." : "Unique and persistent identifier")
+                            externalResource
+                                ? "https://..."
+                                : autoId || "Unique and persistent identifier"
                         }
                         value={identifier}
                         onChange={onIdentifierChange}
