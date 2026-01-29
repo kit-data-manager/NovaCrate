@@ -77,7 +77,7 @@ function EntityMenu() {
 export function NavHeader() {
     const theme = useTheme()
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
-    const { showCreateEntityModal } = useContext(GlobalModalContext)
+    const { showCreateEntityModal, showCrateExportedModal } = useContext(GlobalModalContext)
     const {
         serviceProvider,
         crateId,
@@ -127,21 +127,24 @@ export function NavHeader() {
 
     const downloadCrateZip = useCallback(() => {
         if (serviceProvider && crateId) {
+            showCrateExportedModal()
             serviceProvider.downloadCrateZip(crateId).then()
         }
-    }, [crateId, serviceProvider])
+    }, [crateId, serviceProvider, showCrateExportedModal])
 
     const downloadCrateEln = useCallback(() => {
         if (serviceProvider && crateId) {
+            showCrateExportedModal()
             serviceProvider.downloadCrateEln(crateId).then()
         }
-    }, [crateId, serviceProvider])
+    }, [crateId, serviceProvider, showCrateExportedModal])
 
     const downloadRoCrateMetadataFile = useCallback(() => {
         if (serviceProvider && crateId) {
+            showCrateExportedModal()
             serviceProvider.downloadRoCrateMetadataJSON(crateId).then()
         }
-    }, [crateId, serviceProvider])
+    }, [crateId, serviceProvider, showCrateExportedModal])
 
     const crateName = useCrateName()
     const searchAction = useAction("editor.global-search")

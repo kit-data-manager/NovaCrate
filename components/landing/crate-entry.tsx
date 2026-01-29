@@ -1,4 +1,12 @@
-import { Copy, Download, EllipsisVertical, FileIcon, FolderArchive, Trash } from "lucide-react"
+import {
+    Copy,
+    Download,
+    EllipsisVertical,
+    FileIcon,
+    FolderArchive,
+    Notebook,
+    Trash
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
@@ -17,6 +25,7 @@ import {
 import { Error } from "@/components/error"
 import { DateTime } from "luxon"
 import { useCopyToClipboard } from "usehooks-ts"
+import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 
 export interface CrateDetails {
     name?: string
@@ -35,6 +44,7 @@ export function CrateEntry({
     search: string
 }) {
     const { serviceProvider } = useContext(CrateDataContext)
+    const { showCrateExportedModal } = useContext(GlobalModalContext)
     const [crateDetails, setCrateDetails] = useState<CrateDetails | undefined>()
     const [error, setError] = useState<unknown>()
     const [, copyText] = useCopyToClipboard()
@@ -135,6 +145,7 @@ export function CrateEntry({
                                 <DropdownMenuItem
                                     onClick={() => {
                                         if (serviceProvider) {
+                                            showCrateExportedModal()
                                             serviceProvider.downloadCrateZip(crateId).then()
                                         }
                                     }}
@@ -144,6 +155,17 @@ export function CrateEntry({
                                 <DropdownMenuItem
                                     onClick={() => {
                                         if (serviceProvider) {
+                                            showCrateExportedModal()
+                                            serviceProvider.downloadCrateEln(crateId).then()
+                                        }
+                                    }}
+                                >
+                                    <Notebook className="size-4 mr-2" /> As ELN
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        if (serviceProvider) {
+                                            showCrateExportedModal()
                                             serviceProvider
                                                 .downloadRoCrateMetadataJSON(crateId)
                                                 .then()
