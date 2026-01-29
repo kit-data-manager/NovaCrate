@@ -1,14 +1,6 @@
-import {
-    Copy,
-    Download,
-    EllipsisVertical,
-    FileIcon,
-    FolderArchive,
-    Notebook,
-    Trash
-} from "lucide-react"
+import { Download, EllipsisVertical, FileIcon, FolderArchive, Notebook, Trash } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { useContext, useEffect, useMemo, useState } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { getEntityDisplayName } from "@/lib/utils"
 import { crateDetailsKey } from "@/components/landing/util"
@@ -24,7 +16,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Error } from "@/components/error"
 import { DateTime } from "luxon"
-import { useCopyToClipboard } from "usehooks-ts"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 
 export interface CrateDetails {
@@ -47,7 +38,6 @@ export function CrateEntry({
     const { showCrateExportedModal } = useContext(GlobalModalContext)
     const [crateDetails, setCrateDetails] = useState<CrateDetails | undefined>()
     const [error, setError] = useState<unknown>()
-    const [, copyText] = useCopyToClipboard()
 
     useEffect(() => {
         const content = window.localStorage.getItem(crateDetailsKey(crateId))
@@ -87,10 +77,6 @@ export function CrateEntry({
                 })
         }
     }, [serviceProvider, crateId])
-
-    const copyInternalID = useCallback(() => {
-        copyText(crateId).then()
-    }, [copyText, crateId])
 
     const title = useMemo(() => {
         if (crateDetails && crateDetails.name) {
