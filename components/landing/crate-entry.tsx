@@ -176,9 +176,6 @@ export function CrateEntry({
                                 </DropdownMenuItem>
                             </DropdownMenuSubContent>
                         </DropdownMenuSub>
-                        <DropdownMenuItem onClick={copyInternalID}>
-                            <Copy className="size-4 mr-2" /> Copy internal Identifier
-                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             variant={"destructive"}
