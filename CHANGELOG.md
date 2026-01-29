@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The feedback popup can be disabled by checking "Don't show again" at the bottom of the popup
 - Added citing guidance to the about modal
 - Added hints about person identifier and organization identifier to the entity creation modal
+- Added "light rays" animation to landing page to make it less boring
 
 ### Changed
 - Improved explanation of the identifier field during entity creation

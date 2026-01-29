@@ -7,12 +7,14 @@ import Link from "next/link"
 import { ArrowDown, ArrowRight, Moon, PackageIcon, Sun } from "lucide-react"
 import { Footer } from "@/components/footer"
 import { useTheme } from "next-themes"
+import { LightRays } from "@/components/ui/light-rays"
 
 export default function Home() {
     const theme = useTheme()
 
     return (
         <div>
+            <LightRays />
             <div className="grid grid-cols-[1fr_minmax(400px,1600px)_1fr] max-w-full mb-16">
                 <Button
                     size="lg"
