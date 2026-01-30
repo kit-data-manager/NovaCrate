@@ -11,6 +11,7 @@ import {
     SCHEMA_ORG_TIME
 } from "./constants"
 import { ValidationResult } from "@/lib/validation/validation-result"
+import { PropertyValueUtils } from "./property-value-utils"
 
 /**
  * Utility from shadcn/ui to merge multiple className strings into one
@@ -372,6 +373,18 @@ export function sortValidationResultByName(a: ValidationResult, b: ValidationRes
     const strA = `${a.propertyName ?? "undefined"}|${a.propertyIndex ?? ""}|${a.entityId ?? ""}|${a.resultTitle}`
     const strB = `${b.propertyName ?? "undefined"}|${b.propertyIndex ?? ""}|${b.entityId ?? ""}|${b.resultTitle}`
     return strA.localeCompare(strB)
+}
+
+export function getRootEntityID(entities: IEntity[] | Map<string, IEntity>) {
+    const meta = Array.isArray(entities)
+        ? entities.find((e) => e["@id"] === "ro-crate-metadata.json")
+        : entities.get("ro-crate-metadata.json")
+    const legacy = Array.isArray(entities)
+        ? entities.find((e) => e["@id"] === "ro-crate-metadata.jsonld")
+        : entities.get("ro-crate-metadata.jsonld")
+    if (meta && "about" in meta && PropertyValueUtils.isRef(meta.about)) return meta.about["@id"]
+    if (legacy && "about" in legacy && PropertyValueUtils.isRef(legacy.about))
+        return legacy.about["@id"]
 }
 
 export interface AutoReference {

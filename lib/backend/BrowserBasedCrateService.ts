@@ -4,7 +4,13 @@ import { opfsFunctions } from "@/lib/opfs-worker/functions"
 import fileDownload from "js-file-download"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { CrateServiceBase } from "@/lib/backend/CrateServiceBase"
-import { changeEntityId, encodeFilePath, isDataEntity, isFolderDataEntity } from "@/lib/utils"
+import {
+    changeEntityId,
+    encodeFilePath,
+    getRootEntityID,
+    isDataEntity,
+    isFolderDataEntity
+} from "@/lib/utils"
 import * as z from "zod/mini"
 
 const template: (name: string, description: string) => ICrate = (
@@ -112,6 +118,20 @@ export class BrowserBasedCrateService extends CrateServiceBase {
 
         await this.saveRoCrateMetadataJSON(id, crate)
         return id
+    }
+
+    async duplicateCrate(crateId: string, newName: string): Promise<string> {
+        const newCrateID = await this.worker.execute("duplicateCrate", crateId)
+        const newCrate = await this.getCrate(newCrateID)
+        const rootEntityID = getRootEntityID(newCrate["@graph"])
+
+        if (rootEntityID) {
+            const rootEntity = newCrate["@graph"].find((e) => e["@id"] === rootEntityID)!
+            rootEntity.name = newName
+            await this.updateEntity(newCrateID, rootEntity)
+        }
+
+        return newCrateID
     }
 
     async createEntity(crateId: string, entityData: IEntity, overwrite = false) {

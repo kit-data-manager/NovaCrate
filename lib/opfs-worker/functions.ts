@@ -210,6 +210,20 @@ export async function createCrateFromZip(zip: Blob) {
     }
 }
 
+export async function duplicateCrate(crateId: string) {
+    const crateDirExists = await fs.exists(resolveCratePath(crateId, crateId))
+    if (!crateDirExists.isOk()) throw crateDirExists.unwrapErr()
+    else if (!crateDirExists.unwrap()) {
+        throw `Crate with id ${crateId} does not exist, cannot duplicate`
+    } else {
+        const newID = crypto.randomUUID()
+
+        const result = await fs.copy(resolveCratePath(crateId), resolveCratePath(newID))
+        if (!result.isOk()) throw result.unwrapErr()
+        else return newID
+    }
+}
+
 export async function getStorageInfo(): Promise<{
     usedSpace: number
     totalSpace: number
@@ -234,5 +248,6 @@ export const opfsFunctions = {
     deleteFileOrFolder,
     moveFileOrFolder,
     createCrateEln,
-    createFolder
+    createFolder,
+    duplicateCrate
 }

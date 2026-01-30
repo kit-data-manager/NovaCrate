@@ -1,6 +1,14 @@
-import { Download, EllipsisVertical, FileIcon, FolderArchive, Notebook, Trash } from "lucide-react"
+import {
+    Download,
+    EllipsisVertical,
+    FileIcon,
+    FolderArchive,
+    Notebook,
+    PackagePlus,
+    Trash
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useContext, useEffect, useMemo, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { getEntityDisplayName } from "@/lib/utils"
 import { crateDetailsKey } from "@/components/landing/util"
@@ -86,6 +94,14 @@ export function CrateEntry({
         }
     }, [crateDetails, crateId])
 
+    const useAsTemplate = useCallback(async () => {
+        const newCrateID = await serviceProvider?.duplicateCrate(
+            crateId,
+            "Copy of " + (crateDetails?.name ?? crateId)
+        )
+        if (newCrateID) openEditor(newCrateID)
+    }, [crateDetails?.name, crateId, openEditor, serviceProvider])
+
     if (search && !crateDetails) return null
     if (search && !crateDetails?.name?.toUpperCase().includes(search.toUpperCase())) return null
 
@@ -123,6 +139,9 @@ export function CrateEntry({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
+                        <DropdownMenuItem onClick={useAsTemplate}>
+                            <PackagePlus className="size-4 mr-2" /> Use as Template
+                        </DropdownMenuItem>
                         <DropdownMenuSub>
                             <DropdownMenuSubTrigger>
                                 <Download className="size-4 mr-2" /> Export...
