@@ -7,13 +7,15 @@ import Link from "next/link"
 import { ArrowDown, ArrowRight, Moon, PackageIcon, Sun } from "lucide-react"
 import { Footer } from "@/components/footer"
 import { useTheme } from "next-themes"
+import { LightRays } from "@/components/ui/light-rays"
 
 export default function Home() {
     const theme = useTheme()
 
     return (
         <div>
-            <div className="grid grid-cols-[1fr_max(1600px)_1fr] mb-16">
+            <LightRays />
+            <div className="grid grid-cols-[1fr_minmax(400px,1600px)_1fr] max-w-full mb-16">
                 <Button
                     size="lg"
                     variant="link"
@@ -29,7 +31,7 @@ export default function Home() {
                         <Moon className="w-6 h-6 mr-3 shrink-0" suppressHydrationWarning />
                     )}
                 </Button>
-                <div className="col-start-2 h-[calc(100vh-300px)] min-h-[300px] flex flex-col justify-center items-center gap-4">
+                <div className="col-start-2 h-[calc(100vh-300px)] min-h-75 flex flex-col justify-center items-center gap-4">
                     <h1 className="flex items-center gap-4 text-6xl font-extrabold">
                         <PackageIcon className="h-full w-auto aspect-square" /> NovaCrate
                     </h1>
@@ -51,8 +53,8 @@ export default function Home() {
                     </div>
                     <ShowcaseBlock
                         title={"Editor"}
-                        imgLight={"/img/editor-light2.png"}
-                        imgDark={"/img/editor-dark2.png"}
+                        imgLight={"/img/editor-light3.png"}
+                        imgDark={"/img/editor-dark3.png"}
                         alt={"NovaCrate Editor capabilities showcase"}
                         tip={
                             "While working on an entity, NovaCrate will show you which properties have been added, removed or modified using colored highlights."
@@ -67,8 +69,8 @@ export default function Home() {
                     </ShowcaseBlock>
                     <ShowcaseBlock
                         title={"File Explorer"}
-                        imgLight={"/img/file-explorer-light2.png"}
-                        imgDark={"/img/file-explorer-dark2.png"}
+                        imgLight={"/img/file-explorer-light3.png"}
+                        imgDark={"/img/file-explorer-dark3.png"}
                         alt={"NovaCrate File Explorer capabilities showcase"}
                         rtl
                         tip={
@@ -81,8 +83,8 @@ export default function Home() {
                     </ShowcaseBlock>
                     <ShowcaseBlock
                         title={"Graph"}
-                        imgLight={"/img/graph-light2.png"}
-                        imgDark={"/img/graph-dark2.png"}
+                        imgLight={"/img/graph-light3.png"}
+                        imgDark={"/img/graph-dark3.png"}
                         alt={"NovaCrate Graph capabilities showcase"}
                         tip={
                             "You can drag-and-drop new connections between entities or remove existing ones directly in the graph."
@@ -117,8 +119,8 @@ export default function Home() {
                     </ShowcaseBlock>
                     <ShowcaseBlock
                         title={"Configuration"}
-                        imgLight={"/img/settings-light2.png"}
-                        imgDark={"/img/settings-dark.png"}
+                        imgLight={"/img/settings-light3.png"}
+                        imgDark={"/img/settings-dark3.png"}
                         tip={"Schemas are loaded on-demand, only when they are needed."}
                         alt={"NovaCrate Configuration capabilities showcase"}
                     >

@@ -3,7 +3,6 @@
 import {
     ChevronDown,
     CircleAlert,
-    Copy,
     Download,
     File,
     FileUp,
@@ -33,7 +32,7 @@ import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useAction, useCrateName, useCurrentEntity } from "@/lib/hooks"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useCopyToClipboard, useInterval } from "usehooks-ts"
+import { useInterval } from "usehooks-ts"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getEntityDisplayName } from "@/lib/utils"
 import { ActionButton, ActionMenubarItem } from "@/components/actions/action-buttons"
@@ -78,7 +77,7 @@ function EntityMenu() {
 export function NavHeader() {
     const theme = useTheme()
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
-    const { showCreateEntityModal } = useContext(GlobalModalContext)
+    const { showCreateEntityModal, showCrateExportedModal } = useContext(GlobalModalContext)
     const {
         serviceProvider,
         crateId,
@@ -90,7 +89,6 @@ export function NavHeader() {
         healthTestError
     } = useContext(CrateDataContext)
     // const { undo, redo } = useEditorState.temporal.getState()
-    const [, copyFn] = useCopyToClipboard()
     const [schemaIssues, setSchemaIssues] = useState<Map<string, unknown>>(new Map())
 
     const schemaWorker = useContext(SchemaWorker)
@@ -108,13 +106,6 @@ export function NavHeader() {
     }, [schemaWorker.worker])
 
     useInterval(updateSchemaWorkerIssues, 2000)
-
-    const copy = useCallback(
-        (text: string) => {
-            copyFn(text).catch((e) => console.error("Failed to copy to clipboard", e))
-        },
-        [copyFn]
-    )
 
     const showUploadFolderModal = useCallback(() => {
         showCreateEntityModal([
@@ -136,21 +127,24 @@ export function NavHeader() {
 
     const downloadCrateZip = useCallback(() => {
         if (serviceProvider && crateId) {
+            showCrateExportedModal()
             serviceProvider.downloadCrateZip(crateId).then()
         }
-    }, [crateId, serviceProvider])
+    }, [crateId, serviceProvider, showCrateExportedModal])
 
     const downloadCrateEln = useCallback(() => {
         if (serviceProvider && crateId) {
+            showCrateExportedModal()
             serviceProvider.downloadCrateEln(crateId).then()
         }
-    }, [crateId, serviceProvider])
+    }, [crateId, serviceProvider, showCrateExportedModal])
 
     const downloadRoCrateMetadataFile = useCallback(() => {
         if (serviceProvider && crateId) {
+            showCrateExportedModal()
             serviceProvider.downloadRoCrateMetadataJSON(crateId).then()
         }
-    }, [crateId, serviceProvider])
+    }, [crateId, serviceProvider, showCrateExportedModal])
 
     const crateName = useCrateName()
     const searchAction = useAction("editor.global-search")
@@ -225,19 +219,6 @@ export function NavHeader() {
                         <MenubarSeparator />
                         <MenubarSub>
                             <MenubarSubTrigger>
-                                <Copy className="size-4" /> Copy Crate...
-                            </MenubarSubTrigger>
-                            <MenubarSubContent>
-                                <MenubarItem onClick={() => copy(crateId || "")}>
-                                    <Copy className="size-4" /> Copy Crate ID
-                                </MenubarItem>
-                                <MenubarItem onClick={() => copy(crateName)}>
-                                    <Copy className="size-4" /> Copy Crate Name
-                                </MenubarItem>
-                            </MenubarSubContent>
-                        </MenubarSub>
-                        <MenubarSub>
-                            <MenubarSubTrigger>
                                 <Download className="size-4" /> Export
                             </MenubarSubTrigger>
                             <MenubarSubContent>
@@ -259,9 +240,6 @@ export function NavHeader() {
             </Menubar>
         )
     }, [
-        copy,
-        crateId,
-        crateName,
         downloadCrateEln,
         downloadCrateZip,
         downloadRoCrateMetadataFile,
