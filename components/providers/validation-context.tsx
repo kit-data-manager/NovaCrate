@@ -1,4 +1,12 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useRef } from "react"
+import {
+    createContext,
+    PropsWithChildren,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState
+} from "react"
 import { ValidationProvider } from "@/lib/validation/validation-provider"
 import { useEditorState } from "@/lib/state/editor-state"
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
@@ -28,24 +36,23 @@ export function ValidationContextProvider({ children }: PropsWithChildren) {
         }
     }, [crateDataProvider, editorState, schemaWorker])
 
-    const validation = useRef<ValidationProvider>(null!)
-    if (!validation.current) {
-        validation.current = new ValidationProvider(ctx)
+    const [validation] = useState(new ValidationProvider(ctx))
 
+    if (validation.validators.length === 0) {
         const specValidators = makeSpecificationValidators()
         for (const validator of specValidators) {
-            validation.current.addValidator(validator)
+            validation.addValidator(validator)
         }
-        validation.current.addValidator(makeBaseValidator())
+        validation.addValidator(makeBaseValidator())
     }
 
     useEffect(() => {
-        validation.current.updateContext(ctx)
-    }, [ctx])
+        validation.updateContext(ctx)
+    }, [ctx, validation])
 
     const value = useMemo(() => {
-        return { validation: validation.current }
-    }, [])
+        return { validation: validation }
+    }, [validation])
 
     return <ValidationContext.Provider value={value}>{children}</ValidationContext.Provider>
 }

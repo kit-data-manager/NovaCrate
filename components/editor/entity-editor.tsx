@@ -114,9 +114,11 @@ export function EntityEditor({
     const prevProperties = useRef<Map<string, EntityEditorProperty>>(new Map())
     const properties = useMemo(() => {
         if (!entity) return []
+        // eslint-disable-next-line react-hooks/refs
         const result = mapEntityToProperties(entity, prevProperties.current, originalEntity).filter(
             (e) => e.propertyName !== "@reverse"
         )
+        // eslint-disable-next-line react-hooks/refs
         prevProperties.current = new Map(result.map((entry) => [entry.propertyName, entry]))
         return result
     }, [entity, originalEntity])
