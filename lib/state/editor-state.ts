@@ -367,7 +367,7 @@ export const editorState = createWithEqualityFn<EditorState>()(
                 const target = getState().entities.get(entityId)
                 if (target && !(propertyName in target)) {
                     setState((state) => {
-                        state.entities.get(entityId)![propertyName] = value || []
+                        state.entities.get(entityId)![propertyName] = value ?? []
                     })
                 }
             },
