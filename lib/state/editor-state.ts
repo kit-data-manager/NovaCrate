@@ -225,7 +225,6 @@ export const editorState = createWithEqualityFn<EditorState>()(
             initialCrateContext: new CrateContext(),
             crateContext: new CrateContext(),
             crateContextReady: false,
-            contextUpdateSeq: 0,
             initialEntities: new Map<string, IEntity>(),
             entities: new Map<string, IEntity>(),
 
