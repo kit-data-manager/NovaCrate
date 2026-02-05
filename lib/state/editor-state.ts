@@ -213,12 +213,19 @@ function setPropertyValue(
     }
 }
 
+/**
+ * Monotonic counter to prevent out-of-order async context updates
+ */
+let contextUpdateSeq = 0
+let initialContextUpdateSeq = 0
+
 export const editorState = createWithEqualityFn<EditorState>()(
     ssrSafe(
         immer<EditorState>((setState, getState) => ({
             initialCrateContext: new CrateContext(),
             crateContext: new CrateContext(),
             crateContextReady: false,
+            contextUpdateSeq: 0,
             initialEntities: new Map<string, IEntity>(),
             entities: new Map<string, IEntity>(),
 
@@ -226,11 +233,14 @@ export const editorState = createWithEqualityFn<EditorState>()(
                 if (getState().crateContextReady && getState().crateContext.isSameAs(crateContext))
                     return
 
+                const seq = ++contextUpdateSeq
+
                 setState((s) => {
                     s.crateContextReady = false
                 })
                 const newContext = new CrateContext()
                 newContext.setup(crateContext).then(() => {
+                    if (contextUpdateSeq !== seq) return
                     setState((state) => {
                         state.crateContextReady = true
                         state.crateContext = newContext
@@ -241,8 +251,11 @@ export const editorState = createWithEqualityFn<EditorState>()(
             updateInitialCrateContext(crateContext: CrateContextType) {
                 if (getState().initialCrateContext.isSameAs(crateContext)) return
 
+                const seq = ++initialContextUpdateSeq
+
                 const newContext = new CrateContext()
                 newContext.setup(crateContext).then(() => {
+                    if (initialContextUpdateSeq !== seq) return
                     setState((state) => {
                         state.initialCrateContext = newContext
                     })
