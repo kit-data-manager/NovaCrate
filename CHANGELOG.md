@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added hints about person identifier and organization identifier to the entity creation modal
 - Added "light rays" animation to landing page to make it less boring
 
+### Fixed
+- Internal optimizations
+
 ### Changed
 - Improved explanation of the identifier field during entity creation
 - Hide auto-filled fields like name and path until a file or folder is uploaded during entity creation
