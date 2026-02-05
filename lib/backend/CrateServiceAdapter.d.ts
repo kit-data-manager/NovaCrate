@@ -57,6 +57,13 @@ declare interface CrateServiceAdapter {
     ): Promise<string>
 
     /**
+     * Duplicate an existing crate. The new crate will have a new ID and will contain a copy of all files and metadata.
+     * @param crateId ID of the existing crate to duplicate
+     * @param newName New name for the duplicated crate
+     */
+    duplicateCrate(crateId: string, newName: string): Promise<string>
+
+    /**
      * Return the entire ro-crate-metadata.json fully flattened as a JavaScript object
      * @param id ID of the target crate
      * @returns Promise - resolves on success
