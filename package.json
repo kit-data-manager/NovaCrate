@@ -61,7 +61,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
-    "react-resizable-panels": "^3.0.1",
+    "react-resizable-panels": "^4.0.0",
     "reactflow": "^11.11.3",
     "ro-crate": "^3.4.6",
     "ro-crate-html": "^0.1.5",
