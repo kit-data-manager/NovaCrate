@@ -94,7 +94,7 @@ export function CrateEntry({
         }
     }, [crateDetails, crateId])
 
-    const useAsTemplate = useCallback(async () => {
+    const createCrateCopy = useCallback(async () => {
         const newCrateID = await serviceProvider?.duplicateCrate(
             crateId,
             "Copy of " + (crateDetails?.name ?? crateId)
@@ -139,8 +139,8 @@ export function CrateEntry({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem onClick={useAsTemplate}>
-                            <PackagePlus className="size-4 mr-2" /> Use as Template
+                        <DropdownMenuItem onClick={createCrateCopy}>
+                            <PackagePlus className="size-4 mr-2" /> Create a Copy
                         </DropdownMenuItem>
                         <DropdownMenuSub>
                             <DropdownMenuSubTrigger>
