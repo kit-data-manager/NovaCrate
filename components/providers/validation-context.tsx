@@ -1,12 +1,4 @@
-import {
-    createContext,
-    PropsWithChildren,
-    useContext,
-    useEffect,
-    useMemo,
-    useRef,
-    useState
-} from "react"
+import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from "react"
 import { ValidationProvider } from "@/lib/validation/validation-provider"
 import { useEditorState } from "@/lib/state/editor-state"
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
@@ -36,15 +28,15 @@ export function ValidationContextProvider({ children }: PropsWithChildren) {
         }
     }, [crateDataProvider, editorState, schemaWorker])
 
-    const [validation] = useState(new ValidationProvider(ctx))
-
-    if (validation.validators.length === 0) {
+    const [validation] = useState(() => {
+        const validation = new ValidationProvider(ctx)
         const specValidators = makeSpecificationValidators()
         for (const validator of specValidators) {
             validation.addValidator(validator)
         }
         validation.addValidator(makeBaseValidator())
-    }
+        return validation
+    })
 
     useEffect(() => {
         validation.updateContext(ctx)
