@@ -94,12 +94,17 @@ export function CrateEntry({
         }
     }, [crateDetails, crateId])
 
+    const [createCrateCopyError, setCreateCrateCopyError] = useState<unknown>(undefined)
     const createCrateCopy = useCallback(async () => {
-        const newCrateID = await serviceProvider?.duplicateCrate(
-            crateId,
-            "Copy of " + (crateDetails?.name ?? crateId)
-        )
-        if (newCrateID) openEditor(newCrateID)
+        try {
+            const newCrateID = await serviceProvider?.duplicateCrate(
+                crateId,
+                "Copy of " + (crateDetails?.name ?? crateId)
+            )
+            if (newCrateID) openEditor(newCrateID)
+        } catch (e) {
+            setCreateCrateCopyError(e)
+        }
     }, [crateDetails?.name, crateId, openEditor, serviceProvider])
 
     if (search && !crateDetails) return null
@@ -114,6 +119,7 @@ export function CrateEntry({
                     error={error}
                     warn={!!(crateDetails && crateDetails.name)}
                 />
+                <Error title="Could not create a copy of this crate" error={createCrateCopyError} />
             </div>
             <div className="flex items-center text-muted-foreground text-sm">
                 {crateDetails && crateDetails.lastOpened
