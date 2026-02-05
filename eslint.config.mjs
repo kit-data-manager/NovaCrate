@@ -16,7 +16,8 @@ const eslintConfig = defineConfig([
         {
             rules: {
                 "react-hooks/refs": "warn",
-                "react-hooks/set-state-in-effect": "off"
+                "react-hooks/set-state-in-effect": "off",
+                "react-hooks/preserve-manual-memoization": "off"
             }
         }
     ]

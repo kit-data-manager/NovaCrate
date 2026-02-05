@@ -14,17 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The feedback popup can be disabled by checking "Don't show again" at the bottom of the popup
 - Added citing guidance to the about modal
 - Added hints about person identifier and organization identifier to the entity creation modal
-- Added "light rays" animation to landing page to make it less boring
+- Added "light rays" animation to the landing page to make it less boring
+- Added a "Use as Template" button to the main menu for duplicating crates and using them as a template for a new crate
 
 ### Fixed
 - Internal optimizations
 
 ### Changed
 - Improved explanation of the identifier field during entity creation
-- Hide auto-filled fields like name and path until a file or folder is uploaded during entity creation
+- Hide autofilled fields like name and path until a file or folder is uploaded during entity creation
 
 ### Removed
-- Removed ability to copy the internal crate identifier. This feature was included for the java backend that is not used anymore.
+- Removed the ability to copy the internal crate identifier. This feature was included for the java backend not used anymore.
 
 ## [1.7.1] - 2026-01-27
 

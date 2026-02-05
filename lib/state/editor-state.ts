@@ -1,11 +1,10 @@
 import { immer } from "zustand/middleware/immer"
 import { Draft, enableMapSet } from "immer"
-import { AutoReference, Diff, isEntityEqual } from "@/lib/utils"
+import { AutoReference, Diff, getRootEntityID, isEntityEqual } from "@/lib/utils"
 import { CrateContext } from "@/lib/crate-context"
 import { createWithEqualityFn } from "zustand/traditional"
 import { useStore } from "zustand"
 import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
-import { PropertyValueUtils } from "@/lib/property-value-utils"
 import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 
 enableMapSet()
@@ -298,13 +297,8 @@ export const editorState = createWithEqualityFn<EditorState>()(
             },
 
             getRootEntityId(): string | undefined {
-                const entities = getState().entities
-                const meta = entities.get("ro-crate-metadata.json")
-                const legacy = entities.get("ro-crate-metadata.jsonld")
-                if (meta && "about" in meta && PropertyValueUtils.isRef(meta.about))
-                    return meta.about["@id"]
-                if (legacy && "about" in legacy && PropertyValueUtils.isRef(legacy.about))
-                    return legacy.about["@id"]
+                return getRootEntityID(getState().entities)
+
             },
 
             getChangedEntities(): IEntity[] {

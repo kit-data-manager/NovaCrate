@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npm-run-all --parallel dev-next dev-webworker",
-    "dev-next": "next dev --webpack",
+    "dev-next": "next dev --webpack -p 3020",
     "dev-webworker": "webpack --config webpack.config.webworker.js --mode=development --watch",
     "build": "npm-run-all --parallel build-next build-webworker",
     "build-next": "next build --webpack",
@@ -45,7 +45,7 @@
     "clsx": "^2.1.0",
     "cmdk": "^1.1.1",
     "dagre": "^0.8.5",
-    "happy-opfs": "file:happy-opfs-1.8.4.tgz",
+    "happy-opfs": "^2.0.2",
     "immer": "^11.0.0",
     "js-file-download": "^0.4.12",
     "jszip": "^3.10.1",

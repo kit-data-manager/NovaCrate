@@ -86,10 +86,10 @@ export async function moveFileOrFolder(crateId: string, filePath: string, newFil
 
 export async function getCrateDirContents(crateId: string) {
     // First, check if crate storage dir exists and create it if not
-    const crateDirExists = await fs.exists(resolveCratePath(crateId, crateId))
+    const crateDirExists = await fs.exists(resolveCratePath(crateId))
     if (!crateDirExists.isOk()) throw crateDirExists.unwrapErr()
     else if (!crateDirExists.unwrap()) {
-        const mkdirResult = await fs.mkdir(resolveCratePath(crateId, crateId))
+        const mkdirResult = await fs.mkdir(resolveCratePath(crateId))
         if (!mkdirResult.isOk()) throw mkdirResult.unwrapErr()
     }
 
@@ -100,7 +100,6 @@ export async function getCrateDirContents(crateId: string) {
     const contents: string[] = []
 
     for await (const entry of iterator) {
-        if (entry.path === crateId) continue
         if (entry.handle.kind === "directory") {
             contents.push(entry.path + "/")
         } else {
@@ -210,6 +209,20 @@ export async function createCrateFromZip(zip: Blob) {
     }
 }
 
+export async function duplicateCrate(crateId: string) {
+    const crateDirExists = await fs.exists(resolveCratePath(crateId))
+    if (!crateDirExists.isOk()) throw crateDirExists.unwrapErr()
+    else if (!crateDirExists.unwrap()) {
+        throw `Crate with id ${crateId} does not exist, cannot duplicate`
+    } else {
+        const newID = crypto.randomUUID()
+
+        const result = await fs.copy(resolveCratePath(crateId), resolveCratePath(newID))
+        if (!result.isOk()) throw result.unwrapErr()
+        else return newID
+    }
+}
+
 export async function getStorageInfo(): Promise<{
     usedSpace: number
     totalSpace: number
@@ -234,5 +247,6 @@ export const opfsFunctions = {
     deleteFileOrFolder,
     moveFileOrFolder,
     createCrateEln,
-    createFolder
+    createFolder,
+    duplicateCrate
 }
