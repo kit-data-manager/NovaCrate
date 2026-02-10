@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added hints about person identifier and organization identifier to the entity creation modal
 - Added "light rays" animation to the landing page to make it less boring
 - Added a "Use as Template" button to the main menu for duplicating crates and using them as a template for a new crate
+- Added two more example crates to the quickstart button in the main menu
 
 ### Fixed
 - Internal optimizations
@@ -23,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Improved explanation of the identifier field during entity creation
 - Hide autofilled fields like name and path until a file or folder is uploaded during entity creation
+- Adjusted folder upload input in the create crate modal, so it is easier to understand
 
 ### Removed
 - Removed the ability to copy the internal crate identifier. This feature was included for the java backend not used anymore.

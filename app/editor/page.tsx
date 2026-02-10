@@ -18,7 +18,9 @@ import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
+    DropdownMenuGroup,
     DropdownMenuItem,
+    DropdownMenuLabel,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
@@ -308,23 +310,41 @@ export default function EditorLandingPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            <DropdownMenuItem
-                                onClick={() => createCrateFromExample("ro-crate-spec")}
-                            >
-                                <CirclePlay className="size-4 mr-2" />
-                                RO-Crate Specification Crate
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    window.open(
-                                        "https://www.researchobject.org/ro-crate/eln",
-                                        "_blank"
-                                    )
-                                }
-                            >
-                                <LinkIcon className="size-4 mr-2" />
-                                Download ELNs
-                            </DropdownMenuItem>
+                            <DropdownMenuGroup>
+                                <DropdownMenuLabel>Examples</DropdownMenuLabel>
+                                <DropdownMenuItem
+                                    onClick={() => createCrateFromExample("test-crate")}
+                                >
+                                    <CirclePlay className="size-4 mr-2" />
+                                    Minimal Example
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => createCrateFromExample("air-quality-karlsruhe")}
+                                >
+                                    <CirclePlay className="size-4 mr-2" />
+                                    Air Quality in Karlsruhe
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => createCrateFromExample("ro-crate-spec")}
+                                >
+                                    <CirclePlay className="size-4 mr-2" />
+                                    RO-Crate Specification Crate
+                                </DropdownMenuItem>
+                            </DropdownMenuGroup>
+                            <DropdownMenuGroup>
+                                <DropdownMenuLabel>More Resources</DropdownMenuLabel>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        window.open(
+                                            "https://www.researchobject.org/ro-crate/eln",
+                                            "_blank"
+                                        )
+                                    }
+                                >
+                                    <LinkIcon className="size-4 mr-2" />
+                                    Download ELNs
+                                </DropdownMenuItem>
+                            </DropdownMenuGroup>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
