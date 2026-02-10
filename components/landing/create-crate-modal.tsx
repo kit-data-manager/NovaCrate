@@ -176,7 +176,10 @@ export function CreateCrateModal({
                         <Error title="Could not create a new Crate" error={error} />
 
                         <div>
-                            <Label>Folder</Label>
+                            <Label>
+                                Upload a Folder
+                                <span className="text-muted-foreground text-xs">(optional)</span>
+                            </Label>
                             <div>
                                 <Button variant="outline" onClick={openFolderPicker}>
                                     <Folder className="size-4 mr-2" />{" "}
