@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Internal optimizations
+- Fixed a bug where the last page in the main menu crate list was opened once a crate was created
 
 ### Changed
 - Improved explanation of the identifier field during entity creation
