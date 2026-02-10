@@ -387,7 +387,7 @@ export default function EditorLandingPage() {
                             <div className="text-muted-foreground text-xs">Actions</div>
                         </div>
 
-                        <Pagination pageSize={15}>
+                        <Pagination pageSize={15} jumpToEndOnChildAdd={false}>
                             {recentCratesLoading || storedCratesLoading ? (
                                 <div>
                                     {[0, 0, 0].map((_, i) => {

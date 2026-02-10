@@ -19,10 +19,12 @@ const DEFAULT_PAGE_SIZE = 10
 export function Pagination({
     children,
     pageSize = DEFAULT_PAGE_SIZE,
-    leftContent
+    leftContent,
+    jumpToEndOnChildAdd = true
 }: PropsWithChildren<{
     pageSize?: number
     leftContent?: ReactElement
+    jumpToEndOnChildAdd?: boolean
 }>) {
     const [page, setPage] = useState(0)
     const [jumpToPageValue, setJumpToPageValue] = useState("1")
@@ -51,15 +53,20 @@ export function Pagination({
         return Math.floor((childrenLength - 1) / pageSize) + 1
     }, [childrenLength, pageSize])
 
+    // Jump to the last page if a new child was added and jumpToEndOnChildAdd is true
     useEffect(() => {
         if (lastChildrenLength.current >= 0) {
             // If last children length was 1 or less, assume it was just a loading skeleton -> do not jump to last page
-            if (childrenLength > lastChildrenLength.current && lastChildrenLength.current > 1) {
+            if (
+                childrenLength > lastChildrenLength.current &&
+                lastChildrenLength.current > 1 &&
+                jumpToEndOnChildAdd
+            ) {
                 setPage(pageCount - 1)
             }
         }
         lastChildrenLength.current = childrenLength
-    }, [childrenLength, pageCount])
+    }, [childrenLength, jumpToEndOnChildAdd, pageCount])
 
     useEffect(() => {
         if (page >= pageCount) {
