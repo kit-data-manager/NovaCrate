@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [1.8.0] - 2026-02-10
 
 ### Added
 - Added a popup that appears after exporting a crate to ask for feedback and show how to cite the editor
@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - Removed the ability to copy the internal crate identifier. This feature was included for the java backend not used anymore.
+- The GitHub Pages instance is no longer maintained.
 
 ## [1.7.1] - 2026-01-27
 
