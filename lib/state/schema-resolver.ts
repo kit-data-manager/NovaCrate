@@ -120,7 +120,8 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
                 updateSchema: (id: string, schema: RegisteredSchema) => {
                     set((draft) => {
                         const i = draft.registeredSchemas.findIndex((s) => s.id === id)
-                        draft.registeredSchemas[i] = schema
+                        if (i == -1) draft.registeredSchemas.push(schema)
+                        else draft.registeredSchemas[i] = schema
                     })
                 }
             })),

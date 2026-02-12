@@ -275,7 +275,7 @@ export const editorState = createWithEqualityFn<EditorState>()(
                     })
                     .catch((e) => {
                         console.error("Error in updateInitialCrateContext", e)
-                        if (contextUpdateSeq !== seq) return
+                        if (initialContextUpdateSeq !== seq) return
                         setState({ initialCrateContextError: e })
                     })
             },
