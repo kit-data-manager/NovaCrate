@@ -40,7 +40,7 @@ const template: (name: string, description: string) => ICrate = (
     }) as ICrate
 
 export class BrowserBasedCrateService extends AbstractCrateService {
-    private worker: FunctionWorker<typeof opfsFunctions>
+    protected worker: FunctionWorker<typeof opfsFunctions>
 
     private workerOpfsHealthy = true
 

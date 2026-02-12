@@ -1,5 +1,6 @@
 import { BrowserBasedCrateService } from "@/lib/backend/BrowserBasedCrateService"
 import { makeCrateServiceFeatureFlags } from "@/lib/utils"
+import { opfsFunctions } from "@/lib/opfs-worker/functions"
 
 export class IFrameCrateService extends BrowserBasedCrateService {
     get featureFlags() {
@@ -36,5 +37,12 @@ export class IFrameCrateService extends BrowserBasedCrateService {
 
     async getCrateFilesList(): Promise<string[]> {
         return []
+    }
+
+    async createCrateFromMetadataFile(metadataFile: Blob) {
+        // Create temporary storage for crate and make sure it is used in worker and in local opfsFunctions
+        const tempDir = await this.worker.executeUncached("setupTempCrateStorage") // create and use temp dir in worker
+        opfsFunctions.setCrateStorageDir(tempDir) // use temp dir locally
+        return super.createCrateFromMetadataFile(metadataFile)
     }
 }

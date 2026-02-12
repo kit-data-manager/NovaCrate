@@ -1,7 +1,26 @@
 import * as fs from "happy-opfs"
 import { collectAsyncIterator } from "./helpers"
 
-const CRATE_STORAGE = "crate-storage" as const
+let CRATE_STORAGE = "crate-storage"
+
+/**
+ * Creates a new temporary directory for storing crates. Also sets the CRATE_STORAGE variable to the path of this directory.
+ */
+async function setupTempCrateStorage() {
+    await fs.pruneTemp(new Date())
+    const tempDir = await fs.mkTemp({ isDirectory: true })
+    if (!tempDir.isOk()) throw tempDir.unwrapErr()
+    CRATE_STORAGE = tempDir.unwrap().slice(1)
+    return CRATE_STORAGE
+}
+
+/**
+ * Set the CRATE_STORAGE variable to the provided directory.
+ * @param dir
+ */
+function setCrateStorageDir(dir: string) {
+    CRATE_STORAGE = dir
+}
 
 function toArrayBuffer(buf: Uint8Array): ArrayBuffer {
     const { buffer, byteOffset, byteLength } = buf
@@ -235,6 +254,8 @@ export async function getStorageInfo(): Promise<{
 }
 
 export const opfsFunctions = {
+    setupTempCrateStorage,
+    setCrateStorageDir,
     writeFile,
     readFile,
     getCrates,

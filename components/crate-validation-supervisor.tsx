@@ -43,8 +43,6 @@ export function CrateValidationSupervisor() {
         else setRunValidation(false)
     }, [crateContextReady, crateDataIsLoading, crateId])
 
-    console.log("runValidation", runValidation)
-
     useEffect(() => {
         if (!validationEnabled) {
             validation.resultStore.getState().clear()
