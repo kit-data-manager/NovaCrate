@@ -1,9 +1,9 @@
 import { isContextualEntity, isFileDataEntity, isFolderDataEntity, isRootEntity } from "@/lib/utils"
 import fileDownload from "js-file-download"
 import { handleSpringError } from "@/lib/spring-error-handling"
-import { CrateServiceBase } from "@/lib/backend/CrateServiceBase"
+import { AbstractCrateService } from "@/lib/backend/AbstractCrateService"
 
-export class ROCrateJavaCrateService extends CrateServiceBase {
+export class ROCrateJavaCrateService extends AbstractCrateService {
     async getCrateFileURL(crateId: string, filePath: string) {
         return `http://localhost:8080/crates/${encodeURIComponent(crateId)}/files/${encodeURIComponent(filePath)}`
     }

@@ -3,7 +3,7 @@ import { FunctionWorker } from "@/lib/function-worker"
 import { opfsFunctions } from "@/lib/opfs-worker/functions"
 import fileDownload from "js-file-download"
 import { addBasePath } from "next/dist/client/add-base-path"
-import { CrateServiceBase } from "@/lib/backend/CrateServiceBase"
+import { AbstractCrateService } from "@/lib/backend/AbstractCrateService"
 import {
     changeEntityId,
     encodeFilePath,
@@ -39,7 +39,7 @@ const template: (name: string, description: string) => ICrate = (
         ]
     }) as ICrate
 
-export class BrowserBasedCrateService extends CrateServiceBase {
+export class BrowserBasedCrateService extends AbstractCrateService {
     private worker: FunctionWorker<typeof opfsFunctions>
 
     private workerOpfsHealthy = true

@@ -26,7 +26,7 @@ export interface ICrateDataProvider {
     /**
      * Implementation of the CrateServiceAdapter interface.
      */
-    readonly serviceProvider?: CrateServiceAdapter
+    readonly serviceProvider?: CrateService
     /**
      * Id of the currently opened crate.
      */
@@ -211,7 +211,7 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
 export function CrateDataProvider({
     serviceProvider,
     children
-}: PropsWithChildren<{ serviceProvider: CrateServiceAdapter }>) {
+}: PropsWithChildren<{ serviceProvider: CrateService }>) {
     const [crateId, setCrateId] = useState<string | undefined>(undefined)
     const getEntities = useEditorState((store) => store.getEntities)
     const setEntities = useEditorState((store) => store.setEntities)
@@ -600,7 +600,7 @@ export function CrateDataProvider({
      * otherwise, this hook redirects to the main menu.
      */
     useEffect(() => {
-        if (params.mode === "full") {
+        if (!serviceProvider.featureFlags.crateSelectionControlledExternally) {
             if (crateId) {
                 console.log("CrateID known, saving")
                 localStorage.setItem(CRATE_ID_STORAGE_KEY, crateId)
@@ -615,10 +615,13 @@ export function CrateDataProvider({
                     console.log("Nothing found in local storage, navigating to landing page")
                 }
             }
-        } else if (params.mode !== "iframe") {
-            console.error(`Current editor mode "${params.mode}" is not supported.`)
         }
-    }, [crateId, params.mode, router])
+    }, [
+        crateId,
+        params.mode,
+        router,
+        serviceProvider.featureFlags.crateSelectionControlledExternally
+    ])
 
     const unsetCrateId = useCallback(() => {
         setCrateId(undefined)

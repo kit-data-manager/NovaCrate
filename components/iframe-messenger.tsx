@@ -3,25 +3,37 @@ import { useCallback, useContext, useEffect, useState } from "react"
 import { z } from "zod/mini"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 
-const schema = z.xor([
+const incomingMessageSchema = z.xor([
     z.object({
-        type: z.literal("load-ro-crate"),
-        metadata: z.optional(z.string()),
-        archive: z.optional(z.instanceof(Blob))
+        type: z.literal("PUSH_CRATE"),
+        metadata: z.optional(z.string())
+    }),
+    z.object({
+        type: z.literal("PULL_CRATE")
     })
 ])
 
-type NovaCrateMessage = z.infer<typeof schema>
+const outgoingMessageSchema = z.xor([
+    z.object({
+        type: z.literal("READY"),
+        novaCrateVersion: z.string(),
+        messageInterfaceVersion: z.number()
+    }),
+    z.object({
+        type: z.literal("PULL_CRATE_RESPONSE"),
+        metadata: z.optional(z.string())
+    })
+])
+
+type NovaCrateMessageIncoming = z.infer<typeof incomingMessageSchema>
 
 export function IFrameMessenger() {
-    const { mode } = useParams<{ mode: string }>()
     const crateData = useContext(CrateDataContext)
     const [loadedCrateID, setLoadedCrateID] = useState<string | undefined>()
 
     const loadCrate = useCallback(
-        async (msg: NovaCrateMessage & { type: "load-ro-crate" }) => {
+        async (msg: NovaCrateMessageIncoming & { type: "PUSH_CRATE" }) => {
             let id: string | undefined
-            if (msg.archive) id = await crateData.serviceProvider?.createCrateFromFile(msg.archive)
             if (msg.metadata)
                 id = await crateData.serviceProvider?.createCrateFromMetadataFile(
                     new Blob([msg.metadata], {
@@ -38,13 +50,12 @@ export function IFrameMessenger() {
     )
 
     useEffect(() => {
-        if (mode !== "iframe") return
-
         const messageListener = async (e: MessageEvent) => {
-            const msg = schema.safeParse(e.data)
+            console.log("Received message", e)
+            const msg = incomingMessageSchema.safeParse(e.data)
             if (msg.success) {
                 switch (msg.data.type) {
-                    case "load-ro-crate": {
+                    case "PUSH_CRATE": {
                         loadCrate(msg.data)
                         break
                     }
@@ -54,7 +65,7 @@ export function IFrameMessenger() {
 
         window.addEventListener("message", messageListener)
         return () => window.removeEventListener("message", messageListener)
-    }, [crateData, loadCrate, mode])
+    }, [crateData, loadCrate])
 
     return null
 }

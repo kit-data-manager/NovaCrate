@@ -387,3 +387,15 @@ export const useHash = () => {
 
     return { hash }
 }
+
+export const useCrateServiceFeatureFlags = () => {
+    const { serviceProvider } = useContext(CrateDataContext)
+
+    const flags = useMemo(() => {
+        if (serviceProvider?.featureFlags) {
+            return JSON.stringify(serviceProvider.featureFlags)
+        }
+    }, [serviceProvider?.featureFlags])
+
+    return flags ? (JSON.parse(flags) as CrateServiceFeatureFlags) : undefined
+}

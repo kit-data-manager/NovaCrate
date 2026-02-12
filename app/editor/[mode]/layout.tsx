@@ -3,10 +3,10 @@
 import { memo, PropsWithChildren, useContext, useEffect } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Nav } from "@/components/nav/nav"
-import { usePathname } from "next/navigation"
+import { useParams, usePathname } from "next/navigation"
 import { SchemaWorkerProvider } from "@/components/providers/schema-worker-provider"
 import { GlobalModalProvider } from "@/components/providers/global-modals-provider"
-import { useCrateName, useRecentCrates } from "@/lib/hooks"
+import { useCrateName, useCrateServiceFeatureFlags, useRecentCrates } from "@/lib/hooks"
 import DefaultActions from "@/components/actions/default-actions"
 import { ActionKeyboardShortcuts } from "@/components/actions/action-keyboard-shortcuts"
 import EntityActions from "@/components/actions/entity-actions"
@@ -15,6 +15,7 @@ import { ValidationContextProvider } from "@/components/providers/validation-con
 import { CrateValidationSupervisor } from "@/components/crate-validation-supervisor"
 import { DataSaveHint } from "@/components/data-save-hint"
 import { UnsavedChangesProtector } from "@/components/UnsavedChangesProtector"
+import { IFrameMessenger } from "@/components/iframe-messenger"
 
 export default function EditorLayout(props: PropsWithChildren) {
     return (
@@ -35,6 +36,8 @@ export default function EditorLayout(props: PropsWithChildren) {
  * Children will still re-render as normal when their subscribed context or their props change.
  */
 const ProviderBoundary = memo(function ProviderBoundary(props: PropsWithChildren) {
+    const flags = useCrateServiceFeatureFlags()
+
     return (
         <>
             <DefaultActions />
@@ -45,6 +48,7 @@ const ProviderBoundary = memo(function ProviderBoundary(props: PropsWithChildren
             <CrateValidationSupervisor />
             <DataSaveHint />
             <UnsavedChangesProtector />
+            {flags?.iframeMessaging && <IFrameMessenger />}
             <Nav>{props.children}</Nav>
         </>
     )

@@ -6,7 +6,13 @@
  *
  * Optional functions can be omitted, but will reduce the feature set of the UI
  */
-declare interface CrateServiceAdapter {
+declare interface CrateService {
+    /**
+     * Get the feature flags of the current crate service implementation.
+     * This is used to enable/disable certain UI elements.
+     */
+    get featureFlags(): CrateServiceFeatureFlags
+
     /**
      * Create an empty crate with no files except ro-crate-metadata.json
      * @param name Name of the crate
@@ -211,4 +217,31 @@ declare interface FolderFile {
 declare interface FileInfo {
     type: "file" | "directory"
     name: string
+}
+
+/**
+ * Interface describing the features that are supported by a CrateService implementation.
+ * This is used to enable/disable certain UI elements.
+ */
+declare interface CrateServiceFeatureFlags {
+    /**
+     * Whether the current crate service supports file management.
+     * Setting this to false will disable the file explorer and all file uploads.
+     * @default true
+     */
+    fileManagement: boolean
+
+    /**
+     * Whether to enable the IFrame messaging interface
+     * @default false
+     */
+    iframeMessaging: boolean
+
+    /**
+     * Whether the user is in control of which crate is currently open.
+     * When false, the user can head to the main menu at any time and select any crate provided by the crate service.
+     * When true, the user cannot use the main menu. The current crate id must be set externally, e.g., through the iframe messaging interface.
+     * @default false
+     */
+    crateSelectionControlledExternally: boolean
 }

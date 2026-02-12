@@ -1,6 +1,11 @@
 import { handleSpringError } from "@/lib/spring-error-handling"
+import { makeCrateServiceFeatureFlags } from "@/lib/utils"
 
-export abstract class CrateServiceBase implements CrateServiceAdapter {
+export abstract class AbstractCrateService implements CrateService {
+    get featureFlags() {
+        return makeCrateServiceFeatureFlags()
+    }
+
     abstract getCrateFileURL(crateId: string, filePath: string): Promise<string>
 
     abstract addCustomContextPair(crateId: string, key: string, value: string): Promise<void>
