@@ -27,6 +27,8 @@ export interface EditorState {
      * Whether the crate context is ready to be used
      */
     crateContextReady: boolean
+    crateContextError: unknown
+    initialCrateContextError: unknown
 
     /**
      * Updates the initial crate context. Called by the {@link CrateDataProvider} whenever the remote context changes
@@ -226,6 +228,8 @@ export const editorState = createWithEqualityFn<EditorState>()(
             crateContextReady: false,
             initialEntities: new Map<string, IEntity>(),
             entities: new Map<string, IEntity>(),
+            initialCrateContextError: undefined,
+            crateContextError: undefined,
 
             updateCrateContext(crateContext: CrateContextType) {
                 if (getState().crateContextReady && getState().crateContext.isSameAs(crateContext))
@@ -237,13 +241,21 @@ export const editorState = createWithEqualityFn<EditorState>()(
                     s.crateContextReady = false
                 })
                 const newContext = new CrateContext()
-                newContext.setup(crateContext).then(() => {
-                    if (contextUpdateSeq !== seq) return
-                    setState((state) => {
-                        state.crateContextReady = true
-                        state.crateContext = newContext
+                newContext
+                    .setup(crateContext)
+                    .then(() => {
+                        if (contextUpdateSeq !== seq) return
+                        setState((state) => {
+                            state.crateContextReady = true
+                            state.crateContext = newContext
+                            state.crateContextError = undefined
+                        })
                     })
-                })
+                    .catch((e) => {
+                        console.error("Error in updateCrateContext", e)
+                        if (contextUpdateSeq !== seq) return
+                        setState({ crateContextError: e })
+                    })
             },
 
             updateInitialCrateContext(crateContext: CrateContextType) {
@@ -252,12 +264,20 @@ export const editorState = createWithEqualityFn<EditorState>()(
                 const seq = ++initialContextUpdateSeq
 
                 const newContext = new CrateContext()
-                newContext.setup(crateContext).then(() => {
-                    if (initialContextUpdateSeq !== seq) return
-                    setState((state) => {
-                        state.initialCrateContext = newContext
+                newContext
+                    .setup(crateContext)
+                    .then(() => {
+                        if (initialContextUpdateSeq !== seq) return
+                        setState((state) => {
+                            state.initialCrateContext = newContext
+                            state.initialCrateContextError = undefined
+                        })
                     })
-                })
+                    .catch((e) => {
+                        console.error("Error in updateInitialCrateContext", e)
+                        if (contextUpdateSeq !== seq) return
+                        setState({ initialCrateContextError: e })
+                    })
             },
 
             getEntities(): Map<string, IEntity> {
@@ -298,7 +318,6 @@ export const editorState = createWithEqualityFn<EditorState>()(
 
             getRootEntityId(): string | undefined {
                 return getRootEntityID(getState().entities)
-
             },
 
             getChangedEntities(): IEntity[] {
