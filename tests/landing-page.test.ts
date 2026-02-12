@@ -9,8 +9,6 @@ test("Landing Page Tests", async ({ page }) => {
     await page.getByRole("menuitem", { name: "Back to Main Menu" }).click()
     await expect(page.getByText("TestCrate")).toBeVisible()
     await page.getByRole("button", { name: "More" }).click()
-    await page.getByRole("menuitem", { name: "Copy internal Identifier" }).click()
-    await page.getByRole("button", { name: "More" }).click()
     await page.getByRole("menuitem", { name: "Permanently Delete" }).click()
     await page.getByRole("button", { name: "Delete" }).click()
     await expect(page.getByText("Your local RO-Crates will be shown here.")).toBeVisible()

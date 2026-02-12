@@ -3,7 +3,6 @@
 import {
     ChevronDown,
     CircleAlert,
-    Copy,
     Download,
     File,
     FileUp,
@@ -32,8 +31,8 @@ import { GlobalModalContext } from "@/components/providers/global-modals-provide
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useAction, useCrateName, useCurrentEntity } from "@/lib/hooks"
-import { useEditorState } from "@/lib/state/editor-state"
-import { useCopyToClipboard, useInterval } from "usehooks-ts"
+import { editorState, useEditorState } from "@/lib/state/editor-state"
+import { useInterval } from "usehooks-ts"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getEntityDisplayName } from "@/lib/utils"
 import { ActionButton, ActionMenubarItem } from "@/components/actions/action-buttons"
@@ -44,6 +43,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Error } from "@/components/error"
 import { ValidationOverview } from "@/components/editor/validation/validation-overview"
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
+import { useStore } from "zustand"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -78,7 +78,7 @@ function EntityMenu() {
 export function NavHeader() {
     const theme = useTheme()
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
-    const { showCreateEntityModal } = useContext(GlobalModalContext)
+    const { showCreateEntityModal, showCrateExportedModal } = useContext(GlobalModalContext)
     const {
         serviceProvider,
         crateId,
@@ -90,7 +90,7 @@ export function NavHeader() {
         healthTestError
     } = useContext(CrateDataContext)
     // const { undo, redo } = useEditorState.temporal.getState()
-    const [, copyFn] = useCopyToClipboard()
+    const crateContextError = useStore(editorState, (s) => s.crateContextError)
     const [schemaIssues, setSchemaIssues] = useState<Map<string, unknown>>(new Map())
 
     const schemaWorker = useContext(SchemaWorker)
@@ -108,13 +108,6 @@ export function NavHeader() {
     }, [schemaWorker.worker])
 
     useInterval(updateSchemaWorkerIssues, 2000)
-
-    const copy = useCallback(
-        (text: string) => {
-            copyFn(text).catch((e) => console.error("Failed to copy to clipboard", e))
-        },
-        [copyFn]
-    )
 
     const showUploadFolderModal = useCallback(() => {
         showCreateEntityModal([
@@ -136,21 +129,24 @@ export function NavHeader() {
 
     const downloadCrateZip = useCallback(() => {
         if (serviceProvider && crateId) {
+            showCrateExportedModal()
             serviceProvider.downloadCrateZip(crateId).then()
         }
-    }, [crateId, serviceProvider])
+    }, [crateId, serviceProvider, showCrateExportedModal])
 
     const downloadCrateEln = useCallback(() => {
         if (serviceProvider && crateId) {
+            showCrateExportedModal()
             serviceProvider.downloadCrateEln(crateId).then()
         }
-    }, [crateId, serviceProvider])
+    }, [crateId, serviceProvider, showCrateExportedModal])
 
     const downloadRoCrateMetadataFile = useCallback(() => {
         if (serviceProvider && crateId) {
+            showCrateExportedModal()
             serviceProvider.downloadRoCrateMetadataJSON(crateId).then()
         }
-    }, [crateId, serviceProvider])
+    }, [crateId, serviceProvider, showCrateExportedModal])
 
     const crateName = useCrateName()
     const searchAction = useAction("editor.global-search")
@@ -225,19 +221,6 @@ export function NavHeader() {
                         <MenubarSeparator />
                         <MenubarSub>
                             <MenubarSubTrigger>
-                                <Copy className="size-4" /> Copy Crate...
-                            </MenubarSubTrigger>
-                            <MenubarSubContent>
-                                <MenubarItem onClick={() => copy(crateId || "")}>
-                                    <Copy className="size-4" /> Copy Crate ID
-                                </MenubarItem>
-                                <MenubarItem onClick={() => copy(crateName)}>
-                                    <Copy className="size-4" /> Copy Crate Name
-                                </MenubarItem>
-                            </MenubarSubContent>
-                        </MenubarSub>
-                        <MenubarSub>
-                            <MenubarSubTrigger>
                                 <Download className="size-4" /> Export
                             </MenubarSubTrigger>
                             <MenubarSubContent>
@@ -259,9 +242,6 @@ export function NavHeader() {
             </Menubar>
         )
     }, [
-        copy,
-        crateId,
-        crateName,
         downloadCrateEln,
         downloadCrateZip,
         downloadRoCrateMetadataFile,
@@ -301,17 +281,29 @@ export function NavHeader() {
 
             <div className="flex justify-end items-center gap-2" id={"header-right-side"}>
                 <ValidationOverview />
-                {error || saveError.size > 0 || healthTestError || schemaIssues.size > 0 ? (
+                {error ||
+                saveError.size > 0 ||
+                healthTestError ||
+                schemaIssues.size > 0 ||
+                crateContextError ? (
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button size="icon" variant="destructive" className="relative">
-                                <CircleAlert className="size-4 animate-pulse" />
+                            <Button
+                                size="icon"
+                                className="animate-destructive-ping"
+                                variant="outline"
+                            >
+                                <CircleAlert className="size-4" />
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-100 flex flex-col gap-2">
                             <div className="text-sm font-bold">Internal Error Log</div>
                             <Error title="Crate service is not reachable" error={healthTestError} />
                             <Error title="Error while loading crate data" error={error} />
+                            <Error
+                                title="Error while parsing crate context"
+                                error={crateContextError}
+                            />
                             {Array.from(saveError.entries()).map(([key, value]) => (
                                 <Error
                                     title={`Error while saving entity "${key}"`}

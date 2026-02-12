@@ -2,6 +2,8 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { useMemo } from "react"
 import {
     SCHEMA_ORG_CONTACT_POINT,
+    SCHEMA_ORG_ORGANIZATION,
+    SCHEMA_ORG_PERSON,
     SCHEMA_ORG_PLACE,
     SCHEMA_ORG_SCHOLARLY_ARTICLE
 } from "@/lib/constants"
@@ -11,6 +13,14 @@ import { CollapsibleHint } from "@/components/collapsible-hint"
 
 export function CreateEntityHint({ selectedType }: { selectedType: string }) {
     const context = useEditorState((store) => store.crateContext)
+
+    const showPersonHint = useMemo(() => {
+        return context.resolve(selectedType) === SCHEMA_ORG_PERSON
+    }, [context, selectedType])
+
+    const showOrganizationHint = useMemo(() => {
+        return context.resolve(selectedType) === SCHEMA_ORG_ORGANIZATION
+    }, [context, selectedType])
 
     const showPlaceHint = useMemo(() => {
         return context.resolve(selectedType) === SCHEMA_ORG_PLACE
@@ -25,6 +35,64 @@ export function CreateEntityHint({ selectedType }: { selectedType: string }) {
     }, [context, selectedType])
 
     return useMemo(() => {
+        if (showPersonHint)
+            return (
+                <CollapsibleHint title={"Identifiers for Person Entities"}>
+                    <AlertDescription>
+                        Use the persons{" "}
+                        <a
+                            className="hover:underline inline-flex"
+                            href="https://orcid.org/"
+                            target="_blank"
+                        >
+                            ORCID <ExternalLink className="w-3 h-3 ml-1" />
+                        </a>{" "}
+                        to uniquely identify them. If they don&#39;t have an ORCID, consider using a
+                        different persistent and unique identifier, or use a local identifier like
+                        #firstname-lastname.
+                        <div className="mt-1 text-muted-foreground text-xs">
+                            Example:{" "}
+                            <a
+                                className="hover:underline inline-flex"
+                                href="https://orcid.org/0009-0003-2196-9187"
+                                target="_blank"
+                            >
+                                https://orcid.org/0009-0003-2196-9187{" "}
+                                <ExternalLink className="w-3 h-3 ml-1" />
+                            </a>
+                        </div>
+                    </AlertDescription>
+                </CollapsibleHint>
+            )
+
+        if (showOrganizationHint)
+            return (
+                <CollapsibleHint title={"Identifiers for Organization Entities"}>
+                    <AlertDescription>
+                        Use the organizations{" "}
+                        <a
+                            className="hover:underline inline-flex"
+                            href="https://ror.org/"
+                            target="_blank"
+                        >
+                            ROR <ExternalLink className="w-3 h-3 ml-1" />
+                        </a>{" "}
+                        ID to uniquely identify it. Otherwise, consider using a different persistent
+                        and unique identifier, or use a local identifier like #organizationname.
+                        <div className="mt-1 text-muted-foreground text-xs">
+                            Example:{" "}
+                            <a
+                                className="hover:underline inline-flex"
+                                href="https://ror.org/04t3en479"
+                                target="_blank"
+                            >
+                                https://ror.org/04t3en479 <ExternalLink className="w-3 h-3 ml-1" />
+                            </a>
+                        </div>
+                    </AlertDescription>
+                </CollapsibleHint>
+            )
+
         if (showPlaceHint) {
             return (
                 <CollapsibleHint title={"Identifiers for Places"}>
@@ -38,7 +106,7 @@ export function CreateEntityHint({ selectedType }: { selectedType: string }) {
                         >
                             GeoNames.org <ExternalLink className="w-3 h-3 ml-1" />
                         </a>
-                        when creating a location.
+                        .
                         <div className="mt-1 text-muted-foreground text-xs">
                             Example:{" "}
                             <a
@@ -62,7 +130,6 @@ export function CreateEntityHint({ selectedType }: { selectedType: string }) {
                 <CollapsibleHint title={"Identifiers for Scholarly Articles"}>
                     <AlertDescription>
                         To uniquely identify scholarly articles, it is recommended to use their DOI.
-                        They will typically be provided with the article.
                         <div className="mt-1 text-muted-foreground text-xs">
                             Example:{" "}
                             <a
@@ -103,5 +170,11 @@ export function CreateEntityHint({ selectedType }: { selectedType: string }) {
             )
 
         return null
-    }, [showContactPointHint, showPlaceHint, showScholarlyArticleHint])
+    }, [
+        showContactPointHint,
+        showOrganizationHint,
+        showPersonHint,
+        showPlaceHint,
+        showScholarlyArticleHint
+    ])
 }

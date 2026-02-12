@@ -83,8 +83,7 @@ export function SelectReferenceModal({
         try {
             z.url().parse(referenceUrl)
             setIsValidReferenceUrl(true)
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (_) {
+        } catch {
             setIsValidReferenceUrl(false)
         }
     }, [referenceUrl])

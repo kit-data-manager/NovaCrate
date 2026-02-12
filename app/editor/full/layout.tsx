@@ -7,9 +7,6 @@ import { usePathname } from "next/navigation"
 import { SchemaWorkerProvider } from "@/components/providers/schema-worker-provider"
 import { GlobalModalProvider } from "@/components/providers/global-modals-provider"
 import { useCrateName, useRecentCrates } from "@/lib/hooks"
-import { GraphStateProvider } from "@/components/providers/graph-state-provider"
-import { GraphSettingsProvider } from "@/components/providers/graph-settings-provider"
-import { ActionsProvider } from "@/components/providers/actions-provider"
 import DefaultActions from "@/components/actions/default-actions"
 import { ActionKeyboardShortcuts } from "@/components/actions/action-keyboard-shortcuts"
 import EntityActions from "@/components/actions/entity-actions"
@@ -21,19 +18,13 @@ import { UnsavedChangesProtector } from "@/components/UnsavedChangesProtector"
 
 export default function EditorLayout(props: PropsWithChildren) {
     return (
-        <ActionsProvider>
-            <SchemaWorkerProvider>
-                <GlobalModalProvider>
-                    <GraphStateProvider>
-                        <GraphSettingsProvider>
-                            <ValidationContextProvider>
-                                <ProviderBoundary>{props.children}</ProviderBoundary>
-                            </ValidationContextProvider>
-                        </GraphSettingsProvider>
-                    </GraphStateProvider>
-                </GlobalModalProvider>
-            </SchemaWorkerProvider>
-        </ActionsProvider>
+        <SchemaWorkerProvider>
+            <GlobalModalProvider>
+                <ValidationContextProvider>
+                    <ProviderBoundary>{props.children}</ProviderBoundary>
+                </ValidationContextProvider>
+            </GlobalModalProvider>
+        </SchemaWorkerProvider>
     )
 }
 

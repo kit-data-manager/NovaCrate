@@ -1,6 +1,7 @@
 import { applyEdgeChanges, applyNodeChanges, Edge, EdgeChange, Node, NodeChange } from "reactflow"
-import { createStore } from "zustand/vanilla"
 import { computeGraphLayout } from "@/components/graph/layout"
+import { create } from "zustand"
+import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 
 export interface GraphState {
     nodes: Node[]
@@ -14,8 +15,8 @@ export interface GraphState {
     handleEdgesChange(changes: EdgeChange[]): void
 }
 
-export const createGraphState = () =>
-    createStore<GraphState>()((set, get) => ({
+export const useGraphState = create<GraphState>()(
+    ssrSafe((set, get) => ({
         edges: [],
         nodes: [],
         selectedEntityID: undefined,
@@ -50,3 +51,4 @@ export const createGraphState = () =>
             set({ edges: applyEdgeChanges(changes, get().edges) })
         }
     }))
+)

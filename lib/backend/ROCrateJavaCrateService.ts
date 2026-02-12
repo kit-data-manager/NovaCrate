@@ -44,6 +44,10 @@ export class ROCrateJavaCrateService extends CrateServiceBase {
         throw "Not implemented"
     }
 
+    duplicateCrate(crateId: string, newName: string): Promise<string> {
+        throw "Not implemented"
+    }
+
     createEntity(crateId: string, entityData: IEntity): Promise<boolean> {
         return this.updateEntity(crateId, entityData, true)
     }

@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.0] - 2026-02-12
+
+### Added
+- Added a popup that appears after exporting a crate to ask for feedback and show how to cite the editor
+  - The feedback popup can be disabled by checking "Don't show again" at the bottom of the popup
+- Added citing guidance to the about modal
+- Added hints about person identifier and organization identifier to the entity creation modal
+- Added "light rays" animation to the landing page to make it less boring
+- Added a "Use as Template" button to the main menu for duplicating crates and using them as a template for a new crate
+- Added two more example crates to the quickstart button in the main menu
+
+### Fixed
+- Internal optimizations
+- Fixed a bug where the last page in the main menu crate list was opened once a crate was created
+- Handle context initialisation failures
+
+### Changed
+- Improved explanation of the identifier field during entity creation
+- Hide autofilled fields like name and path until a file or folder is uploaded during entity creation
+- Adjusted folder upload input in the create crate modal, so it is easier to understand
+
+### Removed
+- Removed the ability to copy the internal crate identifier. This feature was included for the java backend not used anymore.
+- The GitHub Pages instance is no longer maintained.
+
 ## [1.7.1] - 2026-01-27
 
 ### Fixed

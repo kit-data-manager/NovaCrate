@@ -5,9 +5,9 @@ import { usePathname, useRouter } from "next/navigation"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { encodeFilePath, getEntityDisplayName } from "@/lib/utils"
-import { useGraphState } from "@/components/providers/graph-state-provider"
+import { useGraphState } from "@/lib/state/graph-state"
 import { Action, notFoundAction } from "@/lib/state/actions"
-import { useActionsStore } from "@/components/providers/actions-provider"
+import { useActionsStore } from "@/lib/state/actions"
 import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { addBasePath } from "next/dist/client/add-base-path"
 
@@ -273,18 +273,18 @@ export function useRegisterAction(
 ) {
     const registerAction = useActionsStore((store) => store.registerAction)
     const unregisterAction = useActionsStore((store) => store.unregisterAction)
-    const constId = useRef(id)
-    const constName = useRef(name)
-    const constOptions = useRef(options)
+    const [constId] = useState(id)
+    const [constName] = useState(name)
+    const [constOptions] = useState(options)
 
     const action: Action = useMemo(
         () => ({
-            id: constId.current,
-            name: constName.current,
+            id: constId,
+            name: constName,
             execute: fn,
-            ...constOptions.current
+            ...constOptions
         }),
-        [fn]
+        [constId, constName, constOptions, fn]
     )
 
     useEffect(() => {

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useRef, useState } from "react"
 import { FunctionWorker, FunctionWorkerOptions } from "@/lib/function-worker"
 import { useInterval } from "usehooks-ts"
@@ -15,7 +14,7 @@ export function useFunctionWorker<T extends Record<string, (...args: any[]) => a
     scriptPath: string,
     options?: FunctionWorkerOptions
 ) {
-    const functionWorker = useRef(new FunctionWorker(functions, options))
+    const [functionWorker] = useState(() => new FunctionWorker(functions, options))
     const scriptPathRef = useRef(scriptPath)
 
     const [isReady, setIsReady] = useState(false)
@@ -24,14 +23,14 @@ export function useFunctionWorker<T extends Record<string, (...args: any[]) => a
     useEffect(() => {
         let usesWebWorker
         try {
-            usesWebWorker = functionWorker.current.mount(scriptPathRef.current)
+            usesWebWorker = functionWorker.mount(scriptPathRef.current)
         } catch (e) {
             console.error(`Failed to mount function worker ${scriptPathRef.current}`, e)
         }
 
-        if (!usesWebWorker || !functionWorker.current.workerMounted) setIsUsingWebWorker(false)
+        if (!usesWebWorker || !functionWorker.workerMounted) setIsUsingWebWorker(false)
         setIsReady(true)
-    }, [])
+    }, [functionWorker])
 
     useEffect(() => {
         function errorHandler(e: unknown) {
@@ -39,17 +38,17 @@ export function useFunctionWorker<T extends Record<string, (...args: any[]) => a
         }
 
         if (isReady && isUsingWebWorker) {
-            const worker = functionWorker.current.worker
+            const worker = functionWorker.worker
             if (!worker) return
             worker.addEventListener("error", errorHandler)
 
             return () => worker.removeEventListener("error", errorHandler)
         }
-    }, [isReady, isUsingWebWorker])
+    }, [functionWorker.worker, isReady, isUsingWebWorker])
 
     const healthTest = useCallback(async () => {
         if (isReady && isUsingWebWorker) {
-            const healthy = functionWorker.current.healthTest()
+            const healthy = functionWorker.healthTest()
             const timeout = new Promise((res) => setTimeout(() => res("timeout"), 9000))
             const result = await Promise.race([healthy, timeout])
             if (result === false || result === "timeout") {
@@ -62,12 +61,12 @@ export function useFunctionWorker<T extends Record<string, (...args: any[]) => a
                         "useFunctionWorker: Timeout during health test, assuming worker has crashed"
                     )
                 setIsUsingWebWorker(false)
-                functionWorker.current.unmount()
+                functionWorker.unmount()
             }
         }
-    }, [isReady, isUsingWebWorker])
+    }, [functionWorker, isReady, isUsingWebWorker])
 
     useInterval(healthTest, 10000)
 
-    return { isReady, isUsingWebWorker, worker: functionWorker.current }
+    return { isReady, isUsingWebWorker, worker: functionWorker }
 }

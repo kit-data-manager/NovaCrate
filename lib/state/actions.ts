@@ -1,6 +1,7 @@
 import { CircleHelp, LucideIcon } from "lucide-react"
 import { immer } from "zustand/middleware/immer"
 import { create } from "zustand"
+import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 
 export interface Action {
     id: string
@@ -20,8 +21,8 @@ export interface ActionStore {
     isReady(): boolean
 }
 
-export const createActionStore = () =>
-    create<ActionStore>()(
+export const useActionsStore = create<ActionStore>()(
+    ssrSafe(
         immer((set, get) => ({
             actions: new Map(),
             getAllActions(): Action[] {
@@ -43,15 +44,23 @@ export const createActionStore = () =>
             }
         }))
     )
+)
 
+const notFoundActionCache = new Map<string, Action>()
 export function notFoundAction(id: string): Action {
-    return {
-        id: "not-found." + id,
-        name: "Action not found",
-        execute() {
-            console.warn("Trying to execute action that was not found", { id })
-        },
-        notFound: true,
-        icon: CircleHelp
+    if (notFoundActionCache.has(id)) {
+        return notFoundActionCache.get(id)!
+    } else {
+        const action: Action = {
+            id: "not-found." + id,
+            name: "Action not found",
+            execute() {
+                console.warn("Trying to execute action that was not found", { id })
+            },
+            notFound: true,
+            icon: CircleHelp
+        }
+        notFoundActionCache.set(id, action)
+        return action
     }
 }

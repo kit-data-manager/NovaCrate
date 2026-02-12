@@ -1,4 +1,12 @@
-import { Copy, Download, EllipsisVertical, FileIcon, FolderArchive, Trash } from "lucide-react"
+import {
+    Download,
+    EllipsisVertical,
+    FileIcon,
+    FolderArchive,
+    Notebook,
+    PackagePlus,
+    Trash
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
@@ -16,7 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Error } from "@/components/error"
 import { DateTime } from "luxon"
-import { useCopyToClipboard } from "usehooks-ts"
+import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 
 export interface CrateDetails {
     name?: string
@@ -35,9 +43,9 @@ export function CrateEntry({
     search: string
 }) {
     const { serviceProvider } = useContext(CrateDataContext)
+    const { showCrateExportedModal } = useContext(GlobalModalContext)
     const [crateDetails, setCrateDetails] = useState<CrateDetails | undefined>()
     const [error, setError] = useState<unknown>()
-    const [, copyText] = useCopyToClipboard()
 
     useEffect(() => {
         const content = window.localStorage.getItem(crateDetailsKey(crateId))
@@ -78,10 +86,6 @@ export function CrateEntry({
         }
     }, [serviceProvider, crateId])
 
-    const copyInternalID = useCallback(() => {
-        copyText(crateId).then()
-    }, [copyText, crateId])
-
     const title = useMemo(() => {
         if (crateDetails && crateDetails.name) {
             return <div>{crateDetails.name ?? null}</div>
@@ -89,6 +93,19 @@ export function CrateEntry({
             return <code>{crateId}</code>
         }
     }, [crateDetails, crateId])
+
+    const [createCrateCopyError, setCreateCrateCopyError] = useState<unknown>(undefined)
+    const createCrateCopy = useCallback(async () => {
+        try {
+            const newCrateID = await serviceProvider?.duplicateCrate(
+                crateId,
+                "Copy of " + (crateDetails?.name ?? crateId)
+            )
+            if (newCrateID) openEditor(newCrateID)
+        } catch (e) {
+            setCreateCrateCopyError(e)
+        }
+    }, [crateDetails?.name, crateId, openEditor, serviceProvider])
 
     if (search && !crateDetails) return null
     if (search && !crateDetails?.name?.toUpperCase().includes(search.toUpperCase())) return null
@@ -102,6 +119,7 @@ export function CrateEntry({
                     error={error}
                     warn={!!(crateDetails && crateDetails.name)}
                 />
+                <Error title="Could not create a copy of this crate" error={createCrateCopyError} />
             </div>
             <div className="flex items-center text-muted-foreground text-sm">
                 {crateDetails && crateDetails.lastOpened
@@ -127,6 +145,9 @@ export function CrateEntry({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
+                        <DropdownMenuItem onClick={createCrateCopy}>
+                            <PackagePlus className="size-4 mr-2" /> Create a Copy
+                        </DropdownMenuItem>
                         <DropdownMenuSub>
                             <DropdownMenuSubTrigger>
                                 <Download className="size-4 mr-2" /> Export...
@@ -135,6 +156,7 @@ export function CrateEntry({
                                 <DropdownMenuItem
                                     onClick={() => {
                                         if (serviceProvider) {
+                                            showCrateExportedModal()
                                             serviceProvider.downloadCrateZip(crateId).then()
                                         }
                                     }}
@@ -144,6 +166,17 @@ export function CrateEntry({
                                 <DropdownMenuItem
                                     onClick={() => {
                                         if (serviceProvider) {
+                                            showCrateExportedModal()
+                                            serviceProvider.downloadCrateEln(crateId).then()
+                                        }
+                                    }}
+                                >
+                                    <Notebook className="size-4 mr-2" /> As ELN
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        if (serviceProvider) {
+                                            showCrateExportedModal()
                                             serviceProvider
                                                 .downloadRoCrateMetadataJSON(crateId)
                                                 .then()
@@ -154,9 +187,6 @@ export function CrateEntry({
                                 </DropdownMenuItem>
                             </DropdownMenuSubContent>
                         </DropdownMenuSub>
-                        <DropdownMenuItem onClick={copyInternalID}>
-                            <Copy className="size-4 mr-2" /> Copy internal Identifier
-                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             variant={"destructive"}

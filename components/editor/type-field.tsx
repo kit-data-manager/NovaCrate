@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { useTypeIcon } from "@/components/type-icon"
+import { TypeIcon } from "@/components/type-icon"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -19,8 +19,6 @@ export function TypeField({
     onChange: (value: string) => void
     onRemoveEntry: () => void
 }) {
-    const Icon = useTypeIcon(value)
-
     const [typeSelectModalOpen, setTypeSelectModalOpen] = useState(false)
 
     const onTypeSelect = useCallback(
@@ -44,7 +42,10 @@ export function TypeField({
                 className="shrink grow rounded-r-none justify-start pl-2 truncate min-w-0"
                 onClick={() => setTypeSelectModalOpen(true)}
             >
-                <Icon className="size-4 pointer-events-none text-muted-foreground mr-1" />
+                <TypeIcon
+                    type={value}
+                    className="size-4 pointer-events-none text-muted-foreground mr-1"
+                />
                 {value}
             </Button>
             <DropdownMenu>

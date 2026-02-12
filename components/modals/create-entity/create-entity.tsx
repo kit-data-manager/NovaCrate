@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
     ArrowLeft,
-    ExternalLink,
     File,
     Folder,
     FolderDot,
@@ -23,7 +22,7 @@ import HelpTooltip from "@/components/help-tooltip"
 import { useAutoId } from "@/lib/hooks"
 import { CreateEntityHint } from "@/components/modals/create-entity/create-entity-hint"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Alert, AlertTitle } from "@/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export function CreateEntity({
     selectedType,
@@ -351,60 +350,98 @@ export function CreateEntity({
                 </div>
             ) : null}
 
-            {(hasFileUpload || hasFolderUpload) && !forceId && !externalResource ? (
+            {/* Only show the path field if either
+                  1. This is a file upload and there is a file selected
+                  2. This is a folder upload and either...
+                      2a. there are files selected
+                      2b. the user wants to create an empty folder
+                AND
+                  The ID is not being forced (this would also force the path)
+                AND
+                  This is not an external resource (external resources have no file path in the crate)
+            */}
+            {((hasFileUpload && plainFiles.length > 0) ||
+                (hasFolderUpload && (folderFiles.length > 0 || emptyFolder))) &&
+            !forceId &&
+            !externalResource ? (
                 <div>
-                    <Label className="flex gap-1 items-center py-1">
-                        Path{" "}
+                    <Label>
+                        Path
                         <HelpTooltip>
                             The path where the file(s) will be located in the Crate. To upload to a
                             different path, use the File Explorer for more convenience.
                         </HelpTooltip>
                     </Label>
-                    <Input value={path} onChange={(e) => setPath(e.target.value)} />
+                    <Input
+                        value={path}
+                        onChange={(e) => setPath(e.target.value)}
+                        placeholder={"/"}
+                    />
                 </div>
             ) : null}
 
-            <div>
-                <Label>Name</Label>
-                <Input
-                    value={name}
-                    placeholder={emptyFolder ? "Folder Name" : "Entity Name"}
-                    onChange={onNameChange}
-                    onKeyDown={onNameInputKeyDown}
-                />
-            </div>
+            {/* Only show the name field if either
+                  1. This is neither a file upload nor a folder upload (contextual entity creation)
+                  2. This is a web-based data entity (name can't be inferred)
+                  2. This is a file upload and there is a file selected
+                  3. This is a folder upload and either...
+                     3a. there are files selected
+                     3b. the user wants to create an empty folder
+               Because the name field is filled automatically when a folder or file is uploaded, we hide the field beforehand to reduce the visual complexity.
+            */}
+            {((!hasFileUpload && !hasFolderUpload) ||
+                (hasFileUpload && plainFiles.length > 0) ||
+                (hasFolderUpload && (folderFiles.length > 0 || emptyFolder)) ||
+                externalResource) && (
+                <div>
+                    <Label>
+                        Name
+                        <HelpTooltip>
+                            Give the entity a human-readable name that tells other humans what this
+                            entity describes
+                        </HelpTooltip>
+                    </Label>
+                    <Input
+                        value={name}
+                        placeholder={emptyFolder ? "Folder Name" : "Entity Name"}
+                        onChange={onNameChange}
+                        onKeyDown={onNameInputKeyDown}
+                    />
+                </div>
+            )}
 
             {(!hasFileUpload || externalResource) &&
             (!hasFolderUpload || externalResource) &&
             !forceId ? (
                 <div>
-                    <Label>Identifier</Label>
+                    <Label>
+                        {externalResource ? "URL" : "Identifier"}
+                        <HelpTooltip>
+                            The identifier must be unique and persistent. Consider using a PID such
+                            as a DOI as the identifier. In most cases, a locally unique ID is
+                            automatically generated for you.
+                        </HelpTooltip>
+                    </Label>
                     <Input
                         placeholder={
-                            autoId ||
-                            (externalResource ? "https://..." : "#localname or https://...")
+                            externalResource
+                                ? "https://..."
+                                : autoId || "Unique and persistent identifier"
                         }
                         value={identifier}
                         onChange={onIdentifierChange}
                     />
-                    <a
-                        href={
-                            hasFileUpload || hasFolderUpload
-                                ? "https://www.researchobject.org/ro-crate/specification/1.1/data-entities.html"
-                                : "https://www.researchobject.org/ro-crate/specification/1.1/contextual-entities.html#identifiers-for-contextual-entities"
-                        }
-                        target="_blank"
-                        className="text-sm inline-flex pt-1 text-muted-foreground hover:underline"
-                    >
-                        How to find a good identifier <ExternalLink className="w-3 h-3 ml-1" />
-                    </a>
                 </div>
             ) : null}
 
             {externalResource && !identifierValid && identifier.length > 0 ? (
                 <Alert className="text-warn border-warn/40">
                     <TriangleAlert />
-                    <AlertTitle>Identifier must be a valid absolute URL</AlertTitle>
+                    <AlertTitle>The provided URL is invalid.</AlertTitle>
+                    <AlertDescription>
+                        Make sure the URL is properly formatted, including the protocol. Example:
+                        https://doi.org/example.pid
+                    </AlertDescription>
                 </Alert>
             ) : null}
 

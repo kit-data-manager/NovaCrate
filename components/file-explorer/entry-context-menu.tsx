@@ -9,7 +9,7 @@ import {
 import { Copy, CurlyBraces, Download, FileIcon, FolderOpen, Plus, Trash } from "lucide-react"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import HelpTooltip from "@/components/help-tooltip"
-import { useCallback, useContext } from "react"
+import { useCallback, useContext, useMemo } from "react"
 import { useCopyToClipboard } from "usehooks-ts"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useFileExplorerState } from "@/lib/state/file-explorer-state"
@@ -78,7 +78,7 @@ export function EntryContextMenu({
         )
     }, [filePath, showCreateEntityModal])
 
-    const NewButtons = useCallback(() => {
+    const NewButtons = useMemo(() => {
         return (
             <ContextMenuSub>
                 <ContextMenuSubTrigger>
@@ -98,12 +98,7 @@ export function EntryContextMenu({
 
     const goToJsonEditor = useGoToPage("json-editor")
 
-    if (blankSpace)
-        return (
-            <ContextMenuContent>
-                <NewButtons />
-            </ContextMenuContent>
-        )
+    if (blankSpace) return <ContextMenuContent>{NewButtons}</ContextMenuContent>
 
     return (
         <ContextMenuContent className="min-w-52">
@@ -168,7 +163,7 @@ export function EntryContextMenu({
             ) : null}
 
             <ContextMenuSeparator />
-            <NewButtons />
+            {NewButtons}
         </ContextMenuContent>
     )
 }

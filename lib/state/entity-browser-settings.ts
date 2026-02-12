@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 
 export interface EntityBrowserSettings {
     showEntityType: boolean
@@ -17,33 +18,35 @@ export interface EntityBrowserSettings {
 }
 
 export const useEntityBrowserSettings = create<EntityBrowserSettings>()(
-    persist(
-        (set) => ({
-            showEntityType: true,
-            showIdInsteadOfName: false,
-            showPropertyOverview: false,
-            setShowEntityType(val: boolean) {
-                set({ showEntityType: val })
-            },
-            setShowIdInsteadOfName(val: boolean) {
-                set({ showIdInsteadOfName: val })
-            },
-            setShowPropertyOverview(val: boolean) {
-                set({ showPropertyOverview: val })
-            },
+    ssrSafe(
+        persist(
+            (set) => ({
+                showEntityType: true,
+                showIdInsteadOfName: false,
+                showPropertyOverview: false,
+                setShowEntityType(val: boolean) {
+                    set({ showEntityType: val })
+                },
+                setShowIdInsteadOfName(val: boolean) {
+                    set({ showIdInsteadOfName: val })
+                },
+                setShowPropertyOverview(val: boolean) {
+                    set({ showPropertyOverview: val })
+                },
 
-            sortBy: "name",
-            setSortBy(sortBy: "name" | "type" | "id") {
-                set({ sortBy })
-            },
+                sortBy: "name",
+                setSortBy(sortBy: "name" | "type" | "id") {
+                    set({ sortBy })
+                },
 
-            structureBy: "general-type",
-            setStructureBy(structureBy: "none" | "general-type" | "@type") {
-                set({ structureBy })
+                structureBy: "general-type",
+                setStructureBy(structureBy: "none" | "general-type" | "@type") {
+                    set({ structureBy })
+                }
+            }),
+            {
+                name: "entity-browser"
             }
-        }),
-        {
-            name: "entity-browser"
-        }
+        )
     )
 )
