@@ -157,17 +157,17 @@ export function EntityEditor({
     if (!entity) {
         return (
             <div>
-                <div className="flex mb-2 gap-2 p-2 bg-accent">
-                    <Skeleton className="w-10 h-7 my-1 bg-muted-foreground/30" />
-                    <Skeleton className="w-32 h-7 my-1 bg-muted-foreground/30" />
-                    <Skeleton className="w-32 h-7 my-1 bg-muted-foreground/30" />
+                <div className="flex mb-2 gap-2 p-2 bg-accent border-b border-t">
+                    <Skeleton className="w-10 h-8 bg-muted-foreground/30" />
+                    <Skeleton className="w-32 h-8 bg-muted-foreground/30" />
+                    <Skeleton className="w-32 h-8 bg-muted-foreground/30" />
                     <div className="grow" />
-                    <Skeleton className="w-32 h-7 my-1 bg-muted-foreground/30" />
-                    <Skeleton className="w-10 h-7 my-1 bg-muted-foreground/30" />
+                    <Skeleton className="w-32 h-8 bg-muted-foreground/30" />
+                    <Skeleton className="w-10 h-8 bg-muted-foreground/30" />
                 </div>
 
                 <div className="p-4 flex flex-col gap-4">
-                    <Skeleton className="h-10 w-52 mb-10 mt-4" />
+                    <Skeleton className="h-10 w-96 mb-10 mt-4" />
 
                     {[0, 0, 0, 0, 0, 0].map((_, i) => (
                         <div key={i} className="grid grid-cols-2 mr-10">

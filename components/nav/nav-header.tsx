@@ -257,7 +257,7 @@ export function NavHeader() {
             <div className="flex items-center">
                 <Package className="w-7 h-7 mr-2" />
                 {crateDataIsLoading || !crateName ? (
-                    <Skeleton className="bg-background h-8 w-32" />
+                    <Skeleton className="h-8 w-32" />
                 ) : (
                     <div className="mr-6 font-bold max-w-75 truncate animate-in">
                         <div className="text-xs font-normal">NovaCrate</div>

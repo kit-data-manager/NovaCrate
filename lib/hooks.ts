@@ -303,8 +303,8 @@ export function useAction(id: string) {
 }
 
 /**
- * Helper hook to determine if the Action Registry is ready yet. The Action Registry is always safe to use, but while
- * it is not ready, yet it may miss some actions
+ * Helper hook to determine if the Action Registry is ready. The Action Registry is always safe to use, but while
+ * it is not ready yet, it may miss some actions
  */
 export function useActionsReady() {
     return useActionsStore((store) => store.isReady())
