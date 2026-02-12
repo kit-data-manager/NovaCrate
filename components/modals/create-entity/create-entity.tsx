@@ -2,27 +2,18 @@ import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState }
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import {
-    ArrowLeft,
-    File,
-    Folder,
-    FolderDot,
-    Globe,
-    HardDrive,
-    Plus,
-    TriangleAlert
-} from "lucide-react"
+import { ArrowLeft, Plus, TriangleAlert } from "lucide-react"
 import { camelCaseReadable, encodeFilePath, fileNameWithoutEnding, isValidUrl } from "@/lib/utils"
 import { Error } from "@/components/error"
-import prettyBytes from "pretty-bytes"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { useEditorState } from "@/lib/state/editor-state"
 import HelpTooltip from "@/components/help-tooltip"
 import { useAutoId } from "@/lib/hooks"
 import { CreateEntityHint } from "@/components/modals/create-entity/create-entity-hint"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { FileUpload } from "@/components/modals/create-entity/file-upload"
+import { FolderUpload } from "@/components/modals/create-entity/folder-upload"
 
 export function CreateEntity({
     selectedType,
@@ -248,107 +239,30 @@ export function CreateEntity({
 
             <CreateEntityHint selectedType={selectedType} />
 
-            {hasFileUpload ? (
-                <div>
-                    <Tabs
-                        className="mb-4"
-                        value={externalResource ? "without-file" : "with-file"}
-                        onValueChange={(v) => {
-                            setExternalResource(v === "without-file")
-                        }}
-                    >
-                        <TabsList className="flex self-center">
-                            <TabsTrigger value="with-file">
-                                <HardDrive className="size-4" /> Local File
-                            </TabsTrigger>
-                            <TabsTrigger value="without-file">
-                                <Globe className="size-4" /> Web Resource
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-                    {externalResource ? null : (
-                        <>
-                            <Label>File</Label>
-                            <div>
-                                <Button
-                                    className="min-w-0 max-w-full truncate"
-                                    variant="outline"
-                                    onClick={openFilePicker}
-                                >
-                                    <File className="size-4 mr-2 shrink-0" />
-                                    <span className="truncate min-w-0">
-                                        {plainFiles.length == 0
-                                            ? "Select File"
-                                            : plainFiles[0].name}
-                                    </span>
-                                </Button>
-                                <span className="ml-2 text-muted-foreground">
-                                    {plainFiles.length == 0 ? "" : prettyBytes(plainFiles[0].size)}
-                                </span>
-                            </div>
-                        </>
-                    )}
-                </div>
-            ) : null}
+            {hasFileUpload && (
+                <FileUpload
+                    externalResource={externalResource}
+                    onValueChange={(v) => {
+                        setExternalResource(v === "without-file")
+                    }}
+                    onClick={openFilePicker}
+                    files={plainFiles}
+                />
+            )}
 
-            {hasFolderUpload ? (
-                <div>
-                    <Tabs
-                        className="mb-4"
-                        value={externalResource ? "without-file" : "with-file"}
-                        onValueChange={(v) => {
-                            setExternalResource(v === "without-file")
-                        }}
-                    >
-                        <TabsList className="flex self-center">
-                            <TabsTrigger value="with-file">
-                                <HardDrive className="size-4" /> Local Folder
-                            </TabsTrigger>
-                            <TabsTrigger value="without-file">
-                                <Globe className="size-4" /> Web Resource
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-                    {externalResource ? null : (
-                        <>
-                            <Label>Folder</Label>
-                            <div className="flex items-center">
-                                {!emptyFolder ? (
-                                    <Button
-                                        className="min-w-0 max-w-full truncate shrink"
-                                        variant="outline"
-                                        onClick={openFolderPicker}
-                                    >
-                                        <Folder className="size-4 mr-2" />
-                                        <span className={"truncate min-w-0"}>
-                                            {folderFiles.length == 0
-                                                ? "Select Folder"
-                                                : folderFiles[0].webkitRelativePath.split("/")[0]}
-                                        </span>
-                                    </Button>
-                                ) : null}
-                                {baseFileName || emptyFolder ? null : (
-                                    <span className="m-2 text-muted-foreground">or</span>
-                                )}
-                                {baseFileName ? null : (
-                                    <Button
-                                        variant={emptyFolder ? "default" : "outline"}
-                                        onClick={() => setEmptyFolder((v) => !v)}
-                                    >
-                                        <FolderDot className="size-4 mr-2" />
-                                        Empty Folder
-                                    </Button>
-                                )}
-                                <span className="ml-2 text-muted-foreground">
-                                    {folderFiles.length == 0
-                                        ? ""
-                                        : `${folderFiles.length} files (${prettyBytes(folderFiles.map((f) => f.size).reduce((a, b) => a + b))} total)`}
-                                </span>
-                            </div>
-                        </>
-                    )}
-                </div>
-            ) : null}
+            {hasFolderUpload && (
+                <FolderUpload
+                    externalResource={externalResource}
+                    onValueChange={(v) => {
+                        setExternalResource(v === "without-file")
+                    }}
+                    emptyFolder={emptyFolder}
+                    onClickSelectFolder={openFolderPicker}
+                    files={folderFiles}
+                    baseFileName={baseFileName}
+                    onClickEmptyFolder={() => setEmptyFolder((v) => !v)}
+                />
+            )}
 
             {/* Only show the path field if either
                   1. This is a file upload and there is a file selected

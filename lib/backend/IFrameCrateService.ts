@@ -18,10 +18,6 @@ export class IFrameCrateService extends BrowserBasedCrateService {
         return []
     }
 
-    async downloadFile(): Promise<void> {
-        return
-    }
-
     async createFileEntity(): Promise<boolean> {
         throw "Not supported by iframe service"
     }
