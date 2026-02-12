@@ -222,8 +222,9 @@ export const RoCrateV1_1 = {
         },
 
         async (entity) => {
+            if (!ctx.serviceProvider || !ctx.crateData.crateId) return []
+            if (!ctx.serviceProvider.featureFlags.fileManagement) return []
             const results: EntityValidationResult[] = []
-            if (!ctx.serviceProvider || !ctx.crateData.crateId) return results
 
             if (isDataEntity(entity) && canHavePreview(entity)) {
                 try {
