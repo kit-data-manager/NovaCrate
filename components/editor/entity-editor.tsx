@@ -17,7 +17,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { InternalEntityHint } from "@/components/editor/hints/internal-entity-hint"
 import { ActionButton } from "@/components/actions/action-buttons"
-import { useGoToFileExplorer, useGoToGraph } from "@/lib/hooks"
+import { useCrateServiceFeatureFlags, useGoToFileExplorer, useGoToGraph } from "@/lib/hooks"
 import { EntityBadge } from "../entity/entity-badge"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useShallow } from "zustand/react/shallow"
@@ -41,6 +41,7 @@ export function EntityEditor({
     const removePropertyEntry = useEditorState((store) => store.removePropertyEntry)
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
+    const flags = useCrateServiceFeatureFlags()
 
     // Type selection for @type fields
     const [typeSelectModalOpen, setTypeSelectModalOpen] = useState(false)
@@ -59,9 +60,9 @@ export function EntityEditor({
     }, [entity])
 
     const canHavePreview = useMemo(() => {
-        if (!entity) return false
+        if (!entity || !flags?.fileManagement) return false
         return canHavePreviewUtil(entity)
-    }, [entity])
+    }, [entity, flags?.fileManagement])
 
     const togglePreview = useCallback(() => {
         if (canHavePreview) {

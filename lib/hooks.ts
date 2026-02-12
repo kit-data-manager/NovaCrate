@@ -151,9 +151,12 @@ export function useGoToFileExplorer(entity?: IEntity) {
     const pathname = usePathname()
     const router = useRouter()
     const setPreviewingFilePath = useFileExplorerState((store) => store.setPreviewingFilePath)
+    const flags = useCrateServiceFeatureFlags()
 
     return useCallback(
         (_entity?: IEntity) => {
+            if (!flags?.fileManagement) return
+
             if (_entity || entity) {
                 setPreviewingFilePath(_entity?.["@id"] || entity?.["@id"] || "")
             }
@@ -165,7 +168,7 @@ export function useGoToFileExplorer(entity?: IEntity) {
                     .join("/") + "/file-explorer"
             router.push(href)
         },
-        [entity, pathname, router, setPreviewingFilePath]
+        [entity, flags?.fileManagement, pathname, router, setPreviewingFilePath]
     )
 }
 
