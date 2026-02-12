@@ -9,13 +9,15 @@ const eslintConfig = defineConfig([
         ".next/**",
         "out/**",
         "build/**",
-        "next-env.d.ts"
+        "next-env.d.ts",
+        "public/**.js"
     ]),
     [
         {
             rules: {
                 "react-hooks/refs": "warn",
-                "react-hooks/set-state-in-effect": "warn"
+                "react-hooks/set-state-in-effect": "off",
+                "react-hooks/preserve-manual-memoization": "off"
             }
         }
     ]

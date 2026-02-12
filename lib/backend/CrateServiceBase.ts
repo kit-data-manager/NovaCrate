@@ -71,6 +71,8 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
         return id
     }
 
+    abstract duplicateCrate(crateId: string, newName: string): Promise<string>
+
     abstract createEntity(
         crateId: string,
         entityData: IEntity,

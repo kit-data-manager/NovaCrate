@@ -1,6 +1,6 @@
 import { Action } from "@/lib/state/actions"
 import React, { useCallback, useEffect, useMemo } from "react"
-import { useActionsStore } from "@/components/providers/actions-provider"
+import { useActionsStore } from "@/lib/state/actions"
 import { ArrowBigUp } from "lucide-react"
 import { useShallow } from "zustand/react/shallow"
 

@@ -2,7 +2,7 @@ import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/di
 import React, { useMemo } from "react"
 import { ExternalLinkIcon, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useTypeIcon } from "@/components/type-icon"
+import { TypeIcon } from "@/components/type-icon"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useEditorState } from "@/lib/state/editor-state"
 
@@ -19,7 +19,6 @@ function TypeBadge({
     onTypeSelect(value: string): void
     restrictToClasses?: SlimClass[]
 }) {
-    const Icon = useTypeIcon(type)
     const context = useEditorState((store) => store.crateContext)
 
     const resolvedType = useMemo(() => {
@@ -39,7 +38,7 @@ function TypeBadge({
             className={`p-4 border rounded-lg flex gap-4 hover:bg-secondary cursor-pointer transition ${disabled ? "opacity-30 cursor-not-allowed pointer-events-none" : ""}`}
             onClick={() => (disabled ? "" : onTypeSelect(type))}
         >
-            <Icon className="mt-1 w-5 h-5 shrink-0" />
+            <TypeIcon type={type} className="mt-1 w-5 h-5 shrink-0" />
             <div>
                 <div className="font-bold">{name || type}</div>
                 <div className="text-sm">{description}</div>

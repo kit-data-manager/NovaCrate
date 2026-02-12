@@ -1,19 +1,29 @@
 {
-  "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext", "webworker", "dom.asynciterable"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "moduleResolution": "Bundler",
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "incremental": true,
-    "paths": {
-      "@/*": ["./*"]
+    "compilerOptions": {
+        "lib": ["dom", "dom.iterable", "esnext", "webworker", "dom.asynciterable"],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "moduleResolution": "Bundler",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "incremental": true,
+        "paths": {
+            "@/*": ["./*"]
+        },
+        "target": "ES2015",
+        "outDir": "public/schema-worker"
     },
-    "target": "ES2015",
-    "outDir": "public/schema-worker"
-  },
-  "include": ["lib/schema-worker/**/*.ts", "lib/opfs-worker/**/*.ts", "lib/data-types.d.ts", "lib/utils.ts", "lib/function-worker.ts", "lib/CrateServiceProvider.ts", "lib/state/schema-resolver.ts", "lib/frogcat__ttl2jsonld.d.ts"],
-  "exclude": ["node_modules"],
+    "include": [
+        "lib/schema-worker/**/*.ts",
+        "lib/opfs-worker/**/*.ts",
+        "lib/data-types.d.ts",
+        "lib/utils.ts",
+        "lib/function-worker.ts",
+        "lib/CrateServiceProvider.ts",
+        "lib/state/schema-resolver.ts",
+        "lib/frogcat__ttl2jsonld.d.ts",
+        "lib/property-value-utils.ts"
+    ],
+    "exclude": ["node_modules"]
 }

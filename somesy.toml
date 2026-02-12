@@ -1,6 +1,6 @@
 [project]
 name = "novacrate"
-version = "1.7.1"
+version = "1.8.0"
 description = "Web-based interactive editor for creating, editing and visualising research object crates."
 license = "Apache-2.0"
 repository = "https://github.com/kit-data-manager/NovaCrate"

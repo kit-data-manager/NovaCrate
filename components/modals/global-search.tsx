@@ -11,7 +11,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { getEntityDisplayName } from "@/lib/utils"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { useGoToEntityEditor, useGoToPage } from "@/lib/hooks"
-import { useActionsStore } from "@/components/providers/actions-provider"
+import { useActionsStore } from "@/lib/state/actions"
 import { ActionCommandItem } from "@/components/actions/action-buttons"
 import { useShallow } from "zustand/react/shallow"
 

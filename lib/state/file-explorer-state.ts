@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 
 interface FileExplorerState {
     downloadError: unknown
@@ -7,13 +8,15 @@ interface FileExplorerState {
     setPreviewingFilePath(path: string): void
 }
 
-export const useFileExplorerState = create<FileExplorerState>()((set) => ({
-    downloadError: undefined,
-    previewingFilePath: "",
-    setPreviewingFilePath(path: string) {
-        set({ previewingFilePath: path })
-    },
-    setDownloadError(e: unknown) {
-        set({ downloadError: e })
-    }
-}))
+export const useFileExplorerState = create<FileExplorerState>()(
+    ssrSafe((set) => ({
+        downloadError: undefined,
+        previewingFilePath: "",
+        setPreviewingFilePath(path: string) {
+            set({ previewingFilePath: path })
+        },
+        setDownloadError(e: unknown) {
+            set({ downloadError: e })
+        }
+    }))
+)

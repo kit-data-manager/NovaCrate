@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 
 export type ValidationSettings = {
     enabled: boolean
@@ -7,15 +8,17 @@ export type ValidationSettings = {
 }
 
 export const validationSettings = create<ValidationSettings>()(
-    persist(
-        (set) => ({
-            enabled: true,
-            setEnabled(enabled: boolean) {
-                set({ enabled })
+    ssrSafe(
+        persist(
+            (set) => ({
+                enabled: true,
+                setEnabled(enabled: boolean) {
+                    set({ enabled })
+                }
+            }),
+            {
+                name: "validation-settings"
             }
-        }),
-        {
-            name: "validation-settings"
-        }
+        )
     )
 )

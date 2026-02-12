@@ -1,5 +1,6 @@
-import { createStore } from "zustand/vanilla"
 import { persist } from "zustand/middleware"
+import { create } from "zustand"
+import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 
 export interface GraphSettings {
     aggregateProperties: boolean
@@ -8,8 +9,8 @@ export interface GraphSettings {
     setShowTextProperties(val: boolean): void
 }
 
-export const createGraphSettings = () =>
-    createStore<GraphSettings>()(
+export const useGraphSettings = create<GraphSettings>()(
+    ssrSafe(
         persist(
             (set) => ({
                 aggregateProperties: false,
@@ -26,3 +27,4 @@ export const createGraphSettings = () =>
             }
         )
     )
+)
