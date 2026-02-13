@@ -3,7 +3,7 @@
 import { memo, PropsWithChildren, useContext, useEffect } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Nav } from "@/components/nav/nav"
-import { useParams, usePathname } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { SchemaWorkerProvider } from "@/components/providers/schema-worker-provider"
 import { GlobalModalProvider } from "@/components/providers/global-modals-provider"
 import { useCrateName, useCrateServiceFeatureFlags, useRecentCrates } from "@/lib/hooks"
@@ -48,7 +48,9 @@ const ProviderBoundary = memo(function ProviderBoundary(props: PropsWithChildren
             <CrateValidationSupervisor />
             <DataSaveHint />
             <UnsavedChangesProtector />
-            {flags?.iframeMessaging && <IFrameMessenger />}
+            {flags?.iframeMessaging && process.env.NEXT_PUBLIC_IFRAME_TARGET_ORIGINS && (
+                <IFrameMessenger />
+            )}
             <Nav>{props.children}</Nav>
         </>
     )

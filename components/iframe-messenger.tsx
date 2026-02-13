@@ -59,24 +59,21 @@ export function IFrameMessenger() {
         [crateData]
     )
 
-    const returnCrate = useCallback(
-        async (msg: NovaCrateMessageIncoming & { type: "GET_CRATE" }) => {
-            if (loadedCrateID) {
-                const crate = await crateData.serviceProvider?.getCrate(loadedCrateID)
-                if (crate) {
-                    window.parent.postMessage(
-                        {
-                            type: "GET_CRATE_RESPONSE",
-                            source: "novacrate",
-                            metadata: JSON.stringify(crate)
-                        } satisfies NovaCrateMessageOutgoing,
-                        "*" // TODO use appropriate origin
-                    )
-                }
+    const returnCrate = useCallback(async () => {
+        if (loadedCrateID) {
+            const crate = await crateData.serviceProvider?.getCrate(loadedCrateID)
+            if (crate) {
+                window.parent.postMessage(
+                    {
+                        type: "GET_CRATE_RESPONSE",
+                        source: "novacrate",
+                        metadata: JSON.stringify(crate)
+                    } satisfies NovaCrateMessageOutgoing,
+                    z.string().parse(process.env.NEXT_PUBLIC_IFRAME_TARGET_ORIGINS)
+                )
             }
-        },
-        [crateData.serviceProvider, loadedCrateID]
-    )
+        }
+    }, [crateData.serviceProvider, loadedCrateID])
 
     const hasSentReadyMessage = useRef(false)
     useEffect(() => {
@@ -92,9 +89,7 @@ export function IFrameMessenger() {
                         break
                     }
                     case "GET_CRATE": {
-                        returnCrate(msg.data).catch((e) =>
-                            console.error("Error in IFrameMessenger: ", e)
-                        )
+                        returnCrate().catch((e) => console.error("Error in IFrameMessenger: ", e))
                         break
                     }
                 }
@@ -111,7 +106,7 @@ export function IFrameMessenger() {
                     novaCrateVersion: packageJson.version,
                     messageInterfaceVersion: 1
                 } satisfies NovaCrateMessageOutgoing,
-                "*" // TODO use appropriate origin
+                z.string().parse(process.env.NEXT_PUBLIC_IFRAME_TARGET_ORIGINS)
             )
         hasSentReadyMessage.current = true
 
