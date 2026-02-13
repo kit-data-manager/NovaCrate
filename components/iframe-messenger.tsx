@@ -11,6 +11,11 @@ const incomingMessageSchema = z.xor([
     }),
     z.object({
         target: z.literal("novacrate"),
+        type: z.literal("UPDATE_CRATE"),
+        metadata: z.string()
+    }),
+    z.object({
+        target: z.literal("novacrate"),
         type: z.literal("GET_CRATE")
     })
 ])
@@ -43,13 +48,11 @@ export function IFrameMessenger() {
 
     const loadCrate = useCallback(
         async (msg: NovaCrateMessageIncoming & { type: "LOAD_CRATE" }) => {
-            let id: string | undefined
-            if (msg.metadata)
-                id = await crateData.serviceProvider?.createCrateFromMetadataFile(
-                    new Blob([msg.metadata], {
-                        type: "application/json"
-                    })
-                )
+            let id = await crateData.serviceProvider?.createCrateFromMetadataFile(
+                new Blob([msg.metadata], {
+                    type: "application/json"
+                })
+            )
 
             if (id) {
                 crateData.setCrateId(id)
@@ -57,6 +60,17 @@ export function IFrameMessenger() {
             }
         },
         [crateData]
+    )
+
+    const updateCrate = useCallback(
+        async (msg: NovaCrateMessageIncoming & { type: "UPDATE_CRATE" }) => {
+            if (!loadedCrateID)
+                return console.warn("Tried to update crate, but no crate was loaded yet.")
+
+            await crateData.serviceProvider?.saveRoCrateMetadataJSON(loadedCrateID, msg.metadata)
+            crateData.reload()
+        },
+        [loadedCrateID, crateData]
     )
 
     const returnCrate = useCallback(async () => {
@@ -75,24 +89,32 @@ export function IFrameMessenger() {
         }
     }, [crateData.serviceProvider, loadedCrateID])
 
+    const handleIncomingMessage = useCallback(
+        (msg: NovaCrateMessageIncoming) => {
+            switch (msg.type) {
+                case "LOAD_CRATE": {
+                    loadCrate(msg).catch((e) => console.error("Error in IFrameMessenger: ", e))
+                    break
+                }
+                case "UPDATE_CRATE": {
+                    updateCrate(msg).catch((e) => console.error("Error in IFrameMessenger: ", e))
+                    break
+                }
+                case "GET_CRATE": {
+                    returnCrate().catch((e) => console.error("Error in IFrameMessenger: ", e))
+                    break
+                }
+            }
+        },
+        [loadCrate, returnCrate, updateCrate]
+    )
+
     const hasSentReadyMessage = useRef(false)
     useEffect(() => {
         const messageListener = async (e: MessageEvent) => {
-            console.log("Received message", e)
             const msg = incomingMessageSchema.safeParse(e.data)
             if (msg.success) {
-                switch (msg.data.type) {
-                    case "LOAD_CRATE": {
-                        loadCrate(msg.data).catch((e) =>
-                            console.error("Error in IFrameMessenger: ", e)
-                        )
-                        break
-                    }
-                    case "GET_CRATE": {
-                        returnCrate().catch((e) => console.error("Error in IFrameMessenger: ", e))
-                        break
-                    }
-                }
+                handleIncomingMessage(msg.data)
             }
         }
 
@@ -111,7 +133,7 @@ export function IFrameMessenger() {
         hasSentReadyMessage.current = true
 
         return () => window.removeEventListener("message", messageListener)
-    }, [loadCrate, returnCrate])
+    }, [handleIncomingMessage])
 
     return null
 }

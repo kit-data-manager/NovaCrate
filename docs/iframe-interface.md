@@ -68,7 +68,7 @@ This message is sent whenever the user saves their changes in NovaCrate. It cont
 in the `metadata` field.
 
 ```typescript
-type PullCrateResponseMessage = {
+type CrateChangedMessage = {
     source: "novacrate"
     type: "CRATE_CHANGED"
     metadata: string
@@ -83,7 +83,7 @@ This message is sent in response to a `GET_CRATE` message. It contains the curre
 in the `metadata` field.
 
 ```typescript
-type PullCrateResponseMessage = {
+type GetCrateResponseMessage = {
     source: "novacrate"
     type: "GET_CRATE_RESPONSE"
     metadata: string
@@ -103,7 +103,7 @@ This message is used to load a crate into NovaCrate from the parent page. It sho
 by the parent page. In Iframe mode, NovaCrate is unresponsive until a crate is loaded through the `LOAD_CRATE` message.
 
 ```typescript
-type PullCrateResponseMessage = {
+type LoadCrateResponseMessage = {
     target: "novacrate"
     type: "LOAD_CRATE"
     metadata: string
@@ -112,13 +112,29 @@ type PullCrateResponseMessage = {
 
 - `metadata` is a JSON string representing the crate metadata to be loaded. Corresponds to the content of the `ro-crate-metadata.json-ld` file.
 
+#### UPDATE_CRATE
+
+This message is used to update a crate that has already been loaded into NovaCrate. NovaCrate will automatically reload all entities from the updated crate,
+overwriting local changes in case of conflicts. In case an entitity did not change in the update and the user has made changes, the changes are preserved.
+
+```typescript
+type UpdateCrateMessage = {
+    target: "novacrate"
+    type: "UPDATE_CRATE"
+    metadata: string
+}
+```
+
+- `metadata` is a JSON string representing the crate metadata to be loaded. Corresponds to the content of the `ro-crate-metadata.json-ld` file.
+
+
 #### GET_CRATE
 
 This message can be sent by the parent page to request the current state of the crate from NovaCrate. In return, a `GET_CRATE_RESPONSE` message will be sent by NovaCrate. Note that
 NovaCrate automatically sends a `CRATE_CHANGED` message whenever the user saves their changes in NovaCrate.
 
 ```typescript
-type PullCrateResponseMessage = {
+type GetCrateMessage = {
     target: "novacrate"
     type: "GET_CRATE"
 }
