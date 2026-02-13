@@ -1,5 +1,4 @@
 import { handleSpringError } from "@/lib/spring-error-handling"
-import { makeCrateServiceFeatureFlags } from "@/lib/utils"
 
 export abstract class AbstractCrateService implements CrateService {
     get featureFlags() {
@@ -126,4 +125,15 @@ export abstract class AbstractCrateService implements CrateService {
     abstract saveRoCrateMetadataJSON(crateId: string, json: string): Promise<void>
 
     abstract updateEntity(crateId: string, entityData: IEntity): Promise<boolean>
+}
+
+export function makeCrateServiceFeatureFlags(
+    flags: Partial<CrateServiceFeatureFlags> = {}
+): CrateServiceFeatureFlags {
+    return {
+        fileManagement: true,
+        iframeMessaging: false,
+        crateSelectionControlledExternally: false,
+        ...flags
+    }
 }

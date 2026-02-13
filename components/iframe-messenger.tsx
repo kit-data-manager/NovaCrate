@@ -6,12 +6,12 @@ import packageJson from "@/package.json"
 const incomingMessageSchema = z.xor([
     z.object({
         target: z.literal("novacrate"),
-        type: z.literal("PUSH_CRATE"),
-        metadata: z.optional(z.string())
+        type: z.literal("LOAD_CRATE"),
+        metadata: z.string()
     }),
     z.object({
         target: z.literal("novacrate"),
-        type: z.literal("PULL_CRATE")
+        type: z.literal("GET_CRATE")
     })
 ])
 
@@ -24,8 +24,13 @@ const outgoingMessageSchema = z.xor([
     }),
     z.object({
         source: z.literal("novacrate"),
-        type: z.literal("PULL_CRATE_RESPONSE"),
-        metadata: z.optional(z.string())
+        type: z.literal("GET_CRATE_RESPONSE"),
+        metadata: z.string()
+    }),
+    z.object({
+        source: z.literal("novacrate"),
+        type: z.literal("CRATE_CHANGED"),
+        metadata: z.string()
     })
 ])
 
@@ -37,7 +42,7 @@ export function IFrameMessenger() {
     const [loadedCrateID, setLoadedCrateID] = useState<string | undefined>()
 
     const loadCrate = useCallback(
-        async (msg: NovaCrateMessageIncoming & { type: "PUSH_CRATE" }) => {
+        async (msg: NovaCrateMessageIncoming & { type: "LOAD_CRATE" }) => {
             let id: string | undefined
             if (msg.metadata)
                 id = await crateData.serviceProvider?.createCrateFromMetadataFile(
@@ -54,6 +59,25 @@ export function IFrameMessenger() {
         [crateData]
     )
 
+    const returnCrate = useCallback(
+        async (msg: NovaCrateMessageIncoming & { type: "GET_CRATE" }) => {
+            if (loadedCrateID) {
+                const crate = await crateData.serviceProvider?.getCrate(loadedCrateID)
+                if (crate) {
+                    window.parent.postMessage(
+                        {
+                            type: "GET_CRATE_RESPONSE",
+                            source: "novacrate",
+                            metadata: JSON.stringify(crate)
+                        } satisfies NovaCrateMessageOutgoing,
+                        "*" // TODO use appropriate origin
+                    )
+                }
+            }
+        },
+        [crateData.serviceProvider, loadedCrateID]
+    )
+
     const hasSentReadyMessage = useRef(false)
     useEffect(() => {
         const messageListener = async (e: MessageEvent) => {
@@ -61,8 +85,16 @@ export function IFrameMessenger() {
             const msg = incomingMessageSchema.safeParse(e.data)
             if (msg.success) {
                 switch (msg.data.type) {
-                    case "PUSH_CRATE": {
-                        loadCrate(msg.data)
+                    case "LOAD_CRATE": {
+                        loadCrate(msg.data).catch((e) =>
+                            console.error("Error in IFrameMessenger: ", e)
+                        )
+                        break
+                    }
+                    case "GET_CRATE": {
+                        returnCrate(msg.data).catch((e) =>
+                            console.error("Error in IFrameMessenger: ", e)
+                        )
                         break
                     }
                 }
@@ -84,7 +116,7 @@ export function IFrameMessenger() {
         hasSentReadyMessage.current = true
 
         return () => window.removeEventListener("message", messageListener)
-    }, [loadCrate])
+    }, [loadCrate, returnCrate])
 
     return null
 }

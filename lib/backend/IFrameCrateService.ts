@@ -1,5 +1,5 @@
 import { BrowserBasedCrateService } from "@/lib/backend/BrowserBasedCrateService"
-import { makeCrateServiceFeatureFlags } from "@/lib/utils"
+import { makeCrateServiceFeatureFlags } from "@/lib/backend/AbstractCrateService"
 import { opfsFunctions } from "@/lib/opfs-worker/functions"
 
 export class IFrameCrateService extends BrowserBasedCrateService {

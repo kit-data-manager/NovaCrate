@@ -392,14 +392,3 @@ export interface AutoReference {
     propertyName: string
     valueIdx: number
 }
-
-export function makeCrateServiceFeatureFlags(
-    flags: Partial<CrateServiceFeatureFlags> = {}
-): CrateServiceFeatureFlags {
-    return {
-        fileManagement: true,
-        iframeMessaging: false,
-        crateSelectionControlledExternally: false,
-        ...flags
-    }
-}
