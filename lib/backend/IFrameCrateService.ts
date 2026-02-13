@@ -45,4 +45,14 @@ export class IFrameCrateService extends BrowserBasedCrateService {
         opfsFunctions.setCrateStorageDir(tempDir) // use temp dir locally
         return super.createCrateFromMetadataFile(metadataFile)
     }
+
+    private onSaveCallback?: () => void
+    setOnSaveCallback(callback: () => void) {
+        this.onSaveCallback = callback
+    }
+
+    async saveRoCrateMetadataJSON(crateId: string, json: string): Promise<void> {
+        await super.saveRoCrateMetadataJSON(crateId, json)
+        if (this.onSaveCallback) this.onSaveCallback()
+    }
 }

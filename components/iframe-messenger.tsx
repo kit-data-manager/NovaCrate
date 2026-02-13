@@ -2,6 +2,7 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import { z } from "zod/mini"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import packageJson from "@/package.json"
+import { IFrameCrateService } from "@/lib/backend/IFrameCrateService"
 
 const incomingMessageSchema = z.xor([
     z.object({
@@ -134,6 +135,27 @@ export function IFrameMessenger() {
 
         return () => window.removeEventListener("message", messageListener)
     }, [handleIncomingMessage])
+
+    const onSaveCallback = useCallback(async () => {
+        if (!loadedCrateID) return
+        const crate = await crateData.serviceProvider?.getCrate(loadedCrateID)
+        if (!crate) return
+        window.parent.postMessage(
+            {
+                source: "novacrate",
+                type: "CRATE_CHANGED",
+                metadata: JSON.stringify(crate)
+            } satisfies NovaCrateMessageOutgoing,
+            z.string().parse(process.env.NEXT_PUBLIC_IFRAME_TARGET_ORIGINS)
+        )
+    }, [crateData.serviceProvider, loadedCrateID])
+
+    // Register callback for sending change notification to parent
+    useEffect(() => {
+        if (crateData.serviceProvider instanceof IFrameCrateService) {
+            crateData.serviceProvider.setOnSaveCallback(onSaveCallback)
+        }
+    }, [crateData.serviceProvider, onSaveCallback])
 
     return null
 }
