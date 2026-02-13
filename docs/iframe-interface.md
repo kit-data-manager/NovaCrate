@@ -39,7 +39,16 @@ please get in contact.
 ## Message Interface (v1)
 
 Communication between the embedding page (parent page) and NovaCrate is done via the [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) API. The following
-messages can be exchanged between the two pages:
+messages can be exchanged between the two pages.
+
+| Direction           | Type                 | Description                          |                             |
+|---------------------|----------------------|--------------------------------------|-----------------------------|
+| Parent <- NovaCrate | `READY`              | Sent when NovaCrate is ready         | [Link](#READY)              |
+| Parent <- NovaCrate | `CRATE_CHANGED`      | Sent when user saves changes         | [Link](#CRATE_CHANGED)      |
+| Parent <- NovaCrate | `GET_CRATE_RESPONSE` | In response to `GET_CRATE`           | [Link](#GET_CRATE_RESPONSE) |
+| Parent -> NovaCrate | `LOAD_CRATE`         | To load a crate into NovaCrate       | [Link](#LOAD_CRATE)         |
+| Parent -> NovaCrate | `UPDATE_CRATE`       | To update the currently loaded crate | [Link](#UPDATE_CRATE)       |
+| Parent -> NovaCrate | `GET_CRATE`          | To get the currently loaded crate    | [Link](#GET_CRATE)          |
 
 ### Messages sent by NovaCrate
 
