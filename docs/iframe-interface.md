@@ -10,7 +10,7 @@ To use NovaCrate in Iframe mode, you must host an instance of NovaCrate yourself
 
 ```html
 <iframe src="https://your-novacrate-instance.org/editor/iframe/entities" width="1200" height="800" />
-<!--                                                      ^^^^^^ This enables Iframe mode         -->
+<!--                                                    ^^^^^^ This enables Iframe mode           -->
 ```
 
 Note the additional `iframe` segment in the URL.
