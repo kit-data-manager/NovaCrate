@@ -5,7 +5,7 @@ NovaCrate can be embedded into other frontends using the HTML-5 `<iframe>` tag. 
 ## Integration
 
 To use NovaCrate in Iframe mode, you must host an instance of NovaCrate yourself. Iframe integration is disabled in the official instance for safety reasons. To enable Iframe integration
-in your own instance, set the environment variable `IFRAME_TARGET_ORIGIN`. Set this variable to the origin of the parent page as described in the [postMessage](https://developer.mozilla.org/de/docs/Web/API/Window/postMessage#targetorigin) documentation.
+in your own instance, set the environment variable `IFRAME_TARGET_ORIGIN`. Set this variable to the origin of the parent page as described in the [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage#targetorigin) documentation.
 Example with docker compose:
 
 ```yaml
@@ -32,7 +32,7 @@ Iframe integration is only enabled when both the `IFRAME_TARGET_ORIGIN` environm
 Currently, the Iframe mode of NovaCrate is limited to metadata editing. All file and folder management capabilities that are present in standalone NovaCrate are disabled.
 If file management is a feature you need in Iframe mode, please get in contact.
 
-The Iframe mode of NovaCrate is locked down to only the crate that is loaded into the editor by the parent page. Users will not have access to their other crates they have used
+The Iframe mode of NovaCrate is locked down to only the crate loaded into the editor by the parent page. Users will not have access to their other crates they have used
 on your NovaCrate instance. They will also not be able to access the main menu or create a new crate. Instead, a crate must be provided by the parent page initially. If this limitation is a problem for you,
 please get in contact.
 
@@ -68,7 +68,7 @@ type ReadyMessage = {
 ```
 
 - `novaCrateVersion` is the version of NovaCrate that is currently running in the iframe.  
-- `messageInterfaceVersion` is the version of the message interface that is currently used. This number is incremented only for breaking changes. Please check if this version matches the expected version in your appliation.
+- `messageInterfaceVersion` is the version of the message interface that is currently used. This number is incremented only for breaking changes. Please check if this version matches the expected version in your application.
 If your application sends messages that NovaCrate (no longer) understands, they will be silently ignored.
 
 #### CRATE_CHANGED
@@ -84,7 +84,7 @@ type CrateChangedMessage = {
 }
 ```
 
-- `metadata` is a JSON string representing the current state of the crate metadata. Corresponds to the content of the `ro-crate-metadata.json-ld` file.
+- `metadata` is a JSON string representing the current state of the crate metadata. Corresponds to the content of the `ro-crate-metadata.json` file.
 
 #### GET_CRATE_RESPONSE
 
@@ -99,7 +99,7 @@ type GetCrateResponseMessage = {
 }
 ```
 
-- `metadata` is a JSON string representing the current state of the crate metadata. Corresponds to the content of the `ro-crate-metadata.json-ld` file.
+- `metadata` is a JSON string representing the current state of the crate metadata. Corresponds to the content of the `ro-crate-metadata.json` file.
 
 
 ### Messages sent by parent page
@@ -112,19 +112,19 @@ This message is used to load a crate into NovaCrate from the parent page. It sho
 by the parent page. In Iframe mode, NovaCrate is unresponsive until a crate is loaded through the `LOAD_CRATE` message.
 
 ```typescript
-type LoadCrateResponseMessage = {
+type LoadCrateMessage = {
     target: "novacrate"
     type: "LOAD_CRATE"
     metadata: string
 }
 ```
 
-- `metadata` is a JSON string representing the crate metadata to be loaded. Corresponds to the content of the `ro-crate-metadata.json-ld` file.
+- `metadata` is a JSON string representing the crate metadata to be loaded. Corresponds to the content of the `ro-crate-metadata.json` file.
 
 #### UPDATE_CRATE
 
 This message is used to update a crate that has already been loaded into NovaCrate. NovaCrate will automatically reload all entities from the updated crate,
-overwriting local changes in case of conflicts. In case an entitity did not change in the update and the user has made changes, the changes are preserved.
+overwriting local changes in case of conflicts. In case an entity did not change in the update and the user has made changes, the changes are preserved.
 
 ```typescript
 type UpdateCrateMessage = {
@@ -134,7 +134,7 @@ type UpdateCrateMessage = {
 }
 ```
 
-- `metadata` is a JSON string representing the crate metadata to be loaded. Corresponds to the content of the `ro-crate-metadata.json-ld` file.
+- `metadata` is a JSON string representing the crate metadata to be loaded. Corresponds to the content of the `ro-crate-metadata.json` file.
 
 
 #### GET_CRATE
