@@ -12,7 +12,7 @@ import {
     Plus,
     TriangleAlert
 } from "lucide-react"
-import { camelCaseReadable, encodeFilePath, fileNameWithoutEnding, isValidUrl } from "@/lib/utils"
+import { camelCaseReadable, isValidUrl } from "@/lib/utils"
 import { Error } from "@/components/error"
 import prettyBytes from "pretty-bytes"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -23,6 +23,7 @@ import { useAutoId } from "@/lib/hooks"
 import { CreateEntityHint } from "@/components/modals/create-entity/create-entity-hint"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { PathPicker } from "@/components/file-explorer/path-picker"
 
 export function CreateEntity({
     selectedType,
@@ -116,31 +117,19 @@ export function CreateEntity({
         } else return undefined
     }, [folderFiles, plainFiles])
 
-    useEffect(() => {
-        setPath((currentPath) => {
-            if (emptyFolder) {
-                return (basePath || "") + (encodeFilePath(name.replaceAll("/", "")) || "")
-            } else return currentPath
-        })
-    }, [basePath, emptyFolder, name])
-
-    useEffect(() => {
-        setPath((currentPath) => {
-            if (!emptyFolder) {
-                return (basePath || "") + encodeFilePath(baseFileName || "")
-            } else return currentPath
-        })
-    }, [baseFileName, basePath, emptyFolder])
-
     const localOnCreateClick = useCallback(() => {
         if (
             !forceId &&
             ((hasFileUpload && !externalResource) || (hasFolderUpload && !externalResource))
         ) {
             if (hasFileUpload) {
-                onUploadFile(path, name, plainFiles[0])
+                onUploadFile(path === "./" ? name : path + name, name, plainFiles[0])
             } else {
-                onUploadFolder(path, name, emptyFolder ? [] : folderFiles)
+                onUploadFolder(
+                    path === "./" ? name : path + name,
+                    name,
+                    emptyFolder ? [] : folderFiles
+                )
             }
         } else onCreateClick(forceId || identifier || autoId, name)
     }, [
@@ -171,9 +160,7 @@ export function CreateEntity({
 
     useEffect(() => {
         if (plainFiles.length > 0) {
-            setName((oldName) =>
-                oldName === "" ? fileNameWithoutEnding(plainFiles[0].name) : oldName
-            )
+            setName((oldName) => (oldName === "" ? plainFiles[0].name : oldName))
         }
     }, [plainFiles])
 
@@ -267,7 +254,8 @@ export function CreateEntity({
                         </TabsList>
                     </Tabs>
                     {externalResource ? null : (
-                        <>
+                        <div className="space-y-4">
+                            <PathPicker onPathPicked={setPath} defaultPath={basePath} />
                             <Label>File</Label>
                             <div>
                                 <Button
@@ -286,7 +274,7 @@ export function CreateEntity({
                                     {plainFiles.length == 0 ? "" : prettyBytes(plainFiles[0].size)}
                                 </span>
                             </div>
-                        </>
+                        </div>
                     )}
                 </div>
             ) : null}
@@ -310,7 +298,8 @@ export function CreateEntity({
                         </TabsList>
                     </Tabs>
                     {externalResource ? null : (
-                        <>
+                        <div className="space-y-4">
+                            <PathPicker onPathPicked={setPath} defaultPath={basePath} />
                             <Label>Folder</Label>
                             <div className="flex items-center">
                                 {!emptyFolder ? (
@@ -345,38 +334,8 @@ export function CreateEntity({
                                         : `${folderFiles.length} files (${prettyBytes(folderFiles.map((f) => f.size).reduce((a, b) => a + b))} total)`}
                                 </span>
                             </div>
-                        </>
+                        </div>
                     )}
-                </div>
-            ) : null}
-
-            {/* Only show the path field if either
-                  1. This is a file upload and there is a file selected
-                  2. This is a folder upload and either...
-                      2a. there are files selected
-                      2b. the user wants to create an empty folder
-                AND
-                  The ID is not being forced (this would also force the path)
-                AND
-                  This is not an external resource (external resources have no file path in the crate)
-            */}
-            {((hasFileUpload && plainFiles.length > 0) ||
-                (hasFolderUpload && (folderFiles.length > 0 || emptyFolder))) &&
-            !forceId &&
-            !externalResource ? (
-                <div>
-                    <Label>
-                        Path
-                        <HelpTooltip>
-                            The path where the file(s) will be located in the Crate. To upload to a
-                            different path, use the File Explorer for more convenience.
-                        </HelpTooltip>
-                    </Label>
-                    <Input
-                        value={path}
-                        onChange={(e) => setPath(e.target.value)}
-                        placeholder={"/"}
-                    />
                 </div>
             ) : null}
 
