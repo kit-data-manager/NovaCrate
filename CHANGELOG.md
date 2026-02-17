@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- Fixed some files not being previewed correctly in Safari and Chrome
+
 ## [1.8.0] - 2026-02-12
 
 ### Added
