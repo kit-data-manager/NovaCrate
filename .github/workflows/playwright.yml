@@ -21,7 +21,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build NovaCrate
-        run: npm run build
+        run: npm run build:test
+        env:
+          IFRAME_TARGET_ORIGIN: 'http://localhost:3000'
       - name: Run playwright tests
         run: npm run test
       - name: Upload Playwright Report

@@ -62,7 +62,7 @@ EXPOSE 3000
 
 ENV PORT=3000
 
-ARG IFRAME_TARGET_ORIGINS
+ARG IFRAME_TARGET_ORIGIN
 ARG BASE_PATH
 
 # server.js is created by next build from the standalone output

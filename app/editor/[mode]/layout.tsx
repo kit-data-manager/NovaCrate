@@ -48,7 +48,7 @@ const ProviderBoundary = memo(function ProviderBoundary(props: PropsWithChildren
             <CrateValidationSupervisor />
             <DataSaveHint />
             <UnsavedChangesProtector />
-            {flags?.iframeMessaging && process.env.NEXT_PUBLIC_IFRAME_TARGET_ORIGINS && (
+            {flags?.iframeMessaging && process.env.NEXT_PUBLIC_IFRAME_TARGET_ORIGIN && (
                 <IFrameMessenger />
             )}
             <Nav>{props.children}</Nav>

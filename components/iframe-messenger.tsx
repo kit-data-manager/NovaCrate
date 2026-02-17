@@ -3,45 +3,11 @@ import { z } from "zod/mini"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import packageJson from "@/package.json"
 import { IFrameCrateService } from "@/lib/backend/IFrameCrateService"
-
-const incomingMessageSchema = z.xor([
-    z.object({
-        target: z.literal("novacrate"),
-        type: z.literal("LOAD_CRATE"),
-        metadata: z.string()
-    }),
-    z.object({
-        target: z.literal("novacrate"),
-        type: z.literal("UPDATE_CRATE"),
-        metadata: z.string()
-    }),
-    z.object({
-        target: z.literal("novacrate"),
-        type: z.literal("GET_CRATE")
-    })
-])
-
-const outgoingMessageSchema = z.xor([
-    z.object({
-        source: z.literal("novacrate"),
-        type: z.literal("READY"),
-        novaCrateVersion: z.string(),
-        messageInterfaceVersion: z.number()
-    }),
-    z.object({
-        source: z.literal("novacrate"),
-        type: z.literal("GET_CRATE_RESPONSE"),
-        metadata: z.string()
-    }),
-    z.object({
-        source: z.literal("novacrate"),
-        type: z.literal("CRATE_CHANGED"),
-        metadata: z.string()
-    })
-])
-
-type NovaCrateMessageIncoming = z.infer<typeof incomingMessageSchema>
-type NovaCrateMessageOutgoing = z.infer<typeof outgoingMessageSchema>
+import {
+    incomingMessageSchema,
+    NovaCrateMessageIncoming,
+    NovaCrateMessageOutgoing
+} from "@/lib/iframe-messages"
 
 export function IFrameMessenger() {
     const crateData = useContext(CrateDataContext)
@@ -84,7 +50,7 @@ export function IFrameMessenger() {
                         source: "novacrate",
                         metadata: JSON.stringify(crate)
                     } satisfies NovaCrateMessageOutgoing,
-                    z.string().parse(process.env.NEXT_PUBLIC_IFRAME_TARGET_ORIGINS)
+                    z.string().parse(process.env.NEXT_PUBLIC_IFRAME_TARGET_ORIGIN)
                 )
             }
         }
@@ -129,7 +95,7 @@ export function IFrameMessenger() {
                     novaCrateVersion: packageJson.version,
                     messageInterfaceVersion: 1
                 } satisfies NovaCrateMessageOutgoing,
-                z.string().parse(process.env.NEXT_PUBLIC_IFRAME_TARGET_ORIGINS)
+                z.string().parse(process.env.NEXT_PUBLIC_IFRAME_TARGET_ORIGIN)
             )
         hasSentReadyMessage.current = true
 
@@ -146,7 +112,7 @@ export function IFrameMessenger() {
                 type: "CRATE_CHANGED",
                 metadata: JSON.stringify(crate)
             } satisfies NovaCrateMessageOutgoing,
-            z.string().parse(process.env.NEXT_PUBLIC_IFRAME_TARGET_ORIGINS)
+            z.string().parse(process.env.NEXT_PUBLIC_IFRAME_TARGET_ORIGIN)
         )
     }, [crateData.serviceProvider, loadedCrateID])
 

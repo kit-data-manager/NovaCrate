@@ -7,11 +7,13 @@
     "dev-next": "next dev --webpack",
     "dev-webworker": "webpack --config webpack.config.webworker.js --mode=development --watch",
     "build": "npm-run-all --parallel build-next build-webworker",
+    "build:test": "npm-run-all --parallel build-next:dev build-webworker",
     "build-next": "next build --webpack",
+    "build-next:test": "export ENABLE_TESTS=yes && next build --webpack",
     "build-webworker": "webpack --config webpack.config.webworker.js --mode=production",
     "lint": "eslint .",
     "test": "playwright test",
-    "serve": "serve out"
+    "serve": "next start"
   },
   "dependencies": {
     "@frogcat/ttl2jsonld": "^0.0.10",
