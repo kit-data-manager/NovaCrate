@@ -80,7 +80,10 @@ export function IFrameMessenger() {
     useEffect(() => {
         const messageListener = async (e: MessageEvent) => {
             const msg = incomingMessageSchema.safeParse(e.data)
-            if (msg.success) {
+            if (
+                msg.success &&
+                e.origin === z.string().parse(process.env.NEXT_PUBLIC_IFRAME_TARGET_ORIGIN)
+            ) {
                 handleIncomingMessage(msg.data)
             }
         }

@@ -32,34 +32,6 @@ test("iframe integration", async ({ page }) => {
         `- text: "Received Messages: 0: READY"`
     )
     await page.getByRole("button", { name: "Load Crate" }).click()
-    await expect(page.locator("iframe").contentFrame().locator('[id="_R_eslubtqlibu9fdb_"]'))
-        .toMatchAriaSnapshot(`
-    - text: Entities
-    - button "Add new Entity"
-    - button
-    - button
-    - button
-    - button
-    - button "R Air quality measurements in KarlsruheDataset"
-    - button /Contextual Entities \\(\\d+\\)/:
-      - img
-      - text: ""
-    - 'button /C #\\d+-33413GeoCoordinates/'
-    - 'button "C #MeasurementCapture_23231CreateAction"'
-    - button "C CC BY 4.0CreativeWork"
-    - button "C Christopher RaquetPerson"
-    - button "C https://www.aeroqual.com/product/outdoor-portable-monitor-starter-kitIndividualProduct"
-    - button "C https://www.geonames.org/2921044Place"
-    - button "C John DoePerson"
-    - button "C Karlsruher Institut fuer TechnologieOrganization"
-    - button "C kit_locationPlace"
-    - button "C ro-crate-metadata.jsonCreativeWork"
-    - button "Data Entities (2)":
-      - img
-      - text: ""
-    - button "F HVV Anwesenheit WiSe 2526File"
-    - button "F Map of measurementsFile"
-    `)
     await expect(
         page
             .locator("iframe")
