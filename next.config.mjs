@@ -11,7 +11,8 @@ const nextConfig = {
         NEXT_PUBLIC_IFRAME_TARGET_ORIGIN: iframeTargetOrigin
     },
     images: { unoptimized: true },
-    pageExtensions: process.env.ENABLE_TESTS === "yes" ? ["tsx", "test.tsx"] : ["tsx"]
+    pageExtensions:
+        process.env.ENABLE_TESTS === "yes" ? ["tsx", "test.tsx", "ts", "test.ts"] : ["tsx", "ts"]
 }
 
 const withBundleAnalyzer = bundleAnalyzer({
