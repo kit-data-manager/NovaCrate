@@ -14,7 +14,7 @@ export function useFunctionWorker<T extends Record<string, (...args: any[]) => a
     scriptPath: string,
     options?: FunctionWorkerOptions
 ) {
-    const [functionWorker] = useState(new FunctionWorker(functions, options))
+    const [functionWorker] = useState(() => new FunctionWorker(functions, options))
     const scriptPathRef = useRef(scriptPath)
 
     const [isReady, setIsReady] = useState(false)

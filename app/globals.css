@@ -56,6 +56,7 @@
   --animate-slide-left-reverse: slide-left-reverse 0.5s ease;
   --animate-fade-out: fade-out 0.5s ease;
   --animate-fade-in: fade-in 0.5s ease;
+  --animate-destructive-ping: destructive-ping 2s ease infinite;
 
   --radix-accordion-content-height: auto;
 
@@ -116,6 +117,24 @@
     }
     to {
       opacity: 1;
+    }
+  }
+  @keyframes destructive-ping {
+    0% {
+      background-color: var(--destructive);
+      color: var(--destructive-foreground);
+    }
+    50% {
+      background-color: var(--destructive);
+      color: var(--destructive-foreground);
+    }
+    51% {
+      background-color: revert-layer;
+      color: revert-layer;
+    }
+    100% {
+      background-color: revert-layer;
+      color: revert-layer;
     }
   }
 }
