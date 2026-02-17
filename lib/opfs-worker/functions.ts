@@ -1,5 +1,6 @@
 import * as fs from "happy-opfs"
 import { collectAsyncIterator } from "./helpers"
+import { DateTime } from "luxon"
 
 let CRATE_STORAGE = "crate-storage"
 
@@ -7,7 +8,7 @@ let CRATE_STORAGE = "crate-storage"
  * Creates a new temporary directory for storing crates. Also sets the CRATE_STORAGE variable to the path of this directory.
  */
 async function setupTempCrateStorage() {
-    await fs.pruneTemp(new Date())
+    await fs.pruneTemp(DateTime.now().minus({ days: 1 }).toJSDate())
     const tempDir = await fs.mkTemp({ isDirectory: true })
     if (!tempDir.isOk()) throw tempDir.unwrapErr()
     CRATE_STORAGE = tempDir.unwrap().slice(1)
