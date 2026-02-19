@@ -6,16 +6,12 @@ import {
     ChevronRightIcon,
     ChevronsDownUp,
     ChevronsUpDown,
-    DownloadIcon,
     EllipsisVertical,
     FileIcon,
     Folder,
     FolderIcon,
     PackageIcon,
-    PencilIcon,
-    PlusIcon,
-    RefreshCw,
-    TrashIcon
+    RefreshCw
 } from "lucide-react"
 import { Error } from "@/components/error"
 import HelpTooltip from "@/components/help-tooltip"
@@ -37,16 +33,13 @@ import { fileExplorerSettings } from "@/lib/state/file-explorer-settings"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { FileTreeNode, getNameFromPath } from "@/components/file-explorer/utils"
-import { useCrateName } from "@/lib/hooks"
-import { NodeRendererProps, Tree } from "react-arborist"
+import { useCrateName, useGoToEntityEditor } from "@/lib/hooks"
+import { NodeRendererProps, Tree, TreeApi } from "react-arborist"
 import { Input } from "@/components/ui/input"
-import {
-    ContextMenu,
-    ContextMenuContent,
-    ContextMenuItem,
-    ContextMenuSeparator,
-    ContextMenuTrigger
-} from "@/components/ui/context-menu"
+import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
+import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
+import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { getEntityDisplayName } from "@/lib/utils"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -58,6 +51,8 @@ export function FileExplorer() {
     const toggleShowEntities = useStore(fileExplorerSettings, (s) => s.toggleShowEntities)
     const crateName = useCrateName()
     const treeParent = useRef<HTMLDivElement>(null)
+    const treeRef = useRef<TreeApi<FileTreeNode>>(null)
+    const { showDeleteEntityModal } = useContext(GlobalModalContext)
 
     const [treeSize, setTreeSize] = useState<{ width: number; height: number }>({
         width: 10,
@@ -86,18 +81,12 @@ export function FileExplorer() {
         revalidateRef.current()
     }, [entities])
 
-    const [defaultSectionOpen, setDefaultSectionOpen] = useState<DefaultSectionOpen>(true)
-
     const collapseAllSections = useCallback(() => {
-        setDefaultSectionOpen(false)
+        treeRef.current?.closeAll()
     }, [])
 
     const expandAllSections = useCallback(() => {
-        setDefaultSectionOpen(true)
-    }, [])
-
-    const onSectionOpenChange = useCallback(() => {
-        setDefaultSectionOpen("indeterminate")
+        treeRef.current?.openAll()
     }, [])
 
     const asTree = useMemo((): FileTreeNode[] => {
@@ -167,6 +156,8 @@ export function FileExplorer() {
             return () => observer.unobserve(lastElement)
         }
     }, [])
+
+    const setPreviewingFilePath = useFileExplorerState((store) => store.setPreviewingFilePath)
 
     return (
         <div className="flex flex-col h-full bg-background rounded-lg overflow-hidden border">
@@ -239,22 +230,38 @@ export function FileExplorer() {
             </div>
             <Error error={error} title="Failed to fetch files list" />
             <Error error={downloadError} title="Download failed" />
-            <div className="p-2 overflow-y-auto grow" ref={treeParent}>
-                <Tree
-                    data={asTreeCached}
-                    height={treeSize.height}
-                    width={treeSize.width}
-                    rowHeight={32}
-                    selectionFollowsFocus={true}
-                    disableDrag={(node) => node.id === "./"}
-                    disableDrop={(args) => args.parentNode.data.type === "file"}
-                    onDelete={(n) => console.log("delete", n)}
-                    onMove={(n) => console.log("move", n)}
-                    onRename={(n) => console.log("rename", n)}
-                >
-                    {Node}
-                </Tree>
-            </div>
+            <ContextMenu>
+                <ContextMenuTrigger asChild>
+                    <div className="p-2 overflow-y-auto grow" ref={treeParent}>
+                        <Tree
+                            ref={treeRef}
+                            data={asTreeCached}
+                            height={treeSize.height}
+                            width={treeSize.width}
+                            rowHeight={32}
+                            selectionFollowsFocus={true}
+                            disableDrag={(node) => node.id === "./"}
+                            disableDrop={(args) => args.parentNode.data.type === "file"}
+                            onDelete={(n) => {
+                                n.ids.length === 1 && showDeleteEntityModal(n.ids[0])
+                                return
+                            }}
+                            onMove={(n) => console.log("move", n)} /* TODO: move and rename */
+                            onRename={(n) => console.log("rename", n)}
+                            onSelect={(node) =>
+                                node.length === 1
+                                    ? node[0].data.id !== "./" &&
+                                      node[0].data.type === "file" &&
+                                      setPreviewingFilePath(node[0].data.id)
+                                    : null
+                            }
+                        >
+                            {Node}
+                        </Tree>
+                    </div>
+                </ContextMenuTrigger>
+                <EntryContextMenu blankSpace={true} />
+            </ContextMenu>
         </div>
     )
 }
@@ -262,6 +269,8 @@ export function FileExplorer() {
 function Node({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
     const [renameValue, setRenameValue] = useState(node.data.name)
     const entity = useStore(editorState, (s) => s.getEntities().get(node.data.id))
+    const goToEntity = useGoToEntityEditor(entity)
+    const showEntities = useStore(fileExplorerSettings, (s) => s.showEntities)
 
     return (
         <ContextMenu>
@@ -279,7 +288,9 @@ function Node({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
                         className={`size-4 text-muted-foreground ${node.state.isOpen && "rotate-90"} ${node.children?.length === 0 && "opacity-0"} shrink-0 mr-1`}
                         onClick={() => node.toggle()}
                     />
-                    {node.id === "./" ? (
+                    {showEntities && entity ? (
+                        <EntityIcon entity={entity} className="shrink-0 mr-0.75" size="sm" />
+                    ) : node.id === "./" ? (
                         <PackageIcon className="size-4 mr-1 shrink-0" />
                     ) : node.data.type === "file" ? (
                         <FileIcon className="size-4 mr-1 shrink-0" />
@@ -296,39 +307,20 @@ function Node({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
                             onBlur={() => node.reset()}
                         />
                     ) : (
-                        <span className="select-none line-clamp-1">{node.data.name}</span>
+                        <span className="select-none line-clamp-1">
+                            {showEntities && entity ? getEntityDisplayName(entity) : node.data.name}
+                        </span>
                     )}
                 </div>
             </ContextMenuTrigger>
-            <ContextMenuContent>
-                {entity ? (
-                    <ContextMenuItem>
-                        <EntityIcon entity={entity} size={"sm"} /> Go to Entity
-                    </ContextMenuItem>
-                ) : (
-                    <ContextMenuItem>
-                        <PlusIcon className="mr-2 size-4 shrink-0" /> Add Entity
-                    </ContextMenuItem>
-                )}
-
-                <ContextMenuSeparator />
-                <ContextMenuItem>
-                    <PlusIcon className="mr-2 size-4 shrink-0" />
-                    New
-                </ContextMenuItem>
-                <ContextMenuItem>
-                    <DownloadIcon className="mr-2 size-4 shrink-0" />
-                    Download
-                </ContextMenuItem>
-                <ContextMenuItem>
-                    <PencilIcon className="mr-2 size-4 shrink-0" /> Rename
-                </ContextMenuItem>
-                <ContextMenuSeparator />
-                <ContextMenuItem variant={"destructive"}>
-                    <TrashIcon className="mr-2 size-4 shrink-0" />
-                    Delete
-                </ContextMenuItem>
-            </ContextMenuContent>
+            <EntryContextMenu
+                entity={entity}
+                folder={node.data.type === "folder"}
+                filePath={node.data.id}
+                fileName={node.data.name}
+                goToEntity={goToEntity}
+                blankSpace={false}
+            />
         </ContextMenu>
     )
 }
