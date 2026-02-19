@@ -59,11 +59,11 @@ export const RoCrateBase = {
                                 })
                             )
                         } else {
-                            const comment = await ctx.schemaWorker.worker.execute(
-                                "getPropertyComment",
+                            const node = await ctx.schemaWorker.worker.execute(
+                                "getNode",
                                 resolvedType
                             )
-                            if (!comment) {
+                            if (!node) {
                                 results.push(
                                     builder.rule("missingSchemaForType").error({
                                         resultTitle: `Missing schema for type \`${type}\``,
