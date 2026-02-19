@@ -297,10 +297,10 @@ export function CreateEntity({
             {/* Only show the name field if either
                   1. This is neither a file upload nor a folder upload (contextual entity creation)
                   2. This is a web-based data entity (name can't be inferred)
-                  2. This is a file upload and there is a file selected
-                  3. This is a folder upload and either...
-                     3a. there are files selected
-                     3b. the user wants to create an empty folder
+                  3. This is a file upload and there is a file selected
+                  4. This is a folder upload and either...
+                     4a. there are files selected
+                     4b. the user wants to create an empty folder
                Because the name field is filled automatically when a folder or file is uploaded, we hide the field beforehand to reduce the visual complexity.
             */}
             {((!hasFileUpload && !hasFolderUpload) ||

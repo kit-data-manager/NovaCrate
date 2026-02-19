@@ -3,7 +3,6 @@ import { ImageViewer } from "@/components/file-explorer/viewers/image"
 import { TextViewer } from "@/components/file-explorer/viewers/text"
 import { PreviewNotSupported } from "@/components/file-explorer/viewers/not-supported"
 import { Eye } from "lucide-react"
-import { useMemo } from "react"
 import { IFrameViewer } from "@/components/file-explorer/viewers/iframe"
 
 export interface ViewerProps {
@@ -27,13 +26,7 @@ const IMAGE_TYPES = [
 const TEXT_TYPES = ["text/plain", "application/json"]
 const IFRAME_TYPES = ["text/html"]
 
-const SAFARI_SUPPORTED_OBJECTS_TYPES = ["text/html"]
-
 export function BaseViewer(props: ViewerProps) {
-    const usesSafari = useMemo(() => {
-        return navigator.userAgent.toLowerCase().includes("safari")
-    }, [])
-
     if (!props.data)
         return (
             <div className="grow flex justify-center items-center">
@@ -53,9 +46,7 @@ export function BaseViewer(props: ViewerProps) {
         return <ImageViewer {...props} />
     } else if (TEXT_TYPES.includes(props.data.type)) {
         return <TextViewer {...props} />
-    } else if (!usesSafari || SAFARI_SUPPORTED_OBJECTS_TYPES.includes(props.data.type)) {
-        return <ObjectViewer {...props} />
     } else {
-        return <PreviewNotSupported />
+        return <ObjectViewer {...props} />
     }
 }
