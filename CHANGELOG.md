@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The path parameter `iframe` was added in addition to the query parameter `full` to distinguish between iframe mode and full mode
   - Currently, some limitations apply for the iframe. Take a look at the documentation at docs/iframe-interface.md for more information.
 - Added internal feature flags to disable certain features for different backends
+- Added proper handling of custom types defined in the context of the crate
+
 
 ## [1.8.1] - 2026-02-17
 
