@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+- Added proper handling of custom types defined in the context of the crate
+
 ## [1.8.1] - 2026-02-17
 
 ### Fixed

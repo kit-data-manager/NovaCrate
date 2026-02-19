@@ -23,6 +23,7 @@ const KNOWN_CONTEXTS = [
  */
 export class CrateContext {
     private _context: Record<string, string> = {}
+    private _contextReversed: Record<string, string> = {}
     private _customPairs: Record<string, string> = {}
     private _specification: RO_CRATE_VERSION | undefined = undefined
     private _usingFallback = false
@@ -32,6 +33,14 @@ export class CrateContext {
 
     get context() {
         return structuredClone(this._context)
+    }
+
+    private set context(value: Record<string, string>) {
+        this._context = structuredClone(value)
+        this._contextReversed = {}
+        for (const [key, value] of Object.entries(this._context)) {
+            this._contextReversed[value] = key
+        }
     }
 
     get customPairs() {
@@ -61,11 +70,16 @@ export class CrateContext {
         const known = primary || fallback
         const loaded = await known.load()
         this._specification = known.version
-        this._context = { ...this._context, ...loaded["@context"] }
+        this.context = { ...this.context, ...loaded["@context"] }
     }
 
+    /**
+     * Should be called to set the crate context up. Can be called multiple times without
+     * creating a new instance.
+     * @param crateContext The @context of the crate
+     */
     async setup(crateContext: CrateContextType) {
-        this._context = {}
+        this.context = {}
         this._customPairs = {}
         this._specification = undefined
         this._usingFallback = false
@@ -84,7 +98,7 @@ export class CrateContext {
                         const known = CrateContext.getKnownContext(value)
                         await this.loadKnownContext(known, fallback)
                     } else {
-                        this._context[key] = value
+                        this.context[key] = value
                         this._customPairs[key] = value
                     }
                 }
@@ -115,34 +129,37 @@ export class CrateContext {
      * @returns Full ID of the specified ID (e.g. "Organization" becomes "https://schema.org/Organization"). Can be used to query the SchemaGraph. Returns null on failure
      */
     resolve(id: string) {
-        if (id in this._context) {
-            return this._context[id]
+        if (id in this.context) {
+            return this.context[id]
+        } else if (/^.+:.+$/.test(id)) {
+            // Type has a prefix that we will try to resolve
+            const prefix = id.split(":")[0]
+            const suffix = id.split(":")[1]
+            const prefixContext = this._customPairs[prefix]
+            if (prefixContext) {
+                return prefixContext + suffix
+            } else {
+                console.warn(
+                    `Found node with id ${id}, but prefix ${prefix} is not defined in the context`
+                )
+                return null
+            }
         } else return null
     }
 
-    reverse(URI: string) {
-        for (const [key, value] of Object.entries(this._context)) {
-            if (URI === value) {
-                return key
-            }
-        }
-
-        return null
-    }
-
     /**
-     * Returns an array of all classes in the context, determined by their name. Names for classes must
-     * be capitalized or start with a number.
-     * @returns An array of class URLs
+     * This method effectively shortens the given URI using the @context of the crate.
+     * It is the reverse operation of {@link CrateContext.resolve}.
+     * @example
+     * reverse("https://schema.org/Organization") -> "Organization"
+     * reverse("https://myCustomUrl.org/v1/myProperty") -> "custom:myProperty" // when custom: "https://myCustomUrl.org/v1/" is defined in the context
+     * @param URI
      */
-    getAllClasses() {
-        const result = new Set<string>()
-        Object.entries(this._context)
-            .filter(([key]) => key.match(/^[A-Z0-9]/))
-            .forEach(([, url]) => {
-                result.add(url)
-            })
-
-        return Array.from(result.values())
+    reverse(URI: string) {
+        if (this._contextReversed[URI]) return this._contextReversed[URI]
+        for (const [key, value] of Object.entries(this._customPairs)) {
+            if (URI.startsWith(value)) return key + ":" + URI.substring(value.length)
+        }
+        return null
     }
 }
