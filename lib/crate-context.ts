@@ -98,7 +98,9 @@ export class CrateContext {
                         const known = CrateContext.getKnownContext(value)
                         await this.loadKnownContext(known, fallback)
                     } else {
-                        this.context[key] = value
+                        const temp = this.context
+                        temp[key] = value
+                        this.context = temp
                         this._customPairs[key] = value
                     }
                 }
