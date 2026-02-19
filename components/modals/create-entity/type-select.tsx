@@ -45,9 +45,9 @@ export function TypeSelect({
 
     const typesResolver = useCallback(async () => {
         if (bypassRestrictions || !restrictToClasses) {
-            const classUrls = crateContext.getAllClasses()
             return (await worker.execute("getAllClasses")).filter((slimClass) => {
-                return classUrls.includes(slimClass["@id"])
+                // Make sure this class is defined in the context of the crate in the first place
+                return crateContext.reverse(slimClass["@id"]) !== null
             })
         } else {
             if (restrictToClasses) {
