@@ -30,7 +30,7 @@ import React, { useCallback, useContext, useMemo, useState } from "react"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { useAction, useCrateName, useCurrentEntity } from "@/lib/hooks"
+import { useAction, useCrateName, useCrateServiceFeatureFlags, useCurrentEntity } from "@/lib/hooks"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
 import { useInterval } from "usehooks-ts"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -150,6 +150,7 @@ export function NavHeader() {
 
     const crateName = useCrateName()
     const searchAction = useAction("editor.global-search")
+    const flags = useCrateServiceFeatureFlags()
 
     const menubar = useMemo(() => {
         return (
@@ -190,8 +191,12 @@ export function NavHeader() {
                         </MenubarSub>
                         <ActionMenubarItem actionId="editor.settings" />
                         <ActionMenubarItem actionId="editor.about" />
-                        <MenubarSeparator />
-                        <ActionMenubarItem actionId="editor.close" />
+                        {!flags?.crateSelectionControlledExternally && (
+                            <>
+                                <MenubarSeparator />
+                                <ActionMenubarItem actionId="editor.close" />
+                            </>
+                        )}
                     </MenubarContent>
                 </MenubarMenu>
                 <MenubarMenu>
@@ -200,13 +205,17 @@ export function NavHeader() {
                     </MenubarTrigger>
                     <MenubarContent>
                         <ActionMenubarItem actionId="crate.add-entity" />
-                        <MenubarSeparator />
-                        <MenubarItem onClick={() => showUploadFileModal()}>
-                            <FileUp className="size-4" /> Upload File
-                        </MenubarItem>
-                        <MenubarItem onClick={() => showUploadFolderModal()}>
-                            <FolderUp className="size-4" /> Upload Folder
-                        </MenubarItem>
+                        {flags?.fileManagement && (
+                            <>
+                                <MenubarSeparator />
+                                <MenubarItem onClick={() => showUploadFileModal()}>
+                                    <FileUp className="size-4" /> Upload File
+                                </MenubarItem>
+                                <MenubarItem onClick={() => showUploadFolderModal()}>
+                                    <FolderUp className="size-4" /> Upload Folder
+                                </MenubarItem>
+                            </>
+                        )}
                         <MenubarSeparator />
                         <ActionMenubarItem
                             disabled={isSaving || !hasUnsavedChanges}
@@ -235,7 +244,9 @@ export function NavHeader() {
                                 </MenubarItem>
                             </MenubarSubContent>
                         </MenubarSub>
-                        <ActionMenubarItem actionId="crate.generate-html-preview" />
+                        {flags?.fileManagement && (
+                            <ActionMenubarItem actionId="crate.generate-html-preview" />
+                        )}
                     </MenubarContent>
                 </MenubarMenu>
                 <EntityMenu />
@@ -257,7 +268,7 @@ export function NavHeader() {
             <div className="flex items-center">
                 <Package className="w-7 h-7 mr-2" />
                 {crateDataIsLoading || !crateName ? (
-                    <Skeleton className="bg-background h-8 w-32" />
+                    <Skeleton className="h-8 w-32" />
                 ) : (
                     <div className="mr-6 font-bold max-w-75 truncate animate-in">
                         <div className="text-xs font-normal">NovaCrate</div>

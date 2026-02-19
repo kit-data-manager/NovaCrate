@@ -13,7 +13,7 @@ import useSWR from "swr"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
 import { Draft, produce } from "immer"
 import { applyServerDifferences } from "@/lib/ensure-sync"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { TriangleAlert } from "lucide-react"
 import { changeEntityId, getEntityDisplayName } from "@/lib/utils"
@@ -26,7 +26,7 @@ export interface ICrateDataProvider {
     /**
      * Implementation of the CrateServiceAdapter interface.
      */
-    readonly serviceProvider?: CrateServiceAdapter
+    readonly serviceProvider?: CrateService
     /**
      * Id of the currently opened crate.
      */
@@ -211,7 +211,7 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
 export function CrateDataProvider({
     serviceProvider,
     children
-}: PropsWithChildren<{ serviceProvider: CrateServiceAdapter }>) {
+}: PropsWithChildren<{ serviceProvider: CrateService }>) {
     const [crateId, setCrateId] = useState<string | undefined>(undefined)
     const getEntities = useEditorState((store) => store.getEntities)
     const setEntities = useEditorState((store) => store.setEntities)
@@ -222,6 +222,7 @@ export function CrateDataProvider({
     const { data, error, isLoading, mutate } = useSWR<ICrate>(crateId, serviceProvider.getCrate)
     const lastCrateData = useRef<ICrate | undefined>(undefined)
     const router = useRouter()
+    const params = useParams<{ mode: string }>()
 
     // Backend health is periodically checked. When health is bad, error is in this state. If this state is undefined, backend is healthy
     // Might be unrelated to general crate error
@@ -599,21 +600,28 @@ export function CrateDataProvider({
      * otherwise, this hook redirects to the main menu.
      */
     useEffect(() => {
-        if (crateId) {
-            console.log("CrateID known, saving")
-            localStorage.setItem(CRATE_ID_STORAGE_KEY, crateId)
-        } else {
-            console.log("CrateID unknown, looking in local storage...")
-            const saved = localStorage.getItem(CRATE_ID_STORAGE_KEY)
-            if (saved) {
-                setCrateId(saved)
-                console.log("CrateID found in local storage", saved)
+        if (!serviceProvider.featureFlags.crateSelectionControlledExternally) {
+            if (crateId) {
+                console.log("CrateID known, saving")
+                localStorage.setItem(CRATE_ID_STORAGE_KEY, crateId)
             } else {
-                router.push("/editor")
-                console.log("Nothing found in local storage, navigating to landing page")
+                console.log("CrateID unknown, looking in local storage...")
+                const saved = localStorage.getItem(CRATE_ID_STORAGE_KEY)
+                if (saved) {
+                    setCrateId(saved)
+                    console.log("CrateID found in local storage", saved)
+                } else {
+                    router.push("/editor")
+                    console.log("Nothing found in local storage, navigating to landing page")
+                }
             }
         }
-    }, [crateId, router])
+    }, [
+        crateId,
+        params.mode,
+        router,
+        serviceProvider.featureFlags.crateSelectionControlledExternally
+    ])
 
     const unsetCrateId = useCallback(() => {
         setCrateId(undefined)

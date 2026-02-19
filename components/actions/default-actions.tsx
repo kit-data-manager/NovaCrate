@@ -1,6 +1,11 @@
 import { useCallback, useContext } from "react"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
-import { useGoToMainMenu, useRegisterAction, useSaveAllEntities } from "@/lib/hooks"
+import {
+    useCrateServiceFeatureFlags,
+    useGoToMainMenu,
+    useRegisterAction,
+    useSaveAllEntities
+} from "@/lib/hooks"
 import { useEditorState } from "@/lib/state/editor-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { ArrowLeft, Cog, Plus, RefreshCw, SaveAll, Search, Undo2, File, Info } from "lucide-react"
@@ -15,7 +20,8 @@ export default function DefaultActions() {
     const openTab = useEntityEditorTabs((s) => s.openTab)
     const saveAllEntities = useSaveAllEntities()
     const { reload } = useContext(CrateDataContext)
-    const gotToMainMenu = useGoToMainMenu()
+    const flags = useCrateServiceFeatureFlags()
+    const goToMainMenu = useGoToMainMenu()
 
     const createEntityAction = useCallback(() => {
         showCreateEntityModal()
@@ -39,7 +45,7 @@ export default function DefaultActions() {
     })
 
     const generateHTMLPreview = useCallback(async () => {
-        if (!crateData.crateData) return
+        if (!crateData.crateData || !flags?.fileManagement) return
         const result = await generateCratePreview(crateData.crateData)
         const entity: IEntity = {
             "@id": "./ro-crate-preview.html",
@@ -50,7 +56,7 @@ export default function DefaultActions() {
         // @ts-expect-error Blob is used as a File, but it works
         await crateData.createFileEntity(entity, result, true)
         openTab(createEntityEditorTab(entity), true)
-    }, [crateData, openTab])
+    }, [crateData, flags?.fileManagement, openTab])
     useRegisterAction("crate.generate-html-preview", "Generate HTML Preview", generateHTMLPreview, {
         icon: File
     })
@@ -59,7 +65,13 @@ export default function DefaultActions() {
         keyboardShortcut: ["command", "k"],
         icon: Search
     })
-    useRegisterAction("editor.close", "Back to Main Menu", gotToMainMenu, {
+
+    const goToMainMenuGuard = flags?.crateSelectionControlledExternally
+        ? () => {
+              console.warn("Can't go to main menu if crate selection is controlled externally.")
+          }
+        : goToMainMenu
+    useRegisterAction("editor.close", "Back to Main Menu", goToMainMenuGuard, {
         icon: ArrowLeft
     })
 

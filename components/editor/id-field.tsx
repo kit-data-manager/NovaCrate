@@ -22,7 +22,7 @@ import { canHavePreview as canHavePreviewUtil } from "@/lib/utils"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { Button } from "@/components/ui/button"
 import { RenameEntityModal } from "@/components/modals/rename-entity-modal"
-import { useGoToFileExplorer } from "@/lib/hooks"
+import { useCrateServiceFeatureFlags, useGoToFileExplorer } from "@/lib/hooks"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export function IDField({ value }: { value: string }) {
@@ -31,10 +31,11 @@ export function IDField({ value }: { value: string }) {
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
     const [renameEntityModalOpen, setRenameEntityModalOpen] = useState(false)
+    const flags = useCrateServiceFeatureFlags()
 
     const canHavePreview = useMemo(() => {
-        return entity ? canHavePreviewUtil(entity) : false
-    }, [entity])
+        return entity && flags?.fileManagement ? canHavePreviewUtil(entity) : false
+    }, [entity, flags?.fileManagement])
 
     const showInFileExplorer = useGoToFileExplorer(entity)
 

@@ -5,7 +5,7 @@ import { ICrateDataProvider } from "@/components/providers/crate-data-provider"
 
 export type ValidatorContext = {
     editorState: EditorState
-    serviceProvider?: CrateServiceAdapter
+    serviceProvider?: CrateService
     crateData: ICrateDataProvider
     schemaWorker: ISchemaWorkerContext
 }

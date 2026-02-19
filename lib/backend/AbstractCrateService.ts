@@ -1,6 +1,10 @@
 import { handleSpringError } from "@/lib/spring-error-handling"
 
-export abstract class CrateServiceBase implements CrateServiceAdapter {
+export abstract class AbstractCrateService implements CrateService {
+    get featureFlags() {
+        return makeCrateServiceFeatureFlags()
+    }
+
     abstract getCrateFileURL(crateId: string, filePath: string): Promise<string>
 
     abstract addCustomContextPair(crateId: string, key: string, value: string): Promise<void>
@@ -121,4 +125,15 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
     abstract saveRoCrateMetadataJSON(crateId: string, json: string): Promise<void>
 
     abstract updateEntity(crateId: string, entityData: IEntity): Promise<boolean>
+}
+
+export function makeCrateServiceFeatureFlags(
+    flags: Partial<CrateServiceFeatureFlags> = {}
+): CrateServiceFeatureFlags {
+    return {
+        fileManagement: true,
+        iframeMessaging: false,
+        crateSelectionControlledExternally: false,
+        ...flags
+    }
 }

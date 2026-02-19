@@ -17,7 +17,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { InternalEntityHint } from "@/components/editor/hints/internal-entity-hint"
 import { ActionButton } from "@/components/actions/action-buttons"
-import { useGoToFileExplorer, useGoToGraph } from "@/lib/hooks"
+import { useCrateServiceFeatureFlags, useGoToFileExplorer, useGoToGraph } from "@/lib/hooks"
 import { EntityBadge } from "../entity/entity-badge"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useShallow } from "zustand/react/shallow"
@@ -41,6 +41,7 @@ export function EntityEditor({
     const removePropertyEntry = useEditorState((store) => store.removePropertyEntry)
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
+    const flags = useCrateServiceFeatureFlags()
 
     // Type selection for @type fields
     const [typeSelectModalOpen, setTypeSelectModalOpen] = useState(false)
@@ -59,9 +60,9 @@ export function EntityEditor({
     }, [entity])
 
     const canHavePreview = useMemo(() => {
-        if (!entity) return false
+        if (!entity || !flags?.fileManagement) return false
         return canHavePreviewUtil(entity)
-    }, [entity])
+    }, [entity, flags?.fileManagement])
 
     const togglePreview = useCallback(() => {
         if (canHavePreview) {
@@ -157,17 +158,17 @@ export function EntityEditor({
     if (!entity) {
         return (
             <div>
-                <div className="flex mb-2 gap-2 p-2 bg-accent">
-                    <Skeleton className="w-10 h-7 my-1 bg-muted-foreground/30" />
-                    <Skeleton className="w-32 h-7 my-1 bg-muted-foreground/30" />
-                    <Skeleton className="w-32 h-7 my-1 bg-muted-foreground/30" />
+                <div className="flex mb-2 gap-2 p-2 bg-accent border-b border-t">
+                    <Skeleton className="w-10 h-8 bg-muted-foreground/30" />
+                    <Skeleton className="w-32 h-8 bg-muted-foreground/30" />
+                    <Skeleton className="w-32 h-8 bg-muted-foreground/30" />
                     <div className="grow" />
-                    <Skeleton className="w-32 h-7 my-1 bg-muted-foreground/30" />
-                    <Skeleton className="w-10 h-7 my-1 bg-muted-foreground/30" />
+                    <Skeleton className="w-32 h-8 bg-muted-foreground/30" />
+                    <Skeleton className="w-10 h-8 bg-muted-foreground/30" />
                 </div>
 
                 <div className="p-4 flex flex-col gap-4">
-                    <Skeleton className="h-10 w-52 mb-10 mt-4" />
+                    <Skeleton className="h-10 w-96 mb-10 mt-4" />
 
                     {[0, 0, 0, 0, 0, 0].map((_, i) => (
                         <div key={i} className="grid grid-cols-2 mr-10">

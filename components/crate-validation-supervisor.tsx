@@ -24,6 +24,7 @@ export function CrateValidationSupervisor() {
     const validation = useValidation()
     const [runValidation, setRunValidation] = useState(false)
     const validationEnabled = useStore(validationSettings, (s) => s.enabled)
+    const crateContext = useEditorState((store) => store.crateContext)
 
     const validateCrate = useCallback(() => {
         validation.validateCrate().catch((e) => console.error("Crate validation failed: ", e))
@@ -33,7 +34,9 @@ export function CrateValidationSupervisor() {
 
     useEffect(() => {
         if (runValidation) debouncedValidateCrate()
-    }, [crateData, debouncedValidateCrate, runValidation])
+        // Additional dependencies: crateData, crateContext
+        // make sure that crate validation is run after crate data or crate context changes
+    }, [crateData, debouncedValidateCrate, runValidation, crateContext])
 
     useEffect(() => {
         if (!crateDataIsLoading && crateId && crateContextReady) setRunValidation(true)
@@ -45,11 +48,6 @@ export function CrateValidationSupervisor() {
             validation.resultStore.getState().clear()
         }
     }, [validation.resultStore, validationEnabled])
-
-    const crateContext = useEditorState((store) => store.crateContext)
-    useEffect(() => {
-        debouncedValidateCrate()
-    }, [debouncedValidateCrate, crateContext])
 
     const entitiesArray = useMemo(() => {
         return Array.from(entities.values())

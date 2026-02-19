@@ -151,9 +151,12 @@ export function useGoToFileExplorer(entity?: IEntity) {
     const pathname = usePathname()
     const router = useRouter()
     const setPreviewingFilePath = useFileExplorerState((store) => store.setPreviewingFilePath)
+    const flags = useCrateServiceFeatureFlags()
 
     return useCallback(
         (_entity?: IEntity) => {
+            if (!flags?.fileManagement) return
+
             if (_entity || entity) {
                 setPreviewingFilePath(_entity?.["@id"] || entity?.["@id"] || "")
             }
@@ -165,7 +168,7 @@ export function useGoToFileExplorer(entity?: IEntity) {
                     .join("/") + "/file-explorer"
             router.push(href)
         },
-        [entity, pathname, router, setPreviewingFilePath]
+        [entity, flags?.fileManagement, pathname, router, setPreviewingFilePath]
     )
 }
 
@@ -303,8 +306,8 @@ export function useAction(id: string) {
 }
 
 /**
- * Helper hook to determine if the Action Registry is ready yet. The Action Registry is always safe to use, but while
- * it is not ready, yet it may miss some actions
+ * Helper hook to determine if the Action Registry is ready. The Action Registry is always safe to use, but while
+ * it is not ready yet, it may miss some actions
  */
 export function useActionsReady() {
     return useActionsStore((store) => store.isReady())
@@ -386,4 +389,16 @@ export const useHash = () => {
     }, [])
 
     return { hash }
+}
+
+export const useCrateServiceFeatureFlags = () => {
+    const { serviceProvider } = useContext(CrateDataContext)
+
+    const flags = useMemo(() => {
+        if (serviceProvider?.featureFlags) {
+            return JSON.stringify(serviceProvider.featureFlags)
+        }
+    }, [serviceProvider?.featureFlags])
+
+    return flags ? (JSON.parse(flags) as CrateServiceFeatureFlags) : undefined
 }
