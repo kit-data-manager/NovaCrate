@@ -6,17 +6,21 @@ import {
     ChevronRightIcon,
     ChevronsDownUp,
     ChevronsUpDown,
+    DownloadIcon,
     EllipsisVertical,
     FileIcon,
     Folder,
     FolderIcon,
     PackageIcon,
-    RefreshCw
+    PencilIcon,
+    PlusIcon,
+    RefreshCw,
+    TrashIcon
 } from "lucide-react"
 import { Error } from "@/components/error"
 import HelpTooltip from "@/components/help-tooltip"
 import { useFileExplorerState } from "@/lib/state/file-explorer-state"
-import { useEditorState } from "@/lib/state/editor-state"
+import { editorState, useEditorState } from "@/lib/state/editor-state"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,6 +39,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { FileTreeNode, getNameFromPath } from "@/components/file-explorer/utils"
 import { useCrateName } from "@/lib/hooks"
 import { NodeRendererProps, Tree } from "react-arborist"
+import { Input } from "@/components/ui/input"
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuSeparator,
+    ContextMenuTrigger
+} from "@/components/ui/context-menu"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -234,7 +246,11 @@ export function FileExplorer() {
                     width={treeSize.width}
                     rowHeight={32}
                     selectionFollowsFocus={true}
-                    disableMultiSelection={true}
+                    disableDrag={(node) => node.id === "./"}
+                    disableDrop={(args) => args.parentNode.data.type === "file"}
+                    onDelete={(n) => console.log("delete", n)}
+                    onMove={(n) => console.log("move", n)}
+                    onRename={(n) => console.log("rename", n)}
                 >
                     {Node}
                 </Tree>
@@ -243,26 +259,76 @@ export function FileExplorer() {
     )
 }
 
-function Node({ node, style }: NodeRendererProps<FileTreeNode>) {
+function Node({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
+    const [renameValue, setRenameValue] = useState(node.data.name)
+    const entity = useStore(editorState, (s) => s.getEntities().get(node.data.id))
+
     return (
-        <div
-            style={style}
-            className={`flex items-center gap-1 ${node.state.isSelected && "bg-muted"} rounded-sm p-1`}
-            onClick={() => node.select()}
-            onDoubleClick={() => node.toggle()}
-        >
-            <ChevronRightIcon
-                className={`size-4 text-muted-foreground ${node.state.isOpen && "rotate-90"} ${node.children?.length === 0 && "opacity-0"} shrink-0`}
-                onClick={() => node.toggle()}
-            />
-            {node.id === "./" ? (
-                <PackageIcon className="size-4 mr-1 shrink-0" />
-            ) : node.data.type === "file" ? (
-                <FileIcon className="size-4 mr-1 shrink-0" />
-            ) : (
-                <FolderIcon className="size-4 mr-1 shrink-0" />
-            )}
-            <span className="select-none line-clamp-1">{node.data.name}</span>
-        </div>
+        <ContextMenu>
+            <ContextMenuTrigger asChild>
+                <div
+                    ref={node.state.isEditing ? undefined : dragHandle}
+                    style={style}
+                    className={`flex items-center gap-1 ${node.state.isSelected && "bg-muted"} ${node.state.isSelectedEnd && "rounded-b-sm"} ${node.state.isSelectedStart && "rounded-t-sm"} p-1`}
+                    onDoubleClick={() => {
+                        node.edit().then()
+                        setRenameValue(node.data.name)
+                    }}
+                >
+                    <ChevronRightIcon
+                        className={`size-4 text-muted-foreground ${node.state.isOpen && "rotate-90"} ${node.children?.length === 0 && "opacity-0"} shrink-0 mr-1`}
+                        onClick={() => node.toggle()}
+                    />
+                    {node.id === "./" ? (
+                        <PackageIcon className="size-4 mr-1 shrink-0" />
+                    ) : node.data.type === "file" ? (
+                        <FileIcon className="size-4 mr-1 shrink-0" />
+                    ) : (
+                        <FolderIcon className="size-4 mr-1 shrink-0" />
+                    )}
+                    {node.state.isEditing ? (
+                        <Input
+                            className="p-1 h-6"
+                            value={renameValue}
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            autoFocus={true}
+                            onKeyDown={(e) => e.key === "Enter" && node.submit(renameValue)}
+                            onBlur={() => node.reset()}
+                        />
+                    ) : (
+                        <span className="select-none line-clamp-1">{node.data.name}</span>
+                    )}
+                </div>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+                {entity ? (
+                    <ContextMenuItem>
+                        <EntityIcon entity={entity} size={"sm"} /> Go to Entity
+                    </ContextMenuItem>
+                ) : (
+                    <ContextMenuItem>
+                        <PlusIcon className="mr-2 size-4 shrink-0" /> Add Entity
+                    </ContextMenuItem>
+                )}
+
+                <ContextMenuSeparator />
+                <ContextMenuItem>
+                    <PlusIcon className="mr-2 size-4 shrink-0" />
+                    New
+                </ContextMenuItem>
+                <ContextMenuItem>
+                    <DownloadIcon className="mr-2 size-4 shrink-0" />
+                    Download
+                </ContextMenuItem>
+                <ContextMenuItem>
+                    <PencilIcon className="mr-2 size-4 shrink-0" /> Rename
+                </ContextMenuItem>
+                <ContextMenuSeparator />
+                <ContextMenuItem variant={"destructive"}>
+                    <TrashIcon className="mr-2 size-4 shrink-0" />
+                    Delete
+                </ContextMenuItem>
+            </ContextMenuContent>
+        </ContextMenu>
     )
 }
