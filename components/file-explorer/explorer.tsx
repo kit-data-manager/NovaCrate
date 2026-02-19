@@ -1,13 +1,21 @@
 "use client"
 
-import { useCallback, useContext, useEffect, useRef, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { ChevronsDownUp, ChevronsUpDown, EllipsisVertical, Folder, RefreshCw } from "lucide-react"
+import {
+    ChevronRightIcon,
+    ChevronsDownUp,
+    ChevronsUpDown,
+    EllipsisVertical,
+    FileIcon,
+    Folder,
+    FolderIcon,
+    PackageIcon,
+    RefreshCw
+} from "lucide-react"
 import { Error } from "@/components/error"
-import { FolderContent } from "@/components/file-explorer/content"
 import HelpTooltip from "@/components/help-tooltip"
 import { useFileExplorerState } from "@/lib/state/file-explorer-state"
-import { Skeleton } from "@/components/ui/skeleton"
 import { useEditorState } from "@/lib/state/editor-state"
 import {
     DropdownMenu,
@@ -17,15 +25,16 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
-import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { ActionButton } from "@/components/actions/action-buttons"
 import { Button } from "@/components/ui/button"
 import useSWR from "swr"
-import { useStore } from "zustand/index"
+import { useStore } from "zustand"
 import { fileExplorerSettings } from "@/lib/state/file-explorer-settings"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { FileTreeNode, getNameFromPath } from "@/components/file-explorer/utils"
+import { useCrateName } from "@/lib/hooks"
+import { NodeRendererProps, Tree } from "react-arborist"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -35,6 +44,13 @@ export function FileExplorer() {
     const downloadError = useFileExplorerState((store) => store.downloadError)
     const showEntities = useStore(fileExplorerSettings, (s) => s.showEntities)
     const toggleShowEntities = useStore(fileExplorerSettings, (s) => s.toggleShowEntities)
+    const crateName = useCrateName()
+    const treeParent = useRef<HTMLDivElement>(null)
+
+    const [treeSize, setTreeSize] = useState<{ width: number; height: number }>({
+        width: 10,
+        height: 10
+    })
 
     const filesListResolver = useCallback(async () => {
         if (crateData.serviceProvider && crateData.crateId) {
@@ -70,6 +86,74 @@ export function FileExplorer() {
 
     const onSectionOpenChange = useCallback(() => {
         setDefaultSectionOpen("indeterminate")
+    }, [])
+
+    const asTree = useMemo((): FileTreeNode[] => {
+        function associateChildren(node: FileTreeNode) {
+            const children =
+                data?.filter((f) => {
+                    const rightDepth = f.endsWith("/")
+                        ? f.split("/").length === node.id.split("/").length + 1
+                        : f.split("/").length === node.id.split("/").length
+                    const rightParent = f.startsWith(node.id)
+                    return rightDepth && rightParent
+                }) ?? []
+            if (node.id.endsWith("/")) {
+                node.children = children.map(toTreeNode)
+                node.children.forEach(associateChildren)
+            }
+            return node
+        }
+
+        function toTreeNode(path: string): FileTreeNode {
+            return {
+                id: path,
+                name: getNameFromPath(path),
+                children: [],
+                type: path.endsWith("/") ? "folder" : "file"
+            }
+        }
+
+        return [
+            {
+                id: "./",
+                name: crateName,
+                children:
+                    data
+                        ?.filter((f) =>
+                            f.endsWith("/") ? f.split("/").length === 2 : f.split("/").length === 1
+                        )
+                        .map(toTreeNode)
+                        .map(associateChildren) ?? [],
+                type: "folder"
+            }
+        ]
+    }, [crateName, data])
+
+    const asTreeCache = useRef<FileTreeNode[]>([])
+    const asTreeCached = useMemo(() => {
+        if (JSON.stringify(asTreeCache.current) === JSON.stringify(asTree))
+            return asTreeCache.current
+        else {
+            asTreeCache.current = asTree
+            return asTreeCache.current
+        }
+    }, [asTree])
+
+    useEffect(() => {
+        if (treeParent.current) {
+            const observer = new ResizeObserver((entries) => {
+                const relevantEntry = entries[0]
+                setTreeSize({
+                    width: relevantEntry.contentRect.width,
+                    height: relevantEntry.contentRect.height
+                })
+            })
+            observer.observe(treeParent.current)
+
+            const lastElement = treeParent.current
+            return () => observer.unobserve(lastElement)
+        }
     }, [])
 
     return (
@@ -143,34 +227,42 @@ export function FileExplorer() {
             </div>
             <Error error={error} title="Failed to fetch files list" />
             <Error error={downloadError} title="Download failed" />
-            <div className="p-2 overflow-y-auto grow">
-                {!data ? (
-                    <div className="flex flex-col gap-2">
-                        {[0, 0, 0, 0, 0, 0].map((_, i) => {
-                            return (
-                                <Skeleton
-                                    key={i}
-                                    className={`w-96 h-8 ${i % 3 !== 0 ? "ml-10" : ""}`}
-                                />
-                            )
-                        })}
-                    </div>
-                ) : (
-                    <ContextMenu>
-                        <ContextMenuTrigger>
-                            <div className="w-full h-full">
-                                <FolderContent
-                                    filePaths={data}
-                                    path={""}
-                                    onSectionOpenChange={onSectionOpenChange}
-                                    defaultSectionOpen={defaultSectionOpen}
-                                />
-                            </div>
-                        </ContextMenuTrigger>
-                        <EntryContextMenu blankSpace />
-                    </ContextMenu>
-                )}
+            <div className="p-2 overflow-y-auto grow" ref={treeParent}>
+                <Tree
+                    data={asTreeCached}
+                    height={treeSize.height}
+                    width={treeSize.width}
+                    rowHeight={32}
+                    selectionFollowsFocus={true}
+                    disableMultiSelection={true}
+                >
+                    {Node}
+                </Tree>
             </div>
+        </div>
+    )
+}
+
+function Node({ node, style }: NodeRendererProps<FileTreeNode>) {
+    return (
+        <div
+            style={style}
+            className={`flex items-center gap-1 ${node.state.isSelected && "bg-muted"} rounded-sm p-1`}
+            onClick={() => node.select()}
+            onDoubleClick={() => node.toggle()}
+        >
+            <ChevronRightIcon
+                className={`size-4 text-muted-foreground ${node.state.isOpen && "rotate-90"} ${node.children?.length === 0 && "opacity-0"} shrink-0`}
+                onClick={() => node.toggle()}
+            />
+            {node.id === "./" ? (
+                <PackageIcon className="size-4 mr-1 shrink-0" />
+            ) : node.data.type === "file" ? (
+                <FileIcon className="size-4 mr-1 shrink-0" />
+            ) : (
+                <FolderIcon className="size-4 mr-1 shrink-0" />
+            )}
+            <span className="select-none line-clamp-1">{node.data.name}</span>
         </div>
     )
 }

@@ -5,8 +5,7 @@ import { NodeRendererProps, Tree } from "react-arborist"
 import { ChevronRightIcon, FolderIcon, LoaderCircleIcon, PackageIcon } from "lucide-react"
 import { useCrateName } from "@/lib/hooks"
 import { Error } from "@/components/error"
-
-type FileTreeNode = { id: string; name: string; children: FileTreeNode[] }
+import { FileTreeNode, getNameFromPath } from "@/components/file-explorer/utils"
 
 export function PathPicker({
     onPathPicked,
@@ -39,7 +38,7 @@ export function PathPicker({
         return data?.filter((path) => path.endsWith("/")) ?? []
     }, [data])
 
-    const asTree = useMemo(() => {
+    const asTree = useMemo((): FileTreeNode[] => {
         function associateChildren(node: FileTreeNode) {
             const children = folders.filter((f) => {
                 const rightDepth = f.split("/").length === node.id.split("/").length + 1
@@ -51,8 +50,8 @@ export function PathPicker({
             return node
         }
 
-        function toTreeNode(path: string) {
-            return { id: path, name: getFolderNameFromPath(path), children: [] }
+        function toTreeNode(path: string): FileTreeNode {
+            return { id: path, name: getNameFromPath(path), children: [], type: "folder" }
         }
 
         return [
@@ -62,7 +61,8 @@ export function PathPicker({
                 children: folders
                     .filter((f) => f.split("/").length === 2)
                     .map(toTreeNode)
-                    .map(associateChildren)
+                    .map(associateChildren),
+                type: "folder"
             }
         ]
     }, [crateName, folders])
@@ -106,11 +106,6 @@ export function PathPicker({
     )
 }
 
-function getFolderNameFromPath(path: string) {
-    const split = path.split("/")
-    return split[split.length - 2]
-}
-
 function Node({ node, style }: NodeRendererProps<FileTreeNode>) {
     return (
         <div
@@ -120,15 +115,15 @@ function Node({ node, style }: NodeRendererProps<FileTreeNode>) {
             onDoubleClick={() => node.toggle()}
         >
             <ChevronRightIcon
-                className={`size-4 text-muted-foreground ${node.state.isOpen && "rotate-90"} ${node.children?.length === 0 && "opacity-0"}`}
+                className={`size-4 text-muted-foreground ${node.state.isOpen && "rotate-90"} ${node.children?.length === 0 && "opacity-0"} shrink-0`}
                 onClick={() => node.toggle()}
             />
             {node.id === "./" ? (
-                <PackageIcon className="size-4 mr-1" />
+                <PackageIcon className="size-4 mr-1 shrink-0" />
             ) : (
-                <FolderIcon className="size-4 mr-1" />
+                <FolderIcon className="size-4 mr-1 shrink-0" />
             )}
-            <span className="select-none">{node.data.name}</span>
+            <span className="select-none line-clamp-1">{node.data.name}</span>
         </div>
     )
 }
