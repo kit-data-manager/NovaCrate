@@ -217,9 +217,9 @@ export function camelCaseReadable(str: string) {
     if (str === "@type") return "Type"
     const [prefix, ...suffix] = str.includes(":") ? str.split(":") : ["", str]
     // If the string contains more than one :, we just use the first one as suffix and join everything else back together
-    const split = suffix.join(":").replace(/([A-Z][a-z])/g, " $1")
-    const result = (prefix ? `[${prefix}] ` : "") + split.charAt(0).toUpperCase() + split.slice(1)
-    return result.startsWith(" ") ? result.slice(1) : result
+    let split = suffix.join(":").replace(/([A-Z][a-z])/g, " $1")
+    if (split.startsWith(" ")) split = split.slice(1)
+    return (prefix ? `[${prefix}] ` : "") + split.charAt(0).toUpperCase() + split.slice(1)
 }
 
 /**
