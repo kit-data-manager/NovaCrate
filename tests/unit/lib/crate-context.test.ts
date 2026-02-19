@@ -94,5 +94,6 @@ describe("crate-context", () => {
         expect(context.usingFallback).toBe(true)
         expect(context.specification).toBe("v1.1.3")
         expect(mock).toHaveBeenCalled()
+        mock.mockRestore()
     })
 })
