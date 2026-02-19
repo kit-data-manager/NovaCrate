@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Currently, some limitations apply for the iframe. Take a look at the documentation at docs/iframe-interface.md for more information.
 - Added internal feature flags to disable certain features for different backends
 - Added proper handling of custom types defined in the context of the crate
+- Added unit testing capabilities with jest
 
 ### Fixed
 - Correctly determine whether a schema for a type is loaded or not

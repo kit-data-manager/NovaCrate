@@ -124,7 +124,15 @@ You can run the tests using:
 
     npm run build && npm run serve
     # In a different terminal:
-    npm run test
+    npm run test:e2e
+
+Unit tests can be run without building the app using:
+
+    npm run test:unit
+
+On development machines, the entire test suite incorporating E2E tests and unit tests can be run using:
+
+    npm run test:dev-all
 
 ## ℹ️ Documentation
 
