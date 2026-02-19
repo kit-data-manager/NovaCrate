@@ -123,13 +123,9 @@ export function CreateEntity({
             ((hasFileUpload && !externalResource) || (hasFolderUpload && !externalResource))
         ) {
             if (hasFileUpload) {
-                onUploadFile(path === "./" ? name : path + name, name, plainFiles[0])
+                onUploadFile(path + name, name, plainFiles[0])
             } else {
-                onUploadFolder(
-                    path === "./" ? name : path + name,
-                    name,
-                    emptyFolder ? [] : folderFiles
-                )
+                onUploadFolder(path + name, name, emptyFolder ? [] : folderFiles)
             }
         } else onCreateClick(forceId || identifier || autoId, name)
     }, [
@@ -255,6 +251,7 @@ export function CreateEntity({
                     </Tabs>
                     {externalResource ? null : (
                         <div className="space-y-4">
+                            <Label>Destination</Label>
                             <PathPicker onPathPicked={setPath} defaultPath={basePath} />
                             <Label>File</Label>
                             <div>
@@ -299,6 +296,7 @@ export function CreateEntity({
                     </Tabs>
                     {externalResource ? null : (
                         <div className="space-y-4">
+                            <Label>Destination</Label>
                             <PathPicker onPathPicked={setPath} defaultPath={basePath} />
                             <Label>Folder</Label>
                             <div className="flex items-center">

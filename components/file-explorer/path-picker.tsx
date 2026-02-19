@@ -2,15 +2,9 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "r
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import useSWR from "swr"
 import { NodeRendererProps, Tree } from "react-arborist"
-import {
-    ChevronRightIcon,
-    FolderIcon,
-    FolderPlusIcon,
-    PackageIcon,
-    RotateCwIcon
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { ChevronRightIcon, FolderIcon, LoaderCircleIcon, PackageIcon } from "lucide-react"
 import { useCrateName } from "@/lib/hooks"
+import { Error } from "@/components/error"
 
 type FileTreeNode = { id: string; name: string; children: FileTreeNode[] }
 
@@ -38,8 +32,7 @@ export function PathPicker({
     const {
         data,
         error,
-        isLoading: isPending,
-        mutate: revalidate
+        isLoading: isPending
     } = useSWR(crateData.crateId ? "files-list-" + crateData.crateId : null, filesListResolver)
 
     const folders = useMemo(() => {
@@ -86,30 +79,28 @@ export function PathPicker({
 
     return (
         <div className="border rounded-lg">
-            <div className="flex items-center px-2 py-1 border-b bg-muted rounded-t-lg">
-                <div className="text-xs border-r pr-3">Save to... </div>
-                <Button variant="header" size="sm" onClick={() => revalidate} disabled={isPending}>
-                    <RotateCwIcon />
-                </Button>
-                <Button variant="header" size="sm" disabled={selection === ""}>
-                    <FolderPlusIcon />
-                </Button>
-            </div>
             <div className="p-1">
-                <Tree
-                    data={asTreeCached}
-                    height={200}
-                    width={452}
-                    rowHeight={28}
-                    selectionFollowsFocus={true}
-                    disableMultiSelection={true}
-                    selection={selection}
-                    onSelect={(nodes) =>
-                        nodes.length > 0 ? setSelection(nodes[0].id) : setSelection("/")
-                    }
-                >
-                    {Node}
-                </Tree>
+                <Error error={error} title="Failed to fetch files list" />
+                {isPending ? (
+                    <div className="flex justify-center items-center h-50">
+                        <LoaderCircleIcon className="size-4 animate-spin" />
+                    </div>
+                ) : (
+                    <Tree
+                        data={asTreeCached}
+                        height={200}
+                        width={452}
+                        rowHeight={28}
+                        selectionFollowsFocus={true}
+                        disableMultiSelection={true}
+                        selection={selection}
+                        onSelect={(nodes) =>
+                            nodes.length > 0 ? setSelection(nodes[0].id) : setSelection("./")
+                        }
+                    >
+                        {Node}
+                    </Tree>
+                )}
             </div>
         </div>
     )
