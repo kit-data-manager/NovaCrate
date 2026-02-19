@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Added proper handling of custom types defined in the context of the crate
+- Added unit testing capabilities with jest
 
 ### Fixed
 - Correctly determine whether a schema for a type is loaded or not
