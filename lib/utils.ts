@@ -204,17 +204,22 @@ export function propertyHasChanged(_value: EntityPropertyTypes, _oldValue: Entit
 }
 
 /**
- * Turns a camel-case string into a human-readable one
+ * Turns a camel-case string into a human-readable one. Also correctly handles shortened URIs
  * @param str Camel-case string
  * @example
  * someExample
  * -> Some Example
+ * purl:anotherExample
+ * -> [purl] Another Example
  */
 export function camelCaseReadable(str: string) {
     if (str === "@id") return "Identifier"
     if (str === "@type") return "Type"
-    const split = str.replace(/([A-Z][a-z])/g, " $1")
-    return split.charAt(0).toUpperCase() + split.slice(1)
+    const [prefix, ...suffix] = str.includes(":") ? str.split(":") : ["", str]
+    // If the string contains more than one :, we just use the first one as suffix and join everything else back together
+    let split = suffix.join(":").replace(/([A-Z][a-z])/g, " $1")
+    if (split.startsWith(" ")) split = split.slice(1)
+    return (prefix ? `[${prefix}] ` : "") + split.charAt(0).toUpperCase() + split.slice(1)
 }
 
 /**
