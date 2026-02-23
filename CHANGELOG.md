@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Correctly determine whether a schema for a type is loaded or not
+- Fixed NovaCrate logo in main menu
 
 ## [1.8.1] - 2026-02-17
 
