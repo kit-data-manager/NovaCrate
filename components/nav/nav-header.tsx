@@ -321,13 +321,6 @@ export function NavHeader() {
                                     error={value}
                                 />
                             ))}
-                            {Array.from(schemaIssues.entries()).map(([key, value]) => (
-                                <Error
-                                    title={`Error while loading schema "${key}"`}
-                                    key={key}
-                                    error={value}
-                                />
-                            ))}
                             {crateContext.errors.map((error, i) => (
                                 <Error
                                     title={"Error while parsing crate context"}
