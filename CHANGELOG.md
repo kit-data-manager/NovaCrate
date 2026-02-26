@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Correctly determine whether a schema for a type is loaded or not
 - Fixed NovaCrate logo in main menu
+- If the crate context contains elements that can't be parsed, an error message will be shown instead of silently ignoring the failure.
 
 ## [1.8.1] - 2026-02-17
 

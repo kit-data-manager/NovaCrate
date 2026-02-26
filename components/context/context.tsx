@@ -62,6 +62,10 @@ export function ContextPage() {
                         />
                     ) : null}
 
+                    {context.errors.map((error, i) => (
+                        <Error title={"Error while parsing crate context"} error={error} key={i} />
+                    ))}
+
                     {context.usingFallback ? (
                         <Alert className="text-warn border-warn/50">
                             <AlertTriangle />

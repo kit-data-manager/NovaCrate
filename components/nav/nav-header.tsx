@@ -91,6 +91,7 @@ export function NavHeader() {
     } = useContext(CrateDataContext)
     // const { undo, redo } = useEditorState.temporal.getState()
     const crateContextError = useStore(editorState, (s) => s.crateContextError)
+    const crateContext = useStore(editorState, (s) => s.crateContext)
     const [schemaIssues, setSchemaIssues] = useState<Map<string, unknown>>(new Map())
 
     const schemaWorker = useContext(SchemaWorker)
@@ -285,7 +286,8 @@ export function NavHeader() {
                 saveError.size > 0 ||
                 healthTestError ||
                 schemaIssues.size > 0 ||
-                crateContextError ? (
+                crateContextError ||
+                crateContext.errors.length > 0 ? (
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button
@@ -317,6 +319,13 @@ export function NavHeader() {
                                     title={`Error while loading schema "${key}"`}
                                     key={key}
                                     error={value}
+                                />
+                            ))}
+                            {crateContext.errors.map((error, i) => (
+                                <Error
+                                    title={"Error while parsing crate context"}
+                                    error={error}
+                                    key={i}
                                 />
                             ))}
                         </PopoverContent>
