@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added proper handling of custom types defined in the context of the crate
 - Added unit testing capabilities with jest
+- The JSON Editor can now be used even if the ro-crate-metadata.json file does not parse as JSON. This allows fixing metadata files with invalid JSON directly inside the editor.
 
 ### Fixed
 - Correctly determine whether a schema for a type is loaded or not

@@ -71,6 +71,13 @@ declare interface CrateServiceAdapter {
     getCrate(id: string): Promise<ICrate>
 
     /**
+     * Return the entire ro-crate-metadata.json without further parsing.
+     * @param id ID of the target crate
+     * @returns Promise - resolves on success
+     */
+    getCrateRaw(id: string): Promise<string>
+
+    /**
      * Get a list of all ids of all crates stored in the provider
      */
     getStoredCrateIds(): Promise<string[]>
