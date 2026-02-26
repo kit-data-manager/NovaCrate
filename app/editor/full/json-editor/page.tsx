@@ -36,11 +36,13 @@ export default function JSONEditorPage() {
     const [saving, setSaving] = useState(false)
     const [saveError, setSaveError] = useState<unknown>()
 
-    const { data, mutate } = useSWR(crateId && serviceProvider && "ro-crate-metadata.json", () => {
-        console.log("running fetch")
-        if (!crateId || !serviceProvider) return undefined
-        return serviceProvider.getCrateRaw(crateId)
-    })
+    const { data, mutate, error } = useSWR(
+        crateId && serviceProvider && crateData + "/ro-crate-metadata.json",
+        () => {
+            if (!crateId || !serviceProvider) return undefined
+            return serviceProvider.getCrateRaw(crateId)
+        }
+    )
 
     useEffect(() => {
         if (crateData) mutate().then()
@@ -183,6 +185,7 @@ export default function JSONEditorPage() {
             ) : (
                 <>
                     <Error error={saveError} title="Failed to save changes" />
+                    <Error error={error} title="Failed to load JSON" />
                     <div className="flex gap-2 absolute top-12 right-35 z-10 bg-accent/60 items-center rounded-lg">
                         <Noticer hasErrors={editorHasErrors} hasChanges={editorHasChanges} />
                     </div>
