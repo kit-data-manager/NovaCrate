@@ -1,5 +1,10 @@
 # 📦 NovaCrate - RO-Crate Editor
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15183573.svg)](https://doi.org/10.5281/zenodo.15183573)
+[![Build and Push Docker Image](https://github.com/kit-data-manager/NovaCrate/actions/workflows/docker.yml/badge.svg)](https://github.com/kit-data-manager/NovaCrate/actions/workflows/docker.yml)
+[![Playwright Tests](https://github.com/kit-data-manager/NovaCrate/actions/workflows/playwright.yml/badge.svg)](https://github.com/kit-data-manager/NovaCrate/actions/workflows/playwright.yml)
+[![Node.js CI](https://github.com/kit-data-manager/NovaCrate/actions/workflows/build.yml/badge.svg)](https://github.com/kit-data-manager/NovaCrate/actions/workflows/build.yml)
+
 Web-based fully-featured interactive editor for **creating, editing, and visualizing** research object crates. Built for inspecting, validating, and manipulating RO-Crates, allowing you to get a deeper understanding of its content and structure.
 
 NovaCrate is in active development; we welcome feedback, feature requests, and bug reports on the [issues page](https://github.com/kit-data-manager/NovaCrate/issues).
@@ -7,20 +12,9 @@ NovaCrate is in active development; we welcome feedback, feature requests, and b
 ## [▶️ Open NovaCrate](https://novacrate.datamanager.kit.edu/)
 
 <details>
-<summary>⚠️ Save your RO-Crates before the GitHub Pages deployment is discontinued</summary>
-
-Note that NovaCrate is moving from GitHub Pages to a self-hosted instance. If you have RO-Crates stored on the GitHub instance, you will not be able to access them anymore in the future. Download them to make sure you don't lose any work.
-- Old GitHub Pages deployment: [kit-data-manager.github.io/NovaCrate/](https://kit-data-manager.github.io/NovaCrate/)
-- New deployment on our own servers: [novacrate.datamanager.kit.edu](https://novacrate.datamanager.kit.edu/)
-
-The crates you open and create on each instance are not shared between the instances, so you will have to return to the correct instance to see your recent crates. Make sure to download your work before leaving the app.
-
-All data you use in NovaCrate is exclusively stored in your browser's local storage and therefore cannot be transferred to other instances. Your data is stored in the [origin private file system (OPFS)](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system), which will not allow accessing any files unless you are on the domain that placed them there. Hence, when the GitHub instance goes down, you cannot access files in the OPFS for kit-data-manager.github.io anymore (at least not easily). But your data never leaves your browser, so all the files are theoretically stored somewhere on your disk.
-</details>
-
-<details>
 <summary>Where is my data stored?</summary>
-All data is stored in your browser's [origin private file system (OPFS)](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system). It will never leave your browser nor your device. No data is stored on our servers.
+  
+All data is stored in your browser's [Origin private file system (OPFS)](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system). It will never leave your browser nor your device. No data is stored on our servers.
 
 For more information, see our  [privacy policy](https://www.kit.edu/privacypolicy.php).
 </details>
@@ -45,7 +39,7 @@ For more information, see our  [privacy policy](https://www.kit.edu/privacypolic
 ## 🎨 Editions
 
 NovaCrate can be used and deployed in multiple different ways. Currently, only the web version is in active development.
-You can access it directly [here](https://kit-data-manager.github.io/NovaCrate/).
+You can access it directly [here](https://novacrate.datamanager.kit.edu/).
 
 > 💡 If you have a special interest in the Desktop App or the Cloud Frontend, please get in contact.
 
@@ -54,7 +48,7 @@ You can access it directly [here](https://kit-data-manager.github.io/NovaCrate/)
 
 | Name               | Status  | Description                                                                                                                                                                                                             | Notes                                                                                                      |
 |--------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
-| Standalone Web App | Active  | Standalone Web App without a backend. Stores Crates in the local origin-private file system of the browser                                                                                                              | [Access here](https://kit-data-manager.github.io/NovaCrate/)                                               |
+| Standalone Web App | Active  | Standalone Web App without a backend. Stores Crates in the local origin-private file system of the browser                                                                                                              | [Access here](https://novacrate.datamanager.kit.edu/)                                               |
 | Desktop App        | Concept | Tauri App with a local backend. Has full access to file system and can make use of arbitrary backend software.                                                                                                          | Suitable backend already implemented.                                                                      |
 | Cloud Frontend     | Concept | NovaCrate is a frontend that can be used with any compatible backend solution, for example a cloud based service that hosts RO-Crates. This approach has not been explored yet due to lack of viable backend solutions. | See `src/lib/backend/CrateServiceAdapter.d.ts` for a list of methods that a backend adapter should implement |
 
