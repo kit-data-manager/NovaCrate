@@ -89,7 +89,7 @@ describe("crate-context", () => {
     it("should fallback when the provided context is unknown", async () => {
         const context = new CrateContext()
         expect(context.usingFallback).toBe(false)
-        const mock = spyOn(global.console, "warn").mockImplementationOnce(() => {})
+        const mock = spyOn(global.console, "error").mockImplementationOnce(() => {})
         await context.setup("https://example.org/unknown-context")
         expect(context.usingFallback).toBe(true)
         expect(context.specification).toBe("v1.1.3")
