@@ -27,6 +27,7 @@ export class CrateContext {
     private _customPairs: Record<string, string> = {}
     private _specification: RO_CRATE_VERSION | undefined = undefined
     private _usingFallback = false
+    private _errors: unknown[] = []
     private raw?: CrateContextType
 
     constructor() {}
@@ -53,6 +54,10 @@ export class CrateContext {
 
     get usingFallback() {
         return this._usingFallback
+    }
+
+    get errors() {
+        return structuredClone(this._errors)
     }
 
     private async loadKnownContext(
@@ -83,6 +88,7 @@ export class CrateContext {
         this._customPairs = {}
         this._specification = undefined
         this._usingFallback = false
+        this._errors = []
         this.raw = crateContext
 
         const content = Array.isArray(crateContext) ? crateContext : [crateContext]
@@ -91,7 +97,12 @@ export class CrateContext {
         for (const entry of content) {
             if (typeof entry === "string") {
                 const known = CrateContext.getKnownContext(entry)
-                await this.loadKnownContext(known, fallback)
+                if (known) await this.loadKnownContext(known, fallback)
+                else {
+                    const msg = `Cannot load schema ${entry} without prefix. Please specify the schema as a custom context entry with a prefix.`
+                    console.error(msg)
+                    this._errors.push(new Error(msg))
+                }
             } else {
                 for (const [key, value] of Object.entries(entry)) {
                     if (key === "@vocab") {
