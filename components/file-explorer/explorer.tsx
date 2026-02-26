@@ -268,7 +268,10 @@ export function FileExplorer() {
 
 function Node({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
     const [renameValue, setRenameValue] = useState(node.data.name)
-    const entity = useStore(editorState, (s) => s.getEntities().get(node.data.id))
+    const entity = useStore(
+        editorState,
+        (s) => s.getEntities().get(node.data.id) || s.getEntities().get("./" + node.data.id)
+    )
     const goToEntity = useGoToEntityEditor(entity)
     const showEntities = useStore(fileExplorerSettings, (s) => s.showEntities)
 
@@ -278,10 +281,9 @@ function Node({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
                 <div
                     ref={node.state.isEditing ? undefined : dragHandle}
                     style={style}
-                    className={`flex items-center gap-1 ${node.state.isSelected && "bg-muted"} ${node.state.isSelectedEnd && "rounded-b-sm"} ${node.state.isSelectedStart && "rounded-t-sm"} p-1`}
+                    className={`flex items-center gap-1 ${node.state.isSelected && "bg-muted"} ${node.state.isSelectedEnd && "rounded-b-sm"} ${node.state.isSelectedStart && "rounded-t-sm"} p-1 outline-hidden`}
                     onDoubleClick={() => {
-                        node.edit().then()
-                        setRenameValue(node.data.name)
+                        if (entity) goToEntity()
                     }}
                 >
                     <ChevronRightIcon
@@ -320,6 +322,11 @@ function Node({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
                 fileName={node.data.name}
                 goToEntity={goToEntity}
                 blankSpace={false}
+                rename={() =>
+                    setTimeout(() => {
+                        node.edit()
+                    }, 300)
+                }
             />
         </ContextMenu>
     )
