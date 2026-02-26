@@ -246,8 +246,6 @@ export function NavHeader() {
         downloadCrateEln,
         downloadCrateZip,
         downloadRoCrateMetadataFile,
-        flags?.crateSelectionControlledExternally,
-        flags?.fileManagement,
         hasUnsavedChanges,
         isSaving,
         showUploadFileModal,
