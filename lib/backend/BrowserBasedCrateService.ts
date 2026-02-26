@@ -289,6 +289,12 @@ export class BrowserBasedCrateService extends CrateServiceBase {
         return JSON.parse(await data.text()) as ICrate
     }
 
+    async getCrateRaw(id: string) {
+        // We can safely run this in the main thread to safe worker overhead
+        const data = await opfsFunctions.readFile(id, "ro-crate-metadata.json")
+        return await data.text()
+    }
+
     async getCrateFilesList(crateId: string) {
         return await opfsFunctions.getCrateDirContents(crateId)
     }
