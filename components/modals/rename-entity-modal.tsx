@@ -17,7 +17,7 @@ import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-e
 import { Error } from "@/components/error"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
-export const RenameEntityModal = memo(function DeleteEntityModal({
+export const RenameEntityModal = memo(function RenameEntityModal({
     open,
     onOpenChange,
     entityId
