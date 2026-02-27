@@ -39,7 +39,7 @@ import { Input } from "@/components/ui/input"
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
-import { getEntityDisplayName } from "@/lib/utils"
+import { getEntityDisplayName, getFileName } from "@/lib/utils"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -247,7 +247,20 @@ export function FileExplorer() {
                                 n.ids.length === 1 && showDeleteEntityModal(n.ids[0])
                                 return
                             }}
-                            onMove={(n) => console.log("move", n)} /* TODO: move and rename */
+                            onMove={(n) => {
+                                setTimeout(() => {
+                                    showRenameEntityModal(
+                                        n.dragIds.map((affected) => ({
+                                            from: affected,
+                                            to:
+                                                n.parentId +
+                                                getFileName(affected) +
+                                                (affected.endsWith("/") ? "/" : "")
+                                        })),
+                                        () => revalidate()
+                                    )
+                                }, 100)
+                            }}
                             onRename={(n) => {
                                 const split = n.id.split("/")
                                 if (n.id.endsWith("/")) {

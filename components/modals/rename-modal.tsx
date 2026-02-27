@@ -135,6 +135,9 @@ export const RenameModal = memo(function RenameModal({
 
     const [isExecutingChanges, setIsExecutingChanges] = useState(false)
     const [changeExecutionIssues, setChangeExecutionIssues] = useState<Error[]>([])
+    if (!open && changeExecutionIssues.length > 0) {
+        setChangeExecutionIssues([])
+    }
 
     const onConfirmClick = useCallback(() => {
         setIsExecutingChanges(true)
@@ -152,8 +155,11 @@ export const RenameModal = memo(function RenameModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Rename Entity</DialogTitle>
-                    <DialogDescription></DialogDescription>
+                    <DialogTitle>Change Entity Identifier</DialogTitle>
+                    <DialogDescription>
+                        Change the identifier of one or more entities and review your changes before
+                        continuing.
+                    </DialogDescription>
                 </DialogHeader>
 
                 {changeExecutionIssues.length > 0 && (
@@ -173,27 +179,50 @@ export const RenameModal = memo(function RenameModal({
                         <div>
                             The following changes will be made:
                             {(JSON.parse(data) as [string, string][]).map(([from, to]) => (
-                                <div key={from}>
-                                    {from} <ArrowRightIcon /> {to}
+                                <div key={from} className="py-2 px-4 border rounded-lg text-sm">
+                                    <div>{from}</div>
+                                    <div className="flex items-center gap-2">
+                                        <ArrowRightIcon className="size-4" /> {to}
+                                    </div>
                                 </div>
                             ))}
-                            {/* TODO issue display */}
-                            {committingChangesCorrect.length > 0 &&
-                                committingChangesCorrect.map((issue, i) => (
-                                    <div key={i}>{issue}</div>
-                                ))}
-                            <Button
-                                onClick={onConfirmClick}
-                                disabled={committingChangesCorrect.length > 0 || isExecutingChanges}
-                            >
-                                {isExecutingChanges && (
-                                    <LoaderCircleIcon className={"size-4 animate-spin"} />
-                                )}
-                                Continue
-                            </Button>
+                            {committingChangesCorrect.length > 0 && (
+                                <div className="my-2 space-x-2">
+                                    {committingChangesCorrect.map((issue, i) => (
+                                        <ErrorDisplay
+                                            error={issue}
+                                            title={"An issue prevents this operation"}
+                                            key={i}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                            <div className="text-sm text-muted-foreground my-2">
+                                All listed files and folders will be renamed or moved. Corresponding
+                                entities&#39; identifiers will be updated accordingly. Any
+                                references to these entities will also be updated.
+                            </div>
+                            <div className="flex justify-between">
+                                <Button onClick={() => onOpenChange(false)} variant={"secondary"}>
+                                    Abort
+                                </Button>
+                                <Button
+                                    onClick={onConfirmClick}
+                                    disabled={
+                                        committingChangesCorrect.length > 0 || isExecutingChanges
+                                    }
+                                >
+                                    {isExecutingChanges ? (
+                                        <LoaderCircleIcon className={"size-4 animate-spin"} />
+                                    ) : null}
+                                    Confirm
+                                </Button>
+                            </div>
                         </div>
                     ) : (
-                        <div>Loading</div>
+                        <div className="flex items-center justify-center p-4">
+                            <LoaderCircleIcon className={"size-4 animate-spin"} />
+                        </div>
                     ))}
             </DialogContent>
         </Dialog>

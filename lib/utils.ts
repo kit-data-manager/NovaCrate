@@ -254,6 +254,19 @@ export function getFolderPath(filePath: string) {
 }
 
 /**
+ * Get the file name from a file path
+ * @example
+ * /some/long/path/file.txt
+ * -> file.txt
+ * @param filePath
+ */
+export function getFileName(filePath: string) {
+    const split = filePath.split("/")
+    if (filePath.endsWith("/")) return split[split.length - 2]
+    else return split[split.length - 1]
+}
+
+/**
  * Convert a path into a valid path (without empty parts and with an ending slash if needed)
  * @param path Path to convert
  * @param endWithSlash Whether an ending slash should be added to indicate a folder
