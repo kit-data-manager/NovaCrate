@@ -94,9 +94,13 @@ export function IDField({ value }: { value: string }) {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent id={"id-dropdown"}>
-                    <DropdownMenuItem onClick={() => setRenameEntityModalOpen(true)}>
-                        <Pencil className="size-4 mr-2" /> Edit Identifier
-                    </DropdownMenuItem>
+                    {entity &&
+                        entity["@id"] !== "./" &&
+                        entity["@id"] !== "ro-crate-metadata.json" && (
+                            <DropdownMenuItem onClick={() => setRenameEntityModalOpen(true)}>
+                                <Pencil className="size-4 mr-2" /> Edit Identifier
+                            </DropdownMenuItem>
+                        )}
                     <DropdownMenuItem onClick={copyFn}>
                         <Copy className="size-4 mr-2" /> Copy Identifier
                     </DropdownMenuItem>

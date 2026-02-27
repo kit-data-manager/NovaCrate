@@ -332,7 +332,10 @@ function Node({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
                             value={renameValue}
                             onChange={(e) => setRenameValue(e.target.value)}
                             autoFocus={true}
-                            onKeyDown={(e) => e.key === "Enter" && node.submit(renameValue)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") node.submit(renameValue)
+                                if (e.key === "Escape") node.reset()
+                            }}
                             onBlur={() => node.reset()}
                         />
                     ) : (
@@ -349,10 +352,13 @@ function Node({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
                 fileName={node.data.name}
                 goToEntity={goToEntity}
                 blankSpace={false}
-                rename={() =>
-                    setTimeout(() => {
-                        node.edit()
-                    }, 300)
+                rename={
+                    node.id !== "./" && node.id !== "ro-crate-metadata.json"
+                        ? () =>
+                              setTimeout(() => {
+                                  node.edit()
+                              }, 200)
+                        : undefined
                 }
             />
         </ContextMenu>
