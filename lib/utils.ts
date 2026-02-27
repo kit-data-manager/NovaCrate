@@ -231,19 +231,6 @@ export function encodeFilePath(filePath: string) {
 }
 
 /**
- * Return the name of a file without the ending
- * @example
- * file.docx
- * -> file
- * @param fileName
- */
-export function fileNameWithoutEnding(fileName: string) {
-    if (fileName.match(/\.[A-z0-9]+$/)) {
-        return fileName.replace(/\.[A-z0-9]+$/, "")
-    } else return fileName
-}
-
-/**
  * The most primitive of operations as a function (for use in reducers for example)
  * @param a
  * @param b
