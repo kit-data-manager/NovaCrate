@@ -123,9 +123,13 @@ export function CreateEntity({
             ((hasFileUpload && !externalResource) || (hasFolderUpload && !externalResource))
         ) {
             if (hasFileUpload) {
-                onUploadFile(path + name, name, plainFiles[0])
+                onUploadFile(path.replace(/^\.\//, "") + name, name, plainFiles[0])
             } else {
-                onUploadFolder(path + name, name, emptyFolder ? [] : folderFiles)
+                onUploadFolder(
+                    path.replace(/^\.\//, "") + name,
+                    name,
+                    emptyFolder ? [] : folderFiles
+                )
             }
         } else onCreateClick(forceId || identifier || autoId, name)
     }, [
