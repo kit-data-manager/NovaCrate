@@ -287,7 +287,7 @@ function Node({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
                     }}
                 >
                     <ChevronRightIcon
-                        className={`size-4 text-muted-foreground ${node.state.isOpen && "rotate-90"} ${node.children?.length === 0 && "opacity-0"} shrink-0 mr-1`}
+                        className={`size-4 text-muted-foreground ${node.state.isOpen && "rotate-90"} ${!node.id.endsWith("/") && "opacity-0"} shrink-0 mr-1`}
                         onClick={() => node.toggle()}
                     />
                     {showEntities && entity ? (
