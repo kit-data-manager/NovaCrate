@@ -22,8 +22,6 @@ export const RenameModal = memo(function RenameModal({
     onOpenChange: (isOpen: boolean) => void
     changes: { from: string; to?: string }[]
 }) {
-    console.log(open, changes)
-
     const entities = useEditorState((store) => store.entities)
     const { serviceProvider, crateId, changeEntityId } = useContext(CrateDataContext)
     // TODO integrate with feature flags
@@ -41,8 +39,6 @@ export const RenameModal = memo(function RenameModal({
     const [committingChanges, setCommittingChanges] = useState<
         { from: string; to: string }[] | undefined
     >(undefined)
-
-    console.log("committing", committingChanges)
 
     if (open && changes.every((c) => c.to !== undefined) && committingChanges === undefined) {
         setCommittingChanges(changes as { from: string; to: string }[])
@@ -68,7 +64,6 @@ export const RenameModal = memo(function RenameModal({
             }
         }
 
-        console.log("found issues", issues)
         return issues
     }, [committingChanges])
 
@@ -93,7 +88,6 @@ export const RenameModal = memo(function RenameModal({
                 }
             }
 
-            console.log("Analyzed impact as", fileImpact)
             return fileImpact
         },
         [crateId, serviceProvider]
@@ -109,7 +103,6 @@ export const RenameModal = memo(function RenameModal({
             else return undefined
         }
     )
-    console.log("data", data)
 
     const executeChanges = useCallback(async () => {
         if (!serviceProvider || !crateId || !data) return []
