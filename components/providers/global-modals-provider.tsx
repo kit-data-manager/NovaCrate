@@ -15,7 +15,7 @@ import { DocumentationModal } from "@/components/modals/documentation-modal"
 import { AutoReference } from "@/lib/utils"
 import { AboutModal } from "@/components/modals/about-modal"
 import { CrateExportedModal } from "@/components/modals/crate-exported-modal"
-import { RenameModal } from "@/components/modals/rename-modal"
+import { MultiRenameModal } from "@/components/modals/multi-rename-modal"
 
 export interface IGlobalModalContext {
     showCreateEntityModal(
@@ -39,7 +39,7 @@ export interface IGlobalModalContext {
     showAboutModal(): void
     showCrateExportedModal(): void
     showRenameEntityModal(
-        changes: { from: string; to?: string }[],
+        changes: { from: string; to: string }[],
         onCloseCallback?: () => void
     ): void
 }
@@ -112,7 +112,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     const [crateExportedModalState, setCrateExportedModalState] = useState({ open: false })
     const [renameEntityModalState, setRenameEntityModalState] = useState<{
         open: boolean
-        changes: { from: string; to?: string }[]
+        changes: { from: string; to: string }[]
         onCloseCallback?: () => void
     }>({ open: false, changes: [] })
 
@@ -199,7 +199,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     }, [])
 
     const showRenameEntityModal = useCallback(
-        (changes: { from: string; to?: string }[], onCloseCallback?: () => void) => {
+        (changes: { from: string; to: string }[], onCloseCallback?: () => void) => {
             setRenameEntityModalState({ open: true, changes, onCloseCallback })
         },
         []
@@ -352,7 +352,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 open={crateExportedModalState.open}
                 onOpenChange={onCrateExportedModalOpenChange}
             />
-            <RenameModal
+            <MultiRenameModal
                 open={renameEntityModalState.open}
                 onOpenChange={onRenameEntityOpenChange}
                 changes={renameEntityModalState.changes}

@@ -13,44 +13,27 @@ import { ArrowRightIcon, LoaderCircleIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Error as ErrorDisplay } from "@/components/error"
 
-export const RenameModal = memo(function RenameModal({
+/**
+ * Multi for executing a multi-rename operation where the target identifier is already known.
+ * Used to confirm the operation and determine the necessary changes.
+ */
+export const MultiRenameModal = memo(function MultiRenameModal({
     open,
     onOpenChange,
     changes
 }: {
     open: boolean
     onOpenChange: (isOpen: boolean) => void
-    changes: { from: string; to?: string }[]
+    changes: { from: string; to: string }[]
 }) {
     const entities = useEditorState((store) => store.entities)
     const { serviceProvider, crateId, changeEntityId } = useContext(CrateDataContext)
     // TODO integrate with feature flags
 
-    const mode = useMemo(() => {
-        if (changes.length === 1 && changes[0].to === undefined) {
-            return "single-rename"
-        } else if (changes.every((change) => change.to !== undefined)) {
-            return "multiple-review"
-        } else {
-            return "invalid"
-        }
-    }, [changes])
-
-    const [committingChanges, setCommittingChanges] = useState<
-        { from: string; to: string }[] | undefined
-    >(undefined)
-
-    if (open && changes.every((c) => c.to !== undefined) && committingChanges === undefined) {
-        setCommittingChanges(changes as { from: string; to: string }[])
-    } else if (!open && committingChanges !== undefined) {
-        setCommittingChanges(undefined)
-    }
-
     const committingChangesCorrect = useMemo(() => {
         const issues: string[] = []
-        if (!committingChanges) return issues
 
-        for (const change of committingChanges) {
+        for (const change of changes) {
             if (change.from.endsWith("/") && !change.to.endsWith("/")) {
                 issues.push(
                     `Changing directory path '${change.from}' to file path '${change.to}' is illegal`
@@ -65,7 +48,7 @@ export const RenameModal = memo(function RenameModal({
         }
 
         return issues
-    }, [committingChanges])
+    }, [changes])
 
     const analyzeChangeImpact = useCallback(
         async (changes: { from: string; to: string }[]) => {
@@ -94,13 +77,9 @@ export const RenameModal = memo(function RenameModal({
     )
 
     const { data } = useSWR(
-        crateId && committingChanges && "rename-impact-" + crateId,
+        crateId && changes.length > 0 && "rename-impact-" + crateId,
         async () => {
-            if (committingChanges)
-                return JSON.stringify(
-                    Array.from((await analyzeChangeImpact(committingChanges)).entries())
-                )
-            else return undefined
+            return JSON.stringify(Array.from((await analyzeChangeImpact(changes)).entries()))
         }
     )
 
@@ -167,56 +146,53 @@ export const RenameModal = memo(function RenameModal({
                     </div>
                 )}
 
-                {mode === "multiple-review" &&
-                    (data ? (
-                        <div>
-                            The following changes will be made:
-                            {(JSON.parse(data) as [string, string][]).map(([from, to]) => (
-                                <div key={from} className="py-2 px-4 border rounded-lg text-sm">
-                                    <div>{from}</div>
-                                    <div className="flex items-center gap-2">
-                                        <ArrowRightIcon className="size-4" /> {to}
-                                    </div>
+                {data ? (
+                    <div>
+                        The following changes will be made:
+                        {(JSON.parse(data) as [string, string][]).map(([from, to]) => (
+                            <div key={from} className="py-2 px-4 border rounded-lg text-sm">
+                                <div>{from}</div>
+                                <div className="flex items-center gap-2">
+                                    <ArrowRightIcon className="size-4" /> {to}
                                 </div>
-                            ))}
-                            {committingChangesCorrect.length > 0 && (
-                                <div className="my-2 space-x-2">
-                                    {committingChangesCorrect.map((issue, i) => (
-                                        <ErrorDisplay
-                                            error={issue}
-                                            title={"An issue prevents this operation"}
-                                            key={i}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                            <div className="text-sm text-muted-foreground my-2">
-                                All listed files and folders will be renamed or moved. Corresponding
-                                entities&#39; identifiers will be updated accordingly. Any
-                                references to these entities will also be updated.
                             </div>
-                            <div className="flex justify-between">
-                                <Button onClick={() => onOpenChange(false)} variant={"secondary"}>
-                                    Abort
-                                </Button>
-                                <Button
-                                    onClick={onConfirmClick}
-                                    disabled={
-                                        committingChangesCorrect.length > 0 || isExecutingChanges
-                                    }
-                                >
-                                    {isExecutingChanges ? (
-                                        <LoaderCircleIcon className={"size-4 animate-spin"} />
-                                    ) : null}
-                                    Confirm
-                                </Button>
+                        ))}
+                        {committingChangesCorrect.length > 0 && (
+                            <div className="my-2 space-x-2">
+                                {committingChangesCorrect.map((issue, i) => (
+                                    <ErrorDisplay
+                                        error={issue}
+                                        title={"An issue prevents this operation"}
+                                        key={i}
+                                    />
+                                ))}
                             </div>
+                        )}
+                        <div className="text-sm text-muted-foreground my-2">
+                            All listed files and folders will be renamed or moved. Corresponding
+                            entities&#39; identifiers will be updated accordingly. Any references to
+                            these entities will also be updated.
                         </div>
-                    ) : (
-                        <div className="flex items-center justify-center p-4">
-                            <LoaderCircleIcon className={"size-4 animate-spin"} />
+                        <div className="flex justify-between">
+                            <Button onClick={() => onOpenChange(false)} variant={"secondary"}>
+                                Abort
+                            </Button>
+                            <Button
+                                onClick={onConfirmClick}
+                                disabled={committingChangesCorrect.length > 0 || isExecutingChanges}
+                            >
+                                {isExecutingChanges ? (
+                                    <LoaderCircleIcon className={"size-4 animate-spin"} />
+                                ) : null}
+                                Confirm
+                            </Button>
                         </div>
-                    ))}
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-center p-4">
+                        <LoaderCircleIcon className={"size-4 animate-spin"} />
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
     )
