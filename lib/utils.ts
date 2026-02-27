@@ -334,7 +334,7 @@ export enum Diff {
  * @param oldId Current ID of entity to be renamed
  * @param newId New ID of entity to be renamed
  */
-export function changeEntityId(entities: IEntity[], oldId: string, newId: string) {
+export function changeEntityIdOccurrences(entities: IEntity[], oldId: string, newId: string) {
     entities.forEach((e) => {
         if (e["@id"] === oldId) {
             e["@id"] = newId

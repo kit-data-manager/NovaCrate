@@ -16,7 +16,7 @@ import { applyServerDifferences } from "@/lib/ensure-sync"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { TriangleAlert } from "lucide-react"
-import { changeEntityId, getEntityDisplayName } from "@/lib/utils"
+import { changeEntityIdOccurrences, getEntityDisplayName } from "@/lib/utils"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { useInterval } from "usehooks-ts"
 
@@ -93,7 +93,7 @@ export interface ICrateDataProvider {
      * @param newEntityId The new @id of the entity.
      * @returns {Promise<boolean>} Whether the operation was successful.
      */
-    renameEntity(entityData: IEntity, newEntityId: string): Promise<boolean>
+    changeEntityId(entityData: IEntity, newEntityId: string): Promise<boolean>
     /**
      * Adds a key-value pair to the custom @context of the crate. The key and value are strings. The key must be unique within the crate.
      */
@@ -151,7 +151,7 @@ export const CrateDataContext = createContext<ICrateDataProvider>({
     deleteEntity: () => {
         return Promise.reject("Crate Data Provider not mounted yet")
     },
-    renameEntity: () => {
+    changeEntityId: () => {
         return Promise.reject("Crate Data Provider not mounted yet")
     },
     createFileEntity(): Promise<boolean> {
@@ -530,7 +530,7 @@ export function CrateDataProvider({
         [data, mutate, crateId, serviceProvider]
     )
 
-    const renameEntity = useCallback(
+    const changeEntityId = useCallback(
         async (entityData: IEntity, newEntityId: string) => {
             if (crateId) {
                 try {
@@ -542,7 +542,11 @@ export function CrateDataProvider({
 
                     if (data) {
                         const newData = produce<ICrate>(data, (newData: Draft<ICrate>) => {
-                            changeEntityId(newData["@graph"], entityData["@id"], newEntityId)
+                            changeEntityIdOccurrences(
+                                newData["@graph"],
+                                entityData["@id"],
+                                newEntityId
+                            )
                         })
 
                         await mutate(newData)
@@ -640,7 +644,7 @@ export function CrateDataProvider({
                 createFileEntity,
                 createFolderEntity,
                 deleteEntity,
-                renameEntity,
+                changeEntityId,
                 isSaving,
                 reload: mutate,
                 saveError,

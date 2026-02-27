@@ -52,7 +52,7 @@ export function FileExplorer() {
     const crateName = useCrateName()
     const treeParent = useRef<HTMLDivElement>(null)
     const treeRef = useRef<TreeApi<FileTreeNode>>(null)
-    const { showDeleteEntityModal } = useContext(GlobalModalContext)
+    const { showDeleteEntityModal, showRenameEntityModal } = useContext(GlobalModalContext)
 
     const [treeSize, setTreeSize] = useState<{ width: number; height: number }>({
         width: 10,
@@ -78,6 +78,7 @@ export function FileExplorer() {
     }, [revalidate])
 
     useEffect(() => {
+        // Whenever the entities change, reload the files list
         revalidateRef.current()
     }, [entities])
 
@@ -247,7 +248,20 @@ export function FileExplorer() {
                                 return
                             }}
                             onMove={(n) => console.log("move", n)} /* TODO: move and rename */
-                            onRename={(n) => console.log("rename", n)}
+                            onRename={(n) => {
+                                const split = n.id.split("/")
+                                if (n.id.endsWith("/")) {
+                                    split[split.length - 2] = n.name
+                                } else {
+                                    split[split.length - 1] = n.name
+                                }
+                                setTimeout(() => {
+                                    showRenameEntityModal(
+                                        [{ from: n.id, to: split.join("/") }],
+                                        () => revalidate()
+                                    )
+                                }, 100)
+                            }}
                             onSelect={(node) =>
                                 node.length === 1
                                     ? node[0].data.id !== "./" &&

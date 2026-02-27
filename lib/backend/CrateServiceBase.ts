@@ -1,5 +1,5 @@
 import { handleSpringError } from "@/lib/spring-error-handling"
-import { changeEntityId } from "@/lib/utils"
+import { changeEntityIdOccurrences } from "@/lib/utils"
 
 export abstract class CrateServiceBase implements CrateServiceAdapter {
     abstract getCrateFileURL(crateId: string, filePath: string): Promise<string>
@@ -118,11 +118,11 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
         }
 
         await this.renameFile(crateId, entityData["@id"], newEntityId)
-        changeEntityId(crate["@graph"], entityData["@id"], newEntityId)
+        changeEntityIdOccurrences(crate["@graph"], entityData["@id"], newEntityId)
 
         for (const entity of affectedEntities) {
             // Files for affected entities were already moved as they are contained within the entity that was primarily renamed here, no longer necessary to move them here
-            changeEntityId(
+            changeEntityIdOccurrences(
                 crate["@graph"],
                 entity["@id"],
                 normalizePath(entity["@id"]).replace(normalizePath(entityData["@id"]), newEntityId)

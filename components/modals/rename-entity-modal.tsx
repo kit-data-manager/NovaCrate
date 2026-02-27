@@ -27,7 +27,7 @@ export const RenameEntityModal = memo(function RenameEntityModal({
     entityId: string
 }) {
     const entity = useEditorState((store) => store.entities.get(entityId))
-    const { renameEntity } = useContext(CrateDataContext)
+    const { changeEntityId } = useContext(CrateDataContext)
     const openTab = useEntityEditorTabs((state) => state.openTab)
 
     const isFile = useMemo(() => {
@@ -69,7 +69,7 @@ export const RenameEntityModal = memo(function RenameEntityModal({
 
         setLoading(true)
         try {
-            const success = await renameEntity(entity, newId)
+            const success = await changeEntityId(entity, newId)
             if (success) {
                 const copy = structuredClone(entity)
                 copy["@id"] = newId
@@ -82,7 +82,7 @@ export const RenameEntityModal = memo(function RenameEntityModal({
             setError(e)
         }
         setLoading(false)
-    }, [entity, entityId, newId, openTab, renameEntity])
+    }, [entity, entityId, newId, openTab, changeEntityId])
 
     return (
         <Dialog open={open} onOpenChange={localOpenChange}>
