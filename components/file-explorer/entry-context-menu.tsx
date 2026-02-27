@@ -10,6 +10,7 @@ import {
     Copy,
     CurlyBraces,
     Download,
+    EyeIcon,
     FileIcon,
     FolderOpen,
     PencilIcon,
@@ -46,6 +47,8 @@ export function EntryContextMenu({
 }) {
     const { serviceProvider, crateId } = useContext(CrateDataContext)
     const setDownloadError = useFileExplorerState((store) => store.setDownloadError)
+    const setPreviewingFilePath = useFileExplorerState((s) => s.setPreviewingFilePath)
+
     const { showCreateEntityModal, showDeleteEntityModal } = useContext(GlobalModalContext)
     const [, copy] = useCopyToClipboard()
 
@@ -127,6 +130,11 @@ export function EntryContextMenu({
                     </HelpTooltip>
                 </ContextMenuItem>
             )}
+            {filePath && !filePath.endsWith("/") && (
+                <ContextMenuItem onClick={() => setPreviewingFilePath(filePath)}>
+                    <EyeIcon className="size-4 mr-2" /> Preview File
+                </ContextMenuItem>
+            )}
 
             <ContextMenuSeparator />
 
@@ -171,7 +179,6 @@ export function EntryContextMenu({
             )}
             {entity || filePath ? (
                 <ContextMenuItem
-                    variant={"destructive"}
                     onClick={() => showDeleteEntityModal(entity?.["@id"] || filePath!)}
                 >
                     <Trash className="size-4 mr-2" /> Delete

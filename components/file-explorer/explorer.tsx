@@ -7,6 +7,7 @@ import {
     ChevronsDownUp,
     ChevronsUpDown,
     EllipsisVertical,
+    EyeIcon,
     FileIcon,
     Folder,
     FolderIcon,
@@ -158,8 +159,6 @@ export function FileExplorer() {
         }
     }, [])
 
-    const setPreviewingFilePath = useFileExplorerState((store) => store.setPreviewingFilePath)
-
     return (
         <div className="flex flex-col h-full bg-background rounded-lg overflow-hidden border">
             <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center gap-2 truncate shrink-0 bg-accent">
@@ -249,6 +248,7 @@ export function FileExplorer() {
                             }}
                             onMove={(n) => {
                                 setTimeout(() => {
+                                    // TODO prevent move when nothing changes
                                     showRenameEntityModal(
                                         n.dragIds.map((affected) => ({
                                             from: affected,
@@ -268,6 +268,7 @@ export function FileExplorer() {
                                 } else {
                                     split[split.length - 1] = n.name
                                 }
+                                // TODO prevent rename when nothing changes
                                 setTimeout(() => {
                                     showRenameEntityModal(
                                         [{ from: n.id, to: split.join("/") }],
@@ -275,13 +276,6 @@ export function FileExplorer() {
                                     )
                                 }, 100)
                             }}
-                            onSelect={(node) =>
-                                node.length === 1
-                                    ? node[0].data.id !== "./" &&
-                                      node[0].data.type === "file" &&
-                                      setPreviewingFilePath(node[0].data.id)
-                                    : null
-                            }
                         >
                             {Node}
                         </Tree>
@@ -302,6 +296,17 @@ function Node({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
     const goToEntity = useGoToEntityEditor(entity)
     const showEntities = useStore(fileExplorerSettings, (s) => s.showEntities)
 
+    const previewingFilePath = useFileExplorerState((s) => s.previewingFilePath)
+    const _setPreviewingFilePath = useFileExplorerState((store) => store.setPreviewingFilePath)
+    const setPreviewingFilePath = useCallback(
+        (path: string) => {
+            if (path !== previewingFilePath) {
+                _setPreviewingFilePath(path)
+            }
+        },
+        [_setPreviewingFilePath, previewingFilePath]
+    )
+
     return (
         <ContextMenu>
             <ContextMenuTrigger asChild>
@@ -310,7 +315,7 @@ function Node({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
                     style={style}
                     className={`flex items-center gap-1 ${node.state.isSelected && "bg-muted"} ${node.state.isSelectedEnd && "rounded-b-sm"} ${node.state.isSelectedStart && "rounded-t-sm"} p-1 outline-hidden`}
                     onDoubleClick={() => {
-                        if (entity) goToEntity()
+                        if (node.data.type === "file") setPreviewingFilePath(node.data.id)
                     }}
                 >
                     <ChevronRightIcon
@@ -343,6 +348,9 @@ function Node({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
                             {showEntities && entity ? getEntityDisplayName(entity) : node.data.name}
                         </span>
                     )}
+                    {previewingFilePath === node.data.id && (
+                        <EyeIcon className="size-4 shrink-0 ml-1" />
+                    )}
                 </div>
             </ContextMenuTrigger>
             <EntryContextMenu
@@ -357,7 +365,7 @@ function Node({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
                         ? () =>
                               setTimeout(() => {
                                   node.edit()
-                              }, 200)
+                              }, 300)
                         : undefined
                 }
             />
