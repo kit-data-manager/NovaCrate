@@ -1,4 +1,5 @@
 import { handleSpringError } from "@/lib/spring-error-handling"
+import { changeEntityId } from "@/lib/utils"
 
 export abstract class CrateServiceBase implements CrateServiceAdapter {
     abstract getCrateFileURL(crateId: string, filePath: string): Promise<string>
@@ -90,11 +91,49 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
 
     abstract deleteEntity(crateId: string, entityData: IEntity): Promise<boolean>
 
-    abstract renameEntity(
+    async changeEntityId(
         crateId: string,
         entityData: IEntity,
         newEntityId: string
-    ): Promise<boolean>
+    ): Promise<boolean> {
+        function normalizePath(path: string) {
+            if (path.startsWith("./")) return path.slice(2)
+            else return path
+        }
+
+        const crate = await this.getCrate(crateId)
+        let affectedEntities: IEntity[] = []
+
+        if (crate["@graph"].find((e) => e["@id"] === newEntityId)) {
+            throw `Entity with ID ${newEntityId} already exists`
+        }
+
+        if (entityData["@id"].endsWith("/")) {
+            affectedEntities = crate["@graph"].filter((entity) => {
+                return (
+                    normalizePath(entity["@id"]).startsWith(normalizePath(entityData["@id"])) &&
+                    normalizePath(entity["@id"]) !== normalizePath(entityData["@id"])
+                )
+            })
+        }
+
+        await this.renameFile(crateId, entityData["@id"], newEntityId)
+        changeEntityId(crate["@graph"], entityData["@id"], newEntityId)
+
+        for (const entity of affectedEntities) {
+            // Files for affected entities were already moved as they are contained within the entity that was primarily renamed here, no longer necessary to move them here
+            changeEntityId(
+                crate["@graph"],
+                entity["@id"],
+                normalizePath(entity["@id"]).replace(normalizePath(entityData["@id"]), newEntityId)
+            )
+        }
+
+        await this.saveRoCrateMetadataJSON(crateId, JSON.stringify(crate))
+        return true
+    }
+
+    abstract renameFile(crateId: string, oldPath: string, newPath: string): Promise<boolean>
 
     abstract downloadCrateZip(id: string): Promise<void>
 

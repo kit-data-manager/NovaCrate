@@ -534,7 +534,7 @@ export function CrateDataProvider({
         async (entityData: IEntity, newEntityId: string) => {
             if (crateId) {
                 try {
-                    const renameResult = await serviceProvider.renameEntity(
+                    const renameResult = await serviceProvider.changeEntityId(
                         crateId,
                         entityData,
                         newEntityId

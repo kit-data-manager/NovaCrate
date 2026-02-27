@@ -115,7 +115,7 @@ export class ROCrateJavaCrateService extends CrateServiceBase {
         }
     }
 
-    renameEntity(): Promise<boolean> {
+    renameFile(): Promise<boolean> {
         throw "Not implemented"
     }
 

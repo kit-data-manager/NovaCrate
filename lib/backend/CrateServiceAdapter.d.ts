@@ -5,6 +5,8 @@
  * For file previews, either getCrateFileWithData or getCrateFileURL must be implemented
  *
  * Optional functions can be omitted, but will reduce the feature set of the UI
+ *
+ * @internal This interface frequently changes at the moment. It currently has to be seen as unstable and internal.
  */
 declare interface CrateServiceAdapter {
     /**
@@ -116,7 +118,23 @@ declare interface CrateServiceAdapter {
      */
     deleteEntity(crateId: string, entityData: IEntity): Promise<boolean>
 
-    renameEntity(crateId: string, entityData: IEntity, newEntityId: string): Promise<boolean>
+    /**
+     * Change the @id field of an entity. This also takes all references to the entity into account.
+     * This also renames the corresponding file/folder using {@link renameFile}, if there is one.
+     * @param crateId
+     * @param entityData
+     * @param newEntityId
+     */
+    changeEntityId(crateId: string, entityData: IEntity, newEntityId: string): Promise<boolean>
+
+    /**
+     * Rename or move a file/folder from the oldPath to the newPath
+     * @param crateId ID of the target crate
+     * @param oldPath Current path of the file/folder
+     * @param newPath New path of the file/folder
+     * @returns Promise - resolves on success
+     */
+    renameFile(crateId: string, oldPath: string, newPath: string): Promise<boolean>
 
     /**
      * Get a complete list of file names in the crate archive
