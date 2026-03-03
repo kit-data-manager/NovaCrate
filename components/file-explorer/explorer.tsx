@@ -94,6 +94,7 @@ export function FileExplorer() {
                 node.children = children.map(toTreeNode)
                 node.children.forEach(associateChildren)
             }
+            node.children.sort((a, b) => a.id.localeCompare(b.id))
             return node
         }
 
@@ -116,8 +117,9 @@ export function FileExplorer() {
                             f.endsWith("/") ? f.split("/").length === 2 : f.split("/").length === 1
                         )
                         .map(toTreeNode)
-                        .map(associateChildren) ?? [],
-                type: "folder"
+                        .map(associateChildren)
+                        .sort((a, b) => a.id.localeCompare(b.id)) ?? [],
+                type: "folder" as const
             }
         ]
     }, [crateName, data])
@@ -209,6 +211,7 @@ export function FileExplorer() {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
+                            id="toggle-show-entities"
                             variant="outline"
                             size="sm"
                             className={`px-0`}

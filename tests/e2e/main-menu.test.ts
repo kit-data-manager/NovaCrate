@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test"
 
-test("Landing Page Tests", async ({ page }) => {
+test("Main Menu Page Tests", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
     await expect(page.getByText("Your local RO-Crates will be shown here.")).toBeVisible()
     await page.getByRole("button", { name: "Import RO-Crate" }).click()

@@ -110,6 +110,7 @@ function Node({ node, style }: NodeRendererProps<FileTreeNode>) {
     return (
         <div
             style={style}
+            data-testid={"path-picker-" + node.id}
             className={`flex items-center gap-1 ${node.state.isSelected && "bg-muted"} rounded-sm text-sm p-1`}
             onClick={() => node.select()}
             onDoubleClick={() => node.toggle()}
