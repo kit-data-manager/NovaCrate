@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added a new tree-based file explorer based on the react arborist library.
+- Added tree-based file explorer to the entity creation modal for selecting the target folder for a new file or folder
 - Added proper handling of custom types defined in the context of the crate
 - Added unit testing capabilities with jest
 
