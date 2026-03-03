@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Correctly determine whether a schema for a type is loaded or not
 - Fixed NovaCrate logo in main menu
 - If the crate context contains elements that can't be parsed, an error message will be shown instead of silently ignoring the failure.
+- Fixed air quality example in quickstart
 
 ### Changed
 - Entity IDs and file/folder names are no longer being URL-encoded when they are created through NovaCrate. The specification only requires encoding spaces and `%` characters, which will be covered in another release. Previously, NovaCrate was too aggressive in encoding entity IDs, and also encoded file and folder names, leading to invalid names on Windows.
