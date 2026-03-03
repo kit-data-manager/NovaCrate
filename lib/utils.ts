@@ -79,15 +79,21 @@ export function isValidUrl(string: string) {
 /**
  * Find an entity in a map of entities. Tries different methods of resolving the entity using the id:
  *  1. Direct use of the id
- *  2. decoding the id as if it were an encoded URI
+ *  2. decoding the id as if it were an encoded URI and remove leading "./"
  * @param entities Entities map from editor state
  * @param id of the target entity
  */
 export function findEntity(entities: Map<string, IEntity>, id: string): IEntity | undefined {
-    const standard = entities.get(id)
-    if (standard) return standard
-    // Fallback method
-    return entities.get(decodeURI(id))
+    return (
+        entities.get(id) ??
+        entities.get(normalizeIdentifier(id)) ??
+        entities.get("./" + normalizeIdentifier(id))
+    )
+}
+
+export function normalizeIdentifier(path: string) {
+    const withoutPrefix = path.startsWith("./") ? path.slice(2) : path
+    return decodeURI(withoutPrefix)
 }
 
 /**
@@ -227,7 +233,7 @@ export function camelCaseReadable(str: string) {
  * @param filePath Path of the file
  */
 export function encodeFilePath(filePath: string) {
-    return filePath.replaceAll("\\", "/").replaceAll("%", "%25").replaceAll(" ", "%20")
+    return filePath.replaceAll("\\", "/")
 }
 
 /**

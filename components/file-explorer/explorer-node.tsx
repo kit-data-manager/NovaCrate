@@ -10,15 +10,12 @@ import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { ChevronRightIcon, EyeIcon, FileIcon, FolderIcon, PackageIcon } from "lucide-react"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { Input } from "@/components/ui/input"
-import { getEntityDisplayName } from "@/lib/utils"
+import { findEntity, getEntityDisplayName } from "@/lib/utils"
 import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 
 export function ExplorerNode({ node, style, dragHandle }: NodeRendererProps<FileTreeNode>) {
     const [renameValue, setRenameValue] = useState(node.data.name)
-    const entity = useStore(
-        editorState,
-        (s) => s.getEntities().get(node.data.id) || s.getEntities().get("./" + node.data.id)
-    )
+    const entity = useStore(editorState, (s) => findEntity(s.getEntities(), node.data.id))
     const goToEntity = useGoToEntityEditor(entity)
     const showEntities = useStore(fileExplorerSettings, (s) => s.showEntities)
 

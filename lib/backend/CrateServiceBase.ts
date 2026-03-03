@@ -1,5 +1,5 @@
 import { handleSpringError } from "@/lib/spring-error-handling"
-import { changeEntityIdOccurrences } from "@/lib/utils"
+import { changeEntityIdOccurrences, normalizeIdentifier } from "@/lib/utils"
 
 export abstract class CrateServiceBase implements CrateServiceAdapter {
     abstract getCrateFileURL(crateId: string, filePath: string): Promise<string>
@@ -96,11 +96,6 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
         entityData: IEntity,
         newEntityId: string
     ): Promise<boolean> {
-        function normalizePath(path: string) {
-            if (path.startsWith("./")) return path.slice(2)
-            else return path
-        }
-
         const crate = await this.getCrate(crateId)
         let affectedEntities: IEntity[] = []
 
@@ -111,8 +106,10 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
         if (entityData["@id"].endsWith("/")) {
             affectedEntities = crate["@graph"].filter((entity) => {
                 return (
-                    normalizePath(entity["@id"]).startsWith(normalizePath(entityData["@id"])) &&
-                    normalizePath(entity["@id"]) !== normalizePath(entityData["@id"])
+                    normalizeIdentifier(entity["@id"]).startsWith(
+                        normalizeIdentifier(entityData["@id"])
+                    ) &&
+                    normalizeIdentifier(entity["@id"]) !== normalizeIdentifier(entityData["@id"])
                 )
             })
         }
@@ -125,7 +122,10 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
             changeEntityIdOccurrences(
                 crate["@graph"],
                 entity["@id"],
-                normalizePath(entity["@id"]).replace(normalizePath(entityData["@id"]), newEntityId)
+                normalizeIdentifier(entity["@id"]).replace(
+                    normalizeIdentifier(entityData["@id"]),
+                    newEntityId
+                )
             )
         }
 
