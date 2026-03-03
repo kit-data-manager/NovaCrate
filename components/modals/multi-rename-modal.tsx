@@ -121,7 +121,11 @@ export const MultiRenameModal = memo(function MultiRenameModal({
                 setIsExecutingChanges(false)
                 if (issues.length === 0) onOpenChange(false)
             })
-            .catch(console.error)
+            .catch((e) => {
+                console.error(e)
+                setChangeExecutionIssues([e])
+                setIsExecutingChanges(false)
+            })
     }, [executeChanges, onOpenChange])
 
     return (
