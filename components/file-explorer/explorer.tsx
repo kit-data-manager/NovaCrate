@@ -53,7 +53,7 @@ export function FileExplorer() {
     const crateName = useCrateName()
     const treeParent = useRef<HTMLDivElement>(null)
     const treeRef = useRef<TreeApi<FileTreeNode>>(null)
-    const { showDeleteEntityModal, showRenameEntityModal } = useContext(GlobalModalContext)
+    const { showDeleteEntityModal, showMultiRenameModal } = useContext(GlobalModalContext)
 
     const [treeSize, setTreeSize] = useState<{ width: number; height: number }>({
         width: 10,
@@ -249,7 +249,7 @@ export function FileExplorer() {
                             onMove={(n) => {
                                 setTimeout(() => {
                                     // TODO prevent move when nothing changes
-                                    showRenameEntityModal(
+                                    showMultiRenameModal(
                                         n.dragIds.map((affected) => ({
                                             from: affected,
                                             to:
@@ -270,7 +270,7 @@ export function FileExplorer() {
                                 }
                                 // TODO prevent rename when nothing changes
                                 setTimeout(() => {
-                                    showRenameEntityModal(
+                                    showMultiRenameModal(
                                         [{ from: n.id, to: split.join("/") }],
                                         () => revalidate()
                                     )
