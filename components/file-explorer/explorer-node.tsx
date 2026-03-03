@@ -18,6 +18,16 @@ export function ExplorerNode({ node, style, dragHandle }: NodeRendererProps<File
     const entity = useStore(editorState, (s) => findEntity(s.getEntities(), node.data.id))
     const goToEntity = useGoToEntityEditor(entity)
     const showEntities = useStore(fileExplorerSettings, (s) => s.showEntities)
+    const toggleShowEntities = useStore(fileExplorerSettings, (s) => s.toggleShowEntities)
+
+    const resetRenaming = useCallback(() => {
+        node.reset()
+        setRenameValue(node.data.name)
+    }, [node])
+
+    const disableShowEntities = useCallback(() => {
+        if (showEntities) toggleShowEntities()
+    }, [showEntities, toggleShowEntities])
 
     const previewingFilePath = useFileExplorerState((s) => s.previewingFilePath)
     const _setPreviewingFilePath = useFileExplorerState((store) => store.setPreviewingFilePath)
@@ -62,9 +72,9 @@ export function ExplorerNode({ node, style, dragHandle }: NodeRendererProps<File
                             autoFocus={true}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") node.submit(renameValue)
-                                if (e.key === "Escape") node.reset()
+                                if (e.key === "Escape") resetRenaming()
                             }}
-                            onBlur={() => node.reset()}
+                            onBlur={() => resetRenaming()}
                         />
                     ) : (
                         <span className="select-none line-clamp-1">
@@ -85,10 +95,12 @@ export function ExplorerNode({ node, style, dragHandle }: NodeRendererProps<File
                 blankSpace={false}
                 rename={
                     node.id !== "./" && node.id !== "ro-crate-metadata.json"
-                        ? () =>
+                        ? () => {
+                              disableShowEntities()
                               setTimeout(() => {
-                                  node.edit()
+                                  node.edit().then()
                               }, 300)
+                          }
                         : undefined
                 }
             />

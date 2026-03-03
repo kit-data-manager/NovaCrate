@@ -145,6 +145,8 @@ export function FileExplorer() {
 
     const onMoveHandler: MoveHandler<FileTreeNode> = useCallback(
         (n) => {
+            if (n.parentId === null) return
+
             const changes = n.dragIds
                 .map((affected) => ({
                     from: affected,

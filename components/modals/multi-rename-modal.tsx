@@ -64,7 +64,8 @@ export const MultiRenameModal = memo(function MultiRenameModal({
                     changes.findIndex(
                         (otherChange) =>
                             change.from.startsWith(otherChange.from) &&
-                            change.from.split("/").length > otherChange.from.split("/").length
+                            change.from.split("/").length > otherChange.from.split("/").length &&
+                            otherChange.from.endsWith("/")
                     ) == -1
                 ) {
                     fileImpact.set(change.from, change.to)

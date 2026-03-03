@@ -93,7 +93,12 @@ export function findEntity(entities: Map<string, IEntity>, id: string): IEntity 
 
 export function normalizeIdentifier(path: string) {
     const withoutPrefix = path.startsWith("./") ? path.slice(2) : path
-    return decodeURI(withoutPrefix)
+    try {
+        return decodeURI(withoutPrefix)
+    } catch (e) {
+        console.warn("Failed to normalize identifier", path, e)
+        return withoutPrefix
+    }
 }
 
 /**

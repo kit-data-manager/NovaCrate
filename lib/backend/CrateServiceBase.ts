@@ -99,7 +99,11 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
         const crate = await this.getCrate(crateId)
         let affectedEntities: IEntity[] = []
 
-        if (crate["@graph"].find((e) => e["@id"] === newEntityId)) {
+        if (
+            crate["@graph"].find(
+                (e) => normalizeIdentifier(e["@id"]) === normalizeIdentifier(newEntityId)
+            )
+        ) {
             throw `Entity with ID ${newEntityId} already exists`
         }
 

@@ -14,6 +14,7 @@ import {
     FileIcon,
     FolderOpen,
     PencilIcon,
+    PenLineIcon,
     Plus,
     Trash
 } from "lucide-react"
@@ -174,7 +175,8 @@ export function EntryContextMenu({
 
             {rename && (
                 <ContextMenuItem onClick={() => rename()}>
-                    <PencilIcon className="size-4 mr-2" /> Rename
+                    <PenLineIcon className="size-4 mr-2" /> Change{" "}
+                    {filePath?.endsWith("/") ? "Folder" : "File"} Name
                 </ContextMenuItem>
             )}
             {entity || filePath ? (
