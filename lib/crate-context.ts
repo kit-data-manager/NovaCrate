@@ -27,6 +27,7 @@ export class CrateContext {
     private _customPairs: Record<string, string> = {}
     private _specification: RO_CRATE_VERSION | undefined = undefined
     private _usingFallback = false
+    private _errors: unknown[] = []
     private raw?: CrateContextType
 
     constructor() {}
@@ -55,19 +56,12 @@ export class CrateContext {
         return this._usingFallback
     }
 
-    private async loadKnownContext(
-        primary: (typeof KNOWN_CONTEXTS)[number] | undefined,
-        fallback: (typeof KNOWN_CONTEXTS)[number]
-    ) {
-        if (!primary) {
-            console.warn(
-                `Using fallback context ${fallback.version} because the specification of this crate is not supported`
-            )
-            this._usingFallback = true
-        } else {
-            this._usingFallback = false
-        }
-        const known = primary || fallback
+    get errors() {
+        return structuredClone(this._errors)
+    }
+
+    private async loadKnownContext(primary: (typeof KNOWN_CONTEXTS)[number]) {
+        const known = primary
         const loaded = await known.load()
         this._specification = known.version
         this.context = { ...this.context, ...loaded["@context"] }
@@ -83,6 +77,7 @@ export class CrateContext {
         this._customPairs = {}
         this._specification = undefined
         this._usingFallback = false
+        this._errors = []
         this.raw = crateContext
 
         const content = Array.isArray(crateContext) ? crateContext : [crateContext]
@@ -91,12 +86,22 @@ export class CrateContext {
         for (const entry of content) {
             if (typeof entry === "string") {
                 const known = CrateContext.getKnownContext(entry)
-                await this.loadKnownContext(known, fallback)
+                if (known) await this.loadKnownContext(known)
+                else {
+                    const msg = `Cannot load schema ${entry} without prefix. Please specify the schema as a custom context entry with a prefix.`
+                    console.error(msg)
+                    this._errors.push(new Error(msg))
+                }
             } else {
                 for (const [key, value] of Object.entries(entry)) {
                     if (key === "@vocab") {
                         const known = CrateContext.getKnownContext(value)
-                        await this.loadKnownContext(known, fallback)
+                        if (known) await this.loadKnownContext(known)
+                        else {
+                            const msg = `Cannot load schema ${value} as @vocab. Only known specifications are supported. Please specify the schema as a custom context entry with a prefix.`
+                            console.error(msg)
+                            this._errors.push(new Error(msg))
+                        }
                     } else {
                         const temp = this.context
                         temp[key] = value
@@ -105,6 +110,15 @@ export class CrateContext {
                     }
                 }
             }
+        }
+
+        if (!this.specification) {
+            this._usingFallback = true
+            await this.loadKnownContext(fallback)
+
+            const msg = `Could not determine the RO-Crate specification version. Using fallback context: ${fallback.version}`
+            console.error(msg)
+            this._errors.push(new Error(msg))
         }
     }
 

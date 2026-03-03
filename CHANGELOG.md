@@ -14,9 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added tree-based file explorer to the entity creation modal for selecting the target folder for a new file or folder
 - Added proper handling of custom types defined in the context of the crate
 - Added unit testing capabilities with jest
+- The JSON Editor can now be used even if the ro-crate-metadata.json file does not parse as JSON. This allows fixing metadata files with invalid JSON directly inside the editor.
 
 ### Fixed
 - Correctly determine whether a schema for a type is loaded or not
+- Fixed NovaCrate logo in main menu
+- If the crate context contains elements that can't be parsed, an error message will be shown instead of silently ignoring the failure.
 
 ## [1.8.1] - 2026-02-17
 

@@ -22,12 +22,13 @@ import { useSaveAllEntities } from "@/lib/hooks"
 import { useHandleMonacoMount } from "@/lib/monaco"
 import { Metadata } from "@/components/Metadata"
 import fileDownload from "js-file-download"
+import useSWR from "swr"
 
 export default function JSONEditorPage() {
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const revertAllEntities = useEditorState((store) => store.revertAllEntities)
-    const { crateData, saveRoCrateMetadataJSON, isSaving } = useContext(CrateDataContext)
-    const [crateDataProxy, setCrateDataProxy] = useState(crateData)
+    const { crateData, saveRoCrateMetadataJSON, isSaving, serviceProvider, crateId } =
+        useContext(CrateDataContext)
     const theme = useTheme()
     const [editorHasErrors, setEditorHasErrors] = useState(false)
     const editorValue = useRef<string | undefined>(undefined)
@@ -35,11 +36,17 @@ export default function JSONEditorPage() {
     const [saving, setSaving] = useState(false)
     const [saveError, setSaveError] = useState<unknown>()
 
-    useEffect(() => {
-        if (crateDataProxy === undefined && crateData) {
-            setCrateDataProxy(crateData)
+    const { data, mutate, error } = useSWR(
+        crateId && serviceProvider && crateData + "/ro-crate-metadata.json",
+        () => {
+            if (!crateId || !serviceProvider) return undefined
+            return serviceProvider.getCrateRaw(crateId)
         }
-    }, [crateData, crateDataProxy])
+    )
+
+    useEffect(() => {
+        if (crateData) mutate().then()
+    }, [crateData, mutate])
 
     const handleMount = useHandleMonacoMount()
 
@@ -123,7 +130,7 @@ export default function JSONEditorPage() {
             <Metadata page={"JSON Editor"} />
             <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center shrink-0 bg-accent overflow-x-hidden no-scrollbar">
                 <Braces className="size-4 shrink-0 mr-2" />
-                JSON Editor
+                JSON Metadata Editor
                 <span className="flex gap-1 items-center text-muted-foreground ml-1">
                     <Dot className="size-4" />
                     ro-crate-metadata.json
@@ -178,11 +185,12 @@ export default function JSONEditorPage() {
             ) : (
                 <>
                     <Error error={saveError} title="Failed to save changes" />
+                    <Error error={error} title="Failed to load JSON" />
                     <div className="flex gap-2 absolute top-12 right-35 z-10 bg-accent/60 items-center rounded-lg">
                         <Noticer hasErrors={editorHasErrors} hasChanges={editorHasChanges} />
                     </div>
                     <Editor
-                        value={JSON.stringify(crateDataProxy)}
+                        value={data}
                         defaultLanguage="json"
                         theme={theme.resolvedTheme === "dark" ? "crate-dark" : "light"}
                         onMount={handleMount}
