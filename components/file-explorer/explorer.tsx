@@ -24,11 +24,11 @@ import { EntityIcon } from "@/components/entity/entity-icon"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { FileTreeNode, getNameFromPath } from "@/components/file-explorer/utils"
 import { useCrateName } from "@/lib/hooks"
-import { Tree, TreeApi } from "react-arborist"
+import { MoveHandler, RenameHandler, Tree, TreeApi } from "react-arborist"
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
-import { getFileName } from "@/lib/utils"
+import { getFileName, normalizeIdentifier } from "@/lib/utils"
 import { ExplorerNode } from "@/components/file-explorer/explorer-node"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
@@ -69,7 +69,7 @@ export function FileExplorer() {
 
     useEffect(() => {
         // Whenever the entities change, reload the files list
-        revalidateRef.current()
+        revalidateRef.current().then()
     }, [entities])
 
     const collapseAllSections = useCallback(() => {
@@ -122,15 +122,10 @@ export function FileExplorer() {
         ]
     }, [crateName, data])
 
-    const asTreeCache = useRef<FileTreeNode[]>([])
-    const asTreeCached = useMemo(() => {
-        if (JSON.stringify(asTreeCache.current) === JSON.stringify(asTree))
-            return asTreeCache.current
-        else {
-            asTreeCache.current = asTree
-            return asTreeCache.current
-        }
-    }, [asTree])
+    const [asTreeCached, setAsTreeCached] = useState(asTree)
+    if (JSON.stringify(asTreeCached) !== JSON.stringify(asTree)) {
+        setAsTreeCached(asTree)
+    }
 
     useEffect(() => {
         if (treeParent.current) {
@@ -147,6 +142,45 @@ export function FileExplorer() {
             return () => observer.unobserve(lastElement)
         }
     }, [])
+
+    const onMoveHandler: MoveHandler<FileTreeNode> = useCallback(
+        (n) => {
+            const changes = n.dragIds
+                .map((affected) => ({
+                    from: affected,
+                    to: n.parentId + getFileName(affected) + (affected.endsWith("/") ? "/" : "")
+                }))
+                .filter(
+                    (change) => normalizeIdentifier(change.to) !== normalizeIdentifier(change.from)
+                )
+
+            if (changes.length > 0) {
+                setTimeout(() => {
+                    showMultiRenameModal(changes, () => revalidate())
+                }, 100)
+            }
+        },
+        [revalidate, showMultiRenameModal]
+    )
+
+    const onRenameHandler: RenameHandler<FileTreeNode> = useCallback(
+        (n) => {
+            const split = n.id.split("/")
+            if (n.id.endsWith("/")) {
+                split[split.length - 2] = n.name
+            } else {
+                split[split.length - 1] = n.name
+            }
+            const result = split.join("/")
+
+            if (normalizeIdentifier(n.id) !== normalizeIdentifier(result)) {
+                setTimeout(() => {
+                    showMultiRenameModal([{ from: n.id, to: result }], () => revalidate())
+                }, 100)
+            }
+        },
+        [revalidate, showMultiRenameModal]
+    )
 
     return (
         <div className="flex flex-col h-full bg-background rounded-lg overflow-hidden border">
@@ -235,36 +269,8 @@ export function FileExplorer() {
                                 n.ids.length === 1 && showDeleteEntityModal(n.ids[0])
                                 return
                             }}
-                            onMove={(n) => {
-                                setTimeout(() => {
-                                    // TODO prevent move when nothing changes
-                                    showMultiRenameModal(
-                                        n.dragIds.map((affected) => ({
-                                            from: affected,
-                                            to:
-                                                n.parentId +
-                                                getFileName(affected) +
-                                                (affected.endsWith("/") ? "/" : "")
-                                        })),
-                                        () => revalidate()
-                                    )
-                                }, 100)
-                            }}
-                            onRename={(n) => {
-                                const split = n.id.split("/")
-                                if (n.id.endsWith("/")) {
-                                    split[split.length - 2] = n.name
-                                } else {
-                                    split[split.length - 1] = n.name
-                                }
-                                // TODO prevent rename when nothing changes
-                                setTimeout(() => {
-                                    showMultiRenameModal(
-                                        [{ from: n.id, to: split.join("/") }],
-                                        () => revalidate()
-                                    )
-                                }, 100)
-                            }}
+                            onMove={onMoveHandler}
+                            onRename={onRenameHandler}
                         >
                             {ExplorerNode}
                         </Tree>

@@ -9,7 +9,7 @@ import {
 import { useEditorState } from "@/lib/state/editor-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import useSWR from "swr"
-import { ArrowRightIcon, LoaderCircleIcon } from "lucide-react"
+import { ArrowRightIcon, FileIcon, FolderIcon, LoaderCircleIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Error as ErrorDisplay } from "@/components/error"
 
@@ -149,16 +149,28 @@ export const MultiRenameModal = memo(function MultiRenameModal({
                 {data ? (
                     <div>
                         The following changes will be made:
-                        {(JSON.parse(data) as [string, string][]).map(([from, to]) => (
-                            <div key={from} className="py-2 px-4 border rounded-lg text-sm">
-                                <div>{from}</div>
-                                <div className="flex items-center gap-2">
-                                    <ArrowRightIcon className="size-4" /> {to}
+                        <div className="space-y-2 mt-1">
+                            {(JSON.parse(data) as [string, string][]).map(([from, to]) => (
+                                <div
+                                    key={from}
+                                    className="py-2 px-4 border rounded-lg text-sm flex items-center gap-3"
+                                >
+                                    {from.endsWith("/") ? (
+                                        <FolderIcon className="size-6 shrink-0" />
+                                    ) : (
+                                        <FileIcon className="size-6 shrink-0" />
+                                    )}
+                                    <div>
+                                        <div>{from}</div>
+                                        <div className="flex items-center gap-2">
+                                            <ArrowRightIcon className="size-4" /> {to}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                         {committingChangesCorrect.length > 0 && (
-                            <div className="my-2 space-x-2">
+                            <div className="my-2 space-y-2">
                                 {committingChangesCorrect.map((issue, i) => (
                                     <ErrorDisplay
                                         error={issue}
