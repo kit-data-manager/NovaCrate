@@ -4,13 +4,7 @@ import { opfsFunctions } from "@/lib/opfs-worker/functions"
 import fileDownload from "js-file-download"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { CrateServiceBase } from "@/lib/backend/CrateServiceBase"
-import {
-    changeEntityId,
-    encodeFilePath,
-    getRootEntityID,
-    isDataEntity,
-    isFolderDataEntity
-} from "@/lib/utils"
+import { encodeFilePath, getRootEntityID, isDataEntity, isFolderDataEntity } from "@/lib/utils"
 import * as z from "zod/mini"
 
 const template: (name: string, description: string) => ICrate = (
@@ -235,16 +229,8 @@ export class BrowserBasedCrateService extends CrateServiceBase {
         return true
     }
 
-    async renameEntity(crateId: string, entityData: IEntity, newEntityId: string) {
-        const crate = await this.getCrate(crateId)
-        if (crate["@graph"].find((e) => e["@id"] === newEntityId)) {
-            throw `Entity with ID ${newEntityId} already exists`
-        }
-
-        await this.worker.execute("moveFileOrFolder", crateId, entityData["@id"], newEntityId)
-
-        changeEntityId(crate["@graph"], entityData["@id"], newEntityId)
-        await this.saveRoCrateMetadataJSON(crateId, JSON.stringify(crate))
+    async renameFile(crateId: string, oldPath: string, newPath: string): Promise<boolean> {
+        await this.worker.execute("moveFileOrFolder", crateId, oldPath, newPath)
         return true
     }
 
@@ -287,6 +273,12 @@ export class BrowserBasedCrateService extends CrateServiceBase {
         // We can safely run this in the main thread to safe worker overhead
         const data = await opfsFunctions.readFile(id, "ro-crate-metadata.json")
         return JSON.parse(await data.text()) as ICrate
+    }
+
+    async getCrateRaw(id: string) {
+        // We can safely run this in the main thread to safe worker overhead
+        const data = await opfsFunctions.readFile(id, "ro-crate-metadata.json")
+        return await data.text()
     }
 
     async getCrateFilesList(crateId: string) {

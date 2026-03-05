@@ -15,6 +15,7 @@ import { DocumentationModal } from "@/components/modals/documentation-modal"
 import { AutoReference } from "@/lib/utils"
 import { AboutModal } from "@/components/modals/about-modal"
 import { CrateExportedModal } from "@/components/modals/crate-exported-modal"
+import { MultiRenameModal } from "@/components/modals/multi-rename-modal"
 
 export interface IGlobalModalContext {
     showCreateEntityModal(
@@ -37,6 +38,10 @@ export interface IGlobalModalContext {
     showDocumentationModal(): void
     showAboutModal(): void
     showCrateExportedModal(): void
+    showMultiRenameModal(
+        changes: { from: string; to: string }[],
+        onCloseCallback?: () => void
+    ): void
 }
 
 export type AddPropertyModalCallback = (
@@ -55,7 +60,8 @@ export const GlobalModalContext = createContext<IGlobalModalContext>({
     showSettingsModal() {},
     showDocumentationModal() {},
     showAboutModal() {},
-    showCrateExportedModal() {}
+    showCrateExportedModal() {},
+    showMultiRenameModal() {}
 })
 
 export function GlobalModalProvider(props: PropsWithChildren) {
@@ -104,6 +110,11 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     const [documentationModalState, setDocumentationModalState] = useState({ open: false })
     const [aboutModalState, setAboutModalState] = useState({ open: false })
     const [crateExportedModalState, setCrateExportedModalState] = useState({ open: false })
+    const [multiRenameModal, setMultiRenameModal] = useState<{
+        open: boolean
+        changes: { from: string; to: string }[]
+        onCloseCallback?: () => void
+    }>({ open: false, changes: [] })
 
     const showCreateEntityModal = useCallback(
         (
@@ -187,6 +198,13 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         setAboutModalState({ open: true })
     }, [])
 
+    const showMultiRenameModal = useCallback(
+        (changes: { from: string; to: string }[], onCloseCallback?: () => void) => {
+            setMultiRenameModal({ open: true, changes, onCloseCallback })
+        },
+        []
+    )
+
     const onCreateEntityModalOpenChange = useCallback((isOpen: boolean) => {
         setCreateEntityModalState({
             autoReference: undefined,
@@ -242,6 +260,18 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         setCrateExportedModalState({ open })
     }, [])
 
+    const onRenameEntityOpenChange = useCallback(
+        (open: boolean) => {
+            if (!open) multiRenameModal.onCloseCallback?.()
+            setMultiRenameModal((prev) => ({
+                open,
+                changes: open ? prev.changes : [],
+                onCloseCallback: open ? prev.onCloseCallback : undefined
+            }))
+        },
+        [multiRenameModal]
+    )
+
     const onEntityCreated = useCallback(
         (entity?: IEntity) => {
             setCreateEntityModalState({
@@ -265,7 +295,8 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 showSettingsModal,
                 showDocumentationModal,
                 showAboutModal,
-                showCrateExportedModal
+                showCrateExportedModal,
+                showMultiRenameModal
             }}
         >
             <CreateEntityModal
@@ -320,6 +351,11 @@ export function GlobalModalProvider(props: PropsWithChildren) {
             <CrateExportedModal
                 open={crateExportedModalState.open}
                 onOpenChange={onCrateExportedModalOpenChange}
+            />
+            <MultiRenameModal
+                open={multiRenameModal.open}
+                onOpenChange={onRenameEntityOpenChange}
+                changes={multiRenameModal.changes}
             />
 
             {props.children}

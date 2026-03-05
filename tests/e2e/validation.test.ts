@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test"
-import { loadTestCrate } from "@/tests/common"
+import { loadTestCrate } from "@/tests/e2e/common"
 
 test("Basic validation functionality", async ({ page }) => {
     await loadTestCrate(page)

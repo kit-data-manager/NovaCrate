@@ -6,7 +6,18 @@ import {
     ContextMenuSubContent,
     ContextMenuSubTrigger
 } from "@/components/ui/context-menu"
-import { Copy, CurlyBraces, Download, FileIcon, FolderOpen, Plus, Trash } from "lucide-react"
+import {
+    Copy,
+    CurlyBraces,
+    Download,
+    EyeIcon,
+    FileIcon,
+    FolderOpen,
+    PencilIcon,
+    PenLineIcon,
+    Plus,
+    Trash
+} from "lucide-react"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import HelpTooltip from "@/components/help-tooltip"
 import { useCallback, useContext, useMemo } from "react"
@@ -24,7 +35,8 @@ export function EntryContextMenu({
     fileName,
     folder,
     goToEntity,
-    blankSpace
+    blankSpace,
+    rename
 }: {
     entity?: IEntity
     filePath?: string
@@ -32,9 +44,12 @@ export function EntryContextMenu({
     folder?: boolean
     goToEntity?: () => void
     blankSpace?: boolean
+    rename?: () => void
 }) {
     const { serviceProvider, crateId } = useContext(CrateDataContext)
     const setDownloadError = useFileExplorerState((store) => store.setDownloadError)
+    const setPreviewingFilePath = useFileExplorerState((s) => s.setPreviewingFilePath)
+
     const { showCreateEntityModal, showDeleteEntityModal } = useContext(GlobalModalContext)
     const [, copy] = useCopyToClipboard()
 
@@ -116,6 +131,11 @@ export function EntryContextMenu({
                     </HelpTooltip>
                 </ContextMenuItem>
             )}
+            {filePath && !filePath.endsWith("/") && (
+                <ContextMenuItem onClick={() => setPreviewingFilePath(filePath)}>
+                    <EyeIcon className="size-4 mr-2" /> Preview File
+                </ContextMenuItem>
+            )}
 
             <ContextMenuSeparator />
 
@@ -153,9 +173,14 @@ export function EntryContextMenu({
                 </ContextMenuSubContent>
             </ContextMenuSub>
 
+            {rename && (
+                <ContextMenuItem onClick={() => rename()}>
+                    <PenLineIcon className="size-4 mr-2" /> Change{" "}
+                    {filePath?.endsWith("/") ? "Folder" : "File"} Name
+                </ContextMenuItem>
+            )}
             {entity || filePath ? (
                 <ContextMenuItem
-                    variant={"destructive"}
                     onClick={() => showDeleteEntityModal(entity?.["@id"] || filePath!)}
                 >
                     <Trash className="size-4 mr-2" /> Delete

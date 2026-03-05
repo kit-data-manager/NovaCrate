@@ -49,7 +49,7 @@ export function CrateValidationSupervisor() {
     const crateContext = useEditorState((store) => store.crateContext)
     useEffect(() => {
         debouncedValidateCrate()
-    }, [debouncedValidateCrate, crateContext])
+    }, [debouncedValidateCrate, crateContext, crateData])
 
     const entitiesArray = useMemo(() => {
         return Array.from(entities.values())

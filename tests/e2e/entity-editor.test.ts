@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test"
-import { loadTestCrate, loadTestFolder } from "@/tests/common"
+import { loadTestCrate, loadTestFolder } from "@/tests/e2e/common"
 
 test("Edit Properties", async ({ page }) => {
     await loadTestFolder(page)

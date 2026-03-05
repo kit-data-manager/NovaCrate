@@ -21,9 +21,9 @@ export const RoCrateBase = {
             )
                 return []
 
-            if (!("name" in entity)) {
+            if (!("name" in entity || "familyName" in entity || "givenName" in entity)) {
                 results.push(
-                    builder.rule("entityName").warning({
+                    builder.rule("entityName").softWarning({
                         resultTitle: "Entity should have a name",
                         resultDescription:
                             "Provide a `name` property for this entity to make it easier to recognize for human readers.",
@@ -59,11 +59,11 @@ export const RoCrateBase = {
                                 })
                             )
                         } else {
-                            const comment = await ctx.schemaWorker.worker.execute(
-                                "getPropertyComment",
+                            const node = await ctx.schemaWorker.worker.execute(
+                                "getNode",
                                 resolvedType
                             )
-                            if (!comment) {
+                            if (!node) {
                                 results.push(
                                     builder.rule("missingSchemaForType").error({
                                         resultTitle: `Missing schema for type \`${type}\``,

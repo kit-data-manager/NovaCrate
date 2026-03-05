@@ -87,7 +87,7 @@ export function EntityContextMenu({
                     <Undo2 className="size-4 mr-2" /> Revert Changes
                 </ContextMenuItem>
                 <ContextMenuSeparator />
-                <ContextMenuItem variant={"destructive"} onClick={onDeleteClick}>
+                <ContextMenuItem onClick={onDeleteClick}>
                     <Trash className="size-4 mr-2" /> Delete
                 </ContextMenuItem>
             </ContextMenuContent>

@@ -176,21 +176,35 @@ test("Import Folder", async ({ page }) => {
     - button "Add another entry"
     `)
     await page.getByRole("link", { name: "File Explorer" }).getByRole("button").click()
-    await expect(page.locator("body")).toMatchAriaSnapshot(`
-    - button "img":
-      - img
-    - button "candles-9247498_1280.jpg"
-    - button "description.txt"
-    - button "empty-file"
-    - button "example.json"
-    - button "ro-crate-metadata.json"
+    await expect(page.getByRole("tree")).toMatchAriaSnapshot(`
+    - tree:
+      - treeitem "Uploaded from Folder" [expanded] [level=1]
+      - treeitem "description.txt" [expanded] [level=2]
+      - treeitem "empty-file" [expanded] [level=2]
+      - treeitem "example.json" [expanded] [level=2]
+      - treeitem "img" [expanded] [level=2]
+      - treeitem "candles-9247498_1280.jpg" [expanded] [level=3]
+      - treeitem "ro-crate-metadata.json" [expanded] [level=2]
     `)
-    await page.getByRole("button", { name: "candles-9247498_1280." }).click()
+    await page
+        .locator("div")
+        .filter({ hasText: /^candles-9247498_1280\.jpg$/ })
+        .nth(1)
+        .dblclick()
     await expect(page.locator("body")).toMatchAriaSnapshot(`- text: img/candles-9247498_1280.jpg`)
-    await page.getByRole("button", { name: "example.json" }).click()
+    await expect(page.locator("img")).toBeVisible()
+    await page
+        .locator("div")
+        .filter({ hasText: /^example\.json$/ })
+        .nth(1)
+        .dblclick()
     await expect(page.locator(".monaco-editor")).toContainText(
         '{ "file": "example.json", "contains": "nothing"}'
     )
-    await page.getByRole("button", { name: "description.txt" }).click()
+    await page
+        .locator("div")
+        .filter({ hasText: /^description\.txt$/ })
+        .nth(1)
+        .dblclick()
     await expect(page.locator(".monaco-editor")).toContainText("This is the Test Folder Crate")
 })

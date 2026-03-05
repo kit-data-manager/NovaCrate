@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test"
-import { loadTestCrate } from "@/tests/common"
+import { loadTestCrate } from "@/tests/e2e/common"
 
 test("Rename Contextual Entity", async ({ page }) => {
     await loadTestCrate(page)
@@ -63,9 +63,10 @@ test("Rename File", async ({ page }) => {
     await expect(page.locator(".monaco-editor")).toContainText('"entry": {')
     await page.getByRole("link", { name: "File Explorer" }).getByRole("button").click()
     await expect(page.locator("body")).toMatchAriaSnapshot(`
-    - button "Subfolder":
-      - img
-    - button "resultFile.txt"
-    - button "ro-crate-metadata.json"
+    - tree:
+      - treeitem "TestCrate" [expanded] [level=1]
+      - treeitem "ro-crate-metadata.json" [expanded] [level=2]
+      - treeitem "Subfolder" [expanded] [level=2]
+      - treeitem "resultFile.txt" [expanded] [level=3]
     `)
 })

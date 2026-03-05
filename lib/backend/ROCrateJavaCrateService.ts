@@ -115,7 +115,7 @@ export class ROCrateJavaCrateService extends CrateServiceBase {
         }
     }
 
-    renameEntity(): Promise<boolean> {
+    renameFile(): Promise<boolean> {
         throw "Not implemented"
     }
 
@@ -177,6 +177,22 @@ export class ROCrateJavaCrateService extends CrateServiceBase {
         )
         if (request.ok) {
             return await request.json()
+        } else {
+            throw handleSpringError(await request.json())
+        }
+    }
+
+    async getCrateRaw(id: string): Promise<string> {
+        if (decodeURIComponent(id) === "@static") {
+            console.trace("Who is getting??")
+            return JSON.stringify({ "@context": [], "@graph": [] })
+        }
+
+        const request = await fetch(
+            `http://localhost:8080/crates/${encodeURIComponent(id)}/files/ro-crate-metadata.json`
+        )
+        if (request.ok) {
+            return await request.text()
         } else {
             throw handleSpringError(await request.json())
         }
