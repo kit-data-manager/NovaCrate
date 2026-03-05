@@ -90,7 +90,7 @@ export function useAutoId(name: string) {
 
     return useMemo(() => {
         if (name == "") return ""
-        let generated = "#" + encodeFilePath(name.trim().toLowerCase())
+        let generated = "#" + name.trim().toLowerCase().replaceAll(" ", "-")
         let maxIterations = 10
         while (entities.has(generated)) {
             if (maxIterations-- < 0) throw "Could not generate a unique id after 10 attempts"
