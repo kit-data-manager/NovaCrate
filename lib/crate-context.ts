@@ -145,13 +145,13 @@ export class CrateContext {
      * @returns Full ID of the specified ID (e.g. "Organization" becomes "https://schema.org/Organization"). Can be used to query the SchemaGraph. Returns null on failure
      */
     resolve(id: string) {
-        if (id in this.context) {
-            return this.context[id]
+        if (id in this._context) {
+            return this._context[id]
         } else if (/^.+:.+$/.test(id)) {
             // Type has a prefix that we will try to resolve
             const prefix = id.split(":")[0]
             const suffix = id.split(":")[1]
-            const prefixContext = this._customPairs[prefix]
+            const prefixContext = this._customPairs[prefix] ?? this._context[prefix]
             if (prefixContext) {
                 return prefixContext + suffix
             } else {

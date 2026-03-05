@@ -10,10 +10,10 @@
     "build-next": "next build --webpack",
     "build-webworker": "webpack --config webpack.config.webworker.js --mode=production",
     "lint": "eslint .",
-    "test:dev-all": "npm run build && npm run test:unit && npm-run-all --parallel test:e2e serve",
+    "test:dev-all": "npm run build && npm run test:unit && npm-run-all --parallel --race test:e2e serve",
     "test:e2e": "playwright test",
     "test:unit": "jest",
-    "serve": "serve out"
+    "serve": "serve out -L"
   },
   "dependencies": {
     "@frogcat/ttl2jsonld": "^0.0.10",

@@ -37,7 +37,7 @@ export default function JSONEditorPage() {
     const [saveError, setSaveError] = useState<unknown>()
 
     const { data, mutate, error } = useSWR(
-        crateId && serviceProvider && crateData + "/ro-crate-metadata.json",
+        crateId && serviceProvider && crateId + "/ro-crate-metadata.json",
         () => {
             if (!crateId || !serviceProvider) return undefined
             return serviceProvider.getCrateRaw(crateId)
