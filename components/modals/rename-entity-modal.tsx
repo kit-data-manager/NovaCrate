@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { AlertTriangleIcon, ExternalLink, LoaderCircle } from "lucide-react"
-import { isDataEntity, isFolderDataEntity } from "@/lib/utils"
+import { isDataEntity, isFolderDataEntity, isValidUrl } from "@/lib/utils"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { Error } from "@/components/error"
@@ -57,7 +57,12 @@ export const RenameEntityModal = memo(function RenameEntityModal({
             return
         }
 
-        if (newId.endsWith("/") && !isFolderDataEntity(entity)) {
+        if (
+            newId.endsWith("/") &&
+            isDataEntity(entity) &&
+            !isValidUrl(newId) &&
+            !isFolderDataEntity(entity)
+        ) {
             setError("Identifier must not end with a slash if the entity is not a dataset")
             return
         }
