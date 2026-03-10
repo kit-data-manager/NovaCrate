@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.9.0] - 2026-03-03
+## [1.9.0] - 2026-03-10
 
 ### Added
 - Added a new tree-based file explorer based on the React Arborist library
