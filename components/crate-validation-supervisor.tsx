@@ -48,8 +48,8 @@ export function CrateValidationSupervisor() {
 
     const crateContext = useEditorState((store) => store.crateContext)
     useEffect(() => {
-        debouncedValidateCrate()
-    }, [debouncedValidateCrate, crateContext, crateData])
+        if (runValidation) debouncedValidateCrate()
+    }, [debouncedValidateCrate, crateContext, runValidation])
 
     const entitiesArray = useMemo(() => {
         return Array.from(entities.values())
