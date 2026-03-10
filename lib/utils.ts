@@ -79,15 +79,26 @@ export function isValidUrl(string: string) {
 /**
  * Find an entity in a map of entities. Tries different methods of resolving the entity using the id:
  *  1. Direct use of the id
- *  2. decoding the id as if it were an encoded URI
+ *  2. decoding the id as if it were an encoded URI and remove leading "./"
  * @param entities Entities map from editor state
  * @param id of the target entity
  */
 export function findEntity(entities: Map<string, IEntity>, id: string): IEntity | undefined {
-    const standard = entities.get(id)
-    if (standard) return standard
-    // Fallback method
-    return entities.get(decodeURI(id))
+    return (
+        entities.get(id) ??
+        entities.get(normalizeIdentifier(id)) ??
+        entities.get("./" + normalizeIdentifier(id))
+    )
+}
+
+export function normalizeIdentifier(path: string) {
+    const withoutPrefix = path.startsWith("./") ? path.slice(2) : path
+    try {
+        return decodeURI(withoutPrefix)
+    } catch (e) {
+        console.warn("Failed to normalize identifier", path, e)
+        return withoutPrefix
+    }
 }
 
 /**
@@ -204,17 +215,22 @@ export function propertyHasChanged(_value: EntityPropertyTypes, _oldValue: Entit
 }
 
 /**
- * Turns a camel-case string into a human-readable one
+ * Turns a camel-case string into a human-readable one. Also correctly handles shortened URIs
  * @param str Camel-case string
  * @example
  * someExample
  * -> Some Example
+ * purl:anotherExample
+ * -> [purl] Another Example
  */
 export function camelCaseReadable(str: string) {
     if (str === "@id") return "Identifier"
     if (str === "@type") return "Type"
-    const split = str.replace(/([A-Z][a-z])/g, " $1")
-    return split.charAt(0).toUpperCase() + split.slice(1)
+    const [prefix, ...suffix] = str.includes(":") ? str.split(":") : ["", str]
+    // If the string contains more than one :, we just use the first one as suffix and join everything else back together
+    let split = suffix.join(":").replace(/([A-Z][a-z])/g, " $1")
+    if (split.startsWith(" ")) split = split.slice(1)
+    return (prefix ? `[${prefix}] ` : "") + split.charAt(0).toUpperCase() + split.slice(1)
 }
 
 /**
@@ -222,20 +238,7 @@ export function camelCaseReadable(str: string) {
  * @param filePath Path of the file
  */
 export function encodeFilePath(filePath: string) {
-    return filePath.replaceAll("\\", "/").replaceAll("%", "%25").replaceAll(" ", "%20")
-}
-
-/**
- * Return the name of a file without the ending
- * @example
- * file.docx
- * -> file
- * @param fileName
- */
-export function fileNameWithoutEnding(fileName: string) {
-    if (fileName.match(/\.[A-z0-9]+$/)) {
-        return fileName.replace(/\.[A-z0-9]+$/, "")
-    } else return fileName
+    return filePath.replaceAll("\\", "/")
 }
 
 /**
@@ -259,6 +262,19 @@ export function getFolderPath(filePath: string) {
     if (split.length === 0) return ""
     if (split[split.length - 1] === "") return filePath
     else return split.slice(0, split.length - 1).join("/") + "/"
+}
+
+/**
+ * Get the file name from a file path
+ * @example
+ * /some/long/path/file.txt
+ * -> file.txt
+ * @param filePath
+ */
+export function getFileName(filePath: string) {
+    const split = filePath.split("/")
+    if (filePath.endsWith("/")) return split[split.length - 2]
+    else return split[split.length - 1]
 }
 
 /**
@@ -342,7 +358,7 @@ export enum Diff {
  * @param oldId Current ID of entity to be renamed
  * @param newId New ID of entity to be renamed
  */
-export function changeEntityId(entities: IEntity[], oldId: string, newId: string) {
+export function changeEntityIdOccurrences(entities: IEntity[], oldId: string, newId: string) {
     entities.forEach((e) => {
         if (e["@id"] === oldId) {
             e["@id"] = newId

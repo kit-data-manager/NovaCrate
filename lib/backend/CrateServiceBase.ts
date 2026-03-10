@@ -1,4 +1,5 @@
 import { handleSpringError } from "@/lib/spring-error-handling"
+import { changeEntityIdOccurrences, normalizeIdentifier } from "@/lib/utils"
 
 export abstract class CrateServiceBase implements CrateServiceAdapter {
     abstract getCrateFileURL(crateId: string, filePath: string): Promise<string>
@@ -90,11 +91,53 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
 
     abstract deleteEntity(crateId: string, entityData: IEntity): Promise<boolean>
 
-    abstract renameEntity(
+    async changeEntityId(
         crateId: string,
         entityData: IEntity,
         newEntityId: string
-    ): Promise<boolean>
+    ): Promise<boolean> {
+        const crate = await this.getCrate(crateId)
+        let affectedEntities: IEntity[] = []
+
+        if (
+            crate["@graph"].find(
+                (e) => normalizeIdentifier(e["@id"]) === normalizeIdentifier(newEntityId)
+            )
+        ) {
+            throw `Entity with ID ${newEntityId} already exists`
+        }
+
+        if (entityData["@id"].endsWith("/")) {
+            affectedEntities = crate["@graph"].filter((entity) => {
+                return (
+                    normalizeIdentifier(entity["@id"]).startsWith(
+                        normalizeIdentifier(entityData["@id"])
+                    ) &&
+                    normalizeIdentifier(entity["@id"]) !== normalizeIdentifier(entityData["@id"])
+                )
+            })
+        }
+
+        await this.renameFile(crateId, entityData["@id"], newEntityId)
+        changeEntityIdOccurrences(crate["@graph"], entityData["@id"], newEntityId)
+
+        for (const entity of affectedEntities) {
+            // Files for affected entities were already moved as they are contained within the entity that was primarily renamed here, no longer necessary to move them here
+            changeEntityIdOccurrences(
+                crate["@graph"],
+                entity["@id"],
+                normalizeIdentifier(entity["@id"]).replace(
+                    normalizeIdentifier(entityData["@id"]),
+                    newEntityId
+                )
+            )
+        }
+
+        await this.saveRoCrateMetadataJSON(crateId, JSON.stringify(crate))
+        return true
+    }
+
+    abstract renameFile(crateId: string, oldPath: string, newPath: string): Promise<boolean>
 
     abstract downloadCrateZip(id: string): Promise<void>
 
@@ -105,6 +148,8 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
     abstract downloadRoCrateMetadataJSON(id: string): Promise<void>
 
     abstract getCrate(id: string): Promise<ICrate>
+
+    abstract getCrateRaw(id: string): Promise<string>
 
     abstract getCrateFilesList(crateId: string): Promise<string[]>
 

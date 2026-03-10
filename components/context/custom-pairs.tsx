@@ -92,9 +92,9 @@ export function CustomPairs() {
                     <DialogHeader>
                         <DialogTitle>Add Pair</DialogTitle>
                         <DialogDescription>
-                            Custom context pairs define extensions to your base specification. The
-                            key is the name of the new Type or Property and the value references the
-                            Resource (e.g.{" "}
+                            Custom context pairs define extensions to your base specification. When
+                            extending the context with a single type, the key is the name of the new
+                            Type or Property and the value references the Resource (e.g.{" "}
                             <a
                                 className="hover:underline inline-flex"
                                 href="https://schema.org/Person"
@@ -102,7 +102,9 @@ export function CustomPairs() {
                             >
                                 https://schema.org/Person <ExternalLinkIcon className="w-3 h-3" />
                             </a>
-                            ).
+                            ). When extending the context with your own schema (JSON-LD or Turtle
+                            file), the key is a prefix of your choice and the value is the URL
+                            prefix to your type definitions.
                         </DialogDescription>
                     </DialogHeader>
 

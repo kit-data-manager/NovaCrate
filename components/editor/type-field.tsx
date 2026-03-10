@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { EllipsisVertical, Trash } from "lucide-react"
 import { TypeSelectModal } from "@/components/modals/type-select-modal"
+import { camelCaseReadable } from "@/lib/utils"
 
 export function TypeField({
     value,
@@ -46,7 +47,7 @@ export function TypeField({
                     type={value}
                     className="size-4 pointer-events-none text-muted-foreground mr-1"
                 />
-                {value}
+                {camelCaseReadable(value)}
             </Button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>

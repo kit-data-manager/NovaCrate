@@ -162,6 +162,10 @@ export function unloadSchema(schemaId: string) {
     return schemaGraph.unloadSchema(schemaId)
 }
 
+export function getNode(id: string) {
+    return schemaGraph.getNode(id)
+}
+
 export const schemaWorkerFunctions = {
     getAllClasses,
     getPropertyRange,
@@ -174,5 +178,6 @@ export const schemaWorkerFunctions = {
     updateRegisteredSchemas,
     forceSchemaLoad,
     loadAllSchemas,
-    unloadSchema
+    unloadSchema,
+    getNode
 }
