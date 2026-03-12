@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- Added impact analysis to the entity deletion modal. It informs the user over how many entities and files/folders will be deleted.
+- Added the option to delete entities but keep corresponding files/folders.
+
 ## [1.9.0] - 2026-03-10
 
 ### Added
