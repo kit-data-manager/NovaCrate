@@ -1,13 +1,22 @@
-import React, { memo, useCallback, useContext, useState } from "react"
+import React, { memo, useCallback, useContext, useMemo, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Loader2, Trash } from "lucide-react"
-import { useEditorState } from "@/lib/state/editor-state"
+import { AlertTriangleIcon, ArrowLeft, Loader2, Trash } from "lucide-react"
+import { editorState, useEditorState } from "@/lib/state/editor-state"
 import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { getEntityDisplayName } from "@/lib/utils"
+import {
+    getEntityDisplayName,
+    isContextualEntity,
+    isFileDataEntity,
+    normalizeIdentifier
+} from "@/lib/utils"
 import { Error } from "@/components/error"
 import { RO_CRATE_FILE } from "@/lib/constants"
 import { EntityIcon } from "@/components/entity/entity-icon"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import useSWR from "swr"
 
 export const DeleteEntityModal = memo(function DeleteEntityModal({
     open,
@@ -23,7 +32,7 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
     const { deleteEntity, serviceProvider, crateId } = useContext(CrateDataContext)
     const [isDeleting, setIsDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState<unknown>()
-    // const [deleteContent, setDeleteContent] = useState(false)
+    const [deleteContent, setDeleteContent] = useState(false)
 
     const localOnOpenChange = useCallback(
         (isOpen: boolean) => {
@@ -79,10 +88,46 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
         }
     }, [entity, serviceProvider, crateId, onOpenChange, deleteEntity, entityId, context])
 
-    // const couldBeFolder = useMemo(() => {
-    //     if (entity && isFolderDataEntity(entity)) return true
-    //     return entityId.endsWith("/")
-    // }, [entity, entityId])
+    const couldHaveFile = useMemo(() => {
+        return entity ? !isContextualEntity(entity) : true
+    }, [entity])
+
+    const couldBeFileEntity = useMemo(() => {
+        return entity ? isFileDataEntity(entity) : false
+    }, [entity])
+
+    const impactedEntitiesCount = useMemo(() => {
+        if (entity && couldBeFileEntity) {
+            return 1
+        } else if (entity && !couldBeFileEntity) {
+            if (!deleteContent) return 1
+
+            return Array.from(editorState.getState().getEntities()).filter(([id]) =>
+                id.startsWith(entity["@id"])
+            ).length
+        } else return 0
+    }, [couldBeFileEntity, deleteContent, entity])
+
+    const getImpactedFileOrFolderCount = useCallback(async () => {
+        if (!serviceProvider || !crateId) return 0
+
+        const list = await serviceProvider.getCrateFilesList(crateId)
+        if (entityId.endsWith("/")) {
+            return list.filter((file) =>
+                normalizeIdentifier(file).startsWith(normalizeIdentifier(entityId))
+            ).length
+        } else {
+            return list.filter(
+                (file) => normalizeIdentifier(file) === normalizeIdentifier(entityId)
+            ).length
+        }
+    }, [crateId, entityId, serviceProvider])
+
+    const { data: impactedFileOrFolderCount } = useSWR(
+        crateId ? `impacted-file-or-folder-count-${entityId}-${crateId}` : null,
+        getImpactedFileOrFolderCount,
+        {}
+    )
 
     const onCloseClick = useCallback(() => {
         onOpenChange(false)
@@ -96,30 +141,49 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
                 </DialogHeader>
                 <Error title="An error occured while deleting this entity" error={deleteError} />
                 <div>
-                    Are you sure that you want to delete this entity?
-                    <div className="p-4 flex items-center">
+                    <div>
+                        Are you sure that you want to delete this entity? This action is not
+                        reversible.
+                    </div>
+                    <div className="p-1 px-2 my-3 inline-flex items-center border rounded-lg">
                         <EntityIcon entity={entity} />
                         <span className="break-keep">
                             {getEntityDisplayName(entity || { "@id": entityId, "@type": [] }, true)}
                         </span>
                     </div>
-                    The associated data will be <b>permanently deleted</b>. This action is not
-                    reversible.
                 </div>
-                {/* Does not work in backend and implementation is not finished here */}
-                {/*{couldBeFolder ? (*/}
-                {/*    <div className="flex items-center space-x-2 mb-2">*/}
-                {/*        <Switch*/}
-                {/*            id="delete-content"*/}
-                {/*            checked={deleteContent}*/}
-                {/*            onCheckedChange={setDeleteContent}*/}
-                {/*        />*/}
-                {/*        <Label htmlFor="delete-content">Permanently delete folder content</Label>*/}
-                {/*    </div>*/}
-                {/*) : null}*/}
+                {couldHaveFile ? (
+                    <div className="flex items-center space-x-2 mb-2">
+                        <Checkbox
+                            id="delete-content"
+                            checked={deleteContent}
+                            onCheckedChange={(v) =>
+                                setDeleteContent(v === "indeterminate" ? true : v)
+                            }
+                        />
+                        <Label htmlFor="delete-content" className="mb-0">
+                            Permanently delete corresponding{" "}
+                            {couldBeFileEntity ? "file" : "folder and all contained data"}
+                        </Label>
+                    </div>
+                ) : null}
+                <Alert>
+                    <AlertTriangleIcon />
+                    <AlertTitle>Impact</AlertTitle>
+                    <AlertDescription>
+                        <div>
+                            {impactedEntitiesCount} Entit{impactedEntitiesCount === 1 ? "y" : "ies"}{" "}
+                            will be deleted
+                        </div>
+                        <div>
+                            {deleteContent ? impactedFileOrFolderCount || "?" : "0"} File(s) or
+                            Folder(s) will be deleted
+                        </div>
+                    </AlertDescription>
+                </Alert>
                 <div className="flex justify-between">
                     <Button variant="outline" onClick={onCloseClick} disabled={isDeleting}>
-                        <ArrowLeft className="size-4 mr-2" /> Back
+                        <ArrowLeft className="size-4 mr-2" /> Cancel
                     </Button>
                     <Button
                         variant="destructive"
