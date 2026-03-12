@@ -48,7 +48,7 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
     const onDeleteEntityClick = useCallback(() => {
         if (entity) {
             setIsDeleting(true)
-            deleteEntity(entity)
+            deleteEntity(entity, deleteContent)
                 .then((success) => {
                     if (success) {
                         setDeleteError(undefined)
@@ -68,10 +68,14 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
             onOpenChange(false)
             setIsDeleting(true)
             serviceProvider
-                .deleteEntity(crateId, {
-                    "@id": entityId,
-                    "@type": [context.reverse(RO_CRATE_FILE) || RO_CRATE_FILE]
-                })
+                .deleteEntity(
+                    crateId,
+                    {
+                        "@id": entityId,
+                        "@type": [context.reverse(RO_CRATE_FILE) || RO_CRATE_FILE]
+                    },
+                    deleteContent
+                )
                 .then((success) => {
                     if (success) {
                         setDeleteError(undefined)
@@ -86,7 +90,16 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
                     setIsDeleting(false)
                 })
         }
-    }, [entity, serviceProvider, crateId, onOpenChange, deleteEntity, entityId, context])
+    }, [
+        entity,
+        serviceProvider,
+        crateId,
+        deleteEntity,
+        onOpenChange,
+        entityId,
+        context,
+        deleteContent
+    ])
 
     const couldHaveFile = useMemo(() => {
         return entity ? !isContextualEntity(entity) : true
@@ -103,7 +116,7 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
             if (!deleteContent) return 1
 
             return Array.from(editorState.getState().getEntities()).filter(([id]) =>
-                id.startsWith(entity["@id"])
+                normalizeIdentifier(id).startsWith(normalizeIdentifier(entity["@id"]))
             ).length
         } else return 0
     }, [couldBeFileEntity, deleteContent, entity])
