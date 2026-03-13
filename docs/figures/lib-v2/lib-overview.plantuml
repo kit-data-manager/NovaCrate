@@ -1,0 +1,17 @@
+@startuml
+
+package persistence <<unstable>> {
+    component Persistence
+}
+
+
+package core <<stable>> {
+    component Core
+    interface IPersistence
+}
+
+
+Core --( IPersistence
+IPersistence -- Persistence
+
+@enduml

@@ -1,0 +1,34 @@
+@startuml
+
+package core {
+    interface IPersistence
+
+    class CoreService {
+        addFileEntity()
+        addFolderEntity()
+        changeEntityIdentifier()
+        deleteEntity()
+    }
+
+    CoreService ..> IPersistence
+    CoreService *-- ContextService
+    CoreService *-- MetadataService
+
+    class ContextService {
+        - context
+        + events
+    }
+
+    class MetadataService {
+        - graph
+        + events
+
+        getEntities()
+        addEntity()
+        updateEntity()
+        changeEntityIdentifier()
+        deleteEntity()
+    }
+}
+
+@enduml

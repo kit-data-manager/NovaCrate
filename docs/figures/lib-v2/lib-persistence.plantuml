@@ -1,0 +1,68 @@
+@startuml
+
+package core {
+    interface IPersistence
+}
+
+package persistence {
+    abstract PersistenceService {
+        + events
+        getCrateId()
+        canSetCrateId(): boolean
+        setCrateId()
+        getCrateService()
+        getRepositoryService()
+    }
+
+    IPersistence <|.. PersistenceService: <<implements>>
+
+    note right of PersistenceService::getCrateService()
+        invariant:
+        getCrateId() == null
+            implies getCrateService() == null
+    end note
+
+    abstract CrateService {
+        + events
+        getMetadata()
+        setMetadata()
+        getFileService()
+    }
+
+    interface FileService {
+        + events
+        getContentList()
+        getInfo(path)
+        getFile(path)
+        addFile(path, blob)
+        addFolder(path)
+        updateFile(path, blob)
+        move(src, dst)
+        delete(path)
+        getStorageQuota()
+    }
+    interface RepositoryService {
+        + events
+        getCratesList()
+        createCrateFromZip(zip)
+        deleteCrate(crateId)
+        getCrateAs(crateId, format)
+        getStorageQuota()
+    }
+
+    struct StoredCrate {
+        name
+        description
+        crateId
+        lastOpenedAt
+    }
+
+RepositoryService *-- "0..*" StoredCrate
+    CrateService *-- "0..1" FileService
+    PersistenceService *-- "0..1" CrateService
+    PersistenceService *-- "0..1" RepositoryService
+}
+
+
+
+@enduml
