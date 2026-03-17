@@ -1,5 +1,5 @@
 import { ICrateService } from "@/lib/core/persistence/ICrateService"
-import { IObservable } from "@/lib/core/observable"
+import { IObservable } from "@/lib/core/IObservable"
 import { IRepositoryService } from "@/lib/core/persistence/IRepositoryService"
 
 export type IPersistenceServiceEvents = {

@@ -1,6 +1,6 @@
 import { IStorageQuota } from "@/lib/core/persistence/IStorageQuota"
 import { IFileInfo } from "@/lib/core/persistence/IFileInfo"
-import { IObservable } from "@/lib/core/observable"
+import { IObservable } from "@/lib/core/IObservable"
 
 export type IFileServiceEvents = {
     "file-created": (path: string) => void

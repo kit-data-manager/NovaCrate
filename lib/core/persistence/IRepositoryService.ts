@@ -1,5 +1,5 @@
 import { IStorageQuota } from "@/lib/core/persistence/IStorageQuota"
-import { IObservable } from "@/lib/core/observable"
+import { IObservable } from "@/lib/core/IObservable"
 
 export type IRepositoryServiceEvents = {
     "crates-list-changed": () => void

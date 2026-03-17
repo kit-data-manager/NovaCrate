@@ -1,5 +1,5 @@
 import { IFileService } from "@/lib/core/persistence/IFileService"
-import { IObservable } from "@/lib/core/observable"
+import { IObservable } from "@/lib/core/IObservable"
 
 export type ICrateServiceEvents = {
     "metadata-changed": (newMetadata: string) => void

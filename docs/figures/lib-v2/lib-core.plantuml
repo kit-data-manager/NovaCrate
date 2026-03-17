@@ -3,23 +3,42 @@
 package core {
     interface IPersistence
 
-    class CoreService {
+    interface ICoreService {
         addFileEntity()
         addFolderEntity()
         changeEntityIdentifier()
         deleteEntity()
     }
 
-    CoreService ..> IPersistence
-    CoreService *-- ContextService
-    CoreService *-- MetadataService
-
-    class ContextService {
-        - context
-        + events
+    interface IPersistenceAdapter {
+        getMetadataGraph()
+        getMetadataContext()
+        updateMetadataGraph()
+        updateMetadataContext()
     }
 
-    class MetadataService {
+    ICoreService ..> IPersistence
+    ICoreService *-- IContextService
+    ICoreService *-- IMetadataService
+
+    interface IContextService {
+        - context
+        + events
+        getSpecification()
+        getUsesFallback()
+        getCustomContextPairs()
+        removeCustomContextPair()
+        addCustomContextPair()
+    }
+
+    interface IContextResolverService {
+        resolve(id)
+        reverse(id)
+    }
+
+    IContextResolverService "resolver" --* IContextService
+
+    interface IMetadataService {
         - graph
         + events
 
@@ -29,6 +48,10 @@ package core {
         changeEntityIdentifier()
         deleteEntity()
     }
+
+    IPersistenceAdapter <.. IMetadataService
+    IPersistenceAdapter <.. IContextService
+    IPersistenceAdapter ..> IPersistence
 }
 
 @enduml
