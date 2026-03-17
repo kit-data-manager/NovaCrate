@@ -209,6 +209,12 @@ describe("MetadataServiceImpl", () => {
                     "@id": "./",
                     "@type": "Dataset",
                     name: "No HasPart Crate"
+                },
+                {
+                    "@id": "ro-crate-metadata.json",
+                    "@type": "CreativeWork",
+                    about: { "@id": "./" },
+                    conformsTo: { "@id": "https://w3id.org/ro/crate/1.1" }
                 }
             ]
             ;(mockAdapter.getMetadataGraph as jest.Mock).mockResolvedValue(graphWithoutHasPart)
@@ -676,9 +682,7 @@ describe("MetadataServiceImpl", () => {
             ).toBeDefined()
         })
 
-        it("should not add data entities to hasPart when root uses non-./ ID (current limitation)", async () => {
-            const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
-
+        it("should add data entities to hasPart on a non-./ root ID", async () => {
             const fileEntity: IEntity = {
                 "@id": "new-file.txt",
                 "@type": "File",
@@ -691,16 +695,12 @@ describe("MetadataServiceImpl", () => {
                 nonStandardService.getEntities().find((e) => e["@id"] === "new-file.txt")
             ).toBeDefined()
 
-            // But hasPart on the non-standard root won't be updated because
-            // addToHasPart hardcodes "./" lookup (see TODO in source)
+            // hasPart on the non-standard root should be updated via getRootEntityID
             const root = nonStandardService
                 .getEntities()
                 .find((e) => e["@id"] === "https://example.org/my-dataset")
             const hasPart = root!.hasPart as IReference[]
-            expect(hasPart.find((p) => p["@id"] === "new-file.txt")).toBeUndefined()
-            expect(warnSpy).toHaveBeenCalled()
-
-            warnSpy.mockRestore()
+            expect(hasPart.find((p) => p["@id"] === "new-file.txt")).toBeDefined()
         })
 
         it("should still allow renaming entities in a crate with non-./ root ID", async () => {

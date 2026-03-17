@@ -61,6 +61,10 @@ export class BrowserPersistenceService implements IPersistenceService {
         return this.crateService
     }
 
+    async createCrateServiceFor(crateId: string): Promise<ICrateService | null> {
+        return new BrowserCrateService(crateId, this.worker)
+    }
+
     getRepositoryService(): IRepositoryService | null {
         return this.repositoryService
     }

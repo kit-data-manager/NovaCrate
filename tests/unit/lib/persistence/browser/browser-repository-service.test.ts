@@ -102,6 +102,81 @@ describe("BrowserRepositoryService", () => {
 
             expect(order).toEqual(["crate-created", "crates-list-changed"])
         })
+
+        it("should return the new crate ID", async () => {
+            worker.execute.mockResolvedValue("returned-id")
+
+            const result = await service.createCrateFromZip(new Blob())
+
+            expect(result).toBe("returned-id")
+        })
+    })
+
+    describe("createCrateFromMetadata", () => {
+        beforeEach(() => {
+            worker.execute.mockResolvedValue(undefined)
+            jest.spyOn(globalThis.crypto, "randomUUID").mockReturnValue(
+                "generated-uuid" as ReturnType<typeof crypto.randomUUID>
+            )
+        })
+
+        afterEach(() => {
+            jest.restoreAllMocks()
+        })
+
+        it("should write the metadata string as ro-crate-metadata.json", async () => {
+            const metadata = '{"@context":"test","@graph":[]}'
+
+            await service.createCrateFromMetadata(metadata)
+
+            expect(worker.execute).toHaveBeenCalledWith(
+                "writeFile",
+                "generated-uuid",
+                "ro-crate-metadata.json",
+                expect.any(Uint8Array)
+            )
+
+            // Verify the encoded data matches the original string
+            const writtenData = worker.execute.mock.calls[0][3] as Uint8Array
+            const decoded = new TextDecoder().decode(writtenData)
+            expect(decoded).toBe(metadata)
+        })
+
+        it("should return the generated crate ID", async () => {
+            const result = await service.createCrateFromMetadata("{}")
+
+            expect(result).toBe("generated-uuid")
+        })
+
+        it("should emit crate-created with the new crate ID", async () => {
+            const listener = jest.fn()
+            service.events.addEventListener("crate-created", listener)
+
+            await service.createCrateFromMetadata("{}")
+
+            expect(listener).toHaveBeenCalledWith("generated-uuid")
+        })
+
+        it("should emit crates-list-changed", async () => {
+            const listener = jest.fn()
+            service.events.addEventListener("crates-list-changed", listener)
+
+            await service.createCrateFromMetadata("{}")
+
+            expect(listener).toHaveBeenCalledTimes(1)
+        })
+
+        it("should emit crate-created before crates-list-changed", async () => {
+            const order: string[] = []
+            service.events.addEventListener("crate-created", () => order.push("crate-created"))
+            service.events.addEventListener("crates-list-changed", () =>
+                order.push("crates-list-changed")
+            )
+
+            await service.createCrateFromMetadata("{}")
+
+            expect(order).toEqual(["crate-created", "crates-list-changed"])
+        })
     })
 
     describe("deleteCrate", () => {

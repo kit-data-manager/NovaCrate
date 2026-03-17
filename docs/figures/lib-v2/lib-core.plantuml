@@ -51,9 +51,17 @@ package core {
         deleteEntity()
     }
 
+    class CrateFactory {
+        createEmptyCrate(name, description)
+        createCrateFromFile()
+        createCrateFromFiles()
+        createCrateFromMetadataFile()
+    }
+
     IPersistenceAdapter <.. IMetadataService
     IPersistenceAdapter <.. IContextService
     IPersistenceAdapter ..> ICrateService
+    IRepositoryService <.. CrateFactory
 }
 
 @enduml

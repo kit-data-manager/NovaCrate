@@ -6,6 +6,8 @@ This file provides guidance for AI coding agents working in this repository.
 
 NovaCrate is a web-based interactive editor for creating, editing, and visualizing Research Object Crates (RO-Crate). Built with Next.js 16, React 19, TypeScript, and Tailwind CSS 4.
 
+**Migration in progress**: The editor is undergoing a major reengineering of its core logic. A new layered architecture (core layer + persistence layer) has been implemented in `lib/core/` and `lib/persistence/`, with React providers in `components/providers/persistence-provider.tsx` and `components/providers/core-provider.tsx`. However, the **UI still runs entirely on the legacy `CrateDataProvider`** in `components/providers/crate-data-provider.tsx`, which uses the old `CrateServiceAdapter` / `BrowserBasedCrateService` from `lib/backend/`. The next phase of work is migrating UI components from the legacy provider to the new hooks (`useCore()`, `usePersistence()`). See `lib-v2-transition-plan.md` for the full migration plan and remaining work packages.
+
 ## Build & Development Commands
 
 ```bash
@@ -175,14 +177,68 @@ components/
   entity/               # Entity-related components
   file-explorer/        # File explorer components
 lib/
+  core/                 # Core layer interfaces and implementations
+    impl/               # Implementations (CoreServiceImpl, MetadataServiceImpl, etc.)
+    persistence/        # Persistence layer interfaces (ICrateService, IFileService, etc.)
+  persistence/
+    browser/            # Browser-based persistence (OPFS-backed implementations)
   state/                # Zustand state stores
   validation/           # Validation logic
-  backend/              # Backend service interfaces
+  backend/              # Legacy backend service (being replaced — see Architecture)
 tests/
   unit/                 # Jest unit tests
   e2e/                  # Playwright e2e tests
   data/                 # Test fixtures
 ```
+
+## Architecture
+
+The editor is being migrated to a layered architecture. Understanding this is essential for making changes.
+
+### Core Layer (`lib/core/`)
+
+The core layer contains all RO-Crate domain logic. It is persistence-agnostic.
+
+- **`ICoreService` / `CoreServiceImpl`** — Orchestrates metadata and context services. Provides high-level operations: `addFileEntity`, `addFolderEntity`, `changeEntityIdentifier`, `deleteEntity`. Coordinates file service operations with metadata updates.
+- **`IMetadataService` / `MetadataServiceImpl`** — Entity CRUD. Stores the `@graph` as a `Map<string, IEntity>`. Manages `hasPart` on the root entity for data entities. Uses `getRootEntityID()` (not hardcoded `"./"`) to find the root entity via the metadata descriptor's `about` reference.
+- **`IContextService` / `ContextServiceImpl`** — Manages the `@context`. Resolves/reverses short names to/from full URIs. Handles custom context pairs. Loads known RO-Crate context definitions (v1.1, v1.2) from bundled JSON files.
+- **`IPersistenceAdapter` / `PersistenceAdapterImpl`** — Bridges persistence (`ICrateService`) and core services. Converts between raw JSON metadata strings and typed graph/context objects.
+- **`Observable`** — Generic typed event emitter used throughout both layers. `emit()` spreads arguments to listeners: `listener(...args)`.
+- **`CrateFactory`** — Factory for creating new crates. All RO-Crate metadata structure knowledge lives here (templates, validation), keeping the repository service metadata-agnostic. Methods: `createEmptyCrate`, `createCrateFromFile`, `createCrateFromMetadataFile`, `createCrateFromFiles`, `duplicateCrate`.
+- **`lib/core/util.ts`** — Browser-level utilities: `getFileAsURL`, `downloadBlob`, `downloadCrateAs`.
+
+### Persistence Layer (`lib/core/persistence/` interfaces, `lib/persistence/browser/` implementation)
+
+The persistence layer handles storage. The only current implementation is browser-based (OPFS via Web Workers).
+
+- **`IPersistenceService` / `BrowserPersistenceService`** — Top-level entry point. Manages crate ID selection, provides `ICrateService` and `IRepositoryService`. Has `createCrateServiceFor(crateId)` for creating a standalone crate service without changing the selected crate.
+- **`ICrateService` / `BrowserCrateService`** — Read/write the `ro-crate-metadata.json` for a specific crate. Provides `IFileService`. Emits `metadata-changed` events.
+- **`IFileService` / `BrowserFileService`** — File operations within a crate (add, read, update, move, delete). Emits granular events (`file-created`, `file-deleted`, `folder-created`, etc.) and `quota-changed`.
+- **`IRepositoryService` / `BrowserRepositoryService`** — Manages the collection of crates. Metadata-agnostic: only stores/retrieves opaque crate directories. Methods: `getCratesList`, `createCrateFromZip` (returns crate ID), `createCrateFromMetadata` (writes a metadata string, returns crate ID), `deleteCrate`, `getCrateAs` (export as zip/eln/json).
+
+### React Providers (`components/providers/`)
+
+- **`PersistenceProvider`** (`persistence-provider.tsx`) — Creates and provides the `BrowserPersistenceService` singleton. Mount at `app/editor/layout.tsx`. Hook: `usePersistence()`.
+- **`CoreProvider`** (`core-provider.tsx`) — Creates `PersistenceAdapterImpl` + `CoreServiceImpl` when a crate is open. Mount at `app/editor/full/layout.tsx`. If the crate is deselected, navigates to `/editor`. Hook: `useCore()` (always non-null inside the provider).
+
+### Legacy Layer (`lib/backend/`) — Being Replaced
+
+The `CrateDataProvider`, `CrateServiceAdapter`, and `BrowserBasedCrateService` in `lib/backend/` are the old monolithic architecture. They are being replaced by the core + persistence layers above. Do not add new functionality to the legacy layer. See `lib-v2-transition-plan.md` for the migration plan.
+
+### Key Design Decisions
+
+- **Root entity lookup**: Always use `getRootEntityID(entities)` from `lib/utils.ts`. Never hardcode `"./"`. The function finds the root by looking up the `ro-crate-metadata.json` entity's `about["@id"]` reference, supporting both standard (`./`) and non-standard root IDs.
+- **Event-driven sync**: The core layer uses `Observable` events (`graph-changed`, `context-changed`, `metadata-changed`, etc.) for reactive updates between layers. Components should subscribe to events rather than polling.
+- **Repository is metadata-agnostic**: `IRepositoryService` never parses or understands crate metadata. All metadata knowledge (templates, validation, structure) lives in `CrateFactory` and the core layer.
+- **Separation of concerns**: `ICoreService` operates on an already-open crate. `CrateFactory` handles crate creation workflows (which happen before a crate is open).
+
+## Testing Notes
+
+### Jest Environment Caveats
+
+- **`structuredClone` cross-realm issue**: Jest runs tests in a Node.js `vm` sandbox. `structuredClone()` returns objects from a different realm, causing `constructor` mismatches. The `dequal` library (used in `MetadataServiceImpl.updateGraph`) compares constructors, so `dequal(obj, structuredClone(obj))` returns `false` in Jest. **Workaround**: Use `JSON.parse(JSON.stringify(...))` instead of `structuredClone` in test mocks and fixtures when the data will be compared with `dequal`.
+- **OPFS / Web Workers**: Not available in the Jest `node` environment. Browser persistence classes (`BrowserCrateService`, `BrowserFileService`, `BrowserRepositoryService`) accept a `FunctionWorker` via constructor injection — mock it in tests. `BrowserPersistenceService` creates its own worker internally — use `jest.mock` for `@/lib/function-worker`, `@/lib/opfs-worker/functions`, and `next/dist/client/add-base-path`.
+- **JSZip in Node**: `JSZip.loadAsync()` does not accept `Blob` in Node.js. Convert to `ArrayBuffer` first: `JSZip.loadAsync(await blob.arrayBuffer())`. When generating zips for tests, use `{ type: "arraybuffer" }` and wrap in `new Blob([buffer])`.
 
 ## Key Dependencies
 
@@ -190,9 +246,12 @@ tests/
 - **React 19** - UI framework
 - **Zustand** - State management
 - **Immer** - Immutable state updates
-- **SWR** - Data fetching
+- **SWR** - Data fetching (legacy, being phased out)
 - **Tailwind CSS 4** - Styling
-- **Zod** - Schema validation
+- **Zod** (`zod/mini`) - Schema validation
+- **JSZip** - Zip archive manipulation (used by `CrateFactory.duplicateCrate`)
+- **js-file-download** - Browser file download trigger
+- **happy-opfs** - OPFS filesystem abstraction (used by browser persistence)
 - **react-arborist** - Tree view component
 - **Monaco Editor** - Code editor
 - **Playwright** - E2E testing

@@ -15,5 +15,6 @@ export interface IPersistenceService {
     canSetCrateId(): boolean
     setCrateId(crateId: string | null): void
     getCrateService(): ICrateService | null
+    createCrateServiceFor(crateId: string): Promise<ICrateService | null>
     getRepositoryService(): IRepositoryService | null
 }

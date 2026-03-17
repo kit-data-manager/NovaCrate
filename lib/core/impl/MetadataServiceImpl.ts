@@ -2,7 +2,12 @@ import { IMetadataService, IMetadataServiceEvents } from "@/lib/core/IMetadataSe
 import { IObservable } from "@/lib/core/IObservable"
 import { Observable } from "@/lib/core/impl/Observable"
 import { IPersistenceAdapter } from "@/lib/core/IPersistenceAdapter"
-import { changeEntityIdOccurrences, isDataEntity, normalizeIdentifier } from "@/lib/utils"
+import {
+    changeEntityIdOccurrences,
+    getRootEntityID,
+    isDataEntity,
+    normalizeIdentifier
+} from "@/lib/utils"
 import { dequal } from "dequal"
 
 export class MetadataServiceImpl implements IMetadataService {
@@ -33,9 +38,13 @@ export class MetadataServiceImpl implements IMetadataService {
         return true
     }
 
+    private getRootEntity(): IEntity | undefined {
+        const rootId = getRootEntityID(this.graph)
+        return rootId ? this.graph.get(rootId) : undefined
+    }
+
     private addToHasPart(referencedEntityId: string) {
-        // TODO correctly retrieve root entity id
-        const root = this.graph.get("./")
+        const root = this.getRootEntity()
         if (!root)
             return console.warn(
                 "Failed to add data entity to hasPart because root entity could not be found"
@@ -54,10 +63,10 @@ export class MetadataServiceImpl implements IMetadataService {
     }
 
     private removeFromHasPart(referencedEntityId: string) {
-        const root = this.graph.get("./")
+        const root = this.getRootEntity()
         if (!root)
             return console.warn(
-                "Failed to add data entity to hasPart because root entity could not be found"
+                "Failed to remove data entity from hasPart because root entity could not be found"
             )
         if ("hasPart" in root) {
             if (Array.isArray(root.hasPart)) {

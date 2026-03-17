@@ -29,10 +29,20 @@ export class BrowserRepositoryService implements IRepositoryService {
         }))
     }
 
-    async createCrateFromZip(zip: Blob): Promise<void> {
+    async createCrateFromZip(zip: Blob): Promise<string> {
         const crateId = await this.worker.execute("createCrateFromZip", zip)
         this._events.emit("crate-created", crateId)
         this._events.emit("crates-list-changed")
+        return crateId
+    }
+
+    async createCrateFromMetadata(metadata: string): Promise<string> {
+        const crateId = crypto.randomUUID()
+        const data = new TextEncoder().encode(metadata)
+        await this.worker.execute("writeFile", crateId, "ro-crate-metadata.json", data)
+        this._events.emit("crate-created", crateId)
+        this._events.emit("crates-list-changed")
+        return crateId
     }
 
     async deleteCrate(crateId: string): Promise<void> {
