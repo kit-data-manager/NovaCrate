@@ -7,9 +7,9 @@ export type IContextServiceEvents = {
 
 export interface IContextService {
     readonly events: IObservable<IContextServiceEvents>
-    specification: RO_CRATE_VERSION | undefined
-    usingFallback: boolean
-    customPairs: Record<string, string>
+    readonly specification: RO_CRATE_VERSION | undefined
+    readonly usingFallback: boolean
+    readonly customPairs: Record<string, string>
     removeCustomContextPair(prefix: string): void
     addCustomContextPair(prefix: string, url: string): void
 }

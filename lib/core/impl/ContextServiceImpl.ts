@@ -73,12 +73,22 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         return structuredClone(this._errors)
     }
 
-    addCustomContextPair(prefix: string, url: string): void {
+    async addCustomContextPair(prefix: string, url: string): Promise<void> {
         this._customPairs[prefix] = url
+        this._events.emit("context-changed")
+        await this.persistenceAdapter.updateMetadataContext({
+            "@vocab": this.specification,
+            ...this.customPairs
+        } as Record<string, string>)
     }
 
-    removeCustomContextPair(prefix: string): void {
+    async removeCustomContextPair(prefix: string): Promise<void> {
         delete this._customPairs[prefix]
+        this._events.emit("context-changed")
+        await this.persistenceAdapter.updateMetadataContext({
+            "@vocab": this.specification,
+            ...this.customPairs
+        } as Record<string, string>)
     }
 
     private async loadKnownContext(primary: (typeof KNOWN_CONTEXTS)[number]) {
@@ -88,11 +98,58 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
     }
 
     /**
+     * Resolves an entity type or property in the current context
+     * Returns null on failure
+     * @param id Entity type of property name (e.g. "Organization", "follows", ...)
+     * @returns Full ID of the specified ID (e.g. "Organization" becomes "https://schema.org/Organization"). Can be used to query the SchemaGraph. Returns null on failure
+     */
+    resolve(id: string) {
+        if (id in this._context) {
+            return this._context[id]
+        } else if (/^.+:.+$/.test(id)) {
+            // Type has a prefix that we will try to resolve
+            const prefix = id.split(":")[0]
+            const suffix = id.split(":")[1]
+            const prefixContext = this._customPairs[prefix] ?? this._context[prefix]
+            if (prefixContext) {
+                return prefixContext + suffix
+            } else {
+                console.warn(
+                    `Found node with id ${id}, but prefix ${prefix} is not defined in the context`
+                )
+                return null
+            }
+        } else return null
+    }
+
+    /**
+     * This method effectively shortens the given URI using the @context of the crate.
+     * It is the reverse operation of {@link CrateContext.resolve}.
+     * @example
+     * reverse("https://schema.org/Organization") -> "Organization"
+     * reverse("https://myCustomUrl.org/v1/myProperty") -> "custom:myProperty" // when custom: "https://myCustomUrl.org/v1/" is defined in the context
+     * @param URI
+     */
+    reverse(URI: string) {
+        if (this._contextReversed[URI]) return this._contextReversed[URI]
+        for (const [key, value] of Object.entries(this._customPairs)) {
+            if (URI.startsWith(value)) return key + ":" + URI.substring(value.length)
+        }
+        return null
+    }
+
+    dispose() {
+        this.persistenceAdapter.events.removeEventListener("context-changed", this.update)
+    }
+
+    /**
      * Should be called to set the crate context up. Can be called multiple times without
      * creating a new instance.
      * @param crateContext The @context of the crate
      */
     private async update(crateContext: CrateContextType) {
+        if (JSON.stringify(this.raw) === JSON.stringify(crateContext)) return
+
         let tempContext = {}
         let tempCustomPairs: Record<string, string> = {}
         let tempSpecification = undefined
@@ -158,8 +215,9 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         this._events.emit("context-changed")
     }
 
-    static async newInstance(persistenceAdapter: IPersistenceAdapter, context: CrateContextType) {
+    static async newInstance(persistenceAdapter: IPersistenceAdapter) {
         const instance = new ContextServiceImpl(persistenceAdapter)
+        const context = await persistenceAdapter.getMetadataContext()
         await instance.update(context)
         return instance
     }
@@ -169,50 +227,5 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
             if (knownContext["@id"] === id) return knownContext
         }
         return undefined
-    }
-
-    /**
-     * Resolves an entity type or property in the current context
-     * Returns null on failure
-     * @param id Entity type of property name (e.g. "Organization", "follows", ...)
-     * @returns Full ID of the specified ID (e.g. "Organization" becomes "https://schema.org/Organization"). Can be used to query the SchemaGraph. Returns null on failure
-     */
-    resolve(id: string) {
-        if (id in this._context) {
-            return this._context[id]
-        } else if (/^.+:.+$/.test(id)) {
-            // Type has a prefix that we will try to resolve
-            const prefix = id.split(":")[0]
-            const suffix = id.split(":")[1]
-            const prefixContext = this._customPairs[prefix] ?? this._context[prefix]
-            if (prefixContext) {
-                return prefixContext + suffix
-            } else {
-                console.warn(
-                    `Found node with id ${id}, but prefix ${prefix} is not defined in the context`
-                )
-                return null
-            }
-        } else return null
-    }
-
-    /**
-     * This method effectively shortens the given URI using the @context of the crate.
-     * It is the reverse operation of {@link CrateContext.resolve}.
-     * @example
-     * reverse("https://schema.org/Organization") -> "Organization"
-     * reverse("https://myCustomUrl.org/v1/myProperty") -> "custom:myProperty" // when custom: "https://myCustomUrl.org/v1/" is defined in the context
-     * @param URI
-     */
-    reverse(URI: string) {
-        if (this._contextReversed[URI]) return this._contextReversed[URI]
-        for (const [key, value] of Object.entries(this._customPairs)) {
-            if (URI.startsWith(value)) return key + ":" + URI.substring(value.length)
-        }
-        return null
-    }
-
-    dispose() {
-        this.persistenceAdapter.events.removeEventListener("context-changed", this.update)
     }
 }
