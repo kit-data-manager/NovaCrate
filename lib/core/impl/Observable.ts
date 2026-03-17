@@ -3,7 +3,7 @@ import { IObservable } from "@/lib/core/IObservable"
 export class Observable<
     T extends Record<string, (...data: any[]) => void>
 > implements IObservable<T> {
-    private listeners: Map<keyof T, Set<(data: any) => void>> = new Map()
+    private listeners: Map<keyof T, Set<T[keyof T]>> = new Map()
 
     addEventListener<K extends keyof T>(event: K, listener: T[K]): () => void {
         let set = this.listeners.get(event)
@@ -27,10 +27,10 @@ export class Observable<
     }
 
     emit<K extends keyof T>(event: K, ...data: Parameters<T[K]>): void {
-        const set = this.listeners.get(event)
+        const set = this.listeners.get(event) as Set<T[K]> | undefined
         if (!set) return
         for (const listener of set) {
-            listener(data)
+            listener(...data)
         }
     }
 }

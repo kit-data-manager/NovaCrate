@@ -55,7 +55,7 @@ package core {
     IRepositoryService *-- "0..*" StoredCrate
     ICrateService *-- "0..1" IFileService
     IPersistenceService *-- "0..1" ICrateService
-    IPersistenceService *-- "1" IRepositoryService
+    IPersistenceService *-- "0..1" IRepositoryService
 }
 
 

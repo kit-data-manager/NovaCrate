@@ -186,9 +186,7 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
                             tempErrors.push(new Error(msg))
                         }
                     } else {
-                        const temp = this.context
-                        temp[key] = value
-                        tempContext = temp
+                        tempContext = { ...tempContext, [key]: value }
                         tempCustomPairs[key] = value
                     }
                 }
