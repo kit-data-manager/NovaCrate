@@ -1,5 +1,19 @@
 @startuml
 
+package ui {
+    component EditorPage
+    component EditorLayout
+    component CoreProvider
+
+    note right of CoreProvider
+        Orchestrates Core
+        and Persistence components
+    endnote
+
+    EditorLayout *-- EditorPage
+    CoreProvider <.. EditorLayout
+}
+
 package persistence <<unstable>> {
     component Persistence
 }
@@ -13,5 +27,8 @@ package core <<stable>> {
 
 Core --( IPersistenceService
 IPersistenceService -- Persistence
+
+Core <.. CoreProvider
+Persistence <.. CoreProvider
 
 @enduml
