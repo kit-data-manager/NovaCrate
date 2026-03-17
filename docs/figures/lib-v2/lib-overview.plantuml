@@ -7,11 +7,11 @@ package persistence <<unstable>> {
 
 package core <<stable>> {
     component Core
-    interface IPersistence
+    interface IPersistenceService
 }
 
 
-Core --( IPersistence
-IPersistence -- Persistence
+Core --( IPersistenceService
+IPersistenceService -- Persistence
 
 @enduml

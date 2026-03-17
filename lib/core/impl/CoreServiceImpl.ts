@@ -13,8 +13,8 @@ import { isDataEntity } from "@/lib/utils"
  * to IMetadataService and file operations to IFileService.
  */
 export class CoreServiceImpl implements ICoreService {
-    readonly metadata: IMetadataService
-    readonly context: IContextService
+    private readonly metadata: IMetadataService
+    private readonly context: IContextService
 
     private fileService: IFileService | null
     private removeFileServiceListener: (() => void) | null = null

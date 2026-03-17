@@ -1,13 +1,15 @@
 @startuml
 
 package core {
-    interface IPersistence
+    interface ICrateService
 
     interface ICoreService {
         addFileEntity()
         addFolderEntity()
         changeEntityIdentifier()
         deleteEntity()
+        getContextService()
+        getMetadataService()
     }
 
     interface IPersistenceAdapter {
@@ -17,7 +19,7 @@ package core {
         updateMetadataContext()
     }
 
-    ICoreService ..> IPersistence
+    ICoreService ..> ICrateService
     ICoreService *-- IContextService
     ICoreService *-- IMetadataService
 
@@ -51,7 +53,7 @@ package core {
 
     IPersistenceAdapter <.. IMetadataService
     IPersistenceAdapter <.. IContextService
-    IPersistenceAdapter ..> IPersistence
+    IPersistenceAdapter ..> ICrateService
 }
 
 @enduml

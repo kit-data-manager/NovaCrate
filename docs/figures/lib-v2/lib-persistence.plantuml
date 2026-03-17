@@ -1,11 +1,7 @@
 @startuml
 
 package core {
-    interface IPersistence
-}
-
-package persistence {
-    abstract PersistenceService {
+    interface IPersistenceService {
         + events
         getCrateId()
         canSetCrateId(): boolean
@@ -14,22 +10,14 @@ package persistence {
         getRepositoryService()
     }
 
-    IPersistence <|.. PersistenceService: <<implements>>
-
-    note right of PersistenceService::getCrateService()
-        invariant:
-        getCrateId() == null
-            implies getCrateService() == null
-    end note
-
-    abstract CrateService {
+    interface ICrateService {
         + events
         getMetadata()
         setMetadata()
         getFileService()
     }
 
-    interface FileService {
+    interface IFileService {
         + events
         getContentList()
         getInfo(path)
@@ -41,7 +29,8 @@ package persistence {
         delete(path)
         getStorageQuota()
     }
-    interface RepositoryService {
+
+    interface IRepositoryService {
         + events
         getCratesList()
         createCrateFromZip(zip)
@@ -57,10 +46,16 @@ package persistence {
         lastOpenedAt
     }
 
-RepositoryService *-- "0..*" StoredCrate
-    CrateService *-- "0..1" FileService
-    PersistenceService *-- "0..1" CrateService
-    PersistenceService *-- "0..1" RepositoryService
+    note right of IPersistenceService::getCrateService()
+        invariant:
+        getCrateId() == null
+            implies getCrateService() == null
+    end note
+
+    IRepositoryService *-- "0..*" StoredCrate
+    ICrateService *-- "0..1" IFileService
+    IPersistenceService *-- "0..1" ICrateService
+    IPersistenceService *-- "1" IRepositoryService
 }
 
 

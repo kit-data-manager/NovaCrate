@@ -180,6 +180,7 @@ export async function createCrateFromZip(zip: Blob) {
     const readDirResult = await fs.readDir(resolveCratePath(id))
     if (!readDirResult.isOk()) throw readDirResult.unwrapErr()
 
+    // TODO this doesnt seem to work properly. Maybe it needs an ending slash "/"?
     const ignore = ["__MACOSX", ".DS_Store"]
     const rawFiles = await collectAsyncIterator(readDirResult.unwrap())
 
