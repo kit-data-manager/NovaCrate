@@ -72,6 +72,7 @@ export class BrowserFileService implements IFileService {
     }
 
     async delete(path: string): Promise<void> {
+        // TODO emit delete event for all files that are recursively deleted on folder delete?
         const isFolder = path.endsWith("/")
         await this.worker.execute("deleteFileOrFolder", this.crateId, path)
         if (isFolder) {
