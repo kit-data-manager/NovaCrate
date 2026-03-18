@@ -1,4 +1,5 @@
 import { IObservable } from "@/lib/core/IObservable"
+import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { RO_CRATE_VERSION } from "@/lib/constants"
 
 export type IContextServiceEvents = {
@@ -44,4 +45,9 @@ export interface IContextService {
      * Emits `"context-changed"` via {@link IContextService.events}.
      */
     addCustomContextPair(prefix: string, url: string): void
+    /**
+     * Return the {@link IContextResolverService} for this context, which
+     * provides term resolution and reversal without mutation capabilities.
+     */
+    getResolver(): IContextResolverService
 }

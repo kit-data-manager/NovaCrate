@@ -138,6 +138,10 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         return null
     }
 
+    getResolver(): IContextResolverService {
+        return this
+    }
+
     dispose() {
         this.persistenceAdapter.events.removeEventListener("context-changed", this.update)
     }
