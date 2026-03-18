@@ -67,44 +67,51 @@ describe("BrowserCrateService", () => {
     })
 
     describe("setMetadata", () => {
-        it("should write metadata using executeTransfer with encoded data", async () => {
-            worker.executeTransfer.mockResolvedValue(undefined)
+        beforeEach(() => {
+            // updateFile triggers emitQuotaChanged — stub getStorageInfo to avoid warnings
+            worker.execute.mockImplementation(async (name: string) => {
+                if (name === "getStorageInfo") {
+                    return { usedSpace: 0, totalSpace: 1000, persistent: true }
+                }
+                return undefined
+            })
+        })
 
+        it("should write metadata via the file service using writeFile", async () => {
             await service.setMetadata(sampleMetadata)
 
-            expect(worker.executeTransfer).toHaveBeenCalledTimes(1)
+            expect(worker.execute).toHaveBeenCalledWith(
+                "writeFile",
+                TEST_CRATE_ID,
+                "ro-crate-metadata.json",
+                expect.any(Blob)
+            )
 
-            const [fnName, transferables, crateId, filePath, data] =
-                worker.executeTransfer.mock.calls[0]
-            expect(fnName).toBe("writeFile")
-            expect(crateId).toBe(TEST_CRATE_ID)
-            expect(filePath).toBe("ro-crate-metadata.json")
-            expect(data).toBeInstanceOf(Uint8Array)
-
-            // Verify the encoded data matches the original metadata
-            const decoded = new TextDecoder().decode(data)
-            expect(decoded).toBe(sampleMetadata)
-
-            // Verify transferables includes the buffer
-            expect(transferables).toHaveLength(1)
+            // Verify the Blob content matches the original metadata string
+            const blob: Blob = worker.execute.mock.calls.find(
+                ([fn]: [string]) => fn === "writeFile"
+            )[3]
+            expect(await blob.text()).toBe(sampleMetadata)
         })
 
         it("should emit metadata-changed event with the new metadata string", async () => {
-            worker.executeTransfer.mockResolvedValue(undefined)
-
             const listener = jest.fn()
             service.events.addEventListener("metadata-changed", listener)
 
             await service.setMetadata(sampleMetadata)
 
             expect(listener).toHaveBeenCalledWith(sampleMetadata)
+            expect(listener).toHaveBeenCalledTimes(1)
         })
 
         it("should emit metadata-changed after the write completes, not before", async () => {
             const callOrder: string[] = []
 
-            worker.executeTransfer.mockImplementation(async () => {
-                callOrder.push("write")
+            worker.execute.mockImplementation(async (name: string) => {
+                if (name === "writeFile") callOrder.push("write")
+                if (name === "getStorageInfo")
+                    return { usedSpace: 0, totalSpace: 1000, persistent: true }
+                return undefined
             })
 
             service.events.addEventListener("metadata-changed", () => {
@@ -114,6 +121,15 @@ describe("BrowserCrateService", () => {
             await service.setMetadata(sampleMetadata)
 
             expect(callOrder).toEqual(["write", "event"])
+        })
+
+        it("should not double-emit metadata-changed from the file-updated event", async () => {
+            const listener = jest.fn()
+            service.events.addEventListener("metadata-changed", listener)
+
+            await service.setMetadata(sampleMetadata)
+
+            expect(listener).toHaveBeenCalledTimes(1)
         })
     })
 

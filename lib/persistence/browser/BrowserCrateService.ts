@@ -11,6 +11,13 @@ const METADATA_FILE = "ro-crate-metadata.json"
 /**
  * Browser-based crate service backed by OPFS.
  * Manages metadata read/write for a single crate and owns its file service.
+ *
+ * Metadata I/O is routed through {@link BrowserFileService} so that all file
+ * access goes through a single code path. External writes to
+ * `ro-crate-metadata.json` (e.g. from the JSON editor) are detected by
+ * listening to the `"file-updated"` event on the file service and re-emitted
+ * as `"metadata-changed"` so that {@link IPersistenceAdapter} can propagate
+ * the change into the core layer.
  */
 export class BrowserCrateService implements ICrateService {
     private _events = new Observable<ICrateServiceEvents>()
@@ -18,28 +25,29 @@ export class BrowserCrateService implements ICrateService {
 
     private fileService: BrowserFileService
 
-    constructor(
-        private crateId: string,
-        private worker: FunctionWorker<typeof opfsFunctions>
-    ) {
+    constructor(crateId: string, worker: FunctionWorker<typeof opfsFunctions>) {
         this.fileService = new BrowserFileService(crateId, worker)
+        this.fileService.events.addEventListener("file-updated", this.onFileUpdated)
+    }
+
+    private onFileUpdated = async (path: string) => {
+        if (path !== METADATA_FILE) return
+        const metadata = await this.getMetadata()
+        this._events.emit("metadata-changed", metadata)
     }
 
     async getMetadata(): Promise<string> {
-        const blob = await this.worker.execute("readFile", this.crateId, METADATA_FILE)
+        // TODO cache
+        const blob = await this.fileService.getFile(METADATA_FILE)
         return await blob.text()
     }
 
     async setMetadata(metadata: string): Promise<void> {
-        const data = new TextEncoder().encode(metadata)
-        await this.worker.executeTransfer(
-            "writeFile",
-            [data.buffer],
-            this.crateId,
+        await this.fileService.updateFile(
             METADATA_FILE,
-            data
+            new Blob([metadata], { type: "application/json" })
         )
-        this._events.emit("metadata-changed", metadata)
+        // Now we rely on the file service to emit a "file-update" event and handle that in onFileUpdated
     }
 
     getFileService(): IFileService | null {
