@@ -6,4 +6,7 @@ export interface IFileInfo {
     type: "file" | "directory"
     /** The entry's name (not a full path — just the final path component). */
     name: string
+    /** Full path inside the crate to this file */
+    /** TODO: added path property */
+    path: string
 }

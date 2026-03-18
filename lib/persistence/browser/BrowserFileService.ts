@@ -29,14 +29,15 @@ export class BrowserFileService implements IFileService {
             const name = normalizedPath.split("/").pop() ?? normalizedPath
             return {
                 type: isDirectory ? "directory" : "file",
-                name: name
+                name: name,
+                path
             } satisfies IFileInfo
         })
     }
 
     async getInfo(path: string): Promise<IFileInfo> {
         const info = await this.worker.execute("getFileInfo", this.crateId, path)
-        return { type: info.type, name: info.name }
+        return { type: info.type, name: info.name, path }
     }
 
     async getFile(path: string): Promise<Blob> {

@@ -35,8 +35,8 @@ describe("BrowserFileService", () => {
 
             expect(worker.execute).toHaveBeenCalledWith("getCrateDirContents", TEST_CRATE_ID)
             expect(result).toEqual([
-                { type: "file", name: "file1.txt" },
-                { type: "file", name: "file2.json" }
+                { type: "file", name: "file1.txt", path: "file1.txt" },
+                { type: "file", name: "file2.json", path: "file2.json" }
             ])
         })
 
@@ -46,8 +46,8 @@ describe("BrowserFileService", () => {
             const result = await service.getContentList()
 
             expect(result).toEqual([
-                { type: "directory", name: "images" },
-                { type: "directory", name: "data" }
+                { type: "directory", name: "images", path: "images/" },
+                { type: "directory", name: "data", path: "data/" }
             ])
         })
 
@@ -62,10 +62,10 @@ describe("BrowserFileService", () => {
             const result = await service.getContentList()
 
             expect(result).toEqual([
-                { type: "file", name: "readme.md" },
-                { type: "directory", name: "images" },
-                { type: "file", name: "measurements.csv" },
-                { type: "directory", name: "components" }
+                { type: "file", name: "readme.md", path: "readme.md" },
+                { type: "directory", name: "images", path: "images/" },
+                { type: "file", name: "measurements.csv", path: "data/measurements.csv" },
+                { type: "directory", name: "components", path: "src/components/" }
             ])
         })
 
@@ -83,8 +83,8 @@ describe("BrowserFileService", () => {
             const result = await service.getContentList()
 
             expect(result).toEqual([
-                { type: "file", name: "file.txt" },
-                { type: "directory", name: "folder" }
+                { type: "file", name: "file.txt", path: "deep/nested/file.txt" },
+                { type: "directory", name: "folder", path: "deep/nested/folder/" }
             ])
         })
     })
@@ -96,7 +96,7 @@ describe("BrowserFileService", () => {
             const result = await service.getInfo("test.txt")
 
             expect(worker.execute).toHaveBeenCalledWith("getFileInfo", TEST_CRATE_ID, "test.txt")
-            expect(result).toEqual({ type: "file", name: "test.txt" })
+            expect(result).toEqual({ type: "file", name: "test.txt", path: "test.txt" })
         })
 
         it("should return directory info", async () => {
@@ -104,7 +104,7 @@ describe("BrowserFileService", () => {
 
             const result = await service.getInfo("images/")
 
-            expect(result).toEqual({ type: "directory", name: "images" })
+            expect(result).toEqual({ type: "directory", name: "images", path: "images/" })
         })
     })
 

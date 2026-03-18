@@ -35,7 +35,7 @@ function createMockFileService(): IFileService {
     return {
         events,
         getContentList: jest.fn(async () => []),
-        getInfo: jest.fn(async () => ({ type: "file" as const, name: "test" })),
+        getInfo: jest.fn(async () => ({ type: "file" as const, name: "test", path: "test" })),
         getFile: jest.fn(async () => new Blob()),
         addFile: jest.fn(async () => {}),
         addFolder: jest.fn(async () => {}),
