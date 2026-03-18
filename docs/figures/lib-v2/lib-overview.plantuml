@@ -4,31 +4,52 @@ package ui {
     component EditorPage
     component EditorLayout
     component CoreProvider
-
-    note right of CoreProvider
-        Orchestrates Core
-        and Persistence components
-    endnote
+    component PersistenceProvider
+    component AppLayout
+    component MainMenuPage
 
     EditorLayout *-- EditorPage
     CoreProvider <.. EditorLayout
+
+    AppLayout *-- MainMenuPage
+    PersistenceProvider <.. AppLayout
+
+    AppLayout *-- EditorLayout
 }
 
 package persistence <<unstable>> {
-    component Persistence
+    component ConcretePersistenceImpl
 }
 
+note top of persistence
+    Can be hot-swapped during runtime
+    depending on the selected backend
+endnote
 
 package core <<stable>> {
-    component Core
+    component CoreServiceImpl
+
+    note top
+        Only available in-editor
+    endnote
+
+    interface ICrateService
     interface IPersistenceService
+    interface ICoreService
+
+    IPersistenceService *-- ICrateService
+    CoreServiceImpl -- ICoreService
 }
 
 
-Core --( IPersistenceService
-IPersistenceService -- Persistence
+CoreServiceImpl --( ICrateService
+IPersistenceService -- ConcretePersistenceImpl
 
-Core <.. CoreProvider
-Persistence <.. CoreProvider
+PersistenceProvider --( IPersistenceService
+
+ICoreService )-- CoreProvider
+
+note "Everything depends on core" as N1
+N1 .. core
 
 @enduml

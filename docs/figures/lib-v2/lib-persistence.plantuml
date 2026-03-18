@@ -18,6 +18,16 @@ package core {
         getFileService()
     }
 
+    note as N1
+        if file service is available, this
+        method must call file service methods.
+        Otherwise, it is responsible for
+        providing metadata without a file service
+    endnote
+
+    N1 .. ICrateService::setMetadata
+    N1 .. ICrateService::getMetadata
+
     interface IFileService {
         + events
         getContentList()
