@@ -40,12 +40,12 @@ export interface IContextService {
      * Remove a custom context pair by its prefix key.
      * Emits `"context-changed"` via {@link IContextService.events}.
      */
-    removeCustomContextPair(prefix: string): void
+    removeCustomContextPair(prefix: string): Promise<void>
     /**
      * Add (or overwrite) a custom context pair mapping `prefix` to `url`.
      * Emits `"context-changed"` via {@link IContextService.events}.
      */
-    addCustomContextPair(prefix: string, url: string): void
+    addCustomContextPair(prefix: string, url: string): Promise<void>
     /**
      * Return the raw `@context` value as it was last loaded from the crate
      * metadata. Returns `undefined` only if the context has never been loaded.

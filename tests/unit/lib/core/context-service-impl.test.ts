@@ -279,6 +279,11 @@ describe("ContextServiceImpl", () => {
             await service.addCustomContextPair("ex", "https://example.org/")
 
             expect(service.customPairs).toEqual({ ex: "https://example.org/" })
+            expect(service.specification).toBe(RO_CRATE_VERSION.V1_1_3)
+            expect(service.getRaw()).toEqual({
+                "@vocab": "https://w3id.org/ro/crate/1.1/context",
+                ex: "https://example.org/"
+            })
         })
 
         it("should make the custom prefix resolvable", async () => {
@@ -326,7 +331,11 @@ describe("ContextServiceImpl", () => {
 
             await service.removeCustomContextPair("ex")
 
-            expect(service.customPairs).not.toHaveProperty("ex")
+            expect(Object.keys(service.customPairs)).toHaveLength(0)
+            expect(service.specification).toBe(RO_CRATE_VERSION.V1_1_3)
+            expect(service.getRaw()).toEqual({
+                "@vocab": "https://w3id.org/ro/crate/1.1/context"
+            })
         })
 
         it("should emit context-changed event", async () => {

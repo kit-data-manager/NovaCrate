@@ -31,6 +31,7 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
     private _contextReversed: Record<string, string> = {}
     private _customPairs: Record<string, string> = {}
     private _specification: RO_CRATE_VERSION | undefined = undefined
+    private _specificationUrl: string | undefined = undefined
     private _usingFallback = false
     private _errors: unknown[] = []
     private raw?: CrateContextType
@@ -80,7 +81,7 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
     async addCustomContextPair(prefix: string, url: string): Promise<void> {
         this._customPairs[prefix] = url
         const updatedContext = {
-            "@vocab": this.specification,
+            "@vocab": this._specificationUrl,
             ...this.customPairs
         } as Record<string, string>
         this.raw = updatedContext
@@ -91,7 +92,7 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
     async removeCustomContextPair(prefix: string): Promise<void> {
         delete this._customPairs[prefix]
         const updatedContext = {
-            "@vocab": this.specification,
+            "@vocab": this._specificationUrl,
             ...this.customPairs
         } as Record<string, string>
         this.raw = updatedContext
@@ -165,6 +166,7 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         let tempContext = {}
         let tempCustomPairs: Record<string, string> = {}
         let tempSpecification = undefined
+        let tempSpecificationUrl = undefined
         let tempUsingFallback = false
         let tempErrors = []
         let tempRaw = crateContext
@@ -178,6 +180,7 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
                 if (known) {
                     const { specification, data } = await this.loadKnownContext(known)
                     tempSpecification = specification
+                    tempSpecificationUrl = known["@id"]
                     tempContext = { ...tempContext, ...data }
                 } else {
                     const msg = `Cannot load schema ${entry} without prefix. Please specify the schema as a custom context entry with a prefix.`
@@ -191,6 +194,7 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
                         if (known) {
                             const { specification, data } = await this.loadKnownContext(known)
                             tempSpecification = specification
+                            tempSpecificationUrl = known["@id"]
                             tempContext = { ...tempContext, ...data }
                         } else {
                             const msg = `Cannot load schema ${value} as @vocab. Only known specifications are supported. Please specify the schema as a custom context entry with a prefix.`
@@ -209,6 +213,7 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
             tempUsingFallback = true
             const { specification, data } = await this.loadKnownContext(fallback)
             tempSpecification = specification
+            tempSpecificationUrl = fallback["@id"]
             tempContext = { ...tempContext, ...data }
 
             const msg = `Could not determine the RO-Crate specification version. Using fallback context: ${fallback.version}`
@@ -219,6 +224,7 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         this.context = tempContext
         this._customPairs = tempCustomPairs
         this._specification = tempSpecification
+        this._specificationUrl = tempSpecificationUrl
         this._usingFallback = tempUsingFallback
         this._errors = tempErrors
         this.raw = tempRaw

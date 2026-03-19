@@ -43,6 +43,7 @@ import Image from "next/image"
 import { ChangelogModal } from "@/components/changelog-modal"
 import { Geist } from "next/font/google"
 import { addBasePath } from "next/dist/client/add-base-path"
+import { usePersistence } from "@/components/providers/persistence-provider"
 
 const geist = Geist({ subsets: ["latin"] })
 
@@ -65,10 +66,12 @@ export default function EditorLandingPage() {
     const demoLoader = useDemoCrateLoader()
     const [demoLoaderError, setDemoLoaderError] = useState<unknown>()
     const [demoLoading, setDemoLoading] = useState(false)
+    const persistence = usePersistence()
 
     useEffect(() => {
         console.debug("Unsetting crate ID")
-        unsetCrateId()
+        console.warn("Want to unset crate id, but disabled for testing")
+        // unsetCrateId()
     }, [unsetCrateId])
 
     const [deleteCrateModalState, setDeleteCrateModalState] = useState({
@@ -166,11 +169,12 @@ export default function EditorLandingPage() {
             setTimeout(() => {
                 if (id !== "undefined") {
                     setCrateId(id)
+                    if (persistence.canSetCrateId()) persistence.setCrateId(id)
                     router.push(`/editor/full/entities`)
                 }
             }, 500)
         },
-        [fadeOutAnimation, onCreateCrateModalOpenChange, router, setCrateId]
+        [fadeOutAnimation, onCreateCrateModalOpenChange, persistence, router, setCrateId]
     )
 
     const storedCratesResolver = useCallback(async () => {

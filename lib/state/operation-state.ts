@@ -36,6 +36,17 @@ export interface OperationState {
      */
     clearSaveError(id?: string): void
 
+    // ── Load errors ───────────────────────────────────────────────────
+
+    /**
+     * Error encountered while loading crate metadata (e.g. during initial
+     * sync in `useCoreSync`). Replaces the legacy SWR `error` field.
+     * `undefined` when no error has occurred.
+     */
+    loadError: unknown
+    /** Set or clear the load error. */
+    setLoadError(error?: unknown): void
+
     // ── Persistence health ──────────────────────────────────────────────
 
     /**
@@ -74,6 +85,13 @@ export const operationState = createWithEqualityFn<OperationState>()(
                     } else {
                         state.saveErrors.clear()
                     }
+                })
+            },
+
+            loadError: undefined,
+            setLoadError(error?: unknown) {
+                setState((state) => {
+                    state.loadError = error
                 })
             },
 

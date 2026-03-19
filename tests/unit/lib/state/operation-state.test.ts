@@ -8,6 +8,7 @@ function resetStore() {
     operationState.setState({
         isSaving: false,
         saveErrors: new Map(),
+        loadError: undefined,
         healthStatus: "unknown",
         healthError: undefined
     })
@@ -86,6 +87,24 @@ describe("operationState", () => {
             operationState.getState().addSaveError("#a", "error A")
             operationState.getState().clearSaveError("#nonexistent")
             expect(operationState.getState().saveErrors.size).toBe(1)
+        })
+    })
+
+    describe("loadError", () => {
+        it("should default to undefined", () => {
+            expect(operationState.getState().loadError).toBeUndefined()
+        })
+
+        it("should set a load error", () => {
+            const err = new Error("metadata fetch failed")
+            operationState.getState().setLoadError(err)
+            expect(operationState.getState().loadError).toBe(err)
+        })
+
+        it("should clear the load error when called without arguments", () => {
+            operationState.getState().setLoadError(new Error("failed"))
+            operationState.getState().setLoadError()
+            expect(operationState.getState().loadError).toBeUndefined()
         })
     })
 
