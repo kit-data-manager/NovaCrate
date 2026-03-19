@@ -4,9 +4,9 @@ import { IObservable } from "@/lib/core/IObservable"
 
 export type IFileServiceEvents = {
     /** Fired after a new file is created at `path`. */
-    "file-created": (path: string) => void
+    "file-created": (path: string, content: Blob) => void
     /** Fired after the contents of an existing file at `path` are replaced. */
-    "file-updated": (path: string) => void
+    "file-updated": (path: string, newContent: Blob) => void
     /** Fired after a file at `path` is removed. */
     "file-deleted": (path: string) => void
     /** Fired after a file is renamed/moved; `path` is the new destination. */

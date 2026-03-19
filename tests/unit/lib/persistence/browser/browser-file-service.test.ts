@@ -1,7 +1,6 @@
 import { BrowserFileService } from "@/lib/persistence/browser/BrowserFileService"
 import { FunctionWorker } from "@/lib/function-worker"
 import { opfsFunctions } from "@/lib/opfs-worker/functions"
-import { IStorageQuota } from "@/lib/core/persistence/IStorageQuota"
 
 type MockWorker = {
     [K in keyof FunctionWorker<typeof opfsFunctions>]: jest.Mock
@@ -144,13 +143,14 @@ describe("BrowserFileService", () => {
             )
         })
 
-        it("should emit file-created event with the path", async () => {
+        it("should emit file-created event with the path and the exact same blob", async () => {
             const listener = jest.fn()
             service.events.addEventListener("file-created", listener)
 
-            await service.addFile("test.txt", new Blob(["hello"]))
+            const blob = new Blob(["hello"])
+            await service.addFile("test.txt", blob)
 
-            expect(listener).toHaveBeenCalledWith("test.txt")
+            expect(listener).toHaveBeenCalledWith("test.txt", blob)
         })
 
         it("should emit quota-changed event after adding", async () => {
@@ -220,13 +220,14 @@ describe("BrowserFileService", () => {
             )
         })
 
-        it("should emit file-updated event with the path", async () => {
+        it("should emit file-updated event with the path and the exact same blob", async () => {
             const listener = jest.fn()
             service.events.addEventListener("file-updated", listener)
 
-            await service.updateFile("test.txt", new Blob(["updated"]))
+            const blob = new Blob(["updated"])
+            await service.updateFile("test.txt", blob)
 
-            expect(listener).toHaveBeenCalledWith("test.txt")
+            expect(listener).toHaveBeenCalledWith("test.txt", blob)
         })
 
         it("should emit quota-changed event after updating", async () => {

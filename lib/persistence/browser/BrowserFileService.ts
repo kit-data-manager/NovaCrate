@@ -46,7 +46,7 @@ export class BrowserFileService implements IFileService {
 
     async addFile(path: string, content: Blob): Promise<void> {
         await this.worker.execute("writeFile", this.crateId, path, content)
-        this._events.emit("file-created", path)
+        this._events.emit("file-created", path, content)
         await this.emitQuotaChanged()
     }
 
@@ -57,7 +57,7 @@ export class BrowserFileService implements IFileService {
 
     async updateFile(path: string, content: Blob): Promise<void> {
         await this.worker.execute("writeFile", this.crateId, path, content)
-        this._events.emit("file-updated", path)
+        this._events.emit("file-updated", path, content)
         await this.emitQuotaChanged()
     }
 

@@ -30,10 +30,11 @@ export class BrowserCrateService implements ICrateService {
         this.fileService.events.addEventListener("file-updated", this.onFileUpdated)
     }
 
-    private onFileUpdated = async (path: string) => {
-        if (path !== METADATA_FILE) return
-        const metadata = await this.getMetadata()
-        this._events.emit("metadata-changed", metadata)
+    private onFileUpdated = async (path: string, content: Blob) => {
+        if (path === METADATA_FILE) {
+            const metadata = await content.text()
+            this._events.emit("metadata-changed", metadata)
+        }
     }
 
     async getMetadata(): Promise<string> {
