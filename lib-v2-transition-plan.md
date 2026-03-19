@@ -9,10 +9,10 @@ The editor is migrating from a monolithic `CrateDataProvider` / `CrateServiceAda
 | WP1          | **Done** | Fill missing capabilities in persistence/core layers |
 | WP2          | **Done** | Build the editor state sync bridge                   |
 | WP3          | **Done** | Build the operation/UI state layer                   |
-| WP4          | Pending  | Build crate ID management / localStorage persistence |
+| WP4          | **Done** | Build crate ID management / localStorage persistence |
 | WP5          | Pending  | Migrate consumers from CrateDataContext to new hooks |
 | WP6          | Pending  | Remove legacy code                                   |
-| WP7          | Pending  | Validation system adaptation                         |
+| WP7          | Pending  | Validation system adaptation (folded into WP5)       |
 
 ---
 
@@ -150,86 +150,236 @@ Polls `persistence.healthCheck()` every 10 seconds and updates `operationState`.
 
 ---
 
-## WP4: Build crate ID management / localStorage persistence
+## WP4: Build crate ID management / localStorage persistence (DONE)
 
-**Goal**: Replace `CrateDataProvider`'s localStorage-based crate ID persistence.
+### What was done
 
-**Tasks**:
+**New: `useCrateIdPersistence` hook (`lib/use-crate-id-persistence.ts`):**
 
-1. Move crate ID localStorage persistence into `PersistenceProvider`.
-2. On mount, restore from localStorage → `setCrateId`.
-3. Route main menu's `setCrateId`/`unsetCrateId` to `persistence.setCrateId()`.
+Bridges `IPersistenceService` and `localStorage` for crate ID persistence across page reloads.
+
+- On mount: if `persistence.canSetCrateId()` is `true`, reads `localStorage["crate-id"]` and calls `persistence.setCrateId(savedId)` to restore the last open crate.
+- Subscribes to `persistence.events["crate-id-changed"]`: writes the new crate ID to `localStorage`, or removes it when the crate is closed (`null`).
+- Respects `canSetCrateId()`: if `false`, skips the localStorage restore (the persistence implementation controls the crate ID).
+- Uses the same localStorage key `"crate-id"` for backward compatibility with the legacy `CrateDataProvider` during the coexistence period.
+
+**Provider mounting (`app/editor/layout.tsx` and `app/editor/full/layout.tsx`):**
+
+Both new providers are now mounted in the app tree alongside the legacy layer:
+
+- `PersistenceProvider` wraps the legacy `CrateDataProvider` in `app/editor/layout.tsx`. Available to both the landing page and the editor.
+- `CoreProvider` wraps the editor content in `app/editor/full/layout.tsx`. Creates the core service when a crate is open, redirects to `/editor` when no crate is selected.
+- `CrateIdPersistence` (render-null component) calls `useCrateIdPersistence(persistence)` inside the editor layout. Only runs for `/editor/full/*` routes — not on the landing page — so navigating to the main menu does not auto-open a crate.
+
+**Unit tests (`tests/unit/lib/use-crate-id-persistence.test.ts`):**
+
+- 7 tests covering: restore from localStorage, empty localStorage, canSetCrateId=false, persist on crate-id-changed, remove on null, successive changes, cleanup on unmount.
+
+### Coexistence with legacy provider
+
+Both crate ID systems run simultaneously:
+
+1. **Legacy path** (unchanged): Landing page calls `setCrateId(id)` on `CrateDataContext` → writes to localStorage → triggers SWR fetch.
+2. **New path** (WP4): `CrateIdPersistence` reads localStorage on mount → calls `persistence.setCrateId(id)` → `CoreProvider` creates the core service → `useCoreSync` populates `editorState`.
+
+Both paths write to `editorState` via their respective sync mechanisms. The three-way merge in `useCoreSync` handles any ordering differences. Navigating to the landing page unmounts `CrateIdPersistence` and the legacy provider's `unsetCrateId()` clears localStorage.
 
 ---
 
 ## WP5: Migrate consumers from CrateDataContext to new hooks
 
-**Goal**: Replace all `useContext(CrateDataContext)` usages. Subdivided by category.
+**Goal**: Replace all `useContext(CrateDataContext)` usages (~30 unique consumer files). Subdivided by category and executed in the order below.
 
-**Prerequisites**: WP2 (sync bridge), WP3 (operation state), and WP4 (crate ID management) provide all the infrastructure needed. The mapping from legacy to new APIs is:
+**Prerequisites**: WP2 (sync bridge), WP3 (operation state), and WP4 (crate ID management) provide all the infrastructure needed.
 
-| Legacy (`CrateDataContext`)          | New API                                                                                          |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| `saveEntity(entity)`                 | `useCore().getMetadataService().updateEntity(id, entity)` + `operationState` for isSaving/errors |
-| `deleteEntity(id)`                   | `useCore().deleteEntity(id)` + `operationState` for errors                                       |
-| `changeEntityId(oldId, newId)`       | `useCore().changeEntityIdentifier(oldId, newId)` + `operationState` for errors                   |
-| `createFileEntity(file, entity)`     | `useCore().addFileEntity(file, entity)` + `operationState` for isSaving/errors                   |
-| `createFolderEntity(entity, files?)` | `useCore().addFolderEntity(entity)` + looped `addFileEntity` for files                           |
-| `saveAllEntities(entities)`          | Loop `updateEntity` / `addEntity` calls on `IMetadataService` (batch method TBD)                 |
-| `isSaving`                           | `useOperationState(s => s.isSaving)`                                                             |
-| `saveError`                          | `useOperationState(s => s.saveErrors)`                                                           |
-| `clearSaveError(id?)`                | `useOperationState(s => s.clearSaveError)` (same signature)                                      |
-| `healthTestError`                    | `useOperationState(s => s.healthError)`                                                          |
-| `crateDataIsLoading`                 | Replaced by `useCoreSync` initial population — entities are available once `CoreProvider` mounts |
-| `serviceProvider.getFiles()`         | `usePersistence().getCrateService()?.getFileService()`                                           |
-| `serviceProvider.getCrateAs()`       | `downloadCrateAs()` from `lib/core/util.ts`                                                      |
-| `serviceProvider.getStorageInfo()`   | Direct OPFS quota API or `IFileService` events                                                   |
-| `addCustomContextPair(p, u)`         | `useCore().getContextService().addCustomContextPair(p, u)`                                       |
-| `removeCustomContextPair(p)`         | `useCore().getContextService().removeCustomContextPair(p)`                                       |
-| `getCrateRaw()`                      | `usePersistence().getCrateService()?.getMetadata()`                                              |
-| `saveRoCrateMetadataJSON(json)`      | `usePersistence().getCrateService()?.setMetadata(json)`                                          |
-| `crateId`                            | `usePersistence().getCrateId()` (after WP4 wires localStorage)                                   |
-| `setCrateId(id)` / `unsetCrateId()`  | `usePersistence().setCrateId(id)` / `usePersistence().setCrateId(null)`                          |
+### Legacy-to-new API mapping
 
-### WP5a: Mutation consumers (saveEntity, deleteEntity, changeEntityId, createFileEntity, etc.)
+| Legacy (`CrateDataContext`)                     | New API                                                                                          |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `saveEntity(entity)`                            | `useCore().getMetadataService().updateEntity(entity)` or `.addEntity(entity)` + `operationState` |
+| `deleteEntity(id)`                              | `useCore().deleteEntity(id)` + `operationState` for errors                                       |
+| `changeEntityId(oldId, newId)`                  | `useCore().changeEntityIdentifier(oldId, newId)` + `operationState` for errors                   |
+| `createFileEntity(file, entity)`                | `useCore().addFileEntity(file, entity)` + `operationState` for isSaving/errors                   |
+| `createFolderEntity(entity, files?)`            | `useCore().addFolderEntity(entity)` + looped `addFileEntity` for files                           |
+| `saveAllEntities(entities)`                     | Loop `updateEntity` / `addEntity` calls on `IMetadataService` (batch method TBD)                 |
+| `isSaving`                                      | `useOperationState(s => s.isSaving)`                                                             |
+| `saveError`                                     | `useOperationState(s => s.saveErrors)`                                                           |
+| `clearSaveError(id?)`                           | `useOperationState(s => s.clearSaveError)` (same signature)                                      |
+| `healthTestError`                               | `useOperationState(s => s.healthError)`                                                          |
+| `error` (SWR fetch error)                       | `useOperationState(s => s.loadError)`                                                            |
+| `crateDataIsLoading`                            | Dropped — entities are populated synchronously by `useCoreSync` on `CoreProvider` mount          |
+| `crateData`                                     | `useEditorState(s => s.entities)` or read from persistence for raw metadata                      |
+| `reload()`                                      | Dropped — event-driven sync makes manual reload redundant                                        |
+| `serviceProvider.getCrateFilesList()`           | `usePersistence().getCrateService()?.getFileService()?.getContentList()`                         |
+| `serviceProvider.downloadFile()`                | `getFile()` + `downloadBlob()` from `lib/core/util.ts`                                           |
+| `serviceProvider.getCrateFileURL()`             | `getFileAsURL()` from `lib/core/util.ts`                                                         |
+| `serviceProvider.getCrateFileInfo()`            | `usePersistence().getCrateService()?.getFileService()?.getInfo(path)`                            |
+| `serviceProvider.renameFile()`                  | `usePersistence().getCrateService()?.getFileService()?.move(src, dest)`                          |
+| `serviceProvider.getCrate()`                    | `usePersistence().getCrateService()?.getMetadata()` (raw JSON) or `editorState.entities`         |
+| `serviceProvider.getCrateRaw()`                 | `usePersistence().getCrateService()?.getMetadata()`                                              |
+| `serviceProvider.getCrateAs()`                  | `downloadCrateAs()` from `lib/core/util.ts`                                                      |
+| `serviceProvider.downloadCrateZip()`            | `downloadCrateAs(repo, crateId, "zip", fileName)` from `lib/core/util.ts`                        |
+| `serviceProvider.downloadCrateEln()`            | `downloadCrateAs(repo, crateId, "eln", fileName)` from `lib/core/util.ts`                        |
+| `serviceProvider.downloadRoCrateMetadataJSON()` | `downloadCrateAs(repo, crateId, "standalone-json", fileName)`                                    |
+| `serviceProvider.getStorageInfo()`              | Direct OPFS quota API or `IFileService` quota events                                             |
+| `serviceProvider.createCrate()`                 | `new CrateFactory(persistence).createEmptyCrate(name, description)`                              |
+| `serviceProvider.createCrateFromFile()`         | `new CrateFactory(persistence).createCrateFromFile(file)`                                        |
+| `serviceProvider.createCrateFromFiles()`        | `new CrateFactory(persistence).createCrateFromFiles(name, desc, files, progress?)`               |
+| `serviceProvider.createCrateFromCrateZip()`     | `persistence.getRepositoryService()?.createCrateFromZip(zip)`                                    |
+| `serviceProvider.duplicateCrate()`              | `new CrateFactory(persistence).duplicateCrate(crateId, newName?)`                                |
+| `serviceProvider.deleteCrate()`                 | `persistence.getRepositoryService()?.deleteCrate(crateId)`                                       |
+| `serviceProvider.getStoredCrateIds()`           | `persistence.getRepositoryService()?.getCratesList()`                                            |
+| `serviceProvider.healthCheck()`                 | `persistence.healthCheck()` (already handled by `useHealthCheck`)                                |
+| `saveRoCrateMetadataJSON(json)`                 | `usePersistence().getCrateService()?.setMetadata(json)`                                          |
+| `addCustomContextPair(p, u)`                    | `useCore().getContextService().addCustomContextPair(p, u)`                                       |
+| `removeCustomContextPair(p)`                    | `useCore().getContextService().removeCustomContextPair(p)`                                       |
+| `crateId`                                       | `usePersistence().getCrateId()`                                                                  |
+| `setCrateId(id)` / `unsetCrateId()`             | `usePersistence().setCrateId(id)` / `usePersistence().setCrateId(null)`                          |
 
-~10 components including: `global-modals-provider`, `entity-context-menu`, `entity-actions`, `save-entity-changes-modal`, `save-as-modal`, `delete-entity-modal`, `rename-entity-modal`, `multi-rename-modal`, `create-entity-modal`, `default-actions`, `hooks.ts`
+### Execution order
 
-**Migration pattern** for each mutation consumer:
+Phases are ordered from smallest/most self-contained to largest/most interleaved. Many files appear in multiple categories but are migrated once, covering all their legacy usages.
 
-1. Replace `useContext(CrateDataContext)` with `useCore()` + `useOperationState()`.
-2. Wrap core service calls in try/catch that manages `setIsSaving(true/false)` and `addSaveError(id, e)` / `clearSaveError(id)`.
-3. On success, clear the entity's save error (if any).
+### Design decisions (resolved)
 
-**Open items to discuss during WP5a:**
+- **`crateData` reconstruction**: When a full `ICrate` object is needed (e.g. `generateCratePreview` in `default-actions.tsx`), read raw metadata from `persistence.getCrateService()?.getMetadata()` and parse it. This is more correct than reconstructing from `editorState` since it preserves the exact serialized form.
+- **`reload()` action (Cmd+R)**: Dropped. The event-driven sync in the new architecture makes manual reload redundant. Can be re-added later if needed.
+- **`error` field (SWR fetch error)**: Add `loadError: unknown` / `setLoadError(error?)` to `operationState`. Set by `useCoreSync` if metadata loading fails on mount. Components that displayed the legacy `error` read `useOperationState(s => s.loadError)`.
 
-- `CoreServiceImpl.addFileEntity` does not pass an `overwrite` parameter through to `IMetadataService.addEntity`. The underlying method supports it — this is a one-line fix.
-- Adding a folder with files + progress to an already-open crate (`createFolderEntity` multi-file variant) has no single convenience method. It is composable from `addFolderEntity` + looped `addFileEntity`, but the progress callback and error aggregation must be built by the caller. Consider adding a convenience method to `ICoreService`.
-- `saveAllEntities` has no single-call batch equivalent. It can be composed by looping `updateEntity`/`addEntity`, but each call triggers a separate metadata write. Consider a batch method on `IMetadataService` if performance is an issue.
+### Pre-requisite: Add `loadError` to `operationState`
 
-### WP5b: Status/loading consumers (crateDataIsLoading, isSaving, saveError, etc.)
+Before migrating consumers, add `loadError` and `setLoadError` to the `operationState` Zustand store. This replaces the legacy SWR `error` field (a data-fetching error distinct from per-entity `saveErrors` and worker `healthError`).
 
-~7 components including: `nav-header`, `entity-editor`, `entity-graph`, `entity-editor-tabs`, `entity-browser-content`, `context`, `crate-validation-supervisor`
+**Files**: `lib/state/operation-state.ts`, `tests/unit/lib/state/operation-state.test.ts`
 
-**Migration pattern**: Replace `useContext(CrateDataContext).isSaving` with `useOperationState(s => s.isSaving)`, `saveError` with `saveErrors`, `clearSaveError` with `clearSaveError` (same signature), `healthTestError` with `healthError`. The `crateDataIsLoading` flag is no longer needed — entities are populated synchronously by `useCoreSync` on `CoreProvider` mount.
+---
 
-### WP5c: serviceProvider direct-access consumers
+### Phase 1: WP5d — Context consumers (1 file)
 
-~14 components accessing file operations, crate CRUD, exports, storage info, health checks.
+| File                                  | Legacy fields                                                           | New API                                            |
+| ------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------- |
+| `components/context/custom-pairs.tsx` | `addCustomContextPair`, `removeCustomContextPair`, `crateDataIsLoading` | `useCore().getContextService()`, drop loading flag |
 
-**Migration pattern**: Replace `useContext(CrateDataContext).serviceProvider` with `usePersistence()` and `useCore()`. File operations go through `usePersistence().getCrateService()?.getFileService()`. Crate CRUD and exports use `CrateFactory` and `downloadCrateAs()` from `lib/core/util.ts`.
+Trivial swap — remove `useContext(CrateDataContext)`, add `useCore()`.
 
-### WP5d: Context consumers (addCustomContextPair, removeCustomContextPair)
+---
 
-`custom-pairs.tsx` → `useCore().getContextService()`
+### Phase 2: WP5e — JSON editor (1 file)
 
-### WP5e: JSON editor (saveRoCrateMetadataJSON, getCrateRaw)
+| File                                   | Legacy fields                                                                                  | New API                                                                                                                               |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/editor/full/json-editor/page.tsx` | `saveRoCrateMetadataJSON`, `serviceProvider.getCrateRaw()`, `crateData`, `isSaving`, `crateId` | `usePersistence().getCrateService()?.getMetadata()` / `.setMetadata()`, `useOperationState()`, subscribe to `metadata-changed` events |
 
-`json-editor/page.tsx` → `usePersistence().getCrateService()?.getMetadata()` / `.setMetadata()`
+The JSON editor fetches raw metadata via SWR and displays it in Monaco. Migration: read raw metadata from `ICrateService.getMetadata()`, write via `setMetadata()`. The SWR polling can be replaced by subscribing to `metadata-changed` events on `ICrateService`.
 
-### WP5f: Crate ID consumers (crateId, setCrateId, unsetCrateId)
+---
 
-`app/editor/page.tsx`, `app/editor/full/layout.tsx`, and various components using `crateId` for gating. After WP4, these use `usePersistence().getCrateId()` / `.setCrateId()`.
+### Phase 3: WP5f — Crate ID consumers (2 primary files + cross-cutting)
+
+| File                                          | Legacy fields                                                                                                                       | New API                                                                                             |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `app/editor/page.tsx` (landing page)          | `setCrateId`, `unsetCrateId`, `serviceProvider.getStoredCrateIds()`, `serviceProvider.createCrateFromCrateZip()`, `healthTestError` | `usePersistence().setCrateId()`, `.getRepositoryService()`, `useOperationState(s => s.healthError)` |
+| `app/editor/full/layout.tsx` (`RecentlyUsed`) | `crateId`                                                                                                                           | `usePersistence().getCrateId()`                                                                     |
+
+The landing page doesn't have `CoreProvider` but does have `PersistenceProvider`. All service calls route through `usePersistence()`. `CrateFactory` must be instantiated manually with the persistence service for crate creation workflows.
+
+11 other files use `crateId` as a guard or SWR key — these are migrated as part of their primary WP5 category (a/b/c) by replacing `crateId` with `usePersistence().getCrateId()` or dropping it entirely (since services are already scoped to the current crate).
+
+---
+
+### Phase 4: WP5a — Mutation consumers (11 files)
+
+**Migration pattern**: Replace `useContext(CrateDataContext)` with `useCore()` + `useOperationState()`. Wrap core service calls in try/catch that manages `setIsSaving(true/false)` and `addSaveError(id, e)` / `clearSaveError(id)`.
+
+| File                                                      | Legacy fields                                  | New API                                                                                            |
+| --------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `components/providers/global-modals-provider.tsx`         | `saveEntity`                                   | `core.getMetadataService().addEntity(entity)`                                                      |
+| `components/entity/entity-context-menu.tsx`               | `saveEntity`                                   | `core.getMetadataService().updateEntity(entity)`                                                   |
+| `components/actions/entity-actions.tsx`                   | `saveEntity`                                   | `core.getMetadataService().updateEntity(entity)`                                                   |
+| `components/modals/save-entity-changes-modal.tsx`         | `saveEntity`                                   | `core.getMetadataService().updateEntity(entity)`                                                   |
+| `components/modals/save-as-modal.tsx`                     | `saveEntity`                                   | `core.getMetadataService().addEntity(entity)`                                                      |
+| `components/modals/rename-entity-modal.tsx`               | `changeEntityId`                               | `core.changeEntityIdentifier(oldId, newId)`                                                        |
+| `components/modals/multi-rename-modal.tsx`                | `changeEntityId`, `serviceProvider`, `crateId` | `core.changeEntityIdentifier()` + `persistence.getCrateService()?.getFileService()?.move()`        |
+| `components/modals/delete-entity-modal.tsx`               | `deleteEntity`, `serviceProvider`, `crateId`   | `core.deleteEntity(id, deleteData)` + `persistence.getCrateService()?.getFileService()` for impact |
+| `components/modals/create-entity/create-entity-modal.tsx` | `createFileEntity`, `createFolderEntity`       | `core.addFileEntity()` + `core.addFolderEntity()`                                                  |
+| `lib/hooks.ts` (`useSaveAllEntities`)                     | `saveAllEntities`                              | Loop `core.getMetadataService().updateEntity()` or `.addEntity()`                                  |
+| `components/actions/default-actions.tsx`                  | `crateData`, `createFileEntity`, `reload`      | Drop `reload`, read raw metadata from persistence for preview, `core.addFileEntity()`              |
+
+**Note**: The legacy `saveEntity` auto-detects create vs update. In the new architecture, the caller must decide. The pattern: check whether the entity exists in `editorState.initialEntities` — if yes, `updateEntity()`; if no, `addEntity()`.
+
+**Open items to resolve during WP5a:**
+
+- `CoreServiceImpl.addFileEntity` does not pass an `overwrite` parameter through to `IMetadataService.addEntity`. The underlying method supports it — one-line fix.
+- `saveAllEntities` has no single-call batch equivalent. Compose by looping `updateEntity`/`addEntity`. Consider a batch method on `IMetadataService` if performance is an issue.
+
+---
+
+### Phase 5: WP5b — Status/loading consumers (7 files)
+
+**Migration pattern**: Replace `useContext(CrateDataContext)` field reads with `useOperationState()` and `useEditorState()`.
+
+| File                                         | Legacy fields                                                                                                             | New API                                                                                                             |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `components/nav/nav-header.tsx`              | `isSaving`, `saveError`, `clearSaveError`, `healthTestError`, `error`, `crateDataIsLoading`, `serviceProvider`, `crateId` | `useOperationState()` for saving/errors/health/loadError, `usePersistence()` for exports, drop `crateDataIsLoading` |
+| `components/editor/entity-editor.tsx`        | `isSaving`, `saveError`, `clearSaveError`                                                                                 | `useOperationState()`                                                                                               |
+| `components/graph/entity-graph.tsx`          | `isSaving`, `saveError`, `clearSaveError`, `crateDataIsLoading`, `crateId`                                                | `useOperationState()`, drop loading flag                                                                            |
+| `components/editor/entity-editor-tabs.tsx`   | `crateDataIsLoading`                                                                                                      | Drop — use entity existence check instead                                                                           |
+| `components/crate-validation-supervisor.tsx` | `crateData`, `crateDataIsLoading`, `crateId`                                                                              | Subscribe to `editorState.entities` for change detection, drop loading flag                                         |
+| `components/context/context.tsx`             | `crateDataIsLoading`, `crateId`                                                                                           | Drop loading flag, `usePersistence().getCrateId()`                                                                  |
+| `components/context/custom-pairs.tsx`        | `crateDataIsLoading`                                                                                                      | Already migrated in Phase 1 (WP5d)                                                                                  |
+
+---
+
+### Phase 6: WP5c — serviceProvider direct-access consumers (~10 unique files remaining)
+
+**Migration pattern**: Replace `serviceProvider.*` calls with new-architecture equivalents. Replace `crateId` parameters — new services are already scoped to the current crate.
+
+| File                                                   | Legacy method(s)                                                  | New API                                                                      |
+| ------------------------------------------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `components/file-explorer/entry-context-menu.tsx`      | `serviceProvider.downloadFile()`, `crateId`                       | `getFile()` + `downloadBlob()` from `lib/core/util.ts`                       |
+| `components/file-explorer/path-picker.tsx`             | `serviceProvider.getCrateFilesList()`, `crateId`                  | `persistence.getCrateService()?.getFileService()?.getContentList()`          |
+| `components/file-explorer/explorer.tsx`                | `serviceProvider.getCrateFilesList()`, `crateId`                  | Same as path-picker                                                          |
+| `components/file-explorer/preview.tsx`                 | `serviceProvider.downloadFile()`, `getCrateFileURL()`, `crateId`  | `getFileAsURL()` from `lib/core/util.ts`                                     |
+| `components/landing/crate-entry.tsx`                   | `serviceProvider.getCrate()`, download/export, `duplicateCrate()` | `persistence.getRepositoryService()` + `CrateFactory` + `downloadCrateAs()`  |
+| `components/landing/create-crate-modal.tsx`            | `serviceProvider.createCrate/FromFile/FromFiles()`                | `CrateFactory` methods                                                       |
+| `components/landing/delete-crate-modal.tsx`            | `serviceProvider.deleteCrate()`                                   | `persistence.getRepositoryService()?.deleteCrate()`                          |
+| `components/modals/settings/workers.tsx`               | `instanceof BrowserBasedCrateService`, `isWorkerHealthy()`        | `useOperationState(s => s.healthStatus)` — rethink the worker settings panel |
+| `components/storage-info.tsx`                          | `serviceProvider.getStorageInfo()`                                | OPFS quota API or `IFileService` quota events                                |
+| `components/editor/select-reference-modal.tsx`         | `crateData["@graph"]`, `crateDataIsLoading`                       | `useEditorState(s => s.entities)` — iterate `.values()`                      |
+| `components/entity-browser/entity-browser-content.tsx` | `crate.crateData` (loading gate)                                  | Check `entities.size > 0`                                                    |
+
+Files already migrated as part of earlier phases (WP5a/WP5b) that also use `serviceProvider`:
+
+- `nav-header.tsx` — exports via `downloadCrateAs()` (covered in Phase 5)
+- `delete-entity-modal.tsx` — file service for impact analysis (covered in Phase 4)
+- `multi-rename-modal.tsx` — file service for rename (covered in Phase 4)
+
+---
+
+### Phase 7: WP7 — Validation system adaptation (4 files)
+
+Folded into WP5 since it's small and tightly related. The validation system's coupling to the legacy provider is contained: only `serviceProvider.getCrateFileInfo()` and `crateData.crateId` are accessed.
+
+| File                                               | Change                                                                                                                                               |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/validation/validator.ts`                      | Change `ValidatorContext`: replace `serviceProvider?: CrateServiceAdapter` with `fileService?: IFileService`; remove `crateData: ICrateDataProvider` |
+| `components/providers/validation-context.tsx`      | Replace `crateDataProvider.serviceProvider` with `persistence.getCrateService()?.getFileService()`; remove `crateData: crateDataProvider`            |
+| `lib/validation/validators/rules/ro-crate-v1.1.ts` | Replace `ctx.serviceProvider.getCrateFileInfo(ctx.crateData.crateId, path)` with `ctx.fileService?.getInfo(path)`                                    |
+| `lib/validation/validators/rules/ro-crate-v1.2.ts` | Same as v1.1                                                                                                                                         |
+
+### Summary: file count by phase
+
+| Phase     | Sub-package                | Unique files   | Notes                               |
+| --------- | -------------------------- | -------------- | ----------------------------------- |
+| Pre-req   | `operationState` loadError | 2              | Modify existing store + tests       |
+| 1         | WP5d (context)             | 1              | Trivial                             |
+| 2         | WP5e (JSON editor)         | 1              | Moderate — SWR → event subscription |
+| 3         | WP5f (crateId)             | 2              | Landing page is the tricky one      |
+| 4         | WP5a (mutations)           | 11             | Largest batch — establish patterns  |
+| 5         | WP5b (status/loading)      | 6              | Many overlap with Phase 4           |
+| 6         | WP5c (serviceProvider)     | ~10            | Many overlap with Phase 4/5         |
+| 7         | WP7 (validation)           | 4              | Clean, contained                    |
+| **Total** |                            | **~30 unique** | Heavy overlap reduces actual work   |
 
 ---
 
@@ -240,8 +390,8 @@ Polls `persistence.healthCheck()` every 10 seconds and updates `operationState`.
 1. Delete `CrateDataProvider`, `CrateDataContext`, `ICrateDataProvider` from `crate-data-provider.tsx`
 2. Delete `CrateServiceAdapter.d.ts`, `CrateServiceBase.ts`, `BrowserBasedCrateService.ts` from `lib/backend/`
 3. Remove the legacy `applyServerDifferences` function from `lib/ensure-sync.ts` (keep `applyGraphDifferences` which is used by `useCoreSync`)
-4. Remove `serviceProvider` prop from `app/editor/layout.tsx`
-5. Wire `PersistenceProvider` into `app/editor/layout.tsx` and `CoreProvider` into `app/editor/full/layout.tsx`
+4. Remove `serviceProvider` prop and the legacy `BrowserBasedCrateService` instantiation from `app/editor/layout.tsx`
+5. Remove the `CrateDataProvider` wrapper from `app/editor/layout.tsx` (`PersistenceProvider` and `CoreProvider` are already mounted since WP4)
 6. Remove the legacy health check polling from `CrateDataProvider` (now handled by `useHealthCheck` in `PersistenceProvider`)
 7. Remove the legacy `useInterval`-based SWR sync (now handled by `useCoreSync` in `CoreProvider`)
 8. Clean up remaining imports
@@ -250,9 +400,11 @@ Polls `persistence.healthCheck()` every 10 seconds and updates `operationState`.
 
 ## WP7: Validation system adaptation
 
-**Tasks**:
+**Note**: Folded into WP5 Phase 7 (see above). The validation system's coupling to the legacy provider is light — only `serviceProvider.getCrateFileInfo()` and `crateData.crateId` are used by two validator rule files. The migration replaces `ValidatorContext.serviceProvider` with `IFileService` and removes the `crateData` dependency entirely.
 
-1. Update `ValidatorContext` in `lib/validation/validator.ts` to use `ICoreService` + `IPersistenceService` instead of `ICrateDataProvider`.
-2. Update `ValidationContextProvider` to pass the new services.
-3. Update validators that access `ctx.crateData.*`.
+**Tasks** (executed as WP5 Phase 7):
+
+1. Update `ValidatorContext` in `lib/validation/validator.ts`: replace `serviceProvider?: CrateServiceAdapter` with `fileService?: IFileService`, remove `crateData: ICrateDataProvider`.
+2. Update `ValidationContextProvider` to pass `persistence.getCrateService()?.getFileService()` instead of `crateDataProvider.serviceProvider`.
+3. Update validator rules (`ro-crate-v1.1.ts`, `ro-crate-v1.2.ts`) to use `ctx.fileService?.getInfo(path)` instead of `ctx.serviceProvider.getCrateFileInfo(ctx.crateData.crateId, path)`.
 4. Run existing validation tests.
