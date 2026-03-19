@@ -219,7 +219,8 @@ The persistence layer handles storage. The only current implementation is browse
 ### React Providers (`components/providers/`)
 
 - **`PersistenceProvider`** (`persistence-provider.tsx`) — Creates and provides the `BrowserPersistenceService` singleton. Mount at `app/editor/layout.tsx`. Hook: `usePersistence()`.
-- **`CoreProvider`** (`core-provider.tsx`) — Creates `PersistenceAdapterImpl` + `CoreServiceImpl` when a crate is open. Mount at `app/editor/full/layout.tsx`. If the crate is deselected, navigates to `/editor`. Hook: `useCore()` (always non-null inside the provider).
+- **`CoreProvider`** (`core-provider.tsx`) — Creates `PersistenceAdapterImpl` + `CoreServiceImpl` when a crate is open. Mount at `app/editor/full/layout.tsx`. If the crate is deselected, navigates to `/editor`. Internally calls `useCoreSync(core)` to bridge core layer events into the Zustand `editorState`. Hook: `useCore()` (always non-null inside the provider).
+- **`useCoreSync`** (`lib/use-core-sync.ts`) — Sync hook called inside `CoreProvider`. Subscribes to `graph-changed` and `context-changed` events from the core layer and pushes updates into `editorState`. On initial mount, hard-replaces entities and context. On subsequent `graph-changed` events, applies a three-way merge (`applyGraphDifferences` from `lib/ensure-sync.ts`) to preserve local edits while incorporating remote changes. Currently coexists with the legacy `CrateDataProvider`'s SWR sync — both populate `editorState` until the legacy provider is removed in WP6.
 
 ### Legacy Layer (`lib/backend/`) — Being Replaced
 
@@ -239,6 +240,7 @@ The `CrateDataProvider`, `CrateServiceAdapter`, and `BrowserBasedCrateService` i
 - **`structuredClone` cross-realm issue**: Jest runs tests in a Node.js `vm` sandbox. `structuredClone()` returns objects from a different realm, causing `constructor` mismatches. The `dequal` library (used in `MetadataServiceImpl.updateGraph`) compares constructors, so `dequal(obj, structuredClone(obj))` returns `false` in Jest. **Workaround**: Use `JSON.parse(JSON.stringify(...))` instead of `structuredClone` in test mocks and fixtures when the data will be compared with `dequal`.
 - **OPFS / Web Workers**: Not available in the Jest `node` environment. Browser persistence classes (`BrowserCrateService`, `BrowserFileService`, `BrowserRepositoryService`) accept a `FunctionWorker` via constructor injection — mock it in tests. `BrowserPersistenceService` creates its own worker internally — use `jest.mock` for `@/lib/function-worker`, `@/lib/opfs-worker/functions`, and `next/dist/client/add-base-path`.
 - **JSZip in Node**: `JSZip.loadAsync()` does not accept `Blob` in Node.js. Convert to `ArrayBuffer` first: `JSZip.loadAsync(await blob.arrayBuffer())`. When generating zips for tests, use `{ type: "arraybuffer" }` and wrap in `new Blob([buffer])`.
+- **jsdom for React hook tests**: The global test environment is `node`. For tests that need a DOM (e.g. React hooks using `renderHook` from `@testing-library/react`, or code that depends on Zustand's `ssrSafe` middleware), add the `@jest-environment jsdom` docblock at the top of the test file. All required packages (`jest-environment-jsdom`, `@testing-library/react`) are already installed. Polyfill `structuredClone` at the top of jsdom test files if the code under test uses it: `if (typeof structuredClone === "undefined") { (globalThis as any).structuredClone = <T>(v: T): T => JSON.parse(JSON.stringify(v)) }`.
 
 ## Key Dependencies
 

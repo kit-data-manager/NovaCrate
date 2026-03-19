@@ -7,7 +7,7 @@ The editor is migrating from a monolithic `CrateDataProvider` / `CrateServiceAda
 | Work Package | Status   | Description                                          |
 | ------------ | -------- | ---------------------------------------------------- |
 | WP1          | **Done** | Fill missing capabilities in persistence/core layers |
-| WP2          | Pending  | Build the editor state sync bridge                   |
+| WP2          | **Done** | Build the editor state sync bridge                   |
 | WP3          | Pending  | Build the operation/UI state layer                   |
 | WP4          | Pending  | Build crate ID management / localStorage persistence |
 | WP5          | Pending  | Migrate consumers from CrateDataContext to new hooks |
@@ -51,18 +51,55 @@ All RO-Crate metadata knowledge lives here. The repository stays metadata-agnost
 
 ---
 
-## WP2: Build the editor state sync bridge
+## WP2: Build the editor state sync bridge (DONE)
 
-**Goal**: Replace the `CrateDataProvider`'s SWR-based sync with event-driven sync from the core layer into the Zustand `editorState`.
+### What was done
 
-**Tasks**:
+**New: `useCoreSync` hook (`lib/use-core-sync.ts`):**
 
-1. Create a sync hook or component (e.g. `useCoreSync` or `<CoreStateSynchronizer />`) inside the `CoreProvider`.
-2. Subscribe to `IMetadataService.events["graph-changed"]` → update `editorState.setEntities` and `editorState.setInitialEntities`.
-3. Subscribe to `IContextService.events["context-changed"]` → update `editorState.updateCrateContext` and `editorState.updateInitialCrateContext`.
-4. Handle initial population on mount.
-5. Determine merge/conflict strategy: since mutations go through the core layer, "remote" and "local" are always in sync if there is no other user working on the same data. `initialEntities` reflects the core layer state, `entities` is the user's working copy. The old `applyServerDifferences` 3-way merge is probably still required, as there is no sophisticated collaboration overlay right now.
-6. Write unit tests.
+Event-driven sync bridge that replaces the `CrateDataProvider`'s SWR-based polling. Called inside `CoreProvider`.
+
+- On mount: reads initial entities from `IMetadataService.getEntities()` and raw context from `IContextService.getRaw()`, populates both `entities`/`initialEntities` and `crateContext`/`initialCrateContext` in the Zustand `editorState`.
+- Subscribes to `IMetadataService.events["graph-changed"]`:
+    - Always updates `initialEntities` (the remote baseline).
+    - On first load (or when `lastGraph` is empty): hard-replaces `entities`.
+    - On subsequent events: applies a three-way merge via `applyGraphDifferences` to preserve local edits the user has made while incorporating server-side changes.
+- Subscribes to `IContextService.events["context-changed"]`:
+    - Always overwrites both `crateContext` and `initialCrateContext` (no local context divergence supported).
+- Cleanup removes all event listeners on unmount or when `core` changes.
+
+**Interface changes (`IContextService`):**
+
+- `"context-changed"` event signature changed from `() => void` to `(newContext: CrateContextType) => void` — the event now carries the raw `@context` value.
+- Added `getRaw(): CrateContextType | undefined` — returns the raw `@context` value as last loaded from the crate metadata.
+
+**Implementation changes (`ContextServiceImpl`):**
+
+- Implemented `getRaw()` returning `structuredClone(this.raw)`.
+- All three `emit("context-changed")` call sites now pass `this.raw!` as the argument.
+- `addCustomContextPair` and `removeCustomContextPair` update `this.raw` before emitting.
+
+**New: `applyGraphDifferences` (`lib/ensure-sync.ts`):**
+
+- Added `applyGraphDifferences(newGraph: IEntity[], lastGraph: IEntity[], newEntities: Draft<Map<string, IEntity>>)` — works directly with `IEntity[]` arrays instead of `ICrate` objects.
+- The existing `applyServerDifferences` (used by the legacy `CrateDataProvider`) is preserved for backward compatibility.
+
+**Provider wiring (`components/providers/core-provider.tsx`):**
+
+- `CoreProvider` now calls `useCoreSync(core)` to activate the sync bridge when the core service is available.
+
+**Unit tests (`tests/unit/lib/use-core-sync.test.ts`):**
+
+- 13 tests using `@jest-environment jsdom` and `renderHook` from `@testing-library/react`.
+- Covers: initial population, three-way merge (5 scenarios), context forwarding, null core, cleanup on unmount, re-subscription on core change.
+
+### Merge/conflict strategy (resolved)
+
+The three-way merge from `applyServerDifferences` (now `applyGraphDifferences`) is retained. `initialEntities` always reflects the core layer state. `entities` is the user's working copy. When the core layer emits a `graph-changed` event, the diff between the previous and new remote graph is applied to the working copy, preserving locally-modified properties that the server did not change. If the server changed the same property, the server's value wins.
+
+### Coexistence with legacy provider
+
+The sync hook runs alongside the legacy `CrateDataProvider` — both populate `editorState`. This is intentional staging: once all consumers are migrated (WP5), the legacy provider is removed (WP6).
 
 ---
 
@@ -133,7 +170,7 @@ All RO-Crate metadata knowledge lives here. The repository stays metadata-agnost
 
 1. Delete `CrateDataProvider`, `CrateDataContext`, `ICrateDataProvider` from `crate-data-provider.tsx`
 2. Delete `CrateServiceAdapter.d.ts`, `CrateServiceBase.ts`, `BrowserBasedCrateService.ts` from `lib/backend/`
-3. Delete `lib/ensure-sync.ts`
+3. Remove the legacy `applyServerDifferences` function from `lib/ensure-sync.ts` (keep `applyGraphDifferences` which is used by `useCoreSync`)
 4. Remove `serviceProvider` prop from `app/editor/layout.tsx`
 5. Wire `PersistenceProvider` into `app/editor/layout.tsx` and `CoreProvider` into `app/editor/full/layout.tsx`
 6. Clean up remaining imports

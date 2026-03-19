@@ -2,6 +2,7 @@
 
 package core {
     interface ICrateService
+    interface IRepositoryService
 
     interface ICoreService {
         addFileEntity()
@@ -19,7 +20,7 @@ package core {
         updateMetadataContext()
     }
 
-    ICoreService ..> ICrateService
+    ICoreService --> ICrateService
     ICoreService *-- IContextService
     ICoreService *-- IMetadataService
 
@@ -58,10 +59,10 @@ package core {
         createCrateFromMetadataFile()
     }
 
-    IPersistenceAdapter <.. IMetadataService
-    IPersistenceAdapter <.. IContextService
-    IPersistenceAdapter ..> ICrateService
-    IRepositoryService <.. CrateFactory
+    IPersistenceAdapter <-- IMetadataService
+    IPersistenceAdapter <-- IContextService
+    IPersistenceAdapter --> ICrateService
+    IRepositoryService <-- CrateFactory
 }
 
 @enduml
