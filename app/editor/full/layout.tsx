@@ -1,7 +1,6 @@
 "use client"
 
-import { memo, PropsWithChildren, useContext, useEffect } from "react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { memo, PropsWithChildren, useEffect } from "react"
 import { CoreProvider } from "@/components/providers/core-provider"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { Nav } from "@/components/nav/nav"
@@ -70,7 +69,8 @@ const ProviderBoundary = memo(function ProviderBoundary(props: PropsWithChildren
 function RecentlyUsed() {
     const pathname = usePathname()
     const { addRecentCrate } = useRecentCrates()
-    const { crateId } = useContext(CrateDataContext)
+    const persistence = usePersistence()
+    const crateId = persistence.getCrateId()
     const crateName = useCrateName()
 
     useEffect(() => {
