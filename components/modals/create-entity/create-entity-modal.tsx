@@ -1,12 +1,12 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { SlimClass } from "@/lib/schema-worker/helpers"
-import React, { useCallback, useContext, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { useEditorState } from "@/lib/state/editor-state"
 import { TypeSelect } from "@/components/modals/create-entity/type-select"
 import { CreateEntity } from "@/components/modals/create-entity/create-entity"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { SimpleTypeSelect } from "@/components/modals/create-entity/simple-type-select"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useCrateMutations } from "@/lib/use-crate-mutations"
 import { UploadProgress } from "@/components/modals/create-entity/upload-progress"
 import { RO_CRATE_FILE } from "@/lib/constants"
 import { asValidPath, AutoReference } from "@/lib/utils"
@@ -14,7 +14,6 @@ import { CreateProviders } from "@/components/modals/create-entity/create-provid
 
 export function CreateEntityModal({
     open,
-    onEntityCreated,
     onOpenChange,
     restrictToClasses,
     autoReference,
@@ -22,7 +21,6 @@ export function CreateEntityModal({
     basePath
 }: {
     open: boolean
-    onEntityCreated: (entity?: IEntity) => void
     onOpenChange: (open: boolean) => void
     restrictToClasses?: SlimClass[]
     autoReference?: AutoReference
@@ -32,7 +30,7 @@ export function CreateEntityModal({
     const addEntity = useEditorState((store) => store.addEntity)
     const focusTab = useEntityEditorTabs((store) => store.focusTab)
     const openTab = useEntityEditorTabs((store) => store.openTab)
-    const { createFileEntity, createFolderEntity } = useContext(CrateDataContext)
+    const { createFileEntity, createFolderEntity } = useCrateMutations()
     const context = useEditorState((store) => store.crateContext)
 
     const [fullTypeBrowser, setFullTypeBrowser] = useState(false)
@@ -62,6 +60,11 @@ export function CreateEntityModal({
 
     const onTypeSelect = useCallback((value: string) => {
         setSelectedType(value)
+    }, [])
+
+    const onEntityCreated = useCallback((...args: any) => {
+        // TODO save entity directly?
+        // noop for compatibility with old code
     }, [])
 
     const onCreate = useCallback(
@@ -143,7 +146,7 @@ export function CreateEntityModal({
                             file
                         }
                     }),
-                    (current, max, errors) => {
+                    (current: number, max: number, errors: unknown[]) => {
                         setCurrentUploadProgress(current)
                         setMaxUploadProgress(max)
                         setUploadErrors(errors)
@@ -169,8 +172,7 @@ export function CreateEntityModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
                 className={
-                    "transition-none " +
-                    (!selectedType && !fullTypeBrowser ? "max-w-[1000px]!" : "")
+                    "transition-none " + (!selectedType && !fullTypeBrowser ? "max-w-250!" : "")
                 }
             >
                 {uploading ? (

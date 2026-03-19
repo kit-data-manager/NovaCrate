@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useContext, useMemo, useState } from "react"
+import React, { memo, useCallback, useMemo, useState } from "react"
 import {
     Dialog,
     DialogContent,
@@ -7,7 +7,8 @@ import {
     DialogTitle
 } from "@/components/ui/dialog"
 import { useEditorState } from "@/lib/state/editor-state"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useCrateMutations } from "@/lib/use-crate-mutations"
+import { usePersistence } from "@/components/providers/persistence-provider"
 import useSWR from "swr"
 import { ArrowRightIcon, FileIcon, FolderIcon, LoaderCircleIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -27,8 +28,8 @@ export const MultiRenameModal = memo(function MultiRenameModal({
     changes: { from: string; to: string }[]
 }) {
     const entities = useEditorState((store) => store.entities)
-    const { serviceProvider, crateId, changeEntityId } = useContext(CrateDataContext)
-    // TODO integrate with feature flags
+    const { changeEntityId } = useCrateMutations()
+    const persistence = usePersistence()
 
     const committingChangesCorrect = useMemo(() => {
         const issues: string[] = []
@@ -50,32 +51,29 @@ export const MultiRenameModal = memo(function MultiRenameModal({
         return issues
     }, [changes])
 
-    const analyzeChangeImpact = useCallback(
-        async (changes: { from: string; to: string }[]) => {
-            // This contains all files or folders that have to be renamed/moved for this change
-            const fileImpact = new Map<string, string>()
+    const analyzeChangeImpact = useCallback(async (changes: { from: string; to: string }[]) => {
+        // This contains all files or folders that have to be renamed/moved for this change
+        const fileImpact = new Map<string, string>()
 
-            if (!serviceProvider || !crateId) return fileImpact
-
-            for (const change of changes) {
-                // If there is no shorter path in the changeset, then include this one
-                // This makes sure moving a folder and its files at the same time only adds the folder move to the impact set
-                if (
-                    changes.findIndex(
-                        (otherChange) =>
-                            change.from.startsWith(otherChange.from) &&
-                            change.from.split("/").length > otherChange.from.split("/").length &&
-                            otherChange.from.endsWith("/")
-                    ) == -1
-                ) {
-                    fileImpact.set(change.from, change.to)
-                }
+        for (const change of changes) {
+            // If there is no shorter path in the changeset, then include this one
+            // This makes sure moving a folder and its files at the same time only adds the folder move to the impact set
+            if (
+                changes.findIndex(
+                    (otherChange) =>
+                        change.from.startsWith(otherChange.from) &&
+                        change.from.split("/").length > otherChange.from.split("/").length &&
+                        otherChange.from.endsWith("/")
+                ) == -1
+            ) {
+                fileImpact.set(change.from, change.to)
             }
+        }
 
-            return fileImpact
-        },
-        [crateId, serviceProvider]
-    )
+        return fileImpact
+    }, [])
+
+    const crateId = persistence.getCrateId()
 
     const { data } = useSWR(
         crateId && changes.length > 0 && "rename-impact-" + crateId,
@@ -85,7 +83,8 @@ export const MultiRenameModal = memo(function MultiRenameModal({
     )
 
     const executeChanges = useCallback(async () => {
-        if (!serviceProvider || !crateId || !data) return []
+        if (!data) return []
+        const fileService = persistence.getCrateService()?.getFileService()
         const issues = []
 
         for (const [from, to] of JSON.parse(data) as [string, string][]) {
@@ -94,8 +93,8 @@ export const MultiRenameModal = memo(function MultiRenameModal({
                 if (impactedEntity) {
                     // This will also rename the file if there is one
                     await changeEntityId(impactedEntity, to)
-                } else {
-                    await serviceProvider.renameFile(crateId, from, to)
+                } else if (fileService) {
+                    await fileService.move(from, to)
                 }
             } catch (e) {
                 console.error("Renaming failed partially", e)
@@ -104,7 +103,7 @@ export const MultiRenameModal = memo(function MultiRenameModal({
         }
 
         return issues
-    }, [changeEntityId, crateId, data, entities, serviceProvider])
+    }, [changeEntityId, data, entities, persistence])
 
     const [isExecutingChanges, setIsExecutingChanges] = useState(false)
     const [changeExecutionIssues, setChangeExecutionIssues] = useState<Error[]>([])

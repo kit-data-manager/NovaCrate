@@ -254,7 +254,7 @@ Before migrating consumers, add `loadError` and `setLoadError` to the `operation
 
 ---
 
-### Phase 1: WP5d — Context consumers (1 file)
+### Phase 1: WP5d — Context consumers (1 file) ✓
 
 | File                                  | Legacy fields                                                           | New API                                            |
 | ------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------- |
@@ -264,7 +264,7 @@ Trivial swap — remove `useContext(CrateDataContext)`, add `useCore()`.
 
 ---
 
-### Phase 2: WP5e — JSON editor (1 file)
+### Phase 2: WP5e — JSON editor (1 file) ✓
 
 | File                                   | Legacy fields                                                                                  | New API                                                                                                                               |
 | -------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -274,7 +274,7 @@ The JSON editor fetches raw metadata via SWR and displays it in Monaco. Migratio
 
 ---
 
-### Phase 3: WP5f — Crate ID consumers (2 primary files + cross-cutting)
+### Phase 3: WP5f — Crate ID consumers (2 primary files + cross-cutting) ✓
 
 | File                                          | Legacy fields                                                                                                                       | New API                                                                                             |
 | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
@@ -287,30 +287,62 @@ The landing page doesn't have `CoreProvider` but does have `PersistenceProvider`
 
 ---
 
-### Phase 4: WP5a — Mutation consumers (11 files)
+### Phase 4: WP5a — Mutation consumers (11 files) ✓
 
-**Migration pattern**: Replace `useContext(CrateDataContext)` with `useCore()` + `useOperationState()`. Wrap core service calls in try/catch that manages `setIsSaving(true/false)` and `addSaveError(id, e)` / `clearSaveError(id)`.
+**New: `useCrateMutations()` hook (`lib/use-crate-mutations.ts`):**
 
-| File                                                      | Legacy fields                                  | New API                                                                                            |
-| --------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `components/providers/global-modals-provider.tsx`         | `saveEntity`                                   | `core.getMetadataService().addEntity(entity)`                                                      |
-| `components/entity/entity-context-menu.tsx`               | `saveEntity`                                   | `core.getMetadataService().updateEntity(entity)`                                                   |
-| `components/actions/entity-actions.tsx`                   | `saveEntity`                                   | `core.getMetadataService().updateEntity(entity)`                                                   |
-| `components/modals/save-entity-changes-modal.tsx`         | `saveEntity`                                   | `core.getMetadataService().updateEntity(entity)`                                                   |
-| `components/modals/save-as-modal.tsx`                     | `saveEntity`                                   | `core.getMetadataService().addEntity(entity)`                                                      |
-| `components/modals/rename-entity-modal.tsx`               | `changeEntityId`                               | `core.changeEntityIdentifier(oldId, newId)`                                                        |
-| `components/modals/multi-rename-modal.tsx`                | `changeEntityId`, `serviceProvider`, `crateId` | `core.changeEntityIdentifier()` + `persistence.getCrateService()?.getFileService()?.move()`        |
-| `components/modals/delete-entity-modal.tsx`               | `deleteEntity`, `serviceProvider`, `crateId`   | `core.deleteEntity(id, deleteData)` + `persistence.getCrateService()?.getFileService()` for impact |
-| `components/modals/create-entity/create-entity-modal.tsx` | `createFileEntity`, `createFolderEntity`       | `core.addFileEntity()` + `core.addFolderEntity()`                                                  |
-| `lib/hooks.ts` (`useSaveAllEntities`)                     | `saveAllEntities`                              | Loop `core.getMetadataService().updateEntity()` or `.addEntity()`                                  |
-| `components/actions/default-actions.tsx`                  | `crateData`, `createFileEntity`, `reload`      | Drop `reload`, read raw metadata from persistence for preview, `core.addFileEntity()`              |
+A custom hook that composes `useCore()` + `operationState` internally and returns pre-wrapped mutation methods. Drop-in replacement for the legacy `CrateDataContext` mutation API. Each method handles `isSaving`, `saveErrors`, and toast notifications internally, and returns `boolean` (`true` = success, `false` = failure) without ever throwing.
 
-**Note**: The legacy `saveEntity` auto-detects create vs update. In the new architecture, the caller must decide. The pattern: check whether the entity exists in `editorState.initialEntities` — if yes, `updateEntity()`; if no, `addEntity()`.
+```ts
+const {
+    saveEntity,
+    deleteEntity,
+    changeEntityId,
+    createFileEntity,
+    createFolderEntity,
+    saveAllEntities
+} = useCrateMutations()
+```
 
-**Open items to resolve during WP5a:**
+| Method                                         | `isSaving`             | Error tracking                  | Toast             | Notes                                                                   |
+| ---------------------------------------------- | ---------------------- | ------------------------------- | ----------------- | ----------------------------------------------------------------------- |
+| `saveEntity(entity)`                           | yes                    | `addSaveError`/`clearSaveError` | success + failure | Auto-detects create vs update via `editorState.initialEntities.has(id)` |
+| `deleteEntity(entity, deleteData)`             | no                     | `addSaveError` on catch         | no                | Matches legacy behavior                                                 |
+| `changeEntityId(entity, newId)`                | no                     | `addSaveError` on catch         | no                | Matches legacy behavior                                                 |
+| `createFileEntity(entity, file, overwrite?)`   | yes                    | `addSaveError` on catch         | no                | Uses `core.addFileEntity()`                                             |
+| `createFolderEntity(entity, files, progress?)` | yes                    | `addSaveError` on catch         | no                | Uses `core.addFolderEntity()` + looped `core.addFileEntity()`           |
+| `saveAllEntities(entities)`                    | yes (once around loop) | per-entity errors               | no                | Auto-detects per entity                                                 |
 
-- `CoreServiceImpl.addFileEntity` does not pass an `overwrite` parameter through to `IMetadataService.addEntity`. The underlying method supports it — one-line fix.
-- `saveAllEntities` has no single-call batch equivalent. Compose by looping `updateEntity`/`addEntity`. Consider a batch method on `IMetadataService` if performance is an issue.
+`saveEntity` auto-detect logic: checks `editorState.initialEntities.has(entity["@id"])`. If the entity exists in the remote baseline, calls `updateEntity()`; otherwise calls `addEntity()`. This matches the legacy `lastCrateData.current` check.
+
+Components that need custom behavior beyond the hook (e.g. `delete-entity-modal` with its own `isDeleting` state, or `create-entity-modal` with progress tracking) can still use `useCore()` directly alongside `useCrateMutations()`.
+
+**One-line fix:** `CoreServiceImpl.addFileEntity` — add `overwrite?: boolean` parameter and pass through to `IMetadataService.addEntity`. Also update `ICoreService` interface.
+
+**Migration pattern**: Replace `useContext(CrateDataContext)` with `useCrateMutations()` (and `usePersistence()` / `useCore()` where `serviceProvider` direct access is also needed).
+
+| File                                                      | Legacy fields                                  | New API                                                                                               |
+| --------------------------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `components/providers/global-modals-provider.tsx`         | `saveEntity`                                   | `useCrateMutations().saveEntity`                                                                      |
+| `components/entity/entity-context-menu.tsx`               | `saveEntity`                                   | `useCrateMutations().saveEntity`                                                                      |
+| `components/actions/entity-actions.tsx`                   | `saveEntity`                                   | `useCrateMutations().saveEntity`                                                                      |
+| `components/modals/save-entity-changes-modal.tsx`         | `saveEntity`                                   | `useCrateMutations().saveEntity`                                                                      |
+| `components/modals/save-as-modal.tsx`                     | `saveEntity`                                   | `useCrateMutations().saveEntity`                                                                      |
+| `components/modals/rename-entity-modal.tsx`               | `changeEntityId`                               | `useCrateMutations().changeEntityId`                                                                  |
+| `components/modals/multi-rename-modal.tsx`                | `changeEntityId`, `serviceProvider`, `crateId` | `useCrateMutations().changeEntityId` + `usePersistence()` for file rename                             |
+| `components/modals/delete-entity-modal.tsx`               | `deleteEntity`, `serviceProvider`, `crateId`   | `useCrateMutations().deleteEntity` + `usePersistence()` for fallback/impact                           |
+| `components/modals/create-entity/create-entity-modal.tsx` | `createFileEntity`, `createFolderEntity`       | `useCrateMutations()`                                                                                 |
+| `lib/hooks.ts` (`useSaveAllEntities`)                     | `saveAllEntities`                              | `useCrateMutations().saveAllEntities`                                                                 |
+| `components/actions/default-actions.tsx`                  | `crateData`, `createFileEntity`, `reload`      | `useCrateMutations().createFileEntity`, read raw metadata from persistence for preview, drop `reload` |
+
+**Additional changes made during Phase 4:**
+
+- `ICoreService.addFolderEntity` also received the `overwrite?: boolean` parameter (same as `addFileEntity`), with the implementation in `CoreServiceImpl` passing it through.
+- `IContextService.addCustomContextPair` and `removeCustomContextPair` return types corrected from `void` to `Promise<void>` (matching the async implementation).
+- `default-actions.tsx`: The "Reload Entities" action (Cmd+R) was dropped — event-driven sync makes manual reload redundant. HTML preview generation now reads raw metadata from `persistence.getCrateService()?.getMetadata()` instead of `crateData.crateData`.
+- `delete-entity-modal.tsx`: Fallback delete path (for entities not in editor state) now uses `core.deleteEntity()` directly. Impact file count uses `persistence.getCrateService()?.getFileService()?.getContentList()`.
+- `multi-rename-modal.tsx`: File rename fallback uses `persistence.getCrateService()?.getFileService()?.move()`. The `crateId` guard was simplified to `persistence.getCrateId()`.
+- `operationState`: `loadError` / `setLoadError` added as a pre-requisite (replaces legacy SWR `error` field).
 
 ---
 
@@ -408,3 +440,28 @@ Folded into WP5 since it's small and tightly related. The validation system's co
 2. Update `ValidationContextProvider` to pass `persistence.getCrateService()?.getFileService()` instead of `crateDataProvider.serviceProvider`.
 3. Update validator rules (`ro-crate-v1.1.ts`, `ro-crate-v1.2.ts`) to use `ctx.fileService?.getInfo(path)` instead of `ctx.serviceProvider.getCrateFileInfo(ctx.crateData.crateId, path)`.
 4. Run existing validation tests.
+
+---
+
+## Open concerns (post-migration)
+
+### `canSetCrateId()` enforcement
+
+`IPersistenceService.canSetCrateId()` exists so that persistence implementations can forbid external crate ID changes (e.g. a server-driven implementation where the backend controls which crate is open). Currently:
+
+- `BrowserPersistenceService.canSetCrateId()` always returns `true` — no issue.
+- `useCrateIdPersistence` respects `canSetCrateId()` — skips localStorage restore if `false`.
+- `BrowserPersistenceService.setCrateId()` does **not** check `canSetCrateId()` internally — it always accepts the call.
+- The landing page (`app/editor/page.tsx`) calls `persistence.setCrateId()` unconditionally when opening/closing crates.
+
+If a future persistence implementation returns `canSetCrateId() === false`, callers need to be guarded. Options to resolve:
+
+1. **Guard at the call site**: landing page and other callers check `canSetCrateId()` before calling `setCrateId()`. Show a UI message if the crate cannot be changed.
+2. **Guard in the implementation**: `setCrateId()` becomes a no-op (or throws) when `canSetCrateId()` is `false`. This is safer but may silently swallow calls.
+3. **Both**: implementation throws/no-ops, callers also check to provide good UX.
+
+This is not blocking since the only implementation always allows setting. Revisit when a second persistence implementation is introduced.
+
+### Toast notifications for all crate mutations
+
+Currently only `saveEntity` shows toast notifications (success + failure). The legacy provider did not show toasts for `deleteEntity`, `changeEntityId`, `createFileEntity`, or `createFolderEntity`. Consider adding consistent toast feedback for all mutation types in `useCrateMutations()` — e.g. "Entity deleted", "Entity renamed", "File uploaded". This would improve UX consistency but should be designed holistically (what message, what icon, success-only vs success+failure) rather than added piecemeal.

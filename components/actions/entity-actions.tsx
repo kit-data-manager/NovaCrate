@@ -1,7 +1,7 @@
 import { useCurrentEntity, useRegisterAction } from "@/lib/hooks"
 import { useCallback, useContext } from "react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { useEditorState } from "@/lib/state/editor-state"
+import { useCrateMutations } from "@/lib/use-crate-mutations"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { toArray } from "@/lib/utils"
 import { Copy, Plus, Save, Search, Trash, Undo2 } from "lucide-react"
@@ -14,7 +14,7 @@ export default function EntityActions() {
 }
 
 function Handler({ entity }: { entity: IEntity }) {
-    const { saveEntity } = useContext(CrateDataContext)
+    const { saveEntity } = useCrateMutations()
     const revertEntity = useEditorState((store) => store.revertEntity)
     const addPropertyEntry = useEditorState((store) => store.addPropertyEntry)
     const {

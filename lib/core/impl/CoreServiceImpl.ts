@@ -39,7 +39,12 @@ export class CoreServiceImpl implements ICoreService {
         this.fileService = newService
     }
 
-    async addFileEntity(name: string, path: string, file: File): Promise<void> {
+    async addFileEntity(
+        name: string,
+        path: string,
+        file: File,
+        overwrite?: boolean
+    ): Promise<void> {
         if (this.fileService) {
             await this.fileService.addFile(path, file)
         }
@@ -50,10 +55,10 @@ export class CoreServiceImpl implements ICoreService {
             name: name
         }
 
-        await this.metadata.addEntity(entity)
+        await this.metadata.addEntity(entity, overwrite)
     }
 
-    async addFolderEntity(name: string, path: string): Promise<void> {
+    async addFolderEntity(name: string, path: string, overwrite?: boolean): Promise<void> {
         if (this.fileService) {
             await this.fileService.addFolder(path)
         }
@@ -66,7 +71,7 @@ export class CoreServiceImpl implements ICoreService {
             name: name
         }
 
-        await this.metadata.addEntity(entity)
+        await this.metadata.addEntity(entity, overwrite)
     }
 
     async changeEntityIdentifier(from: string, to: string): Promise<void> {

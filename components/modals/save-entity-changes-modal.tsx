@@ -1,9 +1,9 @@
-import React, { memo, useCallback, useContext, useEffect, useState } from "react"
+import React, { memo, useCallback, useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Save } from "lucide-react"
 import { useEditorState } from "@/lib/state/editor-state"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useCrateMutations } from "@/lib/use-crate-mutations"
 
 export const SaveEntityChangesModal = memo(function SaveEntityChangesModal(props: {
     open: boolean
@@ -36,7 +36,7 @@ function SaveEntityChangesModalInner({
 }) {
     const revertEntity = useEditorState((store) => store.revertEntity)
     const entity = useEditorState((store) => store.entities.get(entityId))
-    const { saveEntity } = useContext(CrateDataContext)
+    const { saveEntity } = useCrateMutations()
 
     const localOnOpenChange = useCallback(
         (isOpen: boolean) => {

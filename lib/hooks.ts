@@ -1,10 +1,10 @@
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { crateDetailsKey } from "@/components/landing/util"
 import { useEditorState } from "@/lib/state/editor-state"
 import { usePathname, useRouter } from "next/navigation"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { encodeFilePath, getEntityDisplayName } from "@/lib/utils"
+import { useCrateMutations } from "@/lib/use-crate-mutations"
+import { getEntityDisplayName } from "@/lib/utils"
 import { useGraphState } from "@/lib/state/graph-state"
 import { Action, notFoundAction } from "@/lib/state/actions"
 import { useActionsStore } from "@/lib/state/actions"
@@ -215,7 +215,7 @@ export function useGoToMainMenu() {
  * Wrapper to call CrateDataContext.saveAllEntities with only entities that have changes
  */
 export function useSaveAllEntities() {
-    const { saveAllEntities } = useContext(CrateDataContext)
+    const { saveAllEntities } = useCrateMutations()
     const getChangedEntities = useEditorState((store) => store.getChangedEntities)
 
     return useCallback(() => {

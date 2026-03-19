@@ -27,15 +27,19 @@ export interface ICoreService {
      * @param name - Human-readable name for the entity.
      * @param path - Crate-relative path where the file will be stored.
      * @param file - The file bytes to upload.
+     * @param overwrite - If `true`, overwrites any existing entity with the
+     *   same `@id`. Defaults to `false`.
      */
-    addFileEntity(name: string, path: string, file: File): Promise<void>
+    addFileEntity(name: string, path: string, file: File, overwrite?: boolean): Promise<void>
     /**
      * Create a folder at `path` inside the crate and add a corresponding
      * data entity with the given `name` to the metadata graph.
      * @param name - Human-readable name for the entity.
      * @param path - Crate-relative path of the new folder.
+     * @param overwrite - If `true`, overwrites any existing entity with the
+     *   same `@id`. Defaults to `false`.
      */
-    addFolderEntity(name: string, path: string): Promise<void>
+    addFolderEntity(name: string, path: string, overwrite?: boolean): Promise<void>
     /**
      * Rename an entity's `@id` from `from` to `to`. If the entity is a data
      * entity backed by a file or folder, the physical path is also moved via

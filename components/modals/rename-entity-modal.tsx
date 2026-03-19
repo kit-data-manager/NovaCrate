@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useContext, useMemo, useState } from "react"
+import React, { memo, useCallback, useMemo, useState } from "react"
 import {
     Dialog,
     DialogContent,
@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { AlertTriangleIcon, ExternalLink, LoaderCircle } from "lucide-react"
 import { isDataEntity, isFolderDataEntity, isValidUrl } from "@/lib/utils"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useCrateMutations } from "@/lib/use-crate-mutations"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { Error } from "@/components/error"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -27,7 +27,7 @@ export const RenameEntityModal = memo(function RenameEntityModal({
     entityId: string
 }) {
     const entity = useEditorState((store) => store.entities.get(entityId))
-    const { changeEntityId } = useContext(CrateDataContext)
+    const { changeEntityId } = useCrateMutations()
     const openTab = useEntityEditorTabs((state) => state.openTab)
 
     const isFile = useMemo(() => {

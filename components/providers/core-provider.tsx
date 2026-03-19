@@ -86,6 +86,18 @@ export function CoreProvider({ children }: PropsWithChildren) {
 }
 
 /**
+ * Guard that only renders its children if the core service is available.
+ * @param children
+ * @constructor
+ */
+export function CoreGuard({ children }: PropsWithChildren) {
+    const core = useContext(CoreContext)
+
+    if (!core) return null
+    else return children
+}
+
+/**
  * Returns the core service for the currently open crate.
  *
  * The returned value is always non-null — this hook can only be used inside a

@@ -1,9 +1,11 @@
-import React, { memo, useCallback, useContext, useMemo, useState } from "react"
+import React, { memo, useCallback, useMemo, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { AlertTriangleIcon, ArrowLeft, Loader2, Trash } from "lucide-react"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useCrateMutations } from "@/lib/use-crate-mutations"
+import { usePersistence } from "@/components/providers/persistence-provider"
+import { useCore } from "@/components/providers/core-provider"
 import {
     getEntityDisplayName,
     isContextualEntity,
@@ -11,7 +13,6 @@ import {
     normalizeIdentifier
 } from "@/lib/utils"
 import { Error } from "@/components/error"
-import { RO_CRATE_FILE } from "@/lib/constants"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -28,8 +29,9 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
     entityId: string
 }) {
     const entity = useEditorState((store) => store.entities.get(entityId))
-    const context = useEditorState((store) => store.crateContext)
-    const { deleteEntity, serviceProvider, crateId } = useContext(CrateDataContext)
+    const { deleteEntity } = useCrateMutations()
+    const persistence = usePersistence()
+    const core = useCore()
     const [isDeleting, setIsDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState<unknown>()
     const [deleteContent, setDeleteContent] = useState(false)
@@ -49,40 +51,30 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
         if (entity) {
             setIsDeleting(true)
             deleteEntity(entity, deleteContent)
-                .then((success) => {
+                .then((success: boolean) => {
                     if (success) {
                         setDeleteError(undefined)
                         onOpenChange(false)
                     } else setDeleteError("Unknown error while deleting")
                 })
-                .catch((e) => {
+                .catch((e: unknown) => {
                     console.error(e)
                     setDeleteError(e)
                 })
                 .finally(() => {
                     setIsDeleting(false)
                 })
-        } else if (serviceProvider && crateId) {
-            // Attempt to delete anyway. The user has able to access the delete button, so there must be something here...
+        } else {
+            // Attempt to delete anyway. The user was able to access the delete button, so there must be something here...
             // Assumes the type to be a file, since files can exist without having an entity
             onOpenChange(false)
             setIsDeleting(true)
-            serviceProvider
-                .deleteEntity(
-                    crateId,
-                    {
-                        "@id": entityId,
-                        "@type": [context.reverse(RO_CRATE_FILE) || RO_CRATE_FILE]
-                    },
-                    deleteContent
-                )
-                .then((success) => {
-                    if (success) {
-                        setDeleteError(undefined)
-                        onOpenChange(false)
-                    } else setDeleteError("Unknown error while deleting")
+            core.deleteEntity(entityId, deleteContent)
+                .then(() => {
+                    setDeleteError(undefined)
+                    onOpenChange(false)
                 })
-                .catch((e) => {
+                .catch((e: unknown) => {
                     console.error(e)
                     setDeleteError(e)
                 })
@@ -90,16 +82,7 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
                     setIsDeleting(false)
                 })
         }
-    }, [
-        entity,
-        serviceProvider,
-        crateId,
-        deleteEntity,
-        onOpenChange,
-        entityId,
-        context,
-        deleteContent
-    ])
+    }, [entity, core, deleteEntity, onOpenChange, entityId, deleteContent])
 
     const couldHaveFile = useMemo(() => {
         return entity ? !isContextualEntity(entity) : true
@@ -122,19 +105,23 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
     }, [couldBeFileEntity, deleteContent, entity])
 
     const getImpactedFileOrFolderCount = useCallback(async () => {
-        if (!serviceProvider || !crateId) return 0
+        const fileService = persistence.getCrateService()?.getFileService()
+        if (!fileService) return 0
 
-        const list = await serviceProvider.getCrateFilesList(crateId)
+        const list = await fileService.getContentList()
+        const paths = list.map((f) => f.path)
         if (entityId.endsWith("/")) {
-            return list.filter((file) =>
-                normalizeIdentifier(file).startsWith(normalizeIdentifier(entityId))
+            return paths.filter((path: string) =>
+                normalizeIdentifier(path).startsWith(normalizeIdentifier(entityId))
             ).length
         } else {
-            return list.filter(
-                (file) => normalizeIdentifier(file) === normalizeIdentifier(entityId)
+            return paths.filter(
+                (path: string) => normalizeIdentifier(path) === normalizeIdentifier(entityId)
             ).length
         }
-    }, [crateId, entityId, serviceProvider])
+    }, [entityId, persistence])
+
+    const crateId = persistence.getCrateId()
 
     const { data: impactedFileOrFolderCount } = useSWR(
         crateId ? `impacted-file-or-folder-count-${entityId}-${crateId}` : null,
