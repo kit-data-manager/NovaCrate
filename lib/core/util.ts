@@ -25,7 +25,7 @@ export function downloadBlob(blob: Blob, fileName: string): void {
 export async function downloadCrateAs(
     repositoryService: IRepositoryService,
     crateId: string,
-    format: "zip" | "eln" | "standalone-json",
+    format: Parameters<IRepositoryService["getCrateAs"]>[1],
     fileName: string
 ): Promise<void> {
     const blob = await repositoryService.getCrateAs(crateId, format)

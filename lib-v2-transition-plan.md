@@ -346,7 +346,7 @@ Components that need custom behavior beyond the hook (e.g. `delete-entity-modal`
 
 ---
 
-### Phase 5: WP5b — Status/loading consumers (7 files)
+### Phase 5: WP5b — Status/loading consumers (7 files) ✓
 
 **Migration pattern**: Replace `useContext(CrateDataContext)` field reads with `useOperationState()` and `useEditorState()`.
 
@@ -359,6 +359,14 @@ Components that need custom behavior beyond the hook (e.g. `delete-entity-modal`
 | `components/crate-validation-supervisor.tsx` | `crateData`, `crateDataIsLoading`, `crateId`                                                                              | Subscribe to `editorState.entities` for change detection, drop loading flag                                         |
 | `components/context/context.tsx`             | `crateDataIsLoading`, `crateId`                                                                                           | Drop loading flag, `usePersistence().getCrateId()`                                                                  |
 | `components/context/custom-pairs.tsx`        | `crateDataIsLoading`                                                                                                      | Already migrated in Phase 1 (WP5d)                                                                                  |
+
+**Additional changes made during Phase 5:**
+
+- `nav-header.tsx`: Export callbacks now use `downloadCrateAs()` from `lib/core/util.ts` with `usePersistence().getRepositoryService()`. Removed "Reload Entities" menu item (action was dropped in Phase 4). `crateDataIsLoading` replaced with `!crateName` check. `saveError` renamed to `saveErrors`, `error` renamed to `loadError`, `healthTestError` reads from `useOperationState(s => s.healthError)`.
+- `entity-graph.tsx`: `crateDataIsLoading || !crateId` visibility guards replaced with `entities.size === 0`.
+- `entity-editor-tabs.tsx`: `crateDataIsLoading` guard for auto-close simplified to `entitiesSize > 0` (entities are populated synchronously by `useCoreSync`).
+- `crate-validation-supervisor.tsx`: `crateData` dependency for re-validation replaced with `entities`. `crateDataIsLoading` guard dropped. `crateId` from `usePersistence().getCrateId()`.
+- `context.tsx`: Loading skeleton keyed on `!contextReady` instead of `crateDataIsLoading || !crateId`. Invalid context warning simplified to `contextReady && !context.specification`.
 
 ---
 
