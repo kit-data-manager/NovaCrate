@@ -7,6 +7,8 @@ import { CoreServiceImpl } from "@/lib/core/impl/CoreServiceImpl"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { useCoreSync } from "@/lib/use-core-sync"
 import { useRouter } from "next/navigation"
+import { useCrateIdPersistence } from "@/lib/use-crate-id-persistence"
+import { LoadingHero } from "@/components/loading-hero"
 
 const CoreContext = createContext<ICoreService | null>(null)
 
@@ -23,6 +25,8 @@ const CoreContext = createContext<ICoreService | null>(null)
 export function CoreProvider({ children }: PropsWithChildren) {
     const persistence = usePersistence()
     const router = useRouter()
+
+    useCrateIdPersistence(persistence)
 
     const [core, setCore] = useState<ICoreService | null>(null)
 
@@ -41,10 +45,9 @@ export function CoreProvider({ children }: PropsWithChildren) {
 
         async function initCore() {
             const crateService = persistence.getCrateService()
+            console.log("initCore", crateService)
 
             if (!crateService) {
-                disposeCurrent()
-                router.replace("/editor")
                 return
             }
 
@@ -66,6 +69,7 @@ export function CoreProvider({ children }: PropsWithChildren) {
         }
 
         const remove = persistence.events.addEventListener("crate-service-changed", () => {
+            console.log("crate-service-changed, re-initCore")
             initCore()
         })
 
@@ -80,7 +84,7 @@ export function CoreProvider({ children }: PropsWithChildren) {
 
     useCoreSync(core)
 
-    if (!core) return null
+    if (!core) return <LoadingHero />
 
     return <CoreContext.Provider value={core}>{children}</CoreContext.Provider>
 }

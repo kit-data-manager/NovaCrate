@@ -23,6 +23,7 @@ export function useCrateIdPersistence(persistence: IPersistenceService): void {
         if (persistence.canSetCrateId()) {
             const saved = localStorage.getItem(CRATE_ID_STORAGE_KEY)
             if (saved) {
+                console.log("Setting the crate id to", saved)
                 persistence.setCrateId(saved)
             }
         }

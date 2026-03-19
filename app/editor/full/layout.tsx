@@ -8,7 +8,6 @@ import { usePathname } from "next/navigation"
 import { SchemaWorkerProvider } from "@/components/providers/schema-worker-provider"
 import { GlobalModalProvider } from "@/components/providers/global-modals-provider"
 import { useCrateName, useRecentCrates } from "@/lib/hooks"
-import { useCrateIdPersistence } from "@/lib/use-crate-id-persistence"
 import DefaultActions from "@/components/actions/default-actions"
 import { ActionKeyboardShortcuts } from "@/components/actions/action-keyboard-shortcuts"
 import EntityActions from "@/components/actions/entity-actions"
@@ -24,24 +23,12 @@ export default function EditorLayout(props: PropsWithChildren) {
             <SchemaWorkerProvider>
                 <GlobalModalProvider>
                     <ValidationContextProvider>
-                        <CrateIdPersistence />
                         <ProviderBoundary>{props.children}</ProviderBoundary>
                     </ValidationContextProvider>
                 </GlobalModalProvider>
             </SchemaWorkerProvider>
         </CoreProvider>
     )
-}
-
-/**
- * Render-null component that restores the crate ID from localStorage on mount
- * and persists crate ID changes back to localStorage. Placed inside the editor
- * layout so it only runs for `/editor/full/*` routes — not on the landing page.
- */
-function CrateIdPersistence() {
-    const persistence = usePersistence()
-    useCrateIdPersistence(persistence)
-    return null
 }
 
 /**

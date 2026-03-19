@@ -29,6 +29,7 @@ export class Observable<
     emit<K extends keyof T>(event: K, ...data: Parameters<T[K]>): void {
         const set = this.listeners.get(event) as Set<T[K]> | undefined
         if (!set) return
+        console.log("Emit event " + (event as string), data)
         for (const listener of set) {
             listener(...data)
         }
