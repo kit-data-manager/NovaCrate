@@ -286,13 +286,23 @@ export const editorState = createWithEqualityFn<EditorState>()(
 
             setEntities(data: Map<string, IEntity>) {
                 setState((state) => {
-                    state.entities = data
+                    // Create a copy of the map to prevent freezing the callers' data
+                    const copy = JSON.parse(JSON.stringify(Array.from(data.entries()))) as [
+                        string,
+                        IEntity
+                    ][]
+                    state.entities = new Map(copy)
                 })
             },
 
             setInitialEntities(data: Map<string, IEntity>) {
                 setState((state) => {
-                    state.initialEntities = data
+                    // Create a copy of the map to prevent freezing the callers' data
+                    const copy = JSON.parse(JSON.stringify(Array.from(data.entries()))) as [
+                        string,
+                        IEntity
+                    ][]
+                    state.initialEntities = new Map(copy)
                 })
             },
 

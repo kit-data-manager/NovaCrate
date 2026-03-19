@@ -5,7 +5,6 @@ import { operationState } from "@/lib/state/operation-state"
 import { editorState } from "@/lib/state/editor-state"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { getEntityDisplayName } from "@/lib/utils"
-import { TriangleAlert } from "lucide-react"
 import React from "react"
 
 /**
@@ -24,7 +23,10 @@ export function useCrateMutations() {
     const core = useCore()
 
     const saveEntity = useCallback(
-        async (entity: IEntity): Promise<boolean> => {
+        async (_entity: IEntity): Promise<boolean> => {
+            // Copy the entity as it might come from the editor state and would be frozen
+            const entity = JSON.parse(JSON.stringify(_entity)) as IEntity
+
             const { setIsSaving, addSaveError, clearSaveError } = operationState.getState()
             setIsSaving(true)
             try {
@@ -57,9 +59,6 @@ export function useCrateMutations() {
                     React.createElement(
                         "div",
                         null,
-                        React.createElement(TriangleAlert, {
-                            className: "size-4 mr-1 inline-block text-warn"
-                        }),
                         " Could not save changes to ",
                         React.createElement(EntityIcon, { entity, className: "mr-1" }),
                         getEntityDisplayName(entity)
@@ -74,7 +73,10 @@ export function useCrateMutations() {
     )
 
     const deleteEntity = useCallback(
-        async (entity: IEntity, deleteData: boolean): Promise<boolean> => {
+        async (_entity: IEntity, deleteData: boolean): Promise<boolean> => {
+            // Copy the entity as it might come from the editor state and would be frozen
+            const entity = JSON.parse(JSON.stringify(_entity)) as IEntity
+
             const { addSaveError } = operationState.getState()
             try {
                 await core.deleteEntity(entity["@id"], deleteData)
@@ -89,7 +91,10 @@ export function useCrateMutations() {
     )
 
     const changeEntityId = useCallback(
-        async (entity: IEntity, newEntityId: string): Promise<boolean> => {
+        async (_entity: IEntity, newEntityId: string): Promise<boolean> => {
+            // Copy the entity as it might come from the editor state and would be frozen
+            const entity = JSON.parse(JSON.stringify(_entity)) as IEntity
+
             const { addSaveError } = operationState.getState()
             try {
                 await core.changeEntityIdentifier(entity["@id"], newEntityId)
@@ -104,7 +109,10 @@ export function useCrateMutations() {
     )
 
     const createFileEntity = useCallback(
-        async (entity: IEntity, file: File, overwrite = false): Promise<boolean> => {
+        async (_entity: IEntity, file: File, overwrite = false): Promise<boolean> => {
+            // Copy the entity as it might come from the editor state and would be frozen
+            const entity = JSON.parse(JSON.stringify(_entity)) as IEntity
+
             const { setIsSaving, addSaveError } = operationState.getState()
             setIsSaving(true)
             try {
@@ -123,10 +131,13 @@ export function useCrateMutations() {
 
     const createFolderEntity = useCallback(
         async (
-            entity: IEntity,
+            _entity: IEntity,
             files: IEntityWithFile[],
             progressCallback?: (current: number, max: number, errors: unknown[]) => void
         ): Promise<boolean> => {
+            // Copy the entity as it might come from the editor state and would be frozen
+            const entity = JSON.parse(JSON.stringify(_entity)) as IEntity
+
             const { setIsSaving, addSaveError } = operationState.getState()
             setIsSaving(true)
             try {
@@ -167,7 +178,10 @@ export function useCrateMutations() {
             setIsSaving(true)
             try {
                 const initialEntities = editorState.getState().initialEntities
-                for (const entity of entities) {
+                for (const _entity of entities) {
+                    // Copy the entity as it might come from the editor state and would be frozen
+                    const entity = JSON.parse(JSON.stringify(_entity)) as IEntity
+
                     try {
                         const isNew = !initialEntities.has(entity["@id"])
                         if (isNew) {
