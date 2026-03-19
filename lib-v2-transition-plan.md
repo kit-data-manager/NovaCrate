@@ -61,7 +61,7 @@ All RO-Crate metadata knowledge lives here. The repository stays metadata-agnost
 2. Subscribe to `IMetadataService.events["graph-changed"]` → update `editorState.setEntities` and `editorState.setInitialEntities`.
 3. Subscribe to `IContextService.events["context-changed"]` → update `editorState.updateCrateContext` and `editorState.updateInitialCrateContext`.
 4. Handle initial population on mount.
-5. Determine merge/conflict strategy: since mutations go through the core layer, "remote" and "local" are always in sync. `initialEntities` reflects the core layer state, `entities` is the user's working copy. The old `applyServerDifferences` 3-way merge may no longer be needed.
+5. Determine merge/conflict strategy: since mutations go through the core layer, "remote" and "local" are always in sync if there is no other user working on the same data. `initialEntities` reflects the core layer state, `entities` is the user's working copy. The old `applyServerDifferences` 3-way merge is probably still required, as there is no sophisticated collaboration overlay right now.
 6. Write unit tests.
 
 ---
