@@ -8,7 +8,7 @@ The editor is migrating from a monolithic `CrateDataProvider` / `CrateServiceAda
 | ------------ | -------- | ---------------------------------------------------- |
 | WP1          | **Done** | Fill missing capabilities in persistence/core layers |
 | WP2          | **Done** | Build the editor state sync bridge                   |
-| WP3          | Pending  | Build the operation/UI state layer                   |
+| WP3          | **Done** | Build the operation/UI state layer                   |
 | WP4          | Pending  | Build crate ID management / localStorage persistence |
 | WP5          | Pending  | Migrate consumers from CrateDataContext to new hooks |
 | WP6          | Pending  | Remove legacy code                                   |
@@ -103,16 +103,50 @@ The sync hook runs alongside the legacy `CrateDataProvider` — both populate `e
 
 ---
 
-## WP3: Build the operation/UI state layer
+## WP3: Build the operation/UI state layer (DONE)
 
-**Goal**: Replace `isSaving`, `saveError`, `clearSaveError`, `healthTestError` from `CrateDataProvider`.
+### What was done
 
-**Tasks**:
+**New: `operationState` Zustand store (`lib/state/operation-state.ts`):**
 
-1. Create a Zustand store or React state tracking: `isSaving`, `saveErrors: Map<string, unknown>`, `clearSaveError`.
-2. Wrap core service mutation calls in helpers that manage this state.
-3. Decide on health checking (add `healthCheck()` to `IPersistenceService`, or drop it for OPFS).
-4. Expose via context/hook for UI components.
+Dedicated store for operation-level UI state, replacing the `isSaving`, `saveError`, `clearSaveError`, and `healthTestError` fields from the legacy `CrateDataProvider`. Uses Immer + `enableMapSet` + `ssrSafe` middleware, matching `editorState` patterns.
+
+- `isSaving: boolean` / `setIsSaving(value)` — simple boolean, same semantics as the legacy provider. Set by mutation consumers (WP5a) around core service calls.
+- `saveErrors: Map<string, unknown>` / `addSaveError(entityId, error)` / `clearSaveError(id?)` — per-entity error map. `clearSaveError()` without an argument clears all errors; with an `id`, clears just that entity. Matches the legacy `saveError` / `clearSaveError` API exactly.
+- `healthStatus: "healthy" | "unhealthy" | "unknown"` / `healthError: unknown` / `setHealthStatus(status, error?)` — ternary health state. `"unknown"` is the initial state before the first check runs; transitions to `"healthy"` or `"unhealthy"` once polling begins.
+- Accessed via `useOperationState(selector)` hook.
+
+**Interface changes (`IPersistenceService`):**
+
+- Added `healthCheck(): Promise<void>` — resolves if the persistence layer is healthy, throws if not. Same contract as the legacy `CrateServiceAdapter.healthCheck()`.
+
+**Implementation (`BrowserPersistenceService`):**
+
+- `healthCheck()` delegates to `this.worker.healthTest()`. Throws `"OPFS worker not healthy"` if the worker is unresponsive.
+
+**New: `useHealthCheck` hook (`lib/use-health-check.ts`):**
+
+Polls `persistence.healthCheck()` every 10 seconds and updates `operationState`. Called inside `PersistenceProvider` so health monitoring runs even when no crate is open.
+
+- Calls `healthCheck()` immediately on mount.
+- On success: sets `healthStatus = "healthy"`, clears `healthError`.
+- On failure: sets `healthStatus = "unhealthy"`, stores the error.
+- Toast notifications (via `sonner`) fire only on state transitions — matching the legacy provider's behavior: `toast.error` on healthy/unknown → unhealthy, `toast.info` on unhealthy → healthy.
+
+**Provider wiring (`components/providers/persistence-provider.tsx`):**
+
+- `PersistenceProvider` now calls `useHealthCheck(persistence)` to start health polling.
+
+**Unit tests:**
+
+- `tests/unit/lib/state/operation-state.test.ts` — 14 tests (isSaving toggle, saveErrors CRUD, healthStatus transitions).
+- `tests/unit/lib/use-health-check.test.ts` — 9 tests (immediate check, polling interval, toast transitions, unmount cleanup).
+
+### Design decisions
+
+- **`isSaving` is a simple boolean** (not a counter). The legacy provider used the same model. Consumers set it true at the start of a mutation and false when done.
+- **The store does not wrap core service mutations.** The actual try/catch wrappers that manage `isSaving` and `saveErrors` will be built in WP5a when the mutation consumers are migrated — keeping WP3 as pure infrastructure.
+- **Health check uses `IPersistenceService.healthCheck()`** rather than internal monitoring. The persistence service is the authority on its own health; the UI layer (via `useHealthCheck`) polls and updates the store.
 
 ---
 
@@ -130,11 +164,42 @@ The sync hook runs alongside the legacy `CrateDataProvider` — both populate `e
 
 ## WP5: Migrate consumers from CrateDataContext to new hooks
 
-**Goal**: Replace all `useContext(CrateDataContext)` usages. Subdivided by category:
+**Goal**: Replace all `useContext(CrateDataContext)` usages. Subdivided by category.
+
+**Prerequisites**: WP2 (sync bridge), WP3 (operation state), and WP4 (crate ID management) provide all the infrastructure needed. The mapping from legacy to new APIs is:
+
+| Legacy (`CrateDataContext`)          | New API                                                                                          |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `saveEntity(entity)`                 | `useCore().getMetadataService().updateEntity(id, entity)` + `operationState` for isSaving/errors |
+| `deleteEntity(id)`                   | `useCore().deleteEntity(id)` + `operationState` for errors                                       |
+| `changeEntityId(oldId, newId)`       | `useCore().changeEntityIdentifier(oldId, newId)` + `operationState` for errors                   |
+| `createFileEntity(file, entity)`     | `useCore().addFileEntity(file, entity)` + `operationState` for isSaving/errors                   |
+| `createFolderEntity(entity, files?)` | `useCore().addFolderEntity(entity)` + looped `addFileEntity` for files                           |
+| `saveAllEntities(entities)`          | Loop `updateEntity` / `addEntity` calls on `IMetadataService` (batch method TBD)                 |
+| `isSaving`                           | `useOperationState(s => s.isSaving)`                                                             |
+| `saveError`                          | `useOperationState(s => s.saveErrors)`                                                           |
+| `clearSaveError(id?)`                | `useOperationState(s => s.clearSaveError)` (same signature)                                      |
+| `healthTestError`                    | `useOperationState(s => s.healthError)`                                                          |
+| `crateDataIsLoading`                 | Replaced by `useCoreSync` initial population — entities are available once `CoreProvider` mounts |
+| `serviceProvider.getFiles()`         | `usePersistence().getCrateService()?.getFileService()`                                           |
+| `serviceProvider.getCrateAs()`       | `downloadCrateAs()` from `lib/core/util.ts`                                                      |
+| `serviceProvider.getStorageInfo()`   | Direct OPFS quota API or `IFileService` events                                                   |
+| `addCustomContextPair(p, u)`         | `useCore().getContextService().addCustomContextPair(p, u)`                                       |
+| `removeCustomContextPair(p)`         | `useCore().getContextService().removeCustomContextPair(p)`                                       |
+| `getCrateRaw()`                      | `usePersistence().getCrateService()?.getMetadata()`                                              |
+| `saveRoCrateMetadataJSON(json)`      | `usePersistence().getCrateService()?.setMetadata(json)`                                          |
+| `crateId`                            | `usePersistence().getCrateId()` (after WP4 wires localStorage)                                   |
+| `setCrateId(id)` / `unsetCrateId()`  | `usePersistence().setCrateId(id)` / `usePersistence().setCrateId(null)`                          |
 
 ### WP5a: Mutation consumers (saveEntity, deleteEntity, changeEntityId, createFileEntity, etc.)
 
 ~10 components including: `global-modals-provider`, `entity-context-menu`, `entity-actions`, `save-entity-changes-modal`, `save-as-modal`, `delete-entity-modal`, `rename-entity-modal`, `multi-rename-modal`, `create-entity-modal`, `default-actions`, `hooks.ts`
+
+**Migration pattern** for each mutation consumer:
+
+1. Replace `useContext(CrateDataContext)` with `useCore()` + `useOperationState()`.
+2. Wrap core service calls in try/catch that manages `setIsSaving(true/false)` and `addSaveError(id, e)` / `clearSaveError(id)`.
+3. On success, clear the entity's save error (if any).
 
 **Open items to discuss during WP5a:**
 
@@ -146,9 +211,13 @@ The sync hook runs alongside the legacy `CrateDataProvider` — both populate `e
 
 ~7 components including: `nav-header`, `entity-editor`, `entity-graph`, `entity-editor-tabs`, `entity-browser-content`, `context`, `crate-validation-supervisor`
 
+**Migration pattern**: Replace `useContext(CrateDataContext).isSaving` with `useOperationState(s => s.isSaving)`, `saveError` with `saveErrors`, `clearSaveError` with `clearSaveError` (same signature), `healthTestError` with `healthError`. The `crateDataIsLoading` flag is no longer needed — entities are populated synchronously by `useCoreSync` on `CoreProvider` mount.
+
 ### WP5c: serviceProvider direct-access consumers
 
 ~14 components accessing file operations, crate CRUD, exports, storage info, health checks.
+
+**Migration pattern**: Replace `useContext(CrateDataContext).serviceProvider` with `usePersistence()` and `useCore()`. File operations go through `usePersistence().getCrateService()?.getFileService()`. Crate CRUD and exports use `CrateFactory` and `downloadCrateAs()` from `lib/core/util.ts`.
 
 ### WP5d: Context consumers (addCustomContextPair, removeCustomContextPair)
 
@@ -156,11 +225,11 @@ The sync hook runs alongside the legacy `CrateDataProvider` — both populate `e
 
 ### WP5e: JSON editor (saveRoCrateMetadataJSON, getCrateRaw)
 
-`json-editor/page.tsx` → `usePersistence().getCrateService().getMetadata()` / `.setMetadata()`
+`json-editor/page.tsx` → `usePersistence().getCrateService()?.getMetadata()` / `.setMetadata()`
 
 ### WP5f: Crate ID consumers (crateId, setCrateId, unsetCrateId)
 
-`app/editor/page.tsx`, `app/editor/full/layout.tsx`, and various components using `crateId` for gating.
+`app/editor/page.tsx`, `app/editor/full/layout.tsx`, and various components using `crateId` for gating. After WP4, these use `usePersistence().getCrateId()` / `.setCrateId()`.
 
 ---
 
@@ -173,7 +242,9 @@ The sync hook runs alongside the legacy `CrateDataProvider` — both populate `e
 3. Remove the legacy `applyServerDifferences` function from `lib/ensure-sync.ts` (keep `applyGraphDifferences` which is used by `useCoreSync`)
 4. Remove `serviceProvider` prop from `app/editor/layout.tsx`
 5. Wire `PersistenceProvider` into `app/editor/layout.tsx` and `CoreProvider` into `app/editor/full/layout.tsx`
-6. Clean up remaining imports
+6. Remove the legacy health check polling from `CrateDataProvider` (now handled by `useHealthCheck` in `PersistenceProvider`)
+7. Remove the legacy `useInterval`-based SWR sync (now handled by `useCoreSync` in `CoreProvider`)
+8. Clean up remaining imports
 
 ---
 

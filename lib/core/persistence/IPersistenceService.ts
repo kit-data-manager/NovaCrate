@@ -64,4 +64,9 @@ export interface IPersistenceService {
      * not yet initialised or no repository service is provided.
      */
     getRepositoryService(): IRepositoryService | null
+    /**
+     * Check whether the persistence layer is healthy.
+     * Resolves if healthy, throws if not.
+     */
+    healthCheck(): Promise<void>
 }

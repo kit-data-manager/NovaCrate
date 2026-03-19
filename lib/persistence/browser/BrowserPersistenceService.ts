@@ -68,4 +68,11 @@ export class BrowserPersistenceService implements IPersistenceService {
     getRepositoryService(): IRepositoryService | null {
         return this.repositoryService
     }
+
+    async healthCheck(): Promise<void> {
+        const healthy = await this.worker.healthTest()
+        if (!healthy) {
+            throw new Error("OPFS worker not healthy")
+        }
+    }
 }

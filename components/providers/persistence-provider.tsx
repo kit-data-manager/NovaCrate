@@ -3,6 +3,7 @@
 import { createContext, PropsWithChildren, useContext, useState } from "react"
 import { IPersistenceService } from "@/lib/core/persistence/IPersistenceService"
 import { BrowserPersistenceService } from "@/lib/persistence/browser/BrowserPersistenceService"
+import { useHealthCheck } from "@/lib/use-health-check"
 
 const PersistenceContext = createContext<IPersistenceService | null>(null)
 
@@ -14,6 +15,8 @@ const PersistenceContext = createContext<IPersistenceService | null>(null)
  */
 export function PersistenceProvider({ children }: PropsWithChildren) {
     const [persistence] = useState(() => new BrowserPersistenceService())
+
+    useHealthCheck(persistence)
 
     return <PersistenceContext.Provider value={persistence}>{children}</PersistenceContext.Provider>
 }
