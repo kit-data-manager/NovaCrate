@@ -5,6 +5,7 @@ import { ICoreService } from "@/lib/core/ICoreService"
 import { PersistenceAdapterImpl } from "@/lib/core/impl/PersistenceAdapterImpl"
 import { CoreServiceImpl } from "@/lib/core/impl/CoreServiceImpl"
 import { usePersistence } from "@/components/providers/persistence-provider"
+import { useCoreSync } from "@/lib/use-core-sync"
 import { useRouter } from "next/navigation"
 
 const CoreContext = createContext<ICoreService | null>(null)
@@ -76,6 +77,8 @@ export function CoreProvider({ children }: PropsWithChildren) {
             disposeCurrent()
         }
     }, [persistence, router])
+
+    useCoreSync(core)
 
     if (!core) return null
 

@@ -73,22 +73,30 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         return structuredClone(this._errors)
     }
 
+    getRaw(): CrateContextType | undefined {
+        return this.raw ? structuredClone(this.raw) : undefined
+    }
+
     async addCustomContextPair(prefix: string, url: string): Promise<void> {
         this._customPairs[prefix] = url
-        this._events.emit("context-changed")
-        await this.persistenceAdapter.updateMetadataContext({
+        const updatedContext = {
             "@vocab": this.specification,
             ...this.customPairs
-        } as Record<string, string>)
+        } as Record<string, string>
+        this.raw = updatedContext
+        this._events.emit("context-changed", this.raw!)
+        await this.persistenceAdapter.updateMetadataContext(updatedContext)
     }
 
     async removeCustomContextPair(prefix: string): Promise<void> {
         delete this._customPairs[prefix]
-        this._events.emit("context-changed")
-        await this.persistenceAdapter.updateMetadataContext({
+        const updatedContext = {
             "@vocab": this.specification,
             ...this.customPairs
-        } as Record<string, string>)
+        } as Record<string, string>
+        this.raw = updatedContext
+        this._events.emit("context-changed", this.raw!)
+        await this.persistenceAdapter.updateMetadataContext(updatedContext)
     }
 
     private async loadKnownContext(primary: (typeof KNOWN_CONTEXTS)[number]) {
@@ -214,7 +222,7 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         this._usingFallback = tempUsingFallback
         this._errors = tempErrors
         this.raw = tempRaw
-        this._events.emit("context-changed")
+        this._events.emit("context-changed", this.raw!)
     }
 
     static async newInstance(persistenceAdapter: IPersistenceAdapter) {

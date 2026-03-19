@@ -4,8 +4,9 @@ import { RO_CRATE_VERSION } from "@/lib/constants"
 
 export type IContextServiceEvents = {
     /** Fired whenever the active context changes — either because the underlying
-     *  crate metadata was reloaded, or because a custom pair was added/removed. */
-    "context-changed": () => void
+     *  crate metadata was reloaded, or because a custom pair was added/removed.
+     *  Carries the new raw `@context` value for downstream consumers. */
+    "context-changed": (newContext: CrateContextType) => void
 }
 
 /**
@@ -45,6 +46,11 @@ export interface IContextService {
      * Emits `"context-changed"` via {@link IContextService.events}.
      */
     addCustomContextPair(prefix: string, url: string): void
+    /**
+     * Return the raw `@context` value as it was last loaded from the crate
+     * metadata. Returns `undefined` only if the context has never been loaded.
+     */
+    getRaw(): CrateContextType | undefined
     /**
      * Return the {@link IContextResolverService} for this context, which
      * provides term resolution and reversal without mutation capabilities.

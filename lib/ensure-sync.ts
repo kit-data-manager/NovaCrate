@@ -1,6 +1,52 @@
 import { propertyHasChanged } from "@/lib/utils"
 import { Draft } from "immer"
 
+/**
+ * Three-way merge of entity graphs. Compares the new remote graph against the
+ * previous remote graph and applies only the server-side changes to the local
+ * working copy, preserving any locally-modified properties.
+ *
+ * @param newGraph    The latest remote entity array.
+ * @param lastGraph   The previous remote entity array (empty array on first load).
+ * @param newEntities A mutable Immer draft of the local working entity map.
+ */
+export function applyGraphDifferences(
+    newGraph: IEntity[],
+    lastGraph: IEntity[],
+    newEntities: Draft<Map<string, IEntity>>
+) {
+    const { handleRemaining, handleRemoved, handleNew } = compareCrateGraphs(newGraph, lastGraph)
+
+    handleNew((entity) => {
+        newEntities.set(entity["@id"], entity)
+    })
+
+    handleRemoved((entity) => {
+        newEntities.delete(entity["@id"])
+    })
+
+    handleRemaining(([newEntity, oldEntity]) => {
+        const { handleNewProperties, handleRemovedProperties, handleChangedProperties } =
+            compareEntities(newEntity, oldEntity)
+
+        handleNewProperties((property) => {
+            newEntities.get(newEntity["@id"])![property] = newEntity[property]
+        })
+
+        handleRemovedProperties((property) => {
+            delete newEntities.get(newEntity["@id"])![property]
+        })
+
+        handleChangedProperties((property) => {
+            newEntities.get(newEntity["@id"])![property] = newEntity[property]
+        })
+    })
+}
+
+/**
+ * Legacy entry point that accepts full `ICrate` objects. Used by the legacy
+ * `CrateDataProvider`. Prefer {@link applyGraphDifferences} for new code.
+ */
 export function applyServerDifferences(
     crateData: ICrate,
     lastCrateData: ICrate | undefined,
