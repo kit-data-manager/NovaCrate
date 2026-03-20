@@ -475,6 +475,10 @@ Folded into WP5 since it's small and tightly related. The validation system's co
 
 ## Open concerns (post-migration)
 
+### 3-way merge with editor state
+
+After executing addToHasPart in MetadataService, the hasPart property of the root entity changes. This is currently not correctly merged into the editor state.
+
 ### `canSetCrateId()` enforcement
 
 `IPersistenceService.canSetCrateId()` exists so that persistence implementations can forbid external crate ID changes (e.g. a server-driven implementation where the backend controls which crate is open). Currently:

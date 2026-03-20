@@ -7,6 +7,7 @@ import { IFileService } from "@/lib/core/persistence/IFileService"
 import { MetadataServiceImpl } from "@/lib/core/impl/MetadataServiceImpl"
 import { ContextServiceImpl } from "@/lib/core/impl/ContextServiceImpl"
 import { isDataEntity } from "@/lib/utils"
+import { DateTime } from "luxon"
 
 /**
  * Orchestrates metadata and context operations, delegating entity mutations
@@ -52,7 +53,10 @@ export class CoreServiceImpl implements ICoreService {
         const entity: IEntity = {
             "@id": path,
             "@type": "File",
-            name: name
+            name: name,
+            contentSize: file.size.toString(),
+            encodingFormat: file.type,
+            dateModified: DateTime.fromMillis(file.lastModified).toISO() ?? ""
         }
 
         await this.metadata.addEntity(entity, overwrite)

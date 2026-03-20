@@ -13,7 +13,6 @@ import {
     EyeIcon,
     FileIcon,
     FolderOpen,
-    PencilIcon,
     PenLineIcon,
     Plus,
     Trash

@@ -62,10 +62,9 @@ export function CreateEntityModal({
         setSelectedType(value)
     }, [])
 
-    const onEntityCreated = useCallback((...args: any) => {
-        // TODO save entity directly?
-        // noop for compatibility with old code
-    }, [])
+    const onEntityCreated = useCallback(() => {
+        onOpenChange(false)
+    }, [onOpenChange])
 
     const onCreate = useCallback(
         (id: string, name: string) => {
@@ -78,7 +77,7 @@ export function CreateEntityModal({
                 autoReference
             )
             if (newEntity) {
-                onEntityCreated(newEntity)
+                onEntityCreated()
                 focusTab(id)
             }
         },
@@ -87,7 +86,7 @@ export function CreateEntityModal({
 
     const onProviderCreate = useCallback(
         (entityOrId: IEntity | string) => {
-            onEntityCreated(typeof entityOrId === "object" ? entityOrId : undefined)
+            onEntityCreated()
             if (typeof entityOrId === "string") {
                 openTab({ entityId: entityOrId }, true)
             } else {
