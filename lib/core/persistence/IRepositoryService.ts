@@ -9,17 +9,6 @@ export type IRepositoryServiceEvents = {
 }
 
 /**
- * Represents a crate stored in the crate repository.
- * TODO: Drop this type
- */
-export type StoredCrate = {
-    crateId: string
-    name: string
-    description: string
-    lastOpenedAt: Date | null
-}
-
-/**
  * Manages the collection of all crates stored in the persistence backend.
  *
  * {@link IRepositoryService} is intentionally metadata-agnostic: it stores and
@@ -37,11 +26,8 @@ export type StoredCrate = {
 export interface IRepositoryService {
     readonly events: IObservable<IRepositoryServiceEvents>
 
-    /** Return the list of all crates currently stored in the repository. */
-    // TODO replace with simple string array that returns IDs for each crate in the repository,
-    // as we want to keep the crate repository metadata-agnostic. UI is responsible for parsing
-    // the crate metadata and remembering lastOpened
-    getCratesList(): Promise<StoredCrate[]>
+    /** Return the list of the IDs of all crates currently stored in the repository. */
+    getCratesList(): Promise<string[]>
 
     /**
      * Import a crate from a zip archive (standard RO-Crate zip or ELN format).

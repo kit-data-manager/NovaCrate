@@ -173,8 +173,7 @@ export default function EditorLandingPage() {
     const storedCratesResolver = useCallback(async () => {
         const repo = persistence.getRepositoryService()
         if (repo) {
-            const crates = await repo.getCratesList()
-            return crates.map((c) => c.crateId)
+            return await repo.getCratesList()
         } else return []
     }, [persistence])
 

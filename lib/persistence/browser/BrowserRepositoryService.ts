@@ -1,7 +1,6 @@
 import {
     IRepositoryService,
-    IRepositoryServiceEvents,
-    StoredCrate
+    IRepositoryServiceEvents
 } from "@/lib/core/persistence/IRepositoryService"
 import { IStorageQuota } from "@/lib/core/persistence/IStorageQuota"
 import { IObservable } from "@/lib/core/IObservable"
@@ -19,14 +18,8 @@ export class BrowserRepositoryService implements IRepositoryService {
 
     constructor(private worker: FunctionWorker<typeof opfsFunctions>) {}
 
-    async getCratesList(): Promise<StoredCrate[]> {
-        const crateIds = await this.worker.execute("getCrates")
-        return crateIds.map((crateId) => ({
-            crateId,
-            name: crateId,
-            description: "",
-            lastOpenedAt: null
-        }))
+    async getCratesList(): Promise<string[]> {
+        return await this.worker.execute("getCrates")
     }
 
     async createCrateFromZip(zip: Blob): Promise<string> {

@@ -30,11 +30,7 @@ describe("BrowserRepositoryService", () => {
             const result = await service.getCratesList()
 
             expect(worker.execute).toHaveBeenCalledWith("getCrates")
-            expect(result).toEqual([
-                { crateId: "crate-1", name: "crate-1", description: "", lastOpenedAt: null },
-                { crateId: "crate-2", name: "crate-2", description: "", lastOpenedAt: null },
-                { crateId: "crate-3", name: "crate-3", description: "", lastOpenedAt: null }
-            ])
+            expect(result).toEqual(["crate-1", "crate-2", "crate-3"])
         })
 
         it("should return an empty array when no crates exist", async () => {
@@ -43,15 +39,6 @@ describe("BrowserRepositoryService", () => {
             const result = await service.getCratesList()
 
             expect(result).toEqual([])
-        })
-
-        it("should use the crateId as the name", async () => {
-            worker.execute.mockResolvedValue(["my-unique-id"])
-
-            const result = await service.getCratesList()
-
-            expect(result[0].crateId).toBe("my-unique-id")
-            expect(result[0].name).toBe("my-unique-id")
         })
     })
 
