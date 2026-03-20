@@ -479,6 +479,8 @@ Folded into WP5 since it's small and tightly related. The validation system's co
 
 After executing addToHasPart in MetadataService, the hasPart property of the root entity changes. This is currently not correctly merged into the editor state.
 
+After executing a rename, the editor state is out of sync with the metadata service and holds pre-rename data.
+
 ### `canSetCrateId()` enforcement
 
 `IPersistenceService.canSetCrateId()` exists so that persistence implementations can forbid external crate ID changes (e.g. a server-driven implementation where the backend controls which crate is open). Currently:
