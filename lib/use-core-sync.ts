@@ -8,7 +8,8 @@ import { applyGraphDifferences } from "@/lib/ensure-sync"
  * Subscribes to the core layer's `graph-changed` and `context-changed` events
  * and pushes updates into the Zustand {@link editorState}.
  *
- * This hook replaces the SWR-based sync in the legacy `CrateDataProvider`.
+ * Called inside `CoreProvider` to keep the Zustand editor state in sync
+ * with the core layer's event-driven updates.
  *
  * **Graph sync strategy**:
  * - On first load (or when `lastGraph` is empty): hard-replaces `entities`.

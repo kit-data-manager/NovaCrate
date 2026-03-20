@@ -2,7 +2,7 @@
 
 ## Status Overview
 
-The editor is migrating from a monolithic `CrateDataProvider` / `CrateServiceAdapter` architecture to a layered core + persistence architecture. The UI still runs entirely on the legacy layer.
+The migration from the monolithic `CrateDataProvider` / `CrateServiceAdapter` architecture to the layered core + persistence architecture is **complete**. All work packages (WP1–WP7) are done. The legacy code has been removed. See the open concerns section below for remaining items.
 
 | Work Package | Status   | Description                                          |
 | ------------ | -------- | ---------------------------------------------------- |
@@ -10,9 +10,9 @@ The editor is migrating from a monolithic `CrateDataProvider` / `CrateServiceAda
 | WP2          | **Done** | Build the editor state sync bridge                   |
 | WP3          | **Done** | Build the operation/UI state layer                   |
 | WP4          | **Done** | Build crate ID management / localStorage persistence |
-| WP5          | Pending  | Migrate consumers from CrateDataContext to new hooks |
-| WP6          | Pending  | Remove legacy code                                   |
-| WP7          | Pending  | Validation system adaptation (folded into WP5)       |
+| WP5          | **Done** | Migrate consumers from CrateDataContext to new hooks |
+| WP6          | **Done** | Remove legacy code                                   |
+| WP7          | **Done** | Validation system adaptation (folded into WP5)       |
 
 ---
 
@@ -396,7 +396,7 @@ Files already migrated as part of earlier phases (WP5a/WP5b) that also use `serv
 
 ---
 
-### Phase 7: WP7 — Validation system adaptation (4 files)
+### Phase 7: WP7 — Validation system adaptation (4 files) ✓
 
 Folded into WP5 since it's small and tightly related. The validation system's coupling to the legacy provider is contained: only `serviceProvider.getCrateFileInfo()` and `crateData.crateId` are accessed.
 
@@ -445,18 +445,16 @@ Folded into WP5 since it's small and tightly related. The validation system's co
 
 ---
 
-## WP6: Remove legacy code
+## WP6: Remove legacy code (DONE)
 
-**Tasks**:
+### What was done
 
-1. Delete `CrateDataProvider`, `CrateDataContext`, `ICrateDataProvider` from `crate-data-provider.tsx`
-2. Delete `CrateServiceAdapter.d.ts`, `CrateServiceBase.ts`, `BrowserBasedCrateService.ts` from `lib/backend/`
-3. Remove the legacy `applyServerDifferences` function from `lib/ensure-sync.ts` (keep `applyGraphDifferences` which is used by `useCoreSync`)
-4. Remove `serviceProvider` prop and the legacy `BrowserBasedCrateService` instantiation from `app/editor/layout.tsx`
-5. Remove the `CrateDataProvider` wrapper from `app/editor/layout.tsx` (`PersistenceProvider` and `CoreProvider` are already mounted since WP4)
-6. Remove the legacy health check polling from `CrateDataProvider` (now handled by `useHealthCheck` in `PersistenceProvider`)
-7. Remove the legacy `useInterval`-based SWR sync (now handled by `useCoreSync` in `CoreProvider`)
-8. Clean up remaining imports
+- Deleted `components/providers/crate-data-provider.tsx` (`CrateDataProvider`, `CrateDataContext`, `ICrateDataProvider`)
+- Deleted entire `lib/backend/` directory (`CrateServiceAdapter.d.ts`, `CrateServiceBase.ts`, `BrowserBasedCrateService.ts`, `ROCrateJavaCrateService.ts`)
+- Moved `OrcidProfileInterface.ts` and `RorRecordInterface.ts` from `lib/backend/types/` to `lib/types/` (still used by `entity-import.ts`)
+- Removed legacy `applyServerDifferences` function from `lib/ensure-sync.ts` (kept `applyGraphDifferences`)
+- Removed `CrateDataProvider` wrapper and `BrowserBasedCrateService` instantiation from `app/editor/layout.tsx`
+- Cleaned up legacy references in JSDoc comments across `editor-state.ts`, `operation-state.ts`, `use-core-sync.ts`, `hooks.ts`, `use-crate-mutations.ts`
 
 ---
 

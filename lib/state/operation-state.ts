@@ -10,9 +10,8 @@ export type HealthStatus = "healthy" | "unhealthy" | "unknown"
 
 /**
  * Tracks operation-level UI state: whether a save is in progress, per-entity
- * save errors, and persistence layer health. This store replaces the
- * `isSaving`, `saveError`, `clearSaveError`, and `healthTestError` fields
- * from the legacy `CrateDataProvider`.
+ * save errors, and persistence layer health. Tracks `isSaving`, per-entity
+ * `saveErrors`, `loadError`, and worker `healthStatus`/`healthError`.
  *
  * Accessed via {@link useOperationState} or directly via {@link operationState}.
  */

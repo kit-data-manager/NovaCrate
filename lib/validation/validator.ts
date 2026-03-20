@@ -1,12 +1,11 @@
 import { ValidationResult } from "@/lib/validation/validation-result"
 import { EditorState } from "@/lib/state/editor-state"
 import { ISchemaWorkerContext } from "@/components/providers/schema-worker-provider"
-import { ICrateDataProvider } from "@/components/providers/crate-data-provider"
+import { IFileService } from "@/lib/core/persistence/IFileService"
 
 export type ValidatorContext = {
     editorState: EditorState
-    serviceProvider?: CrateServiceAdapter
-    crateData: ICrateDataProvider
+    fileService?: IFileService
     schemaWorker: ISchemaWorkerContext
 }
 

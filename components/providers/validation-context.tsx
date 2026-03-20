@@ -6,7 +6,7 @@ import {
     makeBaseValidator,
     makeSpecificationValidators
 } from "@/lib/validation/validators/specification-validator"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { usePersistence } from "@/components/providers/persistence-provider"
 
 export interface ValidationContext {
     validation: ValidationProvider | undefined
@@ -16,17 +16,20 @@ export const ValidationContext = createContext<ValidationContext>({ validation: 
 
 export function ValidationContextProvider({ children }: PropsWithChildren) {
     const schemaWorker = useContext(SchemaWorker)
-    const crateDataProvider = useContext(CrateDataContext)
+    const persistence = usePersistence()
     const editorState = useEditorState((s) => s)
+
+    const fileService = useMemo(() => {
+        return persistence.getCrateService()?.getFileService()
+    }, [persistence])
 
     const ctx = useMemo(() => {
         return {
             editorState,
             schemaWorker,
-            serviceProvider: crateDataProvider.serviceProvider,
-            crateData: crateDataProvider
+            fileService: fileService ?? undefined
         }
-    }, [crateDataProvider, editorState, schemaWorker])
+    }, [editorState, fileService, schemaWorker])
 
     const [validation] = useState(() => {
         const validation = new ValidationProvider(ctx)

@@ -1,5 +1,5 @@
-import { RorRecord } from "@/lib/backend/types/RorRecordInterface"
-import { OrcidProfile } from "@/lib/backend/types/OrcidProfileInterface"
+import { RorRecord } from "@/lib/types/RorRecordInterface"
+import { OrcidProfile } from "@/lib/types/OrcidProfileInterface"
 
 /**
  * Attempts to fetch information on the given ORCID from the ORCID API, returning an entity containing selected information

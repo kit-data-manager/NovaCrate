@@ -31,7 +31,7 @@ export interface EditorState {
     initialCrateContextError: unknown
 
     /**
-     * Updates the initial crate context. Called by the {@link CrateDataProvider} whenever the remote context changes
+     * Updates the initial crate context. Called by {@link useCoreSync} whenever the remote context changes.
      */
     updateInitialCrateContext(crateContext: CrateContextType): void
 
@@ -50,11 +50,11 @@ export interface EditorState {
     entities: Map<string, IEntity>
 
     /**
-     * Updates the initial crate state. Called by the {@link CrateDataProvider} whenever the remote state changes
+     * Updates the initial crate state. Called by {@link useCoreSync} whenever the remote state changes.
      */
     setInitialEntities(data: Map<string, IEntity>): void
     /**
-     * Updates the editor crate state. Called by the {@link CrateDataProvider} when conflicts between local and remote state are being resolved.
+     * Updates the editor crate state. Called by {@link useCoreSync} when conflicts between local and remote state are being resolved.
      */
     setEntities(data: Map<string, IEntity>): void
 

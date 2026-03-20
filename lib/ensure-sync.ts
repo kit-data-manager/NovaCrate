@@ -43,46 +43,6 @@ export function applyGraphDifferences(
     })
 }
 
-/**
- * Legacy entry point that accepts full `ICrate` objects. Used by the legacy
- * `CrateDataProvider`. Prefer {@link applyGraphDifferences} for new code.
- */
-export function applyServerDifferences(
-    crateData: ICrate,
-    lastCrateData: ICrate | undefined,
-    newEntities: Draft<Map<string, IEntity>>
-) {
-    const { handleRemaining, handleRemoved, handleNew } = compareCrateGraphs(
-        crateData["@graph"],
-        lastCrateData?.["@graph"] || []
-    )
-
-    handleNew((entity) => {
-        newEntities.set(entity["@id"], entity)
-    })
-
-    handleRemoved((entity) => {
-        newEntities.delete(entity["@id"])
-    })
-
-    handleRemaining(([newEntity, oldEntity]) => {
-        const { handleNewProperties, handleRemovedProperties, handleChangedProperties } =
-            compareEntities(newEntity, oldEntity)
-
-        handleNewProperties((property) => {
-            newEntities.get(newEntity["@id"])![property] = newEntity[property]
-        })
-
-        handleRemovedProperties((property) => {
-            delete newEntities.get(newEntity["@id"])![property]
-        })
-
-        handleChangedProperties((property) => {
-            newEntities.get(newEntity["@id"])![property] = newEntity[property]
-        })
-    })
-}
-
 function compareRecords<A extends Record<string, unknown>, B extends Record<string, unknown>>(
     newRecord: A,
     oldRecord: B

@@ -6,7 +6,7 @@ This file provides guidance for AI coding agents working in this repository.
 
 NovaCrate is a web-based interactive editor for creating, editing, and visualizing Research Object Crates (RO-Crate). Built with Next.js 16, React 19, TypeScript, and Tailwind CSS 4.
 
-**Migration in progress**: The editor is undergoing a major reengineering of its core logic. A new layered architecture (core layer + persistence layer) has been implemented in `lib/core/` and `lib/persistence/`, with React providers in `components/providers/persistence-provider.tsx` and `components/providers/core-provider.tsx`. Both new providers are now mounted in the app tree alongside the legacy `CrateDataProvider` — they coexist, with both systems populating the Zustand `editorState`. The **UI still consumes the legacy `CrateDataProvider`** in `components/providers/crate-data-provider.tsx`. The next phase of work is migrating UI components from the legacy provider to the new hooks (`useCore()`, `usePersistence()`, `useOperationState()`). See `lib-v2-transition-plan.md` for the full migration plan and remaining work packages.
+**Architecture**: The editor uses a layered core + persistence architecture implemented in `lib/core/` and `lib/persistence/`, with React providers in `components/providers/persistence-provider.tsx` and `components/providers/core-provider.tsx`. UI components consume the core layer via hooks (`useCore()`, `usePersistence()`, `useOperationState()`, `useCrateMutations()`). See `lib-v2-transition-plan.md` for the architecture history and open concerns.
 
 ## Build & Development Commands
 
@@ -184,7 +184,7 @@ lib/
     browser/            # Browser-based persistence (OPFS-backed implementations)
   state/                # Zustand state stores
   validation/           # Validation logic
-  backend/              # Legacy backend service (being replaced — see Architecture)
+  types/                # Shared TypeScript interfaces (OrcidProfile, RorRecord)
 tests/
   unit/                 # Jest unit tests
   e2e/                  # Playwright e2e tests
@@ -214,17 +214,13 @@ The persistence layer handles storage. The only current implementation is browse
 - **`IPersistenceService` / `BrowserPersistenceService`** — Top-level entry point. Manages crate ID selection, provides `ICrateService` and `IRepositoryService`. Has `createCrateServiceFor(crateId)` for creating a standalone crate service without changing the selected crate. Has `healthCheck()` which resolves if healthy, throws if the OPFS worker is unresponsive.
 - **`ICrateService` / `BrowserCrateService`** — Read/write the `ro-crate-metadata.json` for a specific crate. Provides `IFileService`. Emits `metadata-changed` events.
 - **`IFileService` / `BrowserFileService`** — File operations within a crate (add, read, update, move, delete). Emits granular events (`file-created`, `file-deleted`, `folder-created`, etc.) and `quota-changed`.
-- **`IRepositoryService` / `BrowserRepositoryService`** — Manages the collection of crates. Metadata-agnostic: only stores/retrieves opaque crate directories. Methods: `getCratesList`, `createCrateFromZip` (returns crate ID), `createCrateFromMetadata` (writes a metadata string, returns crate ID), `deleteCrate`, `getCrateAs` (export as zip/eln/json).
+- **`IRepositoryService` / `BrowserRepositoryService`** — Manages the collection of crates. Metadata-agnostic: only stores/retrieves opaque crate directories. Methods: `getCratesList` (returns `string[]` of crate IDs), `createCrateFromZip` (returns crate ID), `createCrateFromMetadata` (writes a metadata string, returns crate ID), `deleteCrate`, `getCrateAs` (export as zip/eln/json), `getStorageQuota`.
 
 ### React Providers (`components/providers/`)
 
 - **`PersistenceProvider`** (`persistence-provider.tsx`) — Creates and provides the `BrowserPersistenceService` singleton. Mount at `app/editor/layout.tsx`. Calls `useHealthCheck(persistence)` internally to monitor worker health. Hook: `usePersistence()`.
 - **`CoreProvider`** (`core-provider.tsx`) — Creates `PersistenceAdapterImpl` + `CoreServiceImpl` when a crate is open. Mount at `app/editor/full/layout.tsx`. If the crate is deselected, navigates to `/editor`. Internally calls `useCoreSync(core)` to bridge core layer events into the Zustand `editorState`. Hook: `useCore()` (always non-null inside the provider).
-- **`useCoreSync`** (`lib/use-core-sync.ts`) — Sync hook called inside `CoreProvider`. Subscribes to `graph-changed` and `context-changed` events from the core layer and pushes updates into `editorState`. On initial mount, hard-replaces entities and context. On subsequent `graph-changed` events, applies a three-way merge (`applyGraphDifferences` from `lib/ensure-sync.ts`) to preserve local edits while incorporating remote changes. Currently coexists with the legacy `CrateDataProvider`'s SWR sync — both populate `editorState` until the legacy provider is removed in WP6.
-
-### Legacy Layer (`lib/backend/`) — Being Replaced
-
-The `CrateDataProvider`, `CrateServiceAdapter`, and `BrowserBasedCrateService` in `lib/backend/` are the old monolithic architecture. They are being replaced by the core + persistence layers above. Do not add new functionality to the legacy layer. See `lib-v2-transition-plan.md` for the migration plan.
+- **`useCoreSync`** (`lib/use-core-sync.ts`) — Sync hook called inside `CoreProvider`. Subscribes to `graph-changed` and `context-changed` events from the core layer and pushes updates into `editorState`. On initial mount, hard-replaces entities and context. On subsequent `graph-changed` events, applies a three-way merge (`applyGraphDifferences` from `lib/ensure-sync.ts`) to preserve local edits while incorporating remote changes.
 
 ### Key Design Decisions
 

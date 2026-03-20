@@ -212,7 +212,7 @@ export function useGoToMainMenu() {
 }
 
 /**
- * Wrapper to call CrateDataContext.saveAllEntities with only entities that have changes
+ * Wrapper to call saveAllEntities with only entities that have changes
  */
 export function useSaveAllEntities() {
     const { saveAllEntities } = useCrateMutations()
