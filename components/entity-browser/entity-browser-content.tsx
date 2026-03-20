@@ -2,8 +2,7 @@ import {
     DefaultSectionOpen,
     EntityBrowserSection
 } from "@/components/entity-browser/entity-browser-section"
-import { useContext, useMemo } from "react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useMemo } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { isDataEntity, toArray } from "@/lib/utils"
@@ -17,7 +16,6 @@ export function EntityBrowserContent({
     defaultSectionOpen: DefaultSectionOpen
     onSectionOpenChange(): void
 }) {
-    const crate = useContext(CrateDataContext)
     const structureBy = useEntityBrowserSettings((s) => s.structureBy)
     const entities = useEditorState((s) => s.entities)
     const rootEntityId = useEditorState((s) => s.getRootEntityId())
@@ -63,7 +61,7 @@ export function EntityBrowserContent({
         return [...result.entries()].sort()
     }, [entities, rootEntityId, structureBy])
 
-    if (!crate.crateData)
+    if (entities.size === 0)
         return (
             <div className="flex flex-col gap-2 p-2">
                 <Skeleton className="h-6 w-60" />

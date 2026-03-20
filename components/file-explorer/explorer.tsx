@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { usePersistence } from "@/components/providers/persistence-provider"
 import { ChevronsDownUp, ChevronsUpDown, EllipsisVertical, Folder, RefreshCw } from "lucide-react"
 import { Error } from "@/components/error"
 import HelpTooltip from "@/components/help-tooltip"
@@ -34,7 +34,8 @@ import { ExplorerNode } from "@/components/file-explorer/explorer-node"
 export type DefaultSectionOpen = boolean | "indeterminate"
 
 export function FileExplorer() {
-    const crateData = useContext(CrateDataContext)
+    const persistence = usePersistence()
+    const crateId = persistence.getCrateId()
     const entities = useEditorState((store) => store.entities)
     const downloadError = useFileExplorerState((store) => store.downloadError)
     const showEntities = useStore(fileExplorerSettings, (s) => s.showEntities)
@@ -50,17 +51,19 @@ export function FileExplorer() {
     })
 
     const filesListResolver = useCallback(async () => {
-        if (crateData.serviceProvider && crateData.crateId) {
-            return await crateData.serviceProvider.getCrateFilesList(crateData.crateId)
+        const fileService = persistence.getCrateService()?.getFileService()
+        if (fileService) {
+            const list = await fileService.getContentList()
+            return list.map((f) => f.path)
         }
-    }, [crateData.crateId, crateData.serviceProvider])
+    }, [persistence])
 
     const {
         data,
         error,
         isLoading: isPending,
         mutate: revalidate
-    } = useSWR(crateData.crateId ? "files-list-" + crateData.crateId : null, filesListResolver)
+    } = useSWR(crateId ? "files-list-" + crateId : null, filesListResolver)
 
     const revalidateRef = useRef(revalidate)
     useEffect(() => {

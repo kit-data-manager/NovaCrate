@@ -1,5 +1,4 @@
-import { useCallback, useContext } from "react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useCallback } from "react"
 import useSWR from "swr"
 import { Progress } from "@/components/ui/progress"
 import prettyBytes from "pretty-bytes"
@@ -9,12 +8,24 @@ import { Error } from "@/components/error"
 import HelpTooltip from "@/components/help-tooltip"
 import { Skeleton } from "@/components/ui/skeleton"
 
-export function StorageInfo() {
-    const { serviceProvider } = useContext(CrateDataContext)
+// TODO: Storage info relies on the browser's navigator.storage API.
+// If the persistence layer does not run in a browser context, this
+// component should be hidden. Track this in the transition plan
+// under "components to conditionally hide".
 
-    const fetcher = useCallback(() => {
-        return serviceProvider?.getStorageInfo()
-    }, [serviceProvider])
+export function StorageInfo() {
+    const fetcher = useCallback(async () => {
+        if (navigator.storage && navigator.storage.estimate) {
+            const estimate = await navigator.storage.estimate()
+            const persisted = await navigator.storage.persisted()
+            return {
+                usedSpace: estimate.usage ?? 0,
+                totalSpace: estimate.quota ?? 0,
+                persistent: persisted
+            }
+        }
+        return undefined
+    }, [])
 
     const { data, mutate, error, isLoading } = useSWR("storage-info", fetcher)
 

@@ -1,74 +1,70 @@
 @startuml
 
 package core {
-    interface IPersistenceService {
-        + events
-        getCrateId()
-        canSetCrateId(): boolean
-        setCrateId()
-        getCrateService()
-        createCrateServiceFor(crateId)
-        getRepositoryService()
+    class CrateFactory
+
+    package persistence {
+        interface IPersistenceService {
+            + events
+            getCrateId(): string
+            canSetCrateId(): boolean
+            setCrateId(id)
+            createCrateServiceFor(id)
+        }
+
+        interface ICrateService {
+            + events
+            getMetadata()
+            setMetadata()
+        }
+
+        note left
+            if file service is available, this
+            class must call file service methods.
+            Otherwise, it is responsible for
+            providing metadata without a file service.
+        endnote
+
+        interface IFileService {
+            + events
+            getContentList()
+            getInfo(path)
+            getFile(path)
+            addFile(path, blob)
+            addFolder(path)
+            updateFile(path, blob)
+            move(src, dst)
+            delete(path)
+            getStorageQuota()
+        }
+
+        interface IRepositoryService {
+            + events
+            getCratesList(): Promise<string>
+            createCrateFromZip(zip)
+            deleteCrate(crateId)
+            getCrateAs(crateId, format)
+            getStorageQuota()
+        }
+
+        note right
+            Metadata-agnostic
+        endnote
+
+        note left of IPersistenceService
+            invariant:
+            getCrateId() == null
+                equals getCrateService() == null
+        end note
+
+        ICrateService *-- "0..1" IFileService: fileService
+        IPersistenceService *-- "0..1" ICrateService: crateService
+        IPersistenceService *-- "0..1" IRepositoryService: repositoryService
     }
 
-    interface ICrateService {
-        + events
-        getMetadata()
-        setMetadata()
-        getFileService()
-    }
 
-    note as N1
-        if file service is available, this
-        method must call file service methods.
-        Otherwise, it is responsible for
-        providing metadata without a file service
-    endnote
 
-    N1 .. ICrateService::setMetadata
-    N1 .. ICrateService::getMetadata
-
-    interface IFileService {
-        + events
-        getContentList()
-        getInfo(path)
-        getFile(path)
-        addFile(path, blob)
-        addFolder(path)
-        updateFile(path, blob)
-        move(src, dst)
-        delete(path)
-        getStorageQuota()
-    }
-
-    interface IRepositoryService {
-        + events
-        getCratesList()
-        createCrateFromZip(zip)
-        deleteCrate(crateId)
-        getCrateAs(crateId, format)
-        getStorageQuota()
-    }
-
-    struct StoredCrate {
-        name
-        description
-        crateId
-        lastOpenedAt
-    }
-
-    note right of IPersistenceService::getCrateService()
-        invariant:
-        getCrateId() == null
-            implies getCrateService() == null
-    end note
-
-    IRepositoryService *-- "0..*" StoredCrate
-    ICrateService *-- "0..1" IFileService
-    IPersistenceService *-- "0..1" ICrateService
-    IPersistenceService *-- "0..1" IRepositoryService
+    CrateFactory ..> IRepositoryService: <<utilityFor>>
 }
-
-
 
 @enduml

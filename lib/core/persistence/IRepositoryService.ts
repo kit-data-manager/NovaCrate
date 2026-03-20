@@ -10,6 +10,7 @@ export type IRepositoryServiceEvents = {
 
 /**
  * Represents a crate stored in the crate repository.
+ * TODO: Drop this type
  */
 export type StoredCrate = {
     crateId: string
@@ -37,6 +38,9 @@ export interface IRepositoryService {
     readonly events: IObservable<IRepositoryServiceEvents>
 
     /** Return the list of all crates currently stored in the repository. */
+    // TODO replace with simple string array that returns IDs for each crate in the repository,
+    // as we want to keep the crate repository metadata-agnostic. UI is responsible for parsing
+    // the crate metadata and remembering lastOpened
     getCratesList(): Promise<StoredCrate[]>
 
     /**

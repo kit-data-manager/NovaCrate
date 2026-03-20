@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
     Command,
@@ -9,7 +9,6 @@ import {
     CommandList
 } from "@/components/ui/command"
 import { Checkbox } from "@/components/ui/checkbox"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { getEntityDisplayName, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EntityIcon } from "@/components/entity/entity-icon"
@@ -70,7 +69,7 @@ export function SelectReferenceModal({
     onOpenChange: (open: boolean) => void
     propertyRange?: SlimClass[]
 }) {
-    const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
+    const entities = useEditorState((store) => store.entities)
     const crateContext = useEditorState((store) => store.crateContext)
     const rootEntityId = useEditorState((store) => store.getRootEntityId())
 
@@ -101,10 +100,12 @@ export function SelectReferenceModal({
     }, [propertyRange])
 
     const possibleEntities = useMemo(() => {
-        if (!open || crateDataIsLoading || !crateData) return []
+        if (!open || entities.size === 0) return []
+
+        const allEntities = Array.from(entities.values())
 
         if (onlyShowAllowed && propertyRangeIds) {
-            return crateData["@graph"]
+            return allEntities
                 .filter((e) => e["@id"] !== rootEntityId)
                 .filter((e) => !isRoCrateMetadataEntity(e))
                 .filter((entity) => {
@@ -117,17 +118,9 @@ export function SelectReferenceModal({
                     return false
                 })
         } else {
-            return crateData["@graph"]
+            return allEntities
         }
-    }, [
-        crateContext,
-        crateData,
-        crateDataIsLoading,
-        onlyShowAllowed,
-        open,
-        propertyRangeIds,
-        rootEntityId
-    ])
+    }, [crateContext, entities, onlyShowAllowed, open, propertyRangeIds, rootEntityId])
 
     const onSelectAndClose = useCallback(
         (ref: IReference) => {

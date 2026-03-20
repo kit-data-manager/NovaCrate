@@ -1,10 +1,9 @@
-import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { Fragment, useCallback, useContext, useEffect, useState } from "react"
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { Error } from "@/components/error"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Check, HardHat, Loader, Loader2, XIcon } from "lucide-react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { BrowserBasedCrateService } from "@/lib/backend/BrowserBasedCrateService"
+import { useOperationState } from "@/lib/state/operation-state"
 import { SchemaStatus } from "@/lib/schema-worker/SchemaGraph"
 
 function ProvisioningStatusDisplay({ isLoaded, error }: { isLoaded?: boolean; error: unknown }) {
@@ -61,17 +60,11 @@ export function WorkerSettings() {
     const [schemaWorkerError, setSchemaWorkerError] = useState<unknown>()
     const { worker, isUsingWebWorker } = useContext(SchemaWorker)
 
-    const { serviceProvider } = useContext(CrateDataContext)
-
-    const hasServiceProviderWorker = useMemo(() => {
-        return serviceProvider instanceof BrowserBasedCrateService
-    }, [serviceProvider])
-
-    const isServiceProviderWorkerHealthy = useMemo(() => {
-        if (serviceProvider instanceof BrowserBasedCrateService) {
-            return serviceProvider.isWorkerHealthy()
-        } else return false
-    }, [serviceProvider])
+    // TODO: The OPFS worker section should be conditionally shown based on
+    // whether the persistence layer provides a worker-backed service.
+    // For now, we read health from operationState which is populated by
+    // useHealthCheck in PersistenceProvider.
+    const healthStatus = useOperationState((s) => s.healthStatus)
 
     const fetchData = useCallback(async () => {
         const { workerActive, schemaStatus } = await worker.executeUncached("getWorkerStatus")
@@ -126,7 +119,7 @@ export function WorkerSettings() {
                 </div>
             </div>
 
-            {hasServiceProviderWorker ? (
+            {healthStatus !== "unknown" ? (
                 <div className="p-4 border rounded">
                     <div>
                         <h4 className="text-lg font-bold flex items-center">
@@ -136,8 +129,7 @@ export function WorkerSettings() {
                             Manages the virtual file system of the crate.
                         </div>
                         <div className="flex gap-2">
-                            Worker Healthy:{" "}
-                            <SuccessDisplay success={isServiceProviderWorkerHealthy} />
+                            Worker Healthy: <SuccessDisplay success={healthStatus === "healthy"} />
                         </div>
                         <div className="flex gap-2">
                             Worker in Use: <SuccessDisplay success={true} />

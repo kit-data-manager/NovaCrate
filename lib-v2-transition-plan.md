@@ -370,7 +370,7 @@ Components that need custom behavior beyond the hook (e.g. `delete-entity-modal`
 
 ---
 
-### Phase 6: WP5c — serviceProvider direct-access consumers (~10 unique files remaining)
+### Phase 6: WP5c — serviceProvider direct-access consumers (~10 unique files remaining) ✓
 
 **Migration pattern**: Replace `serviceProvider.*` calls with new-architecture equivalents. Replace `crateId` parameters — new services are already scoped to the current crate.
 
@@ -406,6 +406,28 @@ Folded into WP5 since it's small and tightly related. The validation system's co
 | `components/providers/validation-context.tsx`      | Replace `crateDataProvider.serviceProvider` with `persistence.getCrateService()?.getFileService()`; remove `crateData: crateDataProvider`            |
 | `lib/validation/validators/rules/ro-crate-v1.1.ts` | Replace `ctx.serviceProvider.getCrateFileInfo(ctx.crateData.crateId, path)` with `ctx.fileService?.getInfo(path)`                                    |
 | `lib/validation/validators/rules/ro-crate-v1.2.ts` | Same as v1.1                                                                                                                                         |
+
+**Additional changes made during Phase 6:**
+
+- `entry-context-menu.tsx`: File download uses `fileService.getFile()` + `downloadBlob()`. No-ops if file service is unavailable.
+- `path-picker.tsx`: File list from `fileService.getContentList()`, mapped to paths via `.map(f => f.path)`.
+- `explorer.tsx`: Same file list migration. SWR key uses `persistence.getCrateId()`.
+- `preview.tsx`: File preview uses `getFileAsURL()` from `lib/core/util.ts`. Download uses `fileService.getFile()` + `downloadBlob()`. Added TODO for hiding preview when `IFileService` is not available.
+- `crate-entry.tsx`: Crate metadata fetched via `persistence.createCrateServiceFor(crateId)` → `getMetadata()`. Exports use `downloadCrateAs()`. Duplicate uses `CrateFactory.duplicateCrate()`.
+- `create-crate-modal.tsx`: All creation flows use `CrateFactory` (`createEmptyCrate`, `createCrateFromFile`, `createCrateFromFiles`).
+- `delete-crate-modal.tsx`: Deletion via `persistence.getRepositoryService()?.deleteCrate()`.
+- `workers.tsx`: Removed `instanceof BrowserBasedCrateService` check and `isWorkerHealthy()` direct access. OPFS worker health now reads from `useOperationState(s => s.healthStatus)`. Added TODO for conditionally showing the OPFS worker section.
+- `storage-info.tsx`: Replaced `serviceProvider.getStorageInfo()` with direct `navigator.storage` API. Added TODO for hiding when not in a browser context.
+- `select-reference-modal.tsx`: `crateData["@graph"]` replaced with `Array.from(entities.values())` from `useEditorState`. Dropped `crateDataIsLoading` guard.
+- `entity-browser-content.tsx`: `crate.crateData` loading gate replaced with `entities.size === 0` check.
+
+**TODOs for later (components to conditionally hide when services are unavailable):**
+
+- File preview panel — depends on `IFileService`
+- Storage info panel — depends on browser `navigator.storage` API
+- OPFS worker settings section — depends on persistence implementation type
+
+---
 
 ### Summary: file count by phase
 
@@ -473,3 +495,15 @@ This is not blocking since the only implementation always allows setting. Revisi
 ### Toast notifications for all crate mutations
 
 Currently only `saveEntity` shows toast notifications (success + failure). The legacy provider did not show toasts for `deleteEntity`, `changeEntityId`, `createFileEntity`, or `createFolderEntity`. Consider adding consistent toast feedback for all mutation types in `useCrateMutations()` — e.g. "Entity deleted", "Entity renamed", "File uploaded". This would improve UX consistency but should be designed holistically (what message, what icon, success-only vs success+failure) rather than added piecemeal.
+
+### Components to conditionally hide when services are unavailable
+
+Several components depend on specific services that may not be provided by all persistence implementations. These components should be conditionally hidden or show a "not available" message when the required service is missing:
+
+- **File preview panel** (`components/file-explorer/preview.tsx`) — requires `IFileService`
+- **File explorer** (`components/file-explorer/explorer.tsx`) — requires `IFileService`
+- **Storage info panel** (`components/storage-info.tsx`) — requires browser `navigator.storage` API
+- **OPFS worker settings section** (`components/modals/settings/workers.tsx`) — specific to the browser persistence implementation
+- **File download** in context menus (`components/file-explorer/entry-context-menu.tsx`) — requires `IFileService`
+
+Currently these components no-op gracefully when the service is unavailable but are still visible in the UI.

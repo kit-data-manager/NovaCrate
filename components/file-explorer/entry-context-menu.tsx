@@ -22,7 +22,8 @@ import { EntityIcon } from "@/components/entity/entity-icon"
 import HelpTooltip from "@/components/help-tooltip"
 import { useCallback, useContext, useMemo } from "react"
 import { useCopyToClipboard } from "usehooks-ts"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { usePersistence } from "@/components/providers/persistence-provider"
+import { downloadBlob } from "@/lib/core/util"
 import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { encodeFilePath, getFolderPath } from "@/lib/utils"
@@ -46,7 +47,7 @@ export function EntryContextMenu({
     blankSpace?: boolean
     rename?: () => void
 }) {
-    const { serviceProvider, crateId } = useContext(CrateDataContext)
+    const persistence = usePersistence()
     const setDownloadError = useFileExplorerState((store) => store.setDownloadError)
     const setPreviewingFilePath = useFileExplorerState((s) => s.setPreviewingFilePath)
 
@@ -61,10 +62,14 @@ export function EntryContextMenu({
     )
 
     const downloadFile = useCallback(() => {
-        if (serviceProvider && filePath && crateId) {
-            serviceProvider.downloadFile(crateId, filePath).catch(setDownloadError)
+        const fileService = persistence.getCrateService()?.getFileService()
+        if (fileService && filePath) {
+            fileService
+                .getFile(filePath)
+                .then((blob) => downloadBlob(blob, filePath.split("/").pop() || filePath))
+                .catch(setDownloadError)
         }
-    }, [crateId, filePath, serviceProvider, setDownloadError])
+    }, [filePath, persistence, setDownloadError])
 
     const createEntityForExistingFile = useCallback(() => {
         if (!filePath) return null
