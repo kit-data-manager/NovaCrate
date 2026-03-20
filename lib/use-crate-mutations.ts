@@ -9,8 +9,7 @@ import React from "react"
 
 /**
  * Pre-wrapped crate mutation methods that handle `isSaving`, `saveErrors`,
- * and toast notifications internally. Drop-in replacement for the legacy
- * `CrateDataContext` mutation API.
+ * and toast notifications internally.
  *
  * Every method returns `boolean` (`true` = success, `false` = failure) and
  * never throws — exceptions are caught and recorded in {@link operationState}.

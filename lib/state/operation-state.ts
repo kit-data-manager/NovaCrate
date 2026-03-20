@@ -39,8 +39,7 @@ export interface OperationState {
 
     /**
      * Error encountered while loading crate metadata (e.g. during initial
-     * sync in `useCoreSync`). Replaces the legacy SWR `error` field.
-     * `undefined` when no error has occurred.
+     * sync in `useCoreSync`). `undefined` when no error has occurred.
      */
     loadError: unknown
     /** Set or clear the load error. */

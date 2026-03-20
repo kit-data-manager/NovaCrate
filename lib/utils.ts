@@ -102,15 +102,6 @@ export function normalizeIdentifier(path: string) {
 }
 
 /**
- * Check if this entity is the crate root
- * @param entity
- * @deprecated Use `editorState.getRootEntityId()` instead to reliably determine the @id of the root entity
- */
-export function isRootEntity(entity: IEntity) {
-    return entity["@id"] === "./"
-}
-
-/**
  * Check if this entity is the meta-entity for the ro-crate-metadata.json file
  * @param entity
  */

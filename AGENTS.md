@@ -92,10 +92,9 @@ Order imports as follows:
 
 ```typescript
 // Example
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useStore } from "zustand"
-import useSWR from "swr"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useCore } from "@/components/providers/core-provider"
 import { useEditorState } from "@/lib/state/editor-state"
 import { cn, getEntityDisplayName } from "@/lib/utils"
 ```
@@ -119,7 +118,7 @@ import { cn, getEntityDisplayName } from "@/lib/utils"
 - Mark client components with `"use client"` directive at top of file
 - Prefer `useCallback` and `useMemo` for performance optimization
 - Use Zustand stores for global state (`useStore`, `useEditorState`)
-- Use React Context for dependency injection (`CrateDataContext`)
+- Use React providers for dependency injection (`useCore()`, `usePersistence()`)
 
 ```typescript
 // Component pattern
@@ -193,7 +192,7 @@ tests/
 
 ## Architecture
 
-The editor is being migrated to a layered architecture. Understanding this is essential for making changes.
+The editor uses a layered architecture. Understanding this is essential for making changes.
 
 ### Core Layer (`lib/core/`)
 
@@ -222,6 +221,10 @@ The persistence layer handles storage. The only current implementation is browse
 - **`CoreProvider`** (`core-provider.tsx`) — Creates `PersistenceAdapterImpl` + `CoreServiceImpl` when a crate is open. Mount at `app/editor/full/layout.tsx`. If the crate is deselected, navigates to `/editor`. Internally calls `useCoreSync(core)` to bridge core layer events into the Zustand `editorState`. Hook: `useCore()` (always non-null inside the provider).
 - **`useCoreSync`** (`lib/use-core-sync.ts`) — Sync hook called inside `CoreProvider`. Subscribes to `graph-changed` and `context-changed` events from the core layer and pushes updates into `editorState`. On initial mount, hard-replaces entities and context. On subsequent `graph-changed` events, applies a three-way merge (`applyGraphDifferences` from `lib/ensure-sync.ts`) to preserve local edits while incorporating remote changes.
 
+### Mutation Hook
+
+- **`useCrateMutations`** (`lib/use-crate-mutations.ts`) — Pre-wrapped crate mutation methods (`saveEntity`, `deleteEntity`, `changeEntityId`, `createFileEntity`, `createFolderEntity`, `saveAllEntities`) that handle `isSaving`, `saveErrors`, and toast notifications internally. Each method returns `boolean` (`true` = success, `false` = failure) and never throws. Components that need custom behavior beyond these methods can use `useCore()` directly alongside this hook.
+
 ### Key Design Decisions
 
 - **Root entity lookup**: Always use `getRootEntityID(entities)` from `lib/utils.ts`. Never hardcode `"./"`. The function finds the root by looking up the `ro-crate-metadata.json` entity's `about["@id"]` reference, supporting both standard (`./`) and non-standard root IDs.
@@ -244,7 +247,7 @@ The persistence layer handles storage. The only current implementation is browse
 - **React 19** - UI framework
 - **Zustand** - State management
 - **Immer** - Immutable state updates
-- **SWR** - Data fetching (legacy, being phased out)
+- **SWR** - Data fetching for async UI queries (file lists, storage quotas, schema lookups)
 - **Tailwind CSS 4** - Styling
 - **Zod** (`zod/mini`) - Schema validation
 - **JSZip** - Zip archive manipulation (used by `CrateFactory.duplicateCrate`)
