@@ -32,7 +32,7 @@ function createMockMetadataService(
     return {
         _events,
         events: _events,
-        getEntities: () => JSON.parse(JSON.stringify(initialEntities)),
+        getEntities: () => structuredClone(initialEntities),
         addEntity: jest.fn(),
         updateEntity: jest.fn(),
         changeEntityIdentifier: jest.fn(),
@@ -50,7 +50,7 @@ function createMockContextService(
         specification: undefined,
         usingFallback: false,
         customPairs: {},
-        getRaw: () => JSON.parse(JSON.stringify(rawContext)),
+        getRaw: () => structuredClone(rawContext),
         removeCustomContextPair: jest.fn(),
         addCustomContextPair: jest.fn(),
         getResolver: jest.fn()
@@ -84,9 +84,8 @@ const ENTITY_A: IEntity = { "@id": "#a", "@type": ["Thing"], name: "Entity A" }
 const ENTITY_B: IEntity = { "@id": "#b", "@type": ["Person"], name: "Entity B" }
 const ENTITY_C: IEntity = { "@id": "#c", "@type": ["Organization"], name: "Entity C" }
 
-/** Deep clone via JSON round-trip (avoids structuredClone cross-realm issues in Jest). */
 function clone<T>(obj: T): T {
-    return JSON.parse(JSON.stringify(obj))
+    return structuredClone(obj)
 }
 
 // ─── Tests ─────────────────────────────────────────────────────────────────

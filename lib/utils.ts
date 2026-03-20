@@ -408,3 +408,41 @@ export interface AutoReference {
     propertyName: string
     valueIdx: number
 }
+
+/**
+ * Constructor-agnostic deep equality comparison for JSON-serializable values.
+ * Unlike `dequal` and `fast-deep-equal`, this does not compare constructors,
+ * so it works correctly across VM realm boundaries (e.g. with `structuredClone`
+ * in Jest's test sandbox).
+ *
+ * Handles: primitives, plain objects, arrays, `null`. Does **not** handle
+ * `Date`, `RegExp`, `Map`, `Set`, or other non-JSON types.
+ */
+export function deepEqual(a: unknown, b: unknown): boolean {
+    if (a === b) return true
+    if (a === null || b === null) return false
+    if (typeof a !== typeof b) return false
+
+    if (Array.isArray(a)) {
+        if (!Array.isArray(b) || a.length !== b.length) return false
+        for (let i = 0; i < a.length; i++) {
+            if (!deepEqual(a[i], b[i])) return false
+        }
+        return true
+    }
+
+    if (typeof a === "object" && typeof b === "object") {
+        const aObj = a as Record<string, unknown>
+        const bObj = b as Record<string, unknown>
+        const aKeys = Object.keys(aObj)
+        const bKeys = Object.keys(bObj)
+        if (aKeys.length !== bKeys.length) return false
+        for (const key of aKeys) {
+            if (!Object.prototype.hasOwnProperty.call(bObj, key)) return false
+            if (!deepEqual(aObj[key], bObj[key])) return false
+        }
+        return true
+    }
+
+    return false
+}

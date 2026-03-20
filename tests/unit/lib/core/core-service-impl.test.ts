@@ -66,9 +66,7 @@ function createMockPersistenceAdapter(): IPersistenceAdapter & {
     return {
         _events: events,
         events,
-        getMetadataGraph: jest.fn(
-            async () => JSON.parse(JSON.stringify(testCrateGraph)) as IEntity[]
-        ),
+        getMetadataGraph: jest.fn(async () => structuredClone(testCrateGraph)),
         getMetadataContext: jest.fn(async () => "https://w3id.org/ro/crate/1.1/context"),
         updateMetadataGraph: jest.fn(async () => {}),
         updateMetadataContext: jest.fn(async () => {})

@@ -25,7 +25,7 @@ export function useCrateMutations() {
     const saveEntity = useCallback(
         async (_entity: IEntity): Promise<boolean> => {
             // Copy the entity as it might come from the editor state and would be frozen
-            const entity = JSON.parse(JSON.stringify(_entity)) as IEntity
+            const entity = structuredClone(_entity)
 
             const { setIsSaving, addSaveError, clearSaveError } = operationState.getState()
             setIsSaving(true)
@@ -74,8 +74,7 @@ export function useCrateMutations() {
 
     const deleteEntity = useCallback(
         async (_entity: IEntity, deleteData: boolean): Promise<boolean> => {
-            // Copy the entity as it might come from the editor state and would be frozen
-            const entity = JSON.parse(JSON.stringify(_entity)) as IEntity
+            const entity = structuredClone(_entity)
 
             const { addSaveError } = operationState.getState()
             try {
@@ -92,8 +91,7 @@ export function useCrateMutations() {
 
     const changeEntityId = useCallback(
         async (_entity: IEntity, newEntityId: string): Promise<boolean> => {
-            // Copy the entity as it might come from the editor state and would be frozen
-            const entity = JSON.parse(JSON.stringify(_entity)) as IEntity
+            const entity = structuredClone(_entity)
 
             const { addSaveError } = operationState.getState()
             try {
@@ -110,8 +108,7 @@ export function useCrateMutations() {
 
     const createFileEntity = useCallback(
         async (_entity: IEntity, file: File, overwrite = false): Promise<boolean> => {
-            // Copy the entity as it might come from the editor state and would be frozen
-            const entity = JSON.parse(JSON.stringify(_entity)) as IEntity
+            const entity = structuredClone(_entity)
 
             const { setIsSaving, addSaveError } = operationState.getState()
             setIsSaving(true)
@@ -135,8 +132,7 @@ export function useCrateMutations() {
             files: IEntityWithFile[],
             progressCallback?: (current: number, max: number, errors: unknown[]) => void
         ): Promise<boolean> => {
-            // Copy the entity as it might come from the editor state and would be frozen
-            const entity = JSON.parse(JSON.stringify(_entity)) as IEntity
+            const entity = structuredClone(_entity)
 
             const { setIsSaving, addSaveError } = operationState.getState()
             setIsSaving(true)
@@ -179,8 +175,7 @@ export function useCrateMutations() {
             try {
                 const initialEntities = editorState.getState().initialEntities
                 for (const _entity of entities) {
-                    // Copy the entity as it might come from the editor state and would be frozen
-                    const entity = JSON.parse(JSON.stringify(_entity)) as IEntity
+                    const entity = structuredClone(_entity)
 
                     try {
                         const isNew = !initialEntities.has(entity["@id"])

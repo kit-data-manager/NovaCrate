@@ -4,11 +4,11 @@ import { Observable } from "@/lib/core/impl/Observable"
 import { IPersistenceAdapter } from "@/lib/core/IPersistenceAdapter"
 import {
     changeEntityIdOccurrences,
+    deepEqual,
     getRootEntityID,
     isDataEntity,
     normalizeIdentifier
 } from "@/lib/utils"
-import { dequal } from "dequal"
 
 export class MetadataServiceImpl implements IMetadataService {
     private graph: Map<string, IEntity> = new Map()
@@ -169,7 +169,7 @@ export class MetadataServiceImpl implements IMetadataService {
     }
 
     private updateGraph(newEntities: IEntity[]) {
-        if (dequal(newEntities, this.graphAsArray())) return
+        if (deepEqual(newEntities, this.graphAsArray())) return
         this.graph = new Map(newEntities.map((entity) => [entity["@id"], entity]))
         this._events.emit("graph-changed", newEntities)
     }

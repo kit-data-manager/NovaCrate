@@ -42,9 +42,7 @@ function createMockPersistenceAdapter(): IPersistenceAdapter & {
     return {
         _events: events,
         events,
-        getMetadataGraph: jest.fn(
-            async () => JSON.parse(JSON.stringify(testCrateGraph)) as IEntity[]
-        ),
+        getMetadataGraph: jest.fn(async () => structuredClone(testCrateGraph)),
         getMetadataContext: jest.fn(async () => "https://w3id.org/ro/crate/1.1/context"),
         updateMetadataGraph: jest.fn(async () => {}),
         updateMetadataContext: jest.fn(async () => {})
@@ -764,16 +762,11 @@ describe("MetadataServiceImpl", () => {
             expect(entities[0].name).toBe("External Update")
         })
 
-        it("should skip update when the new graph is deeply equal (dequal optimization)", () => {
+        it("should skip update when the new graph is deeply equal (deepEqual optimization)", () => {
             const listener = jest.fn()
             service.events.addEventListener("graph-changed", listener)
 
-            // Use JSON roundtrip (not structuredClone) to create an equal copy.
-            // In production, data flows through JSON.parse so objects share the
-            // same realm constructors. structuredClone in Jest's VM sandbox
-            // produces objects from a different realm whose constructors don't
-            // match, which causes dequal to always return false.
-            const identical = JSON.parse(JSON.stringify(testCrateGraph)) as IEntity[]
+            const identical = structuredClone(testCrateGraph)
             mockAdapter._events.emit("graph-changed", identical)
 
             expect(listener).not.toHaveBeenCalled()
@@ -783,7 +776,7 @@ describe("MetadataServiceImpl", () => {
             const listener = jest.fn()
             service.events.addEventListener("graph-changed", listener)
 
-            const modified = JSON.parse(JSON.stringify(testCrateGraph)) as IEntity[]
+            const modified = structuredClone(testCrateGraph)
             modified[0].name = "Changed Name"
             mockAdapter._events.emit("graph-changed", modified)
 
