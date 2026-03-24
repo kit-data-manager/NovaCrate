@@ -310,8 +310,14 @@ describe("CrateFactory", () => {
             const factory = new CrateFactory(persistence)
 
             const files = [
-                { relativePath: "myFolder/file1.txt", data: new Blob(["content1"]) },
-                { relativePath: "myFolder/file2.txt", data: new Blob(["content2"]) }
+                {
+                    relativePath: "myFolder/file1.txt",
+                    data: new File([new Blob(["content1"])], "file1.txt")
+                },
+                {
+                    relativePath: "myFolder/file2.txt",
+                    data: new File([new Blob(["content2"])], "file2.txt")
+                }
             ]
 
             const id = await factory.createCrateFromFiles("Test", "", files)
@@ -321,7 +327,8 @@ describe("CrateFactory", () => {
             expect(fileService.addFile).toHaveBeenCalledTimes(2)
 
             // Verify metadata was written with entities for the uploaded files
-            const writtenMetadata = (crateService.setMetadata as jest.Mock).mock.calls[0][0]
+            // Set metadata is called twice (once for each entity) and includes all metadata in the second call
+            const writtenMetadata = (crateService.setMetadata as jest.Mock).mock.calls[1][0]
             const crate = JSON.parse(writtenMetadata) as ICrate
             const fileEntities = crate["@graph"].filter((e) => e["@type"] === "File")
             expect(fileEntities).toHaveLength(2)
@@ -346,9 +353,9 @@ describe("CrateFactory", () => {
                 "Test",
                 "",
                 [
-                    { relativePath: "a/f1.txt", data: new Blob(["1"]) },
-                    { relativePath: "a/f2.txt", data: new Blob(["2"]) },
-                    { relativePath: "a/f3.txt", data: new Blob(["3"]) }
+                    { relativePath: "a/f1.txt", data: new File([new Blob(["1"])], "f1.txt") },
+                    { relativePath: "a/f2.txt", data: new File([new Blob(["2"])], "f2.txt") },
+                    { relativePath: "a/f3.txt", data: new File([new Blob(["3"])], "f3.txt") }
                 ],
                 progressCallback
             )
@@ -379,9 +386,9 @@ describe("CrateFactory", () => {
                 "Test",
                 "",
                 [
-                    { relativePath: "a/a.txt", data: new Blob(["1"]) },
-                    { relativePath: "a/b.txt", data: new Blob(["2"]) },
-                    { relativePath: "a/c.txt", data: new Blob(["3"]) }
+                    { relativePath: "a/a.txt", data: new File([new Blob(["1"])], "a.txt") },
+                    { relativePath: "a/b.txt", data: new File([new Blob(["2"])], "b.txt") },
+                    { relativePath: "a/c.txt", data: new File([new Blob(["3"])], "c.txt") }
                 ],
                 progressCallback
             )
@@ -405,7 +412,7 @@ describe("CrateFactory", () => {
 
             await expect(
                 factory.createCrateFromFiles("Test", "", [
-                    { relativePath: "a/f.txt", data: new Blob(["1"]) }
+                    { relativePath: "a/f.txt", data: new File([new Blob(["1"])], "f.txt") }
                 ])
             ).rejects.toThrow("Crate services not available")
         })
@@ -421,7 +428,10 @@ describe("CrateFactory", () => {
             const factory = new CrateFactory(persistence)
 
             await factory.createCrateFromFiles("Test", "", [
-                { relativePath: "myFolder/sub/file.txt", data: new Blob(["x"]) }
+                {
+                    relativePath: "myFolder/sub/file.txt",
+                    data: new File([new Blob(["x"])], "file.txt")
+                }
             ])
 
             // The file path should have the leading folder replaced
