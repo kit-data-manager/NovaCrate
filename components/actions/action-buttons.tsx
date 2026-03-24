@@ -1,5 +1,5 @@
 import { MenubarItem } from "@/components/ui/menubar"
-import { useAction, useActionsReady } from "@/lib/hooks"
+import { useAction, useActionsReady } from "@/lib/hooks/hooks"
 import { ComponentProps, memo, useMemo } from "react"
 import { KeyboardShortcut } from "@/components/actions/action-keyboard-shortcuts"
 import { Button } from "@/components/ui/button"

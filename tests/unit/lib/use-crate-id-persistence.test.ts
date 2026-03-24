@@ -8,7 +8,7 @@ import {
     IPersistenceService,
     IPersistenceServiceEvents
 } from "@/lib/core/persistence/IPersistenceService"
-import { useCrateIdPersistence } from "@/lib/use-crate-id-persistence"
+import { useCrateIdPersistence } from "@/lib/hooks/use-crate-id-persistence"
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 

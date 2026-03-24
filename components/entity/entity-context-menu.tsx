@@ -11,9 +11,9 @@ import { Eye, Folder, Save, Trash, Undo2 } from "lucide-react"
 import { PropsWithChildren, useCallback, useContext, useMemo } from "react"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useCrateMutations } from "@/lib/use-crate-mutations"
+import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
-import { useGoToEntityEditor, useGoToFileExplorer } from "@/lib/hooks"
+import { useGoToEntityEditor, useGoToFileExplorer } from "@/lib/hooks/hooks"
 
 export function EntityContextMenu({
     entity,

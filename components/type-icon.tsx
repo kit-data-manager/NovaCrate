@@ -20,7 +20,7 @@ import {
     SCHEMA_ORG_PLACE,
     SCHEMA_ORG_SCHOLARLY_ARTICLE
 } from "@/lib/constants"
-import { useContextResolver } from "@/lib/hooks"
+import { useContextResolver } from "@/lib/hooks/hooks"
 import { useMemo } from "react"
 
 export const CommonIcons: Record<string, LucideIcon> = {

@@ -1,6 +1,6 @@
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useContextResolver } from "@/lib/hooks"
+import { useContextResolver } from "@/lib/hooks/hooks"
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import {
     Command,

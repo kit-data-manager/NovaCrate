@@ -21,7 +21,7 @@ import { IMetadataServiceEvents, IMetadataService } from "@/lib/core/IMetadataSe
 import { IContextServiceEvents, IContextService } from "@/lib/core/IContextService"
 import { ICoreService } from "@/lib/core/ICoreService"
 import { editorState } from "@/lib/state/editor-state"
-import { useCoreSync } from "@/lib/use-core-sync"
+import { useCoreSync } from "@/lib/hooks/use-core-sync"
 import { RO_CRATE_VERSION } from "@/lib/constants"
 
 // ─── Helpers ───────────────────────────────────────────────────────────────

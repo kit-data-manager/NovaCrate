@@ -27,7 +27,7 @@ import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { encodeFilePath, getFolderPath } from "@/lib/utils"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
-import { useGoToPage } from "@/lib/hooks"
+import { useGoToPage } from "@/lib/hooks/hooks"
 
 export function EntryContextMenu({
     entity,

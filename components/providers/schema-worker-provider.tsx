@@ -1,7 +1,7 @@
 import { schemaWorkerFunctions } from "@/lib/schema-worker/helpers"
 import { createContext, PropsWithChildren, useEffect } from "react"
 import { FunctionWorker } from "@/lib/function-worker"
-import { useFunctionWorker } from "@/lib/use-function-worker"
+import { useFunctionWorker } from "@/lib/hooks/use-function-worker"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { schemaResolverStore } from "@/lib/state/schema-resolver"
 import { useEditorState } from "@/lib/state/editor-state"

@@ -3,7 +3,7 @@
 import { createContext, PropsWithChildren, useContext, useState } from "react"
 import { IPersistenceService } from "@/lib/core/persistence/IPersistenceService"
 import { BrowserPersistenceService } from "@/lib/persistence/browser/BrowserPersistenceService"
-import { useHealthCheck } from "@/lib/use-health-check"
+import { useHealthCheck } from "@/lib/hooks/use-health-check"
 
 const PersistenceContext = createContext<IPersistenceService | null>(null)
 

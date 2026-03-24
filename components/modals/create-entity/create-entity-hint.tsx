@@ -1,4 +1,4 @@
-import { useContextResolver } from "@/lib/hooks"
+import { useContextResolver } from "@/lib/hooks/hooks"
 import { useMemo } from "react"
 import {
     SCHEMA_ORG_CONTACT_POINT,

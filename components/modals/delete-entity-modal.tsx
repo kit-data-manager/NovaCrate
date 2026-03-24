@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { AlertTriangleIcon, ArrowLeft, Loader2, Trash } from "lucide-react"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
-import { useCrateMutations } from "@/lib/use-crate-mutations"
+import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { useCore } from "@/components/providers/core-provider"
 import {

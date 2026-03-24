@@ -6,7 +6,6 @@ import { useMemo } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { isDataEntity, toArray } from "@/lib/utils"
-import { GithubDiscontinuationWarning } from "@/components/github-discontinuation-warning"
 import { useEditorState } from "@/lib/state/editor-state"
 
 export function EntityBrowserContent({
@@ -78,7 +77,6 @@ export function EntityBrowserContent({
 
     return (
         <div id="entity-browser-content" className="flex flex-col p-2 overflow-y-auto">
-            <GithubDiscontinuationWarning />
             {structure.map(([sectionTitle, entities]) => (
                 <EntityBrowserSection
                     key={sectionTitle}

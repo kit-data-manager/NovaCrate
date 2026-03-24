@@ -27,7 +27,7 @@ import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } 
 import { useRouter } from "next/navigation"
 import { CrateEntry } from "@/components/landing/crate-entry"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useDemoCrateLoader, useRecentCrates } from "@/lib/hooks"
+import { useDemoCrateLoader, useRecentCrates } from "@/lib/hooks/hooks"
 import { DeleteCrateModal } from "@/components/landing/delete-crate-modal"
 import { CreateCrateModal } from "@/components/landing/create-crate-modal"
 import { Error } from "@/components/error"
@@ -38,7 +38,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Input } from "@/components/ui/input"
 import useSWR from "swr"
 import { Footer } from "@/components/footer"
-import { GithubDiscontinuationWarning } from "@/components/github-discontinuation-warning"
 import Image from "next/image"
 import { ChangelogModal } from "@/components/changelog-modal"
 import { Geist } from "next/font/google"
@@ -239,7 +238,6 @@ export default function EditorLandingPage() {
                             height={195}
                             className={`dark:invert ${geist.className}`}
                         />
-                        <GithubDiscontinuationWarning className="mt-10" />
                     </div>
 
                     <div className="content-end">

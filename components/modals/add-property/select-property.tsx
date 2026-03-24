@@ -1,4 +1,4 @@
-import { useContextResolver } from "@/lib/hooks"
+import { useContextResolver } from "@/lib/hooks/hooks"
 import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { CheckedState } from "@radix-ui/react-checkbox"

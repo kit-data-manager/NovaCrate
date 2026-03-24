@@ -11,7 +11,7 @@ import { renderHook, act, cleanup as rtlCleanup } from "@testing-library/react"
 import { IPersistenceService } from "@/lib/core/persistence/IPersistenceService"
 import { Observable } from "@/lib/core/impl/Observable"
 import { operationState } from "@/lib/state/operation-state"
-import { useHealthCheck } from "@/lib/use-health-check"
+import { useHealthCheck } from "@/lib/hooks/use-health-check"
 
 // Mock sonner toast
 jest.mock("sonner", () => ({
@@ -21,7 +21,6 @@ jest.mock("sonner", () => ({
     }
 }))
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { toast } = require("sonner")
 
 // ─── Helpers ───────────────────────────────────────────────────────────────

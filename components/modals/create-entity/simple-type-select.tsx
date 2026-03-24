@@ -4,7 +4,7 @@ import { ExternalLinkIcon, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TypeIcon } from "@/components/type-icon"
 import { SlimClass } from "@/lib/schema-worker/helpers"
-import { useContextResolver } from "@/lib/hooks"
+import { useContextResolver } from "@/lib/hooks/hooks"
 
 function TypeBadge({
     description,

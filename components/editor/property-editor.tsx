@@ -15,7 +15,7 @@ import { SinglePropertyEditor } from "@/components/editor/single-property-editor
 import { camelCaseReadable } from "@/lib/utils"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useContextResolver } from "@/lib/hooks"
+import { useContextResolver } from "@/lib/hooks/hooks"
 import { Trash, TriangleAlert } from "lucide-react"
 import { MarkdownComment } from "@/components/markdown-comment"
 import { Pagination } from "@/components/pagination"

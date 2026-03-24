@@ -3,7 +3,7 @@ import { CreateEntity } from "@/components/modals/create-entity/create-entity"
 import { toArray } from "@/lib/utils"
 import { memo, useCallback, useEffect, useState } from "react"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useCrateMutations } from "@/lib/use-crate-mutations"
+import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 
 export const SaveAsModal = memo(function SaveAsModal(props: {
     open: boolean

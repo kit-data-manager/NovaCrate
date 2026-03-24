@@ -7,7 +7,7 @@ import {
     DialogTitle
 } from "@/components/ui/dialog"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useCrateMutations } from "@/lib/use-crate-mutations"
+import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import useSWR from "swr"
 import { ArrowRightIcon, FileIcon, FolderIcon, LoaderCircleIcon } from "lucide-react"

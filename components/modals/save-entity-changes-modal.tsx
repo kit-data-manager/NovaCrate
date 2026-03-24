@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Save } from "lucide-react"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useCrateMutations } from "@/lib/use-crate-mutations"
+import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 
 export const SaveEntityChangesModal = memo(function SaveEntityChangesModal(props: {
     open: boolean

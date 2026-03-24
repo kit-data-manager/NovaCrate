@@ -1,5 +1,5 @@
 import { SlimClass } from "@/lib/schema-worker/helpers"
-import { useContextResolver } from "@/lib/hooks"
+import { useContextResolver } from "@/lib/hooks/hooks"
 import React, { useCallback, useMemo } from "react"
 import { camelCaseReadable } from "@/lib/utils"
 import { CommandItem } from "@/components/ui/command"

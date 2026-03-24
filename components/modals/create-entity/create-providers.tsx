@@ -1,6 +1,6 @@
 import { PersonImport } from "@/components/modals/create-entity/person-import"
 import React, { useMemo, useState } from "react"
-import { useContextResolver } from "@/lib/hooks"
+import { useContextResolver } from "@/lib/hooks/hooks"
 import { SCHEMA_ORG_ORGANIZATION, SCHEMA_ORG_PERSON } from "@/lib/constants"
 import { OrganizationImport } from "@/components/modals/create-entity/organization-import"
 import { AutoReference } from "@/lib/utils"

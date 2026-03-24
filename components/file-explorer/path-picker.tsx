@@ -3,7 +3,7 @@ import { usePersistence } from "@/components/providers/persistence-provider"
 import useSWR from "swr"
 import { NodeRendererProps, Tree } from "react-arborist"
 import { ChevronRightIcon, FolderIcon, LoaderCircleIcon, PackageIcon } from "lucide-react"
-import { useCrateName } from "@/lib/hooks"
+import { useCrateName } from "@/lib/hooks/hooks"
 import { Error } from "@/components/error"
 import { FileTreeNode, getNameFromPath } from "@/components/file-explorer/utils"
 
