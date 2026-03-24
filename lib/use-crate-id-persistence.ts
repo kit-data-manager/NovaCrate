@@ -20,11 +20,13 @@ const CRATE_ID_STORAGE_KEY = "crate-id"
 export function useCrateIdPersistence(persistence: IPersistenceService): void {
     useEffect(() => {
         // Restore crate ID from localStorage on mount
-        if (persistence.canSetCrateId()) {
+        if (persistence.getCrateId() === null && persistence.canSetCrateId()) {
             const saved = localStorage.getItem(CRATE_ID_STORAGE_KEY)
             if (saved) {
                 persistence.setCrateId(saved)
             }
+        } else if (persistence.getCrateId() !== null) {
+            localStorage.setItem(CRATE_ID_STORAGE_KEY, persistence.getCrateId()!)
         }
 
         // Persist crate ID changes to localStorage
