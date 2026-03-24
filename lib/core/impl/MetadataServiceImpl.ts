@@ -3,10 +3,10 @@ import { IObservable } from "@/lib/core/IObservable"
 import { Observable } from "@/lib/core/impl/Observable"
 import { IPersistenceAdapter } from "@/lib/core/IPersistenceAdapter"
 import {
-    changeEntityIdOccurrences,
     deepEqual,
     getRootEntityID,
     isDataEntity,
+    isReference,
     normalizeIdentifier
 } from "@/lib/utils"
 
@@ -38,7 +38,7 @@ export class MetadataServiceImpl implements IMetadataService {
 
     private getRootEntity(): IEntity | undefined {
         const rootId = getRootEntityID(this.graph)
-        return rootId ? structuredClone(this.graph.get(rootId)) : undefined
+        return rootId ? this.graph.get(rootId) : undefined
     }
 
     private addToHasPart(referencedEntityId: string) {
@@ -99,20 +99,44 @@ export class MetadataServiceImpl implements IMetadataService {
                 .toArray()
         }
 
-        const graphAsArray = this.graphAsArray()
-
-        changeEntityIdOccurrences(graphAsArray, from, to)
+        this.changeEntityIdOccurrences(from, to)
 
         for (const entity of affectedEntities) {
-            changeEntityIdOccurrences(
-                graphAsArray,
+            this.changeEntityIdOccurrences(
                 entity,
                 normalizeIdentifier(entity).replace(normalizeIdentifier(from), to)
             )
         }
 
         this._events.emit("graph-changed", this.graphAsArray())
-        await this.persistenceAdapter.updateMetadataGraph(graphAsArray)
+        await this.persistenceAdapter.updateMetadataGraph(this.graphAsArray())
+    }
+
+    /**
+     * This function changes all occurrences of oldId to newId (on the target entity and on all references to it)
+     * @param oldId Current ID of entity to be renamed
+     * @param newId New ID of entity to be renamed
+     */
+    private changeEntityIdOccurrences(oldId: string, newId: string) {
+        this.graph.values().forEach((e) => {
+            if (e["@id"] === oldId) {
+                e["@id"] = newId
+            }
+
+            for (const [, value] of Object.entries(e)) {
+                if (Array.isArray(value)) {
+                    value.forEach((val) => {
+                        if (isReference(val) && val["@id"] === oldId) {
+                            val["@id"] = newId
+                        }
+                    })
+                } else {
+                    if (isReference(value) && value["@id"] === oldId) {
+                        value["@id"] = newId
+                    }
+                }
+            }
+        })
     }
 
     async deleteEntity(id: string): Promise<void> {

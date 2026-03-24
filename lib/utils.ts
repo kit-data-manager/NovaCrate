@@ -344,34 +344,6 @@ export enum Diff {
 }
 
 /**
- * This function changes all occurrences of oldId to newId (on the target entity and on all references to it)
- * @param entities All entities of the crate
- * @param oldId Current ID of entity to be renamed
- * @param newId New ID of entity to be renamed
- */
-export function changeEntityIdOccurrences(entities: IEntity[], oldId: string, newId: string) {
-    entities.forEach((e) => {
-        if (e["@id"] === oldId) {
-            e["@id"] = newId
-        }
-
-        for (const [, value] of Object.entries(e)) {
-            if (Array.isArray(value)) {
-                value.forEach((val) => {
-                    if (isReference(val) && val["@id"] === oldId) {
-                        val["@id"] = newId
-                    }
-                })
-            } else {
-                if (isReference(value) && value["@id"] === oldId) {
-                    value["@id"] = newId
-                }
-            }
-        }
-    })
-}
-
-/**
  * Sort a ValidationResult by propertyName, propertyIndex, entityId and resultTitle
  * @param a
  * @param b
