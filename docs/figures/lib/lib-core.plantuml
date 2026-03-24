@@ -1,8 +1,18 @@
 @startuml
 
 package core {
-    interface ICrateService
-    interface IRepositoryService
+    package persistence {
+        interface IPersistenceService
+        interface ICrateService
+        interface IRepositoryService
+
+        IPersistenceService --* ICrateService
+        IPersistenceService --* IRepositoryService
+    }
+
+    note top of persistence
+        See lib-persistence
+    endnote
 
     interface ICoreService {
         addFileEntity()
@@ -14,6 +24,7 @@ package core {
     }
 
     interface IPersistenceAdapter {
+        + events
         getMetadataGraph()
         getMetadataContext()
         updateMetadataGraph()
