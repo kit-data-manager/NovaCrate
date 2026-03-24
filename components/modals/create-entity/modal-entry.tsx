@@ -1,5 +1,5 @@
 import { SlimClass } from "@/lib/schema-worker/helpers"
-import { useEditorState } from "@/lib/state/editor-state"
+import { useContextResolver } from "@/lib/hooks"
 import React, { useCallback, useMemo } from "react"
 import { camelCaseReadable } from "@/lib/utils"
 import { CommandItem } from "@/components/ui/command"
@@ -15,15 +15,15 @@ export function CreateEntityModalEntry({
     onSelect: (value: string) => void
     common?: boolean
 }) {
-    const crateContext = useEditorState((store) => store.crateContext)
+    const resolver = useContextResolver()
 
     const readableName = useMemo(() => {
-        return camelCaseReadable(crateContext.reverse(slimClass["@id"]) || slimClass["@id"])
-    }, [crateContext, slimClass])
+        return camelCaseReadable(resolver.reverse(slimClass["@id"]) || slimClass["@id"])
+    }, [resolver, slimClass])
 
     const onLocalSelect = useCallback(() => {
-        onSelect(crateContext.reverse(slimClass["@id"]) || slimClass["@id"])
-    }, [crateContext, onSelect, slimClass])
+        onSelect(resolver.reverse(slimClass["@id"]) || slimClass["@id"])
+    }, [resolver, onSelect, slimClass])
 
     return (
         <CommandItem

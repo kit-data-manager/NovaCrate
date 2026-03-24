@@ -371,7 +371,7 @@ export const RoCrateV1_1 = {
         async (entity, propertyName) => {
             const results: PropertyValidationResult[] = []
             try {
-                const propertyId = ctx.editorState.crateContext.resolve(propertyName)
+                const propertyId = ctx.resolver.resolve(propertyName)
                 if (!propertyId) return []
                 const range = await ctx.schemaWorker.worker.execute("getPropertyRange", propertyId)
 

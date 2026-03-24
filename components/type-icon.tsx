@@ -20,7 +20,7 @@ import {
     SCHEMA_ORG_PLACE,
     SCHEMA_ORG_SCHOLARLY_ARTICLE
 } from "@/lib/constants"
-import { useEditorState } from "@/lib/state/editor-state"
+import { useContextResolver } from "@/lib/hooks"
 import { useMemo } from "react"
 
 export const CommonIcons: Record<string, LucideIcon> = {
@@ -41,11 +41,13 @@ export const CommonIcons: Record<string, LucideIcon> = {
  * @param className Optional class name to apply to the icon
  */
 export function TypeIcon({ type, className }: { type: string; className?: string }) {
-    const context = useEditorState((state) => state.crateContext)
+    const resolver = useContextResolver()
 
     const PredefinedIcon = useMemo(() => {
-        return CommonIcons[type.startsWith("http") ? type : context.resolve(type) || type] ?? Shapes
-    }, [context, type])
+        return (
+            CommonIcons[type.startsWith("http") ? type : resolver.resolve(type) || type] ?? Shapes
+        )
+    }, [resolver, type])
 
     return <PredefinedIcon className={className} />
 }

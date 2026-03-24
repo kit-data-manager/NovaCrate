@@ -1,8 +1,25 @@
 import { useEffect, useRef } from "react"
 import { produce } from "immer"
 import { ICoreService } from "@/lib/core/ICoreService"
-import { editorState } from "@/lib/state/editor-state"
+import { CrateContextState, editorState } from "@/lib/state/editor-state"
 import { applyGraphDifferences } from "@/lib/ensure-sync"
+import { IContextService } from "@/lib/core/IContextService"
+
+/**
+ * Build a plain-data {@link CrateContextState} snapshot from the live
+ * {@link IContextService}. The snapshot is safe to store in Zustand (all values
+ * are cloned by the service's getters; we additionally `structuredClone` the
+ * whole result to guard against future implementations that might not clone).
+ */
+function buildContextSnapshot(service: IContextService): CrateContextState {
+    return structuredClone({
+        specification: service.specification,
+        usingFallback: service.usingFallback,
+        customPairs: service.customPairs,
+        context: service.context,
+        errors: service.errors
+    })
+}
 
 /**
  * Subscribes to the core layer's `graph-changed` and `context-changed` events
@@ -18,14 +35,18 @@ import { applyGraphDifferences } from "@/lib/ensure-sync"
  *   changes (e.g. from a metadata write round-trip).
  *
  * **Context sync strategy**:
- * - Always overwrites both `crateContext` and `initialCrateContext` since the
- *   editor does not support local context editing that diverges from remote.
+ * - Reads the already-parsed context data from {@link IContextService} and
+ *   stores a plain-data snapshot in the Zustand store. No async parsing
+ *   happens inside the store — the core layer handles all context parsing.
+ * - Uses JSON.stringify comparison on the raw `@context` value to avoid
+ *   redundant store updates.
  *
  * Must be called inside a component that has access to an `ICoreService` (i.e.
  * inside a `CoreProvider`). Passing `null` is safe and results in a no-op.
  */
 export function useCoreSync(core: ICoreService | null) {
     const lastGraphRef = useRef<IEntity[]>([])
+    const lastRawContextRef = useRef<string | undefined>(undefined)
 
     useEffect(() => {
         if (!core) return
@@ -33,13 +54,8 @@ export function useCoreSync(core: ICoreService | null) {
         const metadataService = core.getMetadataService()
         const contextService = core.getContextService()
 
-        const {
-            setEntities,
-            setInitialEntities,
-            updateCrateContext,
-            updateInitialCrateContext,
-            getEntities
-        } = editorState.getState()
+        const { setEntities, setInitialEntities, setCrateContext, getEntities } =
+            editorState.getState()
 
         // --- Initial population ---
 
@@ -49,10 +65,11 @@ export function useCoreSync(core: ICoreService | null) {
         setInitialEntities(new Map(initialEntities.map((e) => [e["@id"], e])))
         lastGraphRef.current = initialEntities
 
-        const initialContext = contextService.getRaw()
-        if (initialContext !== undefined) {
-            updateCrateContext(initialContext)
-            updateInitialCrateContext(initialContext)
+        const initialRaw = contextService.getRaw()
+        if (initialRaw !== undefined) {
+            const snapshot = buildContextSnapshot(contextService)
+            setCrateContext(snapshot)
+            lastRawContextRef.current = JSON.stringify(initialRaw)
         }
 
         // --- Graph event subscription ---
@@ -85,9 +102,13 @@ export function useCoreSync(core: ICoreService | null) {
 
         const removeContextListener = contextService.events.addEventListener(
             "context-changed",
-            (newContext: CrateContextType) => {
-                updateCrateContext(newContext)
-                updateInitialCrateContext(newContext)
+            (newRawContext: CrateContextType) => {
+                const serialized = JSON.stringify(newRawContext)
+                if (serialized === lastRawContextRef.current) return
+
+                lastRawContextRef.current = serialized
+                const snapshot = buildContextSnapshot(contextService)
+                setCrateContext(snapshot)
             }
         )
 

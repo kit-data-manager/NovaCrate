@@ -2,6 +2,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import React, { useCallback, useEffect, useState } from "react"
 import { useEditorState } from "@/lib/state/editor-state"
+import { useContextResolver } from "@/lib/hooks"
 import { TypeSelect } from "@/components/modals/create-entity/type-select"
 import { CreateEntity } from "@/components/modals/create-entity/create-entity"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
@@ -31,7 +32,7 @@ export function CreateEntityModal({
     const focusTab = useEntityEditorTabs((store) => store.focusTab)
     const openTab = useEntityEditorTabs((store) => store.openTab)
     const { createFileEntity, createFolderEntity } = useCrateMutations()
-    const context = useEditorState((store) => store.crateContext)
+    const resolver = useContextResolver()
 
     const [fullTypeBrowser, setFullTypeBrowser] = useState(false)
     const [selectedType, setSelectedType] = useState("")
@@ -139,7 +140,7 @@ export function CreateEntityModal({
                                 "@id":
                                     asValidPath(id, true) +
                                     file.webkitRelativePath.split("/").slice(1).join("/"),
-                                "@type": context.reverse(RO_CRATE_FILE) || RO_CRATE_FILE,
+                                "@type": resolver.reverse(RO_CRATE_FILE) || RO_CRATE_FILE,
                                 name: file.name
                             },
                             file
@@ -160,7 +161,7 @@ export function CreateEntityModal({
                 setUploadErrors([e])
             }
         },
-        [context, createFolderEntity, onOpenChange, selectedType]
+        [resolver, createFolderEntity, onOpenChange, selectedType]
     )
 
     const backToTypeSelect = useCallback(() => {

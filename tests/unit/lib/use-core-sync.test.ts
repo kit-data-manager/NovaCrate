@@ -22,6 +22,7 @@ import { IContextServiceEvents, IContextService } from "@/lib/core/IContextServi
 import { ICoreService } from "@/lib/core/ICoreService"
 import { editorState } from "@/lib/state/editor-state"
 import { useCoreSync } from "@/lib/use-core-sync"
+import { RO_CRATE_VERSION } from "@/lib/constants"
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -41,15 +42,23 @@ function createMockMetadataService(
 }
 
 function createMockContextService(
-    rawContext: CrateContextType = "https://w3id.org/ro/crate/1.1/context"
+    rawContext: CrateContextType = "https://w3id.org/ro/crate/1.1/context",
+    options?: {
+        specification?: RO_CRATE_VERSION
+        customPairs?: Record<string, string>
+        context?: Record<string, string>
+        errors?: unknown[]
+    }
 ): IContextService & { _events: Observable<IContextServiceEvents> } {
     const _events = new Observable<IContextServiceEvents>()
     return {
         _events,
         events: _events,
-        specification: undefined,
+        specification: options?.specification,
         usingFallback: false,
-        customPairs: {},
+        customPairs: options?.customPairs ?? {},
+        context: options?.context ?? {},
+        errors: options?.errors ?? [],
         getRaw: () => structuredClone(rawContext),
         removeCustomContextPair: jest.fn(),
         addCustomContextPair: jest.fn(),
@@ -117,17 +126,38 @@ describe("useCoreSync", () => {
             expect(state.initialEntities.get("#b")?.name).toBe("Entity B")
         })
 
-        it("should call context update methods with the raw context on mount", () => {
+        it("should set crateContextReady to true on mount when context is available", () => {
             const metadataService = createMockMetadataService([])
-            const contextService = createMockContextService("https://w3id.org/ro/crate/1.2/context")
+            const contextService = createMockContextService(
+                "https://w3id.org/ro/crate/1.2/context",
+                { specification: RO_CRATE_VERSION.V1_2_0 }
+            )
             const core = createMockCoreService(metadataService, contextService)
 
-            // updateCrateContext sets crateContextReady = false synchronously
-            // before its async resolution. Verifying this side-effect confirms
-            // the method was called.
             renderHook(() => useCoreSync(core))
 
-            expect(editorState.getState().crateContextReady).toBe(false)
+            // Context is now set synchronously via setCrateContext
+            expect(editorState.getState().crateContextReady).toBe(true)
+        })
+
+        it("should populate crateContext snapshot from the context service", () => {
+            const metadataService = createMockMetadataService([])
+            const contextService = createMockContextService(
+                "https://w3id.org/ro/crate/1.2/context",
+                {
+                    specification: RO_CRATE_VERSION.V1_2_0,
+                    customPairs: { ex: "https://example.org/" },
+                    context: { Person: "https://schema.org/Person" }
+                }
+            )
+            const core = createMockCoreService(metadataService, contextService)
+
+            renderHook(() => useCoreSync(core))
+
+            const state = editorState.getState()
+            expect(state.crateContext.specification).toBe(RO_CRATE_VERSION.V1_2_0)
+            expect(state.crateContext.customPairs).toEqual({ ex: "https://example.org/" })
+            expect(state.crateContext.context).toEqual({ Person: "https://schema.org/Person" })
         })
 
         it("should handle empty initial entities", () => {
@@ -276,59 +306,78 @@ describe("useCoreSync", () => {
     })
 
     describe("context-changed event", () => {
-        it("should call updateCrateContext and updateInitialCrateContext", () => {
+        it("should update crateContext snapshot on context-changed", () => {
             const metadataService = createMockMetadataService([])
-            const contextService = createMockContextService("https://w3id.org/ro/crate/1.1/context")
+            const contextService = createMockContextService(
+                "https://w3id.org/ro/crate/1.1/context",
+                { specification: RO_CRATE_VERSION.V1_1_3 }
+            )
             const core = createMockCoreService(metadataService, contextService)
-
-            // Spy on the store methods
-            const updateCrateContextSpy = jest.fn()
-            const updateInitialCrateContextSpy = jest.fn()
-            const originalState = editorState.getState()
-            editorState.setState({
-                updateCrateContext: updateCrateContextSpy,
-                updateInitialCrateContext: updateInitialCrateContextSpy
-            })
 
             renderHook(() => useCoreSync(core))
 
-            // Reset spy call counts from initial population
-            updateCrateContextSpy.mockClear()
-            updateInitialCrateContextSpy.mockClear()
+            // Verify initial state
+            expect(editorState.getState().crateContext.specification).toBe(RO_CRATE_VERSION.V1_1_3)
 
-            // Emit context-changed with a new context
+            // Update the mock service's state to simulate what ContextServiceImpl
+            // would do internally when the context changes
+            ;(contextService as any).specification = RO_CRATE_VERSION.V1_2_0
+            ;(contextService as any).customPairs = { ex: "https://example.org/" }
+
+            // Emit context-changed with a new raw context
             const newContext: CrateContextType = "https://w3id.org/ro/crate/1.2/context"
             act(() => {
                 contextService._events.emit("context-changed", newContext)
             })
 
-            expect(updateCrateContextSpy).toHaveBeenCalledWith(newContext)
-            expect(updateInitialCrateContextSpy).toHaveBeenCalledWith(newContext)
+            const state = editorState.getState()
+            expect(state.crateContext.specification).toBe(RO_CRATE_VERSION.V1_2_0)
+            expect(state.crateContext.customPairs).toEqual({ ex: "https://example.org/" })
+            expect(state.crateContextReady).toBe(true)
+        })
 
-            // Restore original methods
-            editorState.setState({
-                updateCrateContext: originalState.updateCrateContext,
-                updateInitialCrateContext: originalState.updateInitialCrateContext
+        it("should skip update when raw context is unchanged", () => {
+            const metadataService = createMockMetadataService([])
+            const contextService = createMockContextService(
+                "https://w3id.org/ro/crate/1.1/context",
+                { specification: RO_CRATE_VERSION.V1_1_3 }
+            )
+            const core = createMockCoreService(metadataService, contextService)
+
+            renderHook(() => useCoreSync(core))
+
+            // Spy on setCrateContext
+            const setCrateContextSpy = jest.fn()
+            const originalSetCrateContext = editorState.getState().setCrateContext
+            editorState.setState({ setCrateContext: setCrateContextSpy })
+
+            // Emit the same context again
+            act(() => {
+                contextService._events.emit(
+                    "context-changed",
+                    "https://w3id.org/ro/crate/1.1/context"
+                )
             })
+
+            // Should not have been called (dedup via JSON.stringify)
+            expect(setCrateContextSpy).not.toHaveBeenCalled()
+
+            // Restore
+            editorState.setState({ setCrateContext: originalSetCrateContext })
         })
 
         it("should handle array context values", () => {
             const metadataService = createMockMetadataService([])
-            const contextService = createMockContextService("https://w3id.org/ro/crate/1.1/context")
+            const contextService = createMockContextService(
+                "https://w3id.org/ro/crate/1.1/context",
+                { specification: RO_CRATE_VERSION.V1_1_3 }
+            )
             const core = createMockCoreService(metadataService, contextService)
-
-            const updateCrateContextSpy = jest.fn()
-            const updateInitialCrateContextSpy = jest.fn()
-            const originalState = editorState.getState()
-            editorState.setState({
-                updateCrateContext: updateCrateContextSpy,
-                updateInitialCrateContext: updateInitialCrateContextSpy
-            })
 
             renderHook(() => useCoreSync(core))
 
-            updateCrateContextSpy.mockClear()
-            updateInitialCrateContextSpy.mockClear()
+            // Update mock service state
+            ;(contextService as any).specification = RO_CRATE_VERSION.V1_2_0
 
             const newContext: CrateContextType = [
                 "https://w3id.org/ro/crate/1.2/context",
@@ -338,13 +387,8 @@ describe("useCoreSync", () => {
                 contextService._events.emit("context-changed", newContext)
             })
 
-            expect(updateCrateContextSpy).toHaveBeenCalledWith(newContext)
-            expect(updateInitialCrateContextSpy).toHaveBeenCalledWith(newContext)
-
-            editorState.setState({
-                updateCrateContext: originalState.updateCrateContext,
-                updateInitialCrateContext: originalState.updateInitialCrateContext
-            })
+            expect(editorState.getState().crateContext.specification).toBe(RO_CRATE_VERSION.V1_2_0)
+            expect(editorState.getState().crateContextReady).toBe(true)
         })
     })
 

@@ -10,8 +10,21 @@ import { Action, notFoundAction } from "@/lib/state/actions"
 import { useActionsStore } from "@/lib/state/actions"
 import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { addBasePath } from "next/dist/client/add-base-path"
+import { useCore } from "@/components/providers/core-provider"
+import { IContextResolverService } from "@/lib/core/IContextResolverService"
 
 const MAX_LIST_LENGTH = 100
+
+/**
+ * Returns the {@link IContextResolverService} for the currently open crate.
+ * Provides `resolve()` and `reverse()` for translating between short-form
+ * term names and full URIs using the active `@context`.
+ *
+ * Must be called inside a `CoreProvider` (i.e. when a crate is open).
+ */
+export function useContextResolver(): IContextResolverService {
+    return useCore().getContextService().getResolver()
+}
 
 /**
  * Utility hook to provide easy access to recent crates (stored in local storage)

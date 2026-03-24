@@ -13,7 +13,7 @@ export interface IContextResolverService {
 
     /**
      * This method effectively shortens the given URI using the @context of the crate.
-     * It is the reverse operation of {@link CrateContext.resolve}.
+     * It is the reverse operation of {@link IContextResolverService.resolve}.
      * @example
      * reverse("https://schema.org/Organization") -> "Organization"
      * reverse("https://myCustomUrl.org/v1/myProperty") -> "custom:myProperty" // when custom: "https://myCustomUrl.org/v1/" is defined in the context

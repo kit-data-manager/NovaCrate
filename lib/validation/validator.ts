@@ -2,11 +2,14 @@ import { ValidationResult } from "@/lib/validation/validation-result"
 import { EditorState } from "@/lib/state/editor-state"
 import { ISchemaWorkerContext } from "@/components/providers/schema-worker-provider"
 import { IFileService } from "@/lib/core/persistence/IFileService"
+import { IContextResolverService } from "@/lib/core/IContextResolverService"
 
 export type ValidatorContext = {
     editorState: EditorState
     fileService?: IFileService
     schemaWorker: ISchemaWorkerContext
+    /** Resolver for translating between short-form term names and full URIs. */
+    resolver: IContextResolverService
 }
 
 export abstract class Validator {

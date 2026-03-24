@@ -37,6 +37,17 @@ export interface IContextService {
     /** Custom prefix→URL pairs that have been added on top of the base context. */
     readonly customPairs: Record<string, string>
     /**
+     * The fully resolved context dictionary mapping short-form term names to
+     * their full URIs. Includes entries from known specifications and custom pairs.
+     * Returns a defensive clone — callers may mutate the result safely.
+     */
+    readonly context: Record<string, string>
+    /**
+     * Errors encountered during context parsing (e.g. unknown schemas, missing
+     * prefixes). Returns a defensive clone.
+     */
+    readonly errors: unknown[]
+    /**
      * Remove a custom context pair by its prefix key.
      * Emits `"context-changed"` via {@link IContextService.events}.
      */

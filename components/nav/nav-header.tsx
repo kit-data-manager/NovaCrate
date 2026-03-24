@@ -88,7 +88,6 @@ export function NavHeader() {
     const healthTestError = useOperationState((s) => s.healthError)
     const loadError = useOperationState((s) => s.loadError)
     // const { undo, redo } = useEditorState.temporal.getState()
-    const crateContextError = useStore(editorState, (s) => s.crateContextError)
     const crateContext = useStore(editorState, (s) => s.crateContext)
     const [schemaIssues, setSchemaIssues] = useState<Map<string, unknown>>(new Map())
 
@@ -289,7 +288,6 @@ export function NavHeader() {
                 saveErrors.size > 0 ||
                 healthTestError ||
                 schemaIssues.size > 0 ||
-                crateContextError ||
                 crateContext.errors.length > 0 ? (
                     <Popover>
                         <PopoverTrigger asChild>
@@ -305,10 +303,6 @@ export function NavHeader() {
                             <div className="text-sm font-bold">Internal Error Log</div>
                             <Error title="Crate service is not reachable" error={healthTestError} />
                             <Error title="Error while loading crate data" error={loadError} />
-                            <Error
-                                title="Error while parsing crate context"
-                                error={crateContextError}
-                            />
                             {Array.from(saveErrors.entries()).map(([key, value]) => (
                                 <Error
                                     title={`Error while saving entity "${key}"`}

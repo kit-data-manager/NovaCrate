@@ -4,7 +4,7 @@ import { ExternalLinkIcon, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TypeIcon } from "@/components/type-icon"
 import { SlimClass } from "@/lib/schema-worker/helpers"
-import { useEditorState } from "@/lib/state/editor-state"
+import { useContextResolver } from "@/lib/hooks"
 
 function TypeBadge({
     description,
@@ -19,11 +19,11 @@ function TypeBadge({
     onTypeSelect(value: string): void
     restrictToClasses?: SlimClass[]
 }) {
-    const context = useEditorState((store) => store.crateContext)
+    const resolver = useContextResolver()
 
     const resolvedType = useMemo(() => {
-        return context.resolve(type)
-    }, [context, type])
+        return resolver.resolve(type)
+    }, [resolver, type])
 
     const disabled = useMemo(() => {
         return (

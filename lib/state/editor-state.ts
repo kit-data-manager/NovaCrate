@@ -1,7 +1,7 @@
 import { immer } from "zustand/middleware/immer"
 import { Draft, enableMapSet } from "immer"
 import { AutoReference, Diff, getRootEntityID, isEntityEqual } from "@/lib/utils"
-import { CrateContext } from "@/lib/crate-context"
+import { RO_CRATE_VERSION } from "@/lib/constants"
 import { createWithEqualityFn } from "zustand/traditional"
 import { useStore } from "zustand"
 import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
@@ -10,35 +10,56 @@ import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 enableMapSet()
 
 /**
+ * Plain-data snapshot of the active `@context`, stored in the Zustand
+ * {@link editorState}. Built from {@link IContextService} by
+ * {@link useCoreSync}.
+ */
+export interface CrateContextState {
+    /** Detected RO-Crate specification version, or `undefined` if unknown. */
+    specification: RO_CRATE_VERSION | undefined
+    /** `true` when a bundled fallback context is being used. */
+    usingFallback: boolean
+    /** Custom prefix→URL pairs added on top of the base context. */
+    customPairs: Record<string, string>
+    /** Fully resolved context dictionary (short name → full URI). */
+    context: Record<string, string>
+    /** Errors encountered during context parsing. */
+    errors: unknown[]
+}
+
+/** Creates an empty {@link CrateContextState} (no specification, no entries). */
+export function emptyCrateContextState(): CrateContextState {
+    return {
+        specification: undefined,
+        usingFallback: false,
+        customPairs: {},
+        context: {},
+        errors: []
+    }
+}
+
+/**
  * This is the central state of the editor, holding a working copy of the crate state as well as some additional state.
  * The editor state works on a best-effort basis and will optimistically handle unexpected state changes.
  * Most methods return void, indicating that the state change will always succeed.
  */
 export interface EditorState {
     /**
-     * Corresponds to the current remote crate context, used to determine changes in the local context
+     * Current crate context snapshot, built from {@link IContextService} by
+     * {@link useCoreSync}. Contains resolved data only — use
+     * `useContextResolver()` for `resolve()`/`reverse()` operations.
      */
-    initialCrateContext: CrateContext
+    crateContext: CrateContextState
     /**
-     * Current local crate context
-     */
-    crateContext: CrateContext
-    /**
-     * Whether the crate context is ready to be used
+     * Whether the crate context has been populated at least once.
      */
     crateContextReady: boolean
-    crateContextError: unknown
-    initialCrateContextError: unknown
 
     /**
-     * Updates the initial crate context. Called by {@link useCoreSync} whenever the remote context changes.
+     * Set the crate context snapshot. Called by {@link useCoreSync} whenever
+     * the core layer's context changes.
      */
-    updateInitialCrateContext(crateContext: CrateContextType): void
-
-    /**
-     * Update the local crate context
-     */
-    updateCrateContext(crateContext: CrateContextType): void
+    setCrateContext(snapshot: CrateContextState): void
 
     /**
      * Corresponds to the current remote crate state, used to determine changes in the local state
@@ -214,70 +235,19 @@ function setPropertyValue(
     }
 }
 
-/**
- * Monotonic counter to prevent out-of-order async context updates
- */
-let contextUpdateSeq = 0
-let initialContextUpdateSeq = 0
-
 export const editorState = createWithEqualityFn<EditorState>()(
     ssrSafe(
         immer<EditorState>((setState, getState) => ({
-            initialCrateContext: new CrateContext(),
-            crateContext: new CrateContext(),
+            crateContext: emptyCrateContextState(),
             crateContextReady: false,
             initialEntities: new Map<string, IEntity>(),
             entities: new Map<string, IEntity>(),
-            initialCrateContextError: undefined,
-            crateContextError: undefined,
 
-            updateCrateContext(crateContext: CrateContextType) {
-                if (getState().crateContextReady && getState().crateContext.isSameAs(crateContext))
-                    return
-
-                const seq = ++contextUpdateSeq
-
-                setState((s) => {
-                    s.crateContextReady = false
+            setCrateContext(snapshot: CrateContextState) {
+                setState((state) => {
+                    state.crateContext = structuredClone(snapshot)
+                    state.crateContextReady = true
                 })
-                const newContext = new CrateContext()
-                newContext
-                    .setup(crateContext)
-                    .then(() => {
-                        if (contextUpdateSeq !== seq) return
-                        setState((state) => {
-                            state.crateContextReady = true
-                            state.crateContext = newContext
-                            state.crateContextError = undefined
-                        })
-                    })
-                    .catch((e) => {
-                        console.error("Error in updateCrateContext", e)
-                        if (contextUpdateSeq !== seq) return
-                        setState({ crateContextError: e })
-                    })
-            },
-
-            updateInitialCrateContext(crateContext: CrateContextType) {
-                if (getState().initialCrateContext.isSameAs(crateContext)) return
-
-                const seq = ++initialContextUpdateSeq
-
-                const newContext = new CrateContext()
-                newContext
-                    .setup(crateContext)
-                    .then(() => {
-                        if (initialContextUpdateSeq !== seq) return
-                        setState((state) => {
-                            state.initialCrateContext = newContext
-                            state.initialCrateContextError = undefined
-                        })
-                    })
-                    .catch((e) => {
-                        console.error("Error in updateInitialCrateContext", e)
-                        if (initialContextUpdateSeq !== seq) return
-                        setState({ initialCrateContextError: e })
-                    })
             },
 
             getEntities(): Map<string, IEntity> {

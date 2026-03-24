@@ -7,6 +7,7 @@ import {
     makeSpecificationValidators
 } from "@/lib/validation/validators/specification-validator"
 import { usePersistence } from "@/components/providers/persistence-provider"
+import { useCore } from "@/components/providers/core-provider"
 
 export interface ValidationContext {
     validation: ValidationProvider | undefined
@@ -17,19 +18,25 @@ export const ValidationContext = createContext<ValidationContext>({ validation: 
 export function ValidationContextProvider({ children }: PropsWithChildren) {
     const schemaWorker = useContext(SchemaWorker)
     const persistence = usePersistence()
+    const core = useCore()
     const editorState = useEditorState((s) => s)
 
     const fileService = useMemo(() => {
         return persistence.getCrateService()?.getFileService()
     }, [persistence])
 
+    const resolver = useMemo(() => {
+        return core.getContextService().getResolver()
+    }, [core])
+
     const ctx = useMemo(() => {
         return {
             editorState,
             schemaWorker,
-            fileService: fileService ?? undefined
+            fileService: fileService ?? undefined,
+            resolver
         }
-    }, [editorState, fileService, schemaWorker])
+    }, [editorState, fileService, resolver, schemaWorker])
 
     const [validation] = useState(() => {
         const validation = new ValidationProvider(ctx)

@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useEditorState } from "@/lib/state/editor-state"
+import { useContextResolver } from "@/lib/hooks"
 import { CheckedState } from "@radix-ui/react-checkbox"
 import HelpTooltip from "@/components/help-tooltip"
 import { Button } from "@/components/ui/button"
@@ -70,7 +71,7 @@ export function SelectReferenceModal({
     propertyRange?: SlimClass[]
 }) {
     const entities = useEditorState((store) => store.entities)
-    const crateContext = useEditorState((store) => store.crateContext)
+    const resolver = useContextResolver()
     const rootEntityId = useEditorState((store) => store.getRootEntityId())
 
     const [isReferenceUrl, setIsReferenceUrl] = useState(false)
@@ -110,7 +111,7 @@ export function SelectReferenceModal({
                 .filter((e) => !isRoCrateMetadataEntity(e))
                 .filter((entity) => {
                     for (const type of toArray(entity["@type"])) {
-                        const resolved = crateContext.resolve(type)
+                        const resolved = resolver.resolve(type)
                         if (!resolved) continue
                         if (propertyRangeIds.includes(resolved)) return true
                     }
@@ -120,7 +121,7 @@ export function SelectReferenceModal({
         } else {
             return allEntities
         }
-    }, [crateContext, entities, onlyShowAllowed, open, propertyRangeIds, rootEntityId])
+    }, [resolver, entities, onlyShowAllowed, open, propertyRangeIds, rootEntityId])
 
     const onSelectAndClose = useCallback(
         (ref: IReference) => {
