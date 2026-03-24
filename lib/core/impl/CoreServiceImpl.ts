@@ -56,7 +56,9 @@ export class CoreServiceImpl implements ICoreService {
             name: name,
             contentSize: file.size.toString(),
             encodingFormat: file.type,
-            dateModified: DateTime.fromMillis(file.lastModified).toISO() ?? ""
+            dateModified: file.lastModified
+                ? (DateTime.fromMillis(file.lastModified).toISO() ?? DateTime.now().toISO())
+                : DateTime.now().toISO()
         }
 
         await this.metadata.addEntity(entity, overwrite)
