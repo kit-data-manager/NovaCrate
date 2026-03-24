@@ -107,7 +107,7 @@ test("uploading with tree picker works", async ({ page }) => {
     await page.getByRole("textbox", { name: "Folder Name" }).click()
     await page.getByRole("textbox", { name: "Folder Name" }).fill("extraData")
     await page.getByRole("button", { name: "Create" }).click()
-    await expect(page.getByRole("button", { name: "D extraData" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "D extraDataDataset" })).toBeVisible()
     await page.getByRole("link", { name: "File Explorer" }).getByRole("button").click()
     await expect(
         page
@@ -157,7 +157,7 @@ test("uploading with tree picker works", async ({ page }) => {
     - button "Add another entry"
     - text: Date Modified
     - paragraph: The date on which the CreativeWork was most recently modified or when the item's entry was modified within a DataFeed.
-    - textbox: /\\d+-\\d+-20T11:\\d+/
+    - textbox: /\\d+-\\d+-\\d+T\\d+:\\d+/
     - button
     - button
     - button "Add another entry"
