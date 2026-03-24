@@ -22,9 +22,7 @@ export class MetadataServiceImpl implements IMetadataService {
 
     async addEntity(entity: IEntity, overwrite: boolean = false): Promise<boolean> {
         if (this.graph.has(entity["@id"])) {
-            if (overwrite) {
-                this.graph.set(entity["@id"], entity)
-            } else return false
+            if (!overwrite) return false
         }
 
         this.graph.set(entity["@id"], entity)
@@ -40,7 +38,7 @@ export class MetadataServiceImpl implements IMetadataService {
 
     private getRootEntity(): IEntity | undefined {
         const rootId = getRootEntityID(this.graph)
-        return rootId ? this.graph.get(rootId) : undefined
+        return rootId ? structuredClone(this.graph.get(rootId)) : undefined
     }
 
     private addToHasPart(referencedEntityId: string) {
@@ -175,6 +173,6 @@ export class MetadataServiceImpl implements IMetadataService {
     }
 
     private graphAsArray() {
-        return Array.from(this.graph.values())
+        return structuredClone(Array.from(this.graph.values()))
     }
 }

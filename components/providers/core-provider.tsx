@@ -45,7 +45,6 @@ export function CoreProvider({ children }: PropsWithChildren) {
 
         async function initCore() {
             const crateService = persistence.getCrateService()
-            console.log("initCore", crateService)
 
             if (!crateService) {
                 return
@@ -69,7 +68,6 @@ export function CoreProvider({ children }: PropsWithChildren) {
         }
 
         const remove = persistence.events.addEventListener("crate-service-changed", () => {
-            console.log("crate-service-changed, re-initCore")
             initCore()
         })
 
