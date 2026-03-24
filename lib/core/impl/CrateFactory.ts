@@ -3,6 +3,8 @@ import * as z from "zod/mini"
 import { IPersistenceService } from "@/lib/core/persistence/IPersistenceService"
 import { IRepositoryService } from "@/lib/core/persistence/IRepositoryService"
 import { getRootEntityID } from "@/lib/utils"
+import { CoreServiceImpl } from "@/lib/core/impl/CoreServiceImpl"
+import { PersistenceAdapterImpl } from "@/lib/core/impl/PersistenceAdapterImpl"
 
 const DEFAULT_CONTEXT = "https://w3id.org/ro/crate/1.2/context"
 const DEFAULT_CONFORMS_TO = "https://w3id.org/ro/crate/1.2"
@@ -108,54 +110,25 @@ export class CrateFactory {
      * @param files Files to upload, each with a relative path and blob data
      * @param progressCallback Optional callback reporting upload progress
      * @returns The crate ID of the newly created crate.
-     *
-     * @startuml
-     * activate CrateFactory
-     * CrateFactory -> CrateFactory: createEmptyCrate(name, description)
-     * CrateFactory -> PersistenceService: createCrateServiceFor(crateId)
-     * activate PersistenceService
-     * create CrateService
-     * PersistenceService -> CrateService: <<new>>
-     * activate CrateService
-     * create FileService
-     * CrateService -> FileService: <<new>>
-     * return
-     * return
-     * CrateFactory -> CrateService ++: getFileService()
-     * return
-     * CrateFactory -> FileService ++: addFile(filePath, fileData)
-     * return
-     * CrateFactory -> CrateService ++: setMetadata(metadata)
-     * return
-     * deactivate CrateFactory
-     * @enduml
      */
     async createCrateFromFiles(
         name: string,
         description: string,
-        files: { relativePath: string; data: Blob }[],
+        files: { relativePath: string; data: File }[],
         progressCallback?: (current: number, total: number, errors: string[]) => void
     ): Promise<string> {
         const crateId = await this.createEmptyCrate(name, description)
 
         const crateService = await this.persistence.createCrateServiceFor(crateId)
         if (!crateService) {
-            throw new Error("Crate services not available, cannot create files")
+            throw new Error("Crate services not available, cannot create crate from files")
         }
 
-        const fileService = crateService.getFileService()
+        const persistenceAdapter = new PersistenceAdapterImpl(crateService)
+        const coreService = await CoreServiceImpl.newInstance(persistenceAdapter, crateService)
 
         const errors: string[] = []
         let progress = 0
-
-        // Read the current metadata so we can add entities
-        const rawMetadata = await crateService.getMetadata()
-        const crate = JSON.parse(rawMetadata) as ICrate
-        const rootID = getRootEntityID(crate["@graph"])
-        const root = rootID && crate["@graph"].find((e) => e["@id"] === rootID)
-        if (!root) {
-            throw new Error("Root entity not found in metadata")
-        }
 
         // Stable sort for deterministic ordering
         const sorted = [...files].sort((a, b) =>
@@ -164,24 +137,10 @@ export class CrateFactory {
 
         for (const file of sorted) {
             const filePath = normalizeRelativePath(file.relativePath)
+            const fileName = extractFileName(filePath)
+
             try {
-                if (fileService) {
-                    await fileService.addFile(filePath, file.data)
-                }
-
-                const fileName = extractFileName(filePath)
-                crate["@graph"].push({
-                    "@id": filePath,
-                    "@type": "File",
-                    name: fileName,
-                    contentSize: file.data.size + "",
-                    encodingFormat: file.data.type || undefined
-                } as IEntity)
-
-                if (!root.hasPart) root.hasPart = []
-                if (Array.isArray(root.hasPart)) {
-                    root.hasPart.push({ "@id": filePath })
-                }
+                await coreService.addFileEntity(fileName, filePath, file.data)
             } catch (e) {
                 const msg = e instanceof Error ? e.message : String(e)
                 errors.push(`Failed to upload ${filePath}: ${msg}`)
@@ -190,9 +149,6 @@ export class CrateFactory {
             progress++
             progressCallback?.(progress, sorted.length, errors)
         }
-
-        // Write updated metadata with all new entities
-        await crateService.setMetadata(JSON.stringify(crate, null, 2))
 
         return crateId
     }
