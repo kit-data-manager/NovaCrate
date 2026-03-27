@@ -180,7 +180,7 @@ export async function createCrateFromZip(zip: Blob) {
     const readDirResult = await fs.readDir(resolveCratePath(id))
     if (!readDirResult.isOk()) throw readDirResult.unwrapErr()
 
-    const ignore = ["__MACOSX/", ".DS_Store/"]
+    const ignore = ["__MACOSX", ".DS_Store"]
     const rawFiles = await collectAsyncIterator(readDirResult.unwrap())
 
     const files = rawFiles.filter((f) => !ignore.includes(f.path))
@@ -195,6 +195,11 @@ export async function createCrateFromZip(zip: Blob) {
         // ELN Format has one single folder in root that contains the crate
         const subFolder = files.find((f) => f.handle.kind === "directory")
         if (!subFolder) throw "Could not find subFolder"
+
+        const metadataFile = await fs.stat(
+            resolveCratePath(id) + "/" + subFolder.path + "/ro-crate-metadata.json"
+        )
+        if (!metadataFile.isOk()) throw metadataFile.unwrapErr()
 
         const moveResult = await fs.move(
             resolveCratePath(id) + "/" + subFolder.path,
