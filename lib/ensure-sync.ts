@@ -1,15 +1,21 @@
 import { propertyHasChanged } from "@/lib/utils"
 import { Draft } from "immer"
 
-export function applyServerDifferences(
-    crateData: ICrate,
-    lastCrateData: ICrate | undefined,
+/**
+ * Three-way merge of entity graphs. Compares the new remote graph against the
+ * previous remote graph and applies only the server-side changes to the local
+ * working copy, preserving any locally-modified properties.
+ *
+ * @param newGraph    The latest remote entity array.
+ * @param lastGraph   The previous remote entity array (empty array on first load).
+ * @param newEntities A mutable Immer draft of the local working entity map.
+ */
+export function applyGraphDifferences(
+    newGraph: IEntity[],
+    lastGraph: IEntity[],
     newEntities: Draft<Map<string, IEntity>>
 ) {
-    const { handleRemaining, handleRemoved, handleNew } = compareCrateGraphs(
-        crateData["@graph"],
-        lastCrateData?.["@graph"] || []
-    )
+    const { handleRemaining, handleRemoved, handleNew } = compareCrateGraphs(newGraph, lastGraph)
 
     handleNew((entity) => {
         newEntities.set(entity["@id"], entity)

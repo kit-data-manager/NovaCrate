@@ -1,13 +1,15 @@
 import { ValidationResult } from "@/lib/validation/validation-result"
 import { EditorState } from "@/lib/state/editor-state"
 import { ISchemaWorkerContext } from "@/components/providers/schema-worker-provider"
-import { ICrateDataProvider } from "@/components/providers/crate-data-provider"
+import { IFileService } from "@/lib/core/persistence/IFileService"
+import { IContextResolverService } from "@/lib/core/IContextResolverService"
 
 export type ValidatorContext = {
     editorState: EditorState
-    serviceProvider?: CrateServiceAdapter
-    crateData: ICrateDataProvider
+    fileService?: IFileService
     schemaWorker: ISchemaWorkerContext
+    /** Resolver for translating between short-form term names and full URIs. */
+    resolver: IContextResolverService
 }
 
 export abstract class Validator {

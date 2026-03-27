@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added impact analysis to the entity deletion modal. It informs the user over how many entities and files/folders will be deleted.
 - Added the option to delete entities but keep corresponding files/folders.
 
+### Changed
+
+- Reengineered the core of the NovaCrate application to make it more modular, extensible, and maintainable. Some behavioural changes in the editor are expected, the functionality should not be impacted, though.
+
 ## [1.9.0] - 2026-03-10
 
 ### Added

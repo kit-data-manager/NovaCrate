@@ -1,6 +1,6 @@
 import { PersonImport } from "@/components/modals/create-entity/person-import"
 import React, { useMemo, useState } from "react"
-import { useEditorState } from "@/lib/state/editor-state"
+import { useContextResolver } from "@/lib/hooks/hooks"
 import { SCHEMA_ORG_ORGANIZATION, SCHEMA_ORG_PERSON } from "@/lib/constants"
 import { OrganizationImport } from "@/components/modals/create-entity/organization-import"
 import { AutoReference } from "@/lib/utils"
@@ -18,16 +18,16 @@ export function CreateProviders({
     autoReference?: AutoReference
     fallback: React.ReactNode
 }) {
-    const context = useEditorState((store) => store.crateContext)
+    const resolver = useContextResolver()
     const [manualCreation, setManualCreation] = useState(true)
 
     const canUsePersonProvider = useMemo(() => {
-        return context.resolve(selectedType) === SCHEMA_ORG_PERSON
-    }, [context, selectedType])
+        return resolver.resolve(selectedType) === SCHEMA_ORG_PERSON
+    }, [resolver, selectedType])
 
     const canUseOrganizationProvider = useMemo(() => {
-        return context.resolve(selectedType) === SCHEMA_ORG_ORGANIZATION
-    }, [context, selectedType])
+        return resolver.resolve(selectedType) === SCHEMA_ORG_ORGANIZATION
+    }, [resolver, selectedType])
 
     const provider = useMemo(() => {
         if (canUsePersonProvider) {

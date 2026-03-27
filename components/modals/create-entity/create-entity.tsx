@@ -17,9 +17,9 @@ import { Error } from "@/components/error"
 import prettyBytes from "pretty-bytes"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
-import { useEditorState } from "@/lib/state/editor-state"
+import { useContextResolver } from "@/lib/hooks/hooks"
 import HelpTooltip from "@/components/help-tooltip"
-import { useAutoId } from "@/lib/hooks"
+import { useAutoId } from "@/lib/hooks/hooks"
 import { CreateEntityHint } from "@/components/modals/create-entity/create-entity-hint"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -42,17 +42,17 @@ export function CreateEntity({
     onUploadFile(id: string, name: string, file: File): void
     onUploadFolder(id: string, name: string, files: File[]): void
 }) {
-    const context = useEditorState((store) => store.crateContext)
+    const resolver = useContextResolver()
 
     const [externalResource, setExternalResource] = useState(false)
     const [path, setPath] = useState("")
     const fileUpload = useMemo(() => {
-        return context.resolve(selectedType) === RO_CRATE_FILE
-    }, [context, selectedType])
+        return resolver.resolve(selectedType) === RO_CRATE_FILE
+    }, [resolver, selectedType])
 
     const folderUpload = useMemo(() => {
-        return context.resolve(selectedType) === RO_CRATE_DATASET
-    }, [context, selectedType])
+        return resolver.resolve(selectedType) === RO_CRATE_DATASET
+    }, [resolver, selectedType])
 
     const defaultName = useMemo(() => {
         if ((fileUpload || folderUpload) && forceId) {

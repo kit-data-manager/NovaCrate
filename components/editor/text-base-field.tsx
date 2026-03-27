@@ -7,7 +7,7 @@ import { BooleanField } from "@/components/editor/text-fields/boolean-field"
 import { NumberField } from "@/components/editor/text-fields/number-field"
 import { TimeField } from "@/components/editor/text-fields/time-field"
 import { DateTimeField } from "@/components/editor/text-fields/datetime-field"
-import { useDeferredValue } from "@/lib/hooks"
+import { useDeferredValue } from "@/lib/hooks/hooks"
 import { getDefaultDate, getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
 
 function propertyCanBeToInputType({

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createRef, useCallback, useContext, useEffect, useRef } from "react"
+import React, { createRef, useCallback, useEffect, useRef, useContext } from "react"
 import ReactFlow, {
     Background,
     Connection,
@@ -32,7 +32,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@/components/ui/context-menu"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useOperationState } from "@/lib/state/operation-state"
 import { Error } from "@/components/error"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ActionButton, ActionContextMenuItem } from "@/components/actions/action-buttons"
@@ -142,8 +142,9 @@ export function EntityGraph() {
     const removePropertyEntry = useEditorState((store) => store.removePropertyEntry)
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const { showDeleteEntityModal, showAddPropertyModal } = useContext(GlobalModalContext)
-    const { saveError, crateDataIsLoading, crateId, isSaving, clearSaveError } =
-        useContext(CrateDataContext)
+    const saveErrors = useOperationState((s) => s.saveErrors)
+    const isSaving = useOperationState((s) => s.isSaving)
+    const clearSaveError = useOperationState((s) => s.clearSaveError)
     const nodesInitialized = useNodesInitialized()
 
     const {
@@ -356,7 +357,7 @@ export function EntityGraph() {
             >
                 <Panel
                     position="top-left"
-                    className={`transition gap-2 items-center flex ${crateDataIsLoading || !crateId ? "opacity-0" : "opacity-100"}`}
+                    className={`transition gap-2 items-center flex ${entities.size === 0 ? "opacity-0" : "opacity-100"}`}
                 >
                     <div className="p-0.5 bg-accent rounded-lg">
                         <Button variant="secondary" size="sm" onClick={fullView}>
@@ -420,7 +421,7 @@ export function EntityGraph() {
 
                 <Panel
                     position="top-right"
-                    className={`transition ${crateDataIsLoading || !crateId ? "opacity-0" : "opacity-100"}`}
+                    className={`transition ${entities.size === 0 ? "opacity-0" : "opacity-100"}`}
                 >
                     <ActionButton
                         variant={hasUnsavedChanges ? "default" : "secondary"}
@@ -431,7 +432,7 @@ export function EntityGraph() {
 
                 <Panel position="bottom-left">
                     <div className="max-h-50 overflow-y-auto flex gap-2 flex-col">
-                        {Array.from(saveError.entries()).map(([key, value]) => (
+                        {Array.from(saveErrors.entries()).map(([key, value]) => (
                             <Error
                                 title="Error while saving"
                                 key={key}
@@ -442,7 +443,7 @@ export function EntityGraph() {
                     </div>
                 </Panel>
 
-                {crateDataIsLoading || !crateId ? (
+                {entities.size === 0 ? (
                     <div className="w-full h-full flex justify-center items-center gap-8">
                         <Skeleton className="w-50 h-25" />
                         <div className="space-y-8">
