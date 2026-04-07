@@ -124,7 +124,7 @@ export default function Home() {
                                 }
                             >
                                 <p>
-                                    The main strength of NovaCrate is it&apos;s usability-focused
+                                    The main strength of NovaCrate is its usability-focused
                                     entity editing approach. The entity browser and the global
                                     search make it easy to find the entity you want to work on. The
                                     entities you are currently working on are displayed in a tabbed
@@ -162,7 +162,7 @@ export default function Home() {
                                     NovaCrate provides an in-app file explorer that lets you view
                                     the contents of your Research Object Crate through a file-tree.
                                     You can preview files in your RO-Crate through a double-click
-                                    (only supported for some common file formats) The file explorer
+                                    (only supported for some common file formats). The file explorer
                                     allows easily uploading new files to the crate, as well as
                                     renaming or removing files and folders in the crate in case of
                                     errors or mistakes.
@@ -227,7 +227,7 @@ export default function Home() {
                                     NovaCrate implements numerous validation rules to make sure the
                                     Research Object Crate you work on is conformant to the current
                                     specification and follows best practices. Validation issues are
-                                    reported in a granular manner directly where the occur - either
+                                    reported in a granular manner directly where they occur - either
                                     on Crate-level, Entity-level or Property-level, removing the
                                     need for guessing where an issue has occurred.
                                 </p>
@@ -302,7 +302,7 @@ export default function Home() {
                         <div className="text-4xl font-bold">Frequently Asked Questions</div>
                         <div className="space-y-4">
                             <FAQ question={"Where is my data stored?"}>
-                                All data stays on your local device. Even though NovaCrate is server
+                                All data stays on your local device. Even though NovaCrate is served
                                 through the web browser, your data never leaves your device.
                             </FAQ>
                             <FAQ question={"What has changed in the last update?"}>

@@ -32,7 +32,7 @@ export function ShowcaseBlock({
     }, [])
 
     const text = (
-        <div className="self-center justify-self-center" id={id}>
+        <div className="self-center justify-self-center">
             <h3 className="text-2xl font-bold mt-4">{title}</h3>
             <div className="mt-2 space-y-4">{children}</div>
             {tip && (
@@ -50,7 +50,7 @@ export function ShowcaseBlock({
     )
 
     return (
-        <div className="grid md:grid-cols-2 gap-8 border border-border rounded-lg p-8 overflow-hidden">
+        <div id={id} className="grid md:grid-cols-2 gap-8 border border-border rounded-lg p-8 overflow-hidden">
             {rtl && text}
             <Image
                 src={addBasePath(resolvedTheme === "dark" && mounted ? imgDark : imgLight)}
