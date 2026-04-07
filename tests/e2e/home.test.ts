@@ -74,7 +74,7 @@ test("test", async ({ page }) => {
     - button "Can I host NovaCrate on my own server?"
     - button "Is NovaCrate extensible?"
     - button "Can I integrate NovaCrate into my application/workflow/repository?"
-    - text: NovaCrate v1.9.0
+    - text: /NovaCrate v\\d+\\.\\d+\\.\\d+/
     - link "GitHub logo":
       - /url: https://github.com/kit-data-manager/NovaCrate
       - img "GitHub logo"
