@@ -46,6 +46,7 @@ import { Error } from "@/components/error"
 import { ValidationOverview } from "@/components/editor/validation/validation-overview"
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { useStore } from "zustand"
+import { toast } from "sonner"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -127,30 +128,45 @@ export function NavHeader() {
 
     const crateName = useCrateName()
 
-    const downloadCrateZip = useCallback(() => {
+    const downloadCrateZip = useCallback(async () => {
         const repo = persistence.getRepositoryService()
         const crateId = persistence.getCrateId()
         if (repo && crateId) {
-            showCrateExportedModal()
-            downloadCrateAs(repo, crateId, "zip", crateName + ".zip").then()
+            try {
+                await downloadCrateAs(repo, crateId, "zip", crateName + ".zip")
+                showCrateExportedModal()
+            } catch (e) {
+                console.error("Failed to export crate as .zip", e)
+                toast.error("Failed to export crate as .zip")
+            }
         }
     }, [crateName, persistence, showCrateExportedModal])
 
-    const downloadCrateEln = useCallback(() => {
+    const downloadCrateEln = useCallback(async () => {
         const repo = persistence.getRepositoryService()
         const crateId = persistence.getCrateId()
         if (repo && crateId) {
-            showCrateExportedModal()
-            downloadCrateAs(repo, crateId, "eln", crateName + ".eln").then()
+            try {
+                await downloadCrateAs(repo, crateId, "eln", crateName + ".eln")
+                showCrateExportedModal()
+            } catch (e) {
+                console.error("Failed to export crate as .eln", e)
+                toast.error("Failed to export crate as .eln")
+            }
         }
     }, [crateName, persistence, showCrateExportedModal])
 
-    const downloadRoCrateMetadataFile = useCallback(() => {
+    const downloadRoCrateMetadataFile = useCallback(async () => {
         const repo = persistence.getRepositoryService()
         const crateId = persistence.getCrateId()
         if (repo && crateId) {
-            showCrateExportedModal()
-            downloadCrateAs(repo, crateId, "standalone-json", "ro-crate-metadata.json").then()
+            try {
+                await downloadCrateAs(repo, crateId, "standalone-json", "ro-crate-metadata.json")
+                showCrateExportedModal()
+            } catch (e) {
+                console.error("Failed to export crate as JSON", e)
+                toast.error("Failed to export crate as JSON")
+            }
         }
     }, [persistence, showCrateExportedModal])
 

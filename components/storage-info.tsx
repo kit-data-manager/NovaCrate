@@ -14,13 +14,12 @@ export function StorageInfo() {
 
     const fetcher = useCallback(async () => {
         const fileServiceQuota = persistence.getCrateService()?.getFileService()?.getStorageQuota()
-        const repositoryServiceQuota = persistence.getRepositoryService()?.getStorageQuota()
 
         if (fileServiceQuota) {
             return await fileServiceQuota
-        } else if (repositoryServiceQuota) {
-            return await repositoryServiceQuota
-        } else return null
+        } else {
+            return persistence.getRepositoryService()?.getStorageQuota() ?? null
+        }
     }, [persistence])
 
     const { data, mutate, error, isLoading } = useSWR("storage-info", fetcher)
@@ -28,9 +27,8 @@ export function StorageInfo() {
     useInterval(mutate, 60000)
 
     if (isLoading) return <Skeleton className="w-full p-4 h-14 mb-2" />
-    if (!data) return <div>Current persistence service does not provide storage information.</div>
-
     if (error) return <Error error={error} title={"Storage Info not available"} />
+    if (!data) return <div>Current persistence service does not provide storage information.</div>
 
     return (
         <div className="space-y-1 p-4">

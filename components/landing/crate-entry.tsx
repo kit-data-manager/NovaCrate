@@ -27,6 +27,7 @@ import {
 import { Error } from "@/components/error"
 import { DateTime } from "luxon"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { toast } from "sonner"
 
 export interface CrateDetails {
     name?: string
@@ -157,48 +158,63 @@ export function CrateEntry({
                             </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent>
                                 <DropdownMenuItem
-                                    onClick={() => {
+                                    onClick={async () => {
                                         const repo = persistence.getRepositoryService()
                                         if (repo) {
-                                            showCrateExportedModal()
-                                            downloadCrateAs(
-                                                repo,
-                                                crateId,
-                                                "zip",
-                                                "crate.zip"
-                                            ).then()
+                                            try {
+                                                await downloadCrateAs(
+                                                    repo,
+                                                    crateId,
+                                                    "zip",
+                                                    "crate.zip"
+                                                )
+                                                showCrateExportedModal()
+                                            } catch (e) {
+                                                console.error("Failed to export crate as .zip", e)
+                                                toast.error("Failed to export crate as .zip")
+                                            }
                                         }
                                     }}
                                 >
                                     <FolderArchive className="size-4 mr-2" /> As .zip Archive
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={() => {
+                                    onClick={async () => {
                                         const repo = persistence.getRepositoryService()
                                         if (repo) {
-                                            showCrateExportedModal()
-                                            downloadCrateAs(
-                                                repo,
-                                                crateId,
-                                                "eln",
-                                                "crate.eln"
-                                            ).then()
+                                            try {
+                                                await downloadCrateAs(
+                                                    repo,
+                                                    crateId,
+                                                    "eln",
+                                                    "crate.eln"
+                                                )
+                                                showCrateExportedModal()
+                                            } catch (e) {
+                                                console.error("Failed to export crate as .eln", e)
+                                                toast.error("Failed to export crate as .eln")
+                                            }
                                         }
                                     }}
                                 >
                                     <Notebook className="size-4 mr-2" /> As ELN
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={() => {
+                                    onClick={async () => {
                                         const repo = persistence.getRepositoryService()
                                         if (repo) {
-                                            showCrateExportedModal()
-                                            downloadCrateAs(
-                                                repo,
-                                                crateId,
-                                                "standalone-json",
-                                                "ro-crate-metadata.json"
-                                            ).then()
+                                            try {
+                                                await downloadCrateAs(
+                                                    repo,
+                                                    crateId,
+                                                    "standalone-json",
+                                                    "ro-crate-metadata.json"
+                                                )
+                                                showCrateExportedModal()
+                                            } catch (e) {
+                                                console.error("Failed to export crate as JSON", e)
+                                                toast.error("Failed to export crate as JSON")
+                                            }
                                         }
                                     }}
                                 >
