@@ -62,20 +62,17 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
                 .finally(() => {
                     setIsDeleting(false)
                 })
-        } else if (serviceProvider && crateId) {
-            // Attempt to delete anyway. The user has able to access the delete button, so there must be something here...
+        } else if (crateId) {
+            // Attempt to delete anyway. The user has been able to access the delete button, so there must be something here...
             // Assumes the type to be a file, since files can exist without having an entity
-            onOpenChange(false)
             setIsDeleting(true)
-            serviceProvider
-                .deleteEntity(
-                    crateId,
-                    {
-                        "@id": entityId,
-                        "@type": [context.reverse(RO_CRATE_FILE) || RO_CRATE_FILE]
-                    },
-                    deleteContent
-                )
+            deleteEntity(
+                {
+                    "@id": entityId,
+                    "@type": [context.reverse(RO_CRATE_FILE) || RO_CRATE_FILE]
+                },
+                deleteContent
+            )
                 .then((success) => {
                     if (success) {
                         setDeleteError(undefined)
@@ -90,16 +87,7 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
                     setIsDeleting(false)
                 })
         }
-    }, [
-        entity,
-        serviceProvider,
-        crateId,
-        deleteEntity,
-        onOpenChange,
-        entityId,
-        context,
-        deleteContent
-    ])
+    }, [entity, crateId, deleteEntity, onOpenChange, entityId, context, deleteContent])
 
     const couldHaveFile = useMemo(() => {
         return entity ? !isContextualEntity(entity) : true
@@ -118,8 +106,15 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
             return Array.from(editorState.getState().getEntities()).filter(([id]) =>
                 normalizeIdentifier(id).startsWith(normalizeIdentifier(entity["@id"]))
             ).length
-        } else return 0
-    }, [couldBeFileEntity, deleteContent, entity])
+        } else {
+            // No entity exists for this path
+            if (!deleteContent) return 0
+            // Count child entities that would be affected by deleting this folder
+            return Array.from(editorState.getState().getEntities()).filter(([id]) =>
+                normalizeIdentifier(id).startsWith(normalizeIdentifier(entityId))
+            ).length
+        }
+    }, [couldBeFileEntity, deleteContent, entity, entityId])
 
     const getImpactedFileOrFolderCount = useCallback(async () => {
         if (!serviceProvider || !crateId) return 0

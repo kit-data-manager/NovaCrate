@@ -16,7 +16,7 @@ import { applyServerDifferences } from "@/lib/ensure-sync"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { TriangleAlert } from "lucide-react"
-import { changeEntityIdOccurrences, getEntityDisplayName } from "@/lib/utils"
+import { changeEntityIdOccurrences, getEntityDisplayName, normalizeIdentifier } from "@/lib/utils"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { useInterval } from "usehooks-ts"
 
@@ -515,6 +515,16 @@ export function CrateDataProvider({
                                 (e) => e["@id"] === entityData["@id"]
                             )
                             if (index >= 0) newData["@graph"].splice(index, 1)
+
+                            // Also remove child entities when deleting folder content
+                            if (entityData["@id"].endsWith("/") && deleteData) {
+                                newData["@graph"] = newData["@graph"].filter(
+                                    (entity) =>
+                                        !normalizeIdentifier(entity["@id"]).startsWith(
+                                            normalizeIdentifier(entityData["@id"])
+                                        )
+                                )
+                            }
                         })
 
                         await mutate(newData)
