@@ -7,6 +7,7 @@ import { useTheme } from "next-themes"
 import { Lightbulb } from "lucide-react"
 
 export function ShowcaseBlock({
+    id,
     imgLight,
     imgDark,
     title,
@@ -15,6 +16,7 @@ export function ShowcaseBlock({
     rtl,
     tip
 }: PropsWithChildren<{
+    id?: string
     imgLight: string
     imgDark: string
     title: string
@@ -30,9 +32,9 @@ export function ShowcaseBlock({
     }, [])
 
     const text = (
-        <div className="self-center justify-self-center">
+        <div className="self-center justify-self-center" id={id}>
             <h3 className="text-2xl font-bold mt-4">{title}</h3>
-            <p className="text-justify mt-2">{children}</p>
+            <div className="mt-2 space-y-4">{children}</div>
             {tip && (
                 <>
                     <br />
