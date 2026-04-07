@@ -96,7 +96,7 @@
     "jest-environment-jsdom": "^30.2.0",
     "npm-run-all2": "8.0.4",
     "postcss": "8.5.6",
-    "serve": "14.2.5",
+    "serve": "^14.2.5",
     "tailwindcss": "4.1.18",
     "ts-loader": "9.5.4",
     "ts-node": "^10.9.2",
