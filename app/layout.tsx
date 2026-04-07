@@ -8,10 +8,12 @@ import { Toaster } from "@/components/ui/sonner"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-    title: "NovaCrate - RO-Crate Editor",
-    description: "Web-based interactive editor for editing, visualizing and validating RO-Crates.",
+    title: "NovaCrate - Web-based Editor for Research Object Crates",
+    description:
+        "NovaCrate is a web-based interactive editor for editing, visualizing and validating Research Object Crates directly in the browser. Easily create RO-Crates describing your research data and export to a variety of file-formats.",
     applicationName: "NovaCrate",
     keywords: [
+        "novacrate",
         "ro-crate",
         "ro",
         "research",
@@ -20,16 +22,19 @@ export const metadata: Metadata = {
         "editor",
         "graph",
         "visualize",
+        "validation",
         "nova",
-        "novacrate",
         "web",
         "browser",
         "interactive",
-        "edit",
-        "next",
-        "nextjs",
-        "react"
-    ]
+        "edit"
+    ],
+    robots: "index, follow",
+    creator: "Christopher Raquet, Karlsruhe Institute of Technology",
+    publisher: "Karlsruhe Institute of Technology",
+    alternates: {
+        canonical: "https://novacrate.datamanager.kit.edu/"
+    }
 }
 
 export default function RootLayout({
