@@ -16,7 +16,7 @@ import { applyServerDifferences } from "@/lib/ensure-sync"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { TriangleAlert } from "lucide-react"
-import { changeEntityIdOccurrences, getEntityDisplayName } from "@/lib/utils"
+import { changeEntityIdOccurrences, getEntityDisplayName, normalizeIdentifier } from "@/lib/utils"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { useInterval } from "usehooks-ts"
 
@@ -83,9 +83,10 @@ export interface ICrateDataProvider {
     /**
      * Delete an entity. Will optimistically update the local crate state.
      * @param entity While an IEntity object is expected, only @id and @type have to be provided. Other properties can be omitted.
+     * @param deleteData Whether to delete the file or folder described by the entity.
      * @returns {Promise<boolean>} Whether the operation was successful.
      */
-    deleteEntity(entity: IEntity): Promise<boolean>
+    deleteEntity(entity: IEntity, deleteData: boolean): Promise<boolean>
     /**
      * Changes the @id of the passed crate to the given newEntityId. Optimistically updates the local crate state. The serviceProvider is responsible for updating
      * all incoming references to the entity.
@@ -499,10 +500,14 @@ export function CrateDataProvider({
     )
 
     const deleteEntity = useCallback(
-        async (entityData: IEntity) => {
+        async (entityData: IEntity, deleteData: boolean) => {
             if (crateId) {
                 try {
-                    const deleteResult = await serviceProvider.deleteEntity(crateId, entityData)
+                    const deleteResult = await serviceProvider.deleteEntity(
+                        crateId,
+                        entityData,
+                        deleteData
+                    )
 
                     if (data) {
                         const newData = produce<ICrate>(data, (newData: Draft<ICrate>) => {
@@ -510,6 +515,16 @@ export function CrateDataProvider({
                                 (e) => e["@id"] === entityData["@id"]
                             )
                             if (index >= 0) newData["@graph"].splice(index, 1)
+
+                            // Also remove child entities when deleting folder content
+                            if (entityData["@id"].endsWith("/") && deleteData) {
+                                newData["@graph"] = newData["@graph"].filter(
+                                    (entity) =>
+                                        !normalizeIdentifier(entity["@id"]).startsWith(
+                                            normalizeIdentifier(entityData["@id"])
+                                        )
+                                )
+                            }
                         })
 
                         await mutate(newData)

@@ -117,13 +117,14 @@ declare interface CrateServiceAdapter {
     ): Promise<boolean>
 
     /**
-     * Remove an entity from the crate and also remove all references. If this is a data entity, it will also remove
+     * Remove an entity from the crate and also remove all references. If this is a data entity and deleteData is true, it will also remove
      * the data from the crate
      * @param crateId ID of the target crate
      * @param entityData Data of the entity that should be deleted. Relevant are only @id and @type
+     * @param deleteData Set to true to also delete the data of the entity.
      * @returns Promise - resolves on success
      */
-    deleteEntity(crateId: string, entityData: IEntity): Promise<boolean>
+    deleteEntity(crateId: string, entityData: IEntity, deleteData: boolean): Promise<boolean>
 
     /**
      * Change the @id field of an entity. This also takes all references to the entity into account.

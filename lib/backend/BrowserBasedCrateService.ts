@@ -4,7 +4,13 @@ import { opfsFunctions } from "@/lib/opfs-worker/functions"
 import fileDownload from "js-file-download"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { CrateServiceBase } from "@/lib/backend/CrateServiceBase"
-import { encodeFilePath, getRootEntityID, isDataEntity, isFolderDataEntity } from "@/lib/utils"
+import {
+    encodeFilePath,
+    getRootEntityID,
+    isDataEntity,
+    isFolderDataEntity,
+    normalizeIdentifier
+} from "@/lib/utils"
 import * as z from "zod/mini"
 
 const template: (name: string, description: string) => ICrate = (
@@ -216,16 +222,39 @@ export class BrowserBasedCrateService extends CrateServiceBase {
         return true
     }
 
-    async deleteEntity(crateId: string, entityData: IEntity): Promise<boolean> {
+    async deleteEntity(
+        crateId: string,
+        entityData: IEntity,
+        deleteData: boolean
+    ): Promise<boolean> {
         const crate = await this.getCrate(crateId)
         const existing = crate["@graph"].findIndex((n) => n["@id"] === entityData["@id"])
         if (existing >= 0) {
             crate["@graph"].splice(existing, 1)
         }
 
+        if (entityData["@id"].endsWith("/") && deleteData) {
+            // Also remove entities corresponding to files or folders inside this folder entity
+            const childEntities = new Set(
+                crate["@graph"]
+                    .filter((entity) =>
+                        normalizeIdentifier(entity["@id"]).startsWith(
+                            normalizeIdentifier(entityData["@id"])
+                        )
+                    )
+                    .map((e) => e["@id"])
+            )
+
+            for (const childEntity of childEntities) {
+                this.removeFromHasPart(crate, childEntity)
+            }
+
+            crate["@graph"] = crate["@graph"].filter((e) => !childEntities.has(e["@id"]))
+        }
+
         this.removeFromHasPart(crate, entityData["@id"])
         await this.saveRoCrateMetadataJSON(crateId, JSON.stringify(crate))
-        await this.worker.execute("deleteFileOrFolder", crateId, entityData["@id"])
+        if (deleteData) await this.worker.execute("deleteFileOrFolder", crateId, entityData["@id"])
         return true
     }
 

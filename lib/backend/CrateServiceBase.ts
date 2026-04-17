@@ -89,7 +89,11 @@ export abstract class CrateServiceBase implements CrateServiceAdapter {
 
     abstract deleteCrate(id: string): Promise<boolean>
 
-    abstract deleteEntity(crateId: string, entityData: IEntity): Promise<boolean>
+    abstract deleteEntity(
+        crateId: string,
+        entityData: IEntity,
+        deleteData: boolean
+    ): Promise<boolean>
 
     async changeEntityId(
         crateId: string,
