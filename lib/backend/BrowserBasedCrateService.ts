@@ -235,12 +235,21 @@ export class BrowserBasedCrateService extends CrateServiceBase {
 
         if (entityData["@id"].endsWith("/") && deleteData) {
             // Also remove entities corresponding to files or folders inside this folder entity
-            crate["@graph"] = crate["@graph"].filter(
-                (entity) =>
-                    !normalizeIdentifier(entity["@id"]).startsWith(
-                        normalizeIdentifier(entityData["@id"])
+            const childEntities = new Set(
+                crate["@graph"]
+                    .filter((entity) =>
+                        normalizeIdentifier(entity["@id"]).startsWith(
+                            normalizeIdentifier(entityData["@id"])
+                        )
                     )
+                    .map((e) => e["@id"])
             )
+
+            for (const childEntity of childEntities) {
+                this.removeFromHasPart(crate, childEntity)
+            }
+
+            crate["@graph"] = crate["@graph"].filter((e) => !childEntities.has(e["@id"]))
         }
 
         this.removeFromHasPart(crate, entityData["@id"])
