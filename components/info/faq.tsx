@@ -1,3 +1,5 @@
+"use client"
+
 import { PropsWithChildren, useState } from "react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { ChevronDown, ChevronRight } from "lucide-react"
