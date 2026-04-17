@@ -67,7 +67,6 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
         } else {
             // Attempt to delete anyway. The user was able to access the delete button, so there must be something here...
             // Assumes the type to be a file, since files can exist without having an entity
-            onOpenChange(false)
             setIsDeleting(true)
             core.deleteEntity(entityId, deleteContent)
                 .then(() => {
@@ -101,8 +100,15 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
             return Array.from(editorState.getState().getEntities()).filter(([id]) =>
                 normalizeIdentifier(id).startsWith(normalizeIdentifier(entity["@id"]))
             ).length
-        } else return 0
-    }, [couldBeFileEntity, deleteContent, entity])
+        } else {
+            // No entity exists for this path
+            if (!deleteContent) return 0
+            // Count child entities that would be affected by deleting this folder
+            return Array.from(editorState.getState().getEntities()).filter(([id]) =>
+                normalizeIdentifier(id).startsWith(normalizeIdentifier(entityId))
+            ).length
+        }
+    }, [couldBeFileEntity, deleteContent, entity, entityId])
 
     const getImpactedFileOrFolderCount = useCallback(async () => {
         const fileService = persistence.getCrateService()?.getFileService()

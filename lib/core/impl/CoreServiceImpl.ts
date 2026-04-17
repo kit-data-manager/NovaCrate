@@ -96,6 +96,7 @@ export class CoreServiceImpl implements ICoreService {
             await this.fileService.delete(id)
         }
 
+        // TODO: Child entities also need to be deleted when deleteData is true and id references a folder
         await this.metadata.deleteEntity(id)
     }
 
