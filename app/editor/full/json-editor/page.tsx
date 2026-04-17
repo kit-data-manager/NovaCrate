@@ -1,8 +1,8 @@
 "use client"
 
 import { Editor } from "@monaco-editor/react"
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import React, { useCallback, useEffect, useRef, useState } from "react"
+import { usePersistence } from "@/components/providers/persistence-provider"
 import { useTheme } from "next-themes"
 import type { editor } from "monaco-editor"
 import {
@@ -16,19 +16,19 @@ import {
     Undo2
 } from "lucide-react"
 import { useEditorState } from "@/lib/state/editor-state"
+import { useOperationState } from "@/lib/state/operation-state"
 import { Error } from "@/components/error"
 import { Button } from "@/components/ui/button"
-import { useSaveAllEntities } from "@/lib/hooks"
+import { useSaveAllEntities } from "@/lib/hooks/hooks"
 import { useHandleMonacoMount } from "@/lib/monaco"
 import { Metadata } from "@/components/Metadata"
 import fileDownload from "js-file-download"
-import useSWR from "swr"
 
 export default function JSONEditorPage() {
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const revertAllEntities = useEditorState((store) => store.revertAllEntities)
-    const { crateData, saveRoCrateMetadataJSON, isSaving, serviceProvider, crateId } =
-        useContext(CrateDataContext)
+    const persistence = usePersistence()
+    const isSaving = useOperationState((s) => s.isSaving)
     const theme = useTheme()
     const [editorHasErrors, setEditorHasErrors] = useState(false)
     const editorValue = useRef<string | undefined>(undefined)
@@ -36,17 +36,31 @@ export default function JSONEditorPage() {
     const [saving, setSaving] = useState(false)
     const [saveError, setSaveError] = useState<unknown>()
 
-    const { data, mutate, error } = useSWR(
-        crateId && serviceProvider && crateId + "/ro-crate-metadata.json",
-        () => {
-            if (!crateId || !serviceProvider) return undefined
-            return serviceProvider.getCrateRaw(crateId)
-        }
-    )
+    // Raw metadata state — loaded from persistence and refreshed on metadata-changed events
+    const [data, setData] = useState<string | undefined>(undefined)
+    const [loadError, setLoadError] = useState<unknown>()
 
     useEffect(() => {
-        if (crateData) mutate().then()
-    }, [crateData, mutate])
+        const crateService = persistence.getCrateService()
+        if (!crateService) return
+
+        // Initial load
+        crateService
+            .getMetadata()
+            .then(setData)
+            .catch((e: unknown) => setLoadError(e))
+
+        // Re-load when metadata changes externally
+        const removeListener = crateService.events.addEventListener(
+            "metadata-changed",
+            (newMetadata: string) => {
+                setData(newMetadata)
+                setLoadError(undefined)
+            }
+        )
+
+        return removeListener
+    }, [persistence])
 
     const handleMount = useHandleMonacoMount()
 
@@ -68,10 +82,12 @@ export default function JSONEditorPage() {
     }, [])
 
     const saveChanges = useCallback(() => {
-        if (editorValue.current) {
+        const crateService = persistence.getCrateService()
+        if (editorValue.current && crateService) {
             setSaving(true)
             setEditorHasChanges(false)
-            saveRoCrateMetadataJSON(editorValue.current)
+            crateService
+                .setMetadata(editorValue.current)
                 .then(() => {
                     setSaveError(undefined)
                 })
@@ -80,7 +96,7 @@ export default function JSONEditorPage() {
                     setSaving(false)
                 })
         }
-    }, [saveRoCrateMetadataJSON])
+    }, [persistence])
 
     const download = useCallback(() => {
         if (editorValue.current)
@@ -185,7 +201,7 @@ export default function JSONEditorPage() {
             ) : (
                 <>
                     <Error error={saveError} title="Failed to save changes" />
-                    <Error error={error} title="Failed to load JSON" />
+                    <Error error={loadError} title="Failed to load JSON" />
                     <div className="flex gap-2 absolute top-12 right-35 z-10 bg-accent/60 items-center rounded-lg">
                         <Noticer hasErrors={editorHasErrors} hasChanges={editorHasChanges} />
                     </div>

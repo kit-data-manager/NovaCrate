@@ -1,5 +1,6 @@
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useEditorState } from "@/lib/state/editor-state"
+import { useContextResolver } from "@/lib/hooks/hooks"
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import {
     Command,
@@ -35,6 +36,7 @@ export function TypeSelect({
     setFullTypeBrowser?: (open: boolean) => void
 }) {
     const crateContext = useEditorState((store) => store.crateContext)
+    const resolver = useContextResolver()
     const { worker } = useContext(SchemaWorker)
     const [bypassRestrictions, setBypassRestrictions] = useState(false)
     const [isMatchingSchemaUnloaded, setIsMatchingSchemaUnloaded] = useState(false)
@@ -47,14 +49,14 @@ export function TypeSelect({
         if (bypassRestrictions || !restrictToClasses) {
             return (await worker.execute("getAllClasses")).filter((slimClass) => {
                 // Make sure this class is defined in the context of the crate in the first place
-                return crateContext.reverse(slimClass["@id"]) !== null
+                return resolver.reverse(slimClass["@id"]) !== null
             })
         } else {
             if (restrictToClasses) {
-                return restrictToClasses.filter((c) => crateContext.reverse(c["@id"])) // Reversible classes are known via specification
+                return restrictToClasses.filter((c) => resolver.reverse(c["@id"])) // Reversible classes are known via specification
             } else return []
         }
-    }, [bypassRestrictions, crateContext, restrictToClasses, worker])
+    }, [bypassRestrictions, resolver, restrictToClasses, worker])
 
     const {
         data: types,
@@ -68,9 +70,9 @@ export function TypeSelect({
 
     useEffect(() => {
         if (types && types.length === 1) {
-            onTypeSelect(crateContext.reverse(types[0]["@id"]) || types[0]["@id"])
+            onTypeSelect(resolver.reverse(types[0]["@id"]) || types[0]["@id"])
         }
-    }, [onTypeSelect, types, crateContext])
+    }, [onTypeSelect, types, resolver])
 
     const commonTypes = useMemo(() => {
         return types?.filter((e) => COMMON_PROPERTIES.includes(e["@id"]))

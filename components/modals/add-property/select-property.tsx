@@ -1,4 +1,4 @@
-import { useEditorState } from "@/lib/state/editor-state"
+import { useContextResolver } from "@/lib/hooks/hooks"
 import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { CheckedState } from "@radix-ui/react-checkbox"
@@ -70,7 +70,7 @@ export function SelectProperty({
     onlyReferences: boolean
 }) {
     const [open, setOpen] = useState(_open)
-    const crateContext = useEditorState((store) => store.crateContext)
+    const resolver = useContextResolver()
     const { isReady: crateVerifyReady, worker } = useContext(SchemaWorker)
     const [bypassRestrictions, setBypassRestrictions] = useState(false)
 
@@ -93,7 +93,7 @@ export function SelectProperty({
                 : await worker.execute(
                       "getPossibleEntityProperties",
                       types
-                          .map((type) => crateContext.resolve(type))
+                          .map((type) => resolver.resolve(type))
                           .filter((s) => typeof s === "string"),
                       { onlyReferences }
                   )
@@ -104,14 +104,14 @@ export function SelectProperty({
                         range: s.range.map((r) => r["@id"]),
                         rangeReadable: s.range
                             .map((r) => r["@id"])
-                            .map((r) => crateContext.reverse(r))
+                            .map((r) => resolver.reverse(r))
                             .filter((r) => typeof r === "string"),
-                        propertyName: crateContext.reverse(s["@id"])
+                        propertyName: resolver.reverse(s["@id"])
                     }
                 })
                 .filter((s) => typeof s.propertyName === "string") as PossibleProperty[]
         }
-    }, [bypassRestrictions, crateContext, crateVerifyReady, onlyReferences, typeArray, worker])
+    }, [bypassRestrictions, resolver, crateVerifyReady, onlyReferences, typeArray, worker])
 
     const handleBypassCheckedChange = useCallback((s: CheckedState) => {
         if (!s) {

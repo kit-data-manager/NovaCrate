@@ -102,15 +102,6 @@ export function normalizeIdentifier(path: string) {
 }
 
 /**
- * Check if this entity is the crate root
- * @param entity
- * @deprecated Use `editorState.getRootEntityId()` instead to reliably determine the @id of the root entity
- */
-export function isRootEntity(entity: IEntity) {
-    return entity["@id"] === "./"
-}
-
-/**
  * Check if this entity is the meta-entity for the ro-crate-metadata.json file
  * @param entity
  */
@@ -353,34 +344,6 @@ export enum Diff {
 }
 
 /**
- * This function changes all occurrences of oldId to newId (on the target entity and on all references to it)
- * @param entities All entities of the crate
- * @param oldId Current ID of entity to be renamed
- * @param newId New ID of entity to be renamed
- */
-export function changeEntityIdOccurrences(entities: IEntity[], oldId: string, newId: string) {
-    entities.forEach((e) => {
-        if (e["@id"] === oldId) {
-            e["@id"] = newId
-        }
-
-        for (const [, value] of Object.entries(e)) {
-            if (Array.isArray(value)) {
-                value.forEach((val) => {
-                    if (isReference(val) && val["@id"] === oldId) {
-                        val["@id"] = newId
-                    }
-                })
-            } else {
-                if (isReference(value) && value["@id"] === oldId) {
-                    value["@id"] = newId
-                }
-            }
-        }
-    })
-}
-
-/**
  * Sort a ValidationResult by propertyName, propertyIndex, entityId and resultTitle
  * @param a
  * @param b
@@ -407,4 +370,42 @@ export interface AutoReference {
     entityId: string
     propertyName: string
     valueIdx: number
+}
+
+/**
+ * Constructor-agnostic deep equality comparison for JSON-serializable values.
+ * Unlike `dequal` and `fast-deep-equal`, this does not compare constructors,
+ * so it works correctly across VM realm boundaries (e.g. with `structuredClone`
+ * in Jest's test sandbox).
+ *
+ * Handles: primitives, plain objects, arrays, `null`. Does **not** handle
+ * `Date`, `RegExp`, `Map`, `Set`, or other non-JSON types.
+ */
+export function deepEqual(a: unknown, b: unknown): boolean {
+    if (a === b) return true
+    if (a === null || b === null) return false
+    if (typeof a !== typeof b) return false
+
+    if (Array.isArray(a)) {
+        if (!Array.isArray(b) || a.length !== b.length) return false
+        for (let i = 0; i < a.length; i++) {
+            if (!deepEqual(a[i], b[i])) return false
+        }
+        return true
+    }
+
+    if (typeof a === "object" && typeof b === "object") {
+        const aObj = a as Record<string, unknown>
+        const bObj = b as Record<string, unknown>
+        const aKeys = Object.keys(aObj)
+        const bKeys = Object.keys(bObj)
+        if (aKeys.length !== bKeys.length) return false
+        for (const key of aKeys) {
+            if (!Object.prototype.hasOwnProperty.call(bObj, key)) return false
+            if (!deepEqual(aObj[key], bObj[key])) return false
+        }
+        return true
+    }
+
+    return false
 }

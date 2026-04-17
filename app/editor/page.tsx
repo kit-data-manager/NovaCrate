@@ -26,23 +26,23 @@ import {
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { CrateEntry } from "@/components/landing/crate-entry"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useDemoCrateLoader, useRecentCrates } from "@/lib/hooks"
+import { useDemoCrateLoader, useRecentCrates } from "@/lib/hooks/hooks"
 import { DeleteCrateModal } from "@/components/landing/delete-crate-modal"
 import { CreateCrateModal } from "@/components/landing/create-crate-modal"
 import { Error } from "@/components/error"
 import { Pagination } from "@/components/pagination"
+import { useOperationState } from "@/lib/state/operation-state"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import useSWR from "swr"
 import { Footer } from "@/components/footer"
-import { GithubDiscontinuationWarning } from "@/components/github-discontinuation-warning"
 import Image from "next/image"
 import { ChangelogModal } from "@/components/changelog-modal"
 import { Geist } from "next/font/google"
 import { addBasePath } from "next/dist/client/add-base-path"
+import { usePersistence } from "@/components/providers/persistence-provider"
 
 const geist = Geist({ subsets: ["latin"] })
 
@@ -54,12 +54,8 @@ export default function EditorLandingPage() {
         return recentCrates === undefined
     }, [recentCrates])
     const [fadeOutAnimation, setFadeOutAnimation] = useState(false)
-    const {
-        serviceProvider,
-        setCrateId,
-        unsetCrateId,
-        healthTestError: error
-    } = useContext(CrateDataContext)
+    const persistence = usePersistence()
+    const healthError = useOperationState((s) => s.healthError)
     const createUploadInputRef = useRef<HTMLInputElement>(null)
     const { showAboutModal } = useContext(GlobalModalContext)
     const demoLoader = useDemoCrateLoader()
@@ -67,9 +63,8 @@ export default function EditorLandingPage() {
     const [demoLoading, setDemoLoading] = useState(false)
 
     useEffect(() => {
-        console.debug("Unsetting crate ID")
-        unsetCrateId()
-    }, [unsetCrateId])
+        persistence.setCrateId(null)
+    }, [persistence])
 
     const [deleteCrateModalState, setDeleteCrateModalState] = useState({
         open: false,
@@ -118,18 +113,19 @@ export default function EditorLandingPage() {
                     setDemoLoaderError("Failed to load demo crate")
                     setDemoLoading(false)
                 } else {
-                    if (!serviceProvider) {
+                    const repo = persistence.getRepositoryService()
+                    if (!repo) {
                         setDemoLoading(false)
-                        return setDemoLoaderError("Crate service not ready")
+                        return setDemoLoaderError("Repository service not available")
                     }
-                    const id = await serviceProvider?.createCrateFromCrateZip(data)
+                    const id = await repo.createCrateFromZip(data)
                     setDemoLoaderError(undefined)
 
                     setFadeOutAnimation(true)
                     router.prefetch(`/editor/full/entities`)
                     setTimeout(() => {
                         if (id !== "undefined") {
-                            setCrateId(id)
+                            persistence.setCrateId(id)
                             router.push(`/editor/full/entities`)
                         } else {
                             setDemoLoading(false)
@@ -141,7 +137,7 @@ export default function EditorLandingPage() {
                 setDemoLoaderError(e)
             }
         },
-        [demoLoader, router, serviceProvider, setCrateId]
+        [demoLoader, persistence, router]
     )
 
     const createUploadInputChangeHandler = useCallback(() => {
@@ -165,19 +161,20 @@ export default function EditorLandingPage() {
             router.prefetch(`/editor/full/entities`)
             setTimeout(() => {
                 if (id !== "undefined") {
-                    setCrateId(id)
+                    persistence.setCrateId(id)
                     router.push(`/editor/full/entities`)
                 }
             }, 500)
         },
-        [fadeOutAnimation, onCreateCrateModalOpenChange, router, setCrateId]
+        [fadeOutAnimation, onCreateCrateModalOpenChange, persistence, router]
     )
 
     const storedCratesResolver = useCallback(async () => {
-        if (serviceProvider) {
-            return await serviceProvider.getStoredCrateIds()
+        const repo = persistence.getRepositoryService()
+        if (repo) {
+            return await repo.getCratesList()
         } else return []
-    }, [serviceProvider])
+    }, [persistence])
 
     const {
         data: storedCrates,
@@ -241,7 +238,6 @@ export default function EditorLandingPage() {
                             height={195}
                             className={`dark:invert ${geist.className}`}
                         />
-                        <GithubDiscontinuationWarning className="mt-10" />
                     </div>
 
                     <div className="content-end">
@@ -350,7 +346,11 @@ export default function EditorLandingPage() {
                 </div>
 
                 <Error title="Demo could not be started" error={demoLoaderError} className="mb-2" />
-                <Error title="Crate service is not reachable" error={error} className="mb-2" />
+                <Error
+                    title="Crate service is not reachable"
+                    error={healthError}
+                    className="mb-2"
+                />
                 <Error
                     title="Crate storage unavailable"
                     error={storedCratesError}

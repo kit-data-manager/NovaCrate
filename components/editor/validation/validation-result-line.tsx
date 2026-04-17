@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import React, { memo, useCallback, useEffect, useMemo, useRef } from "react"
 import { ValidationResultIcon } from "@/components/editor/validation/validation-result-icon"
-import { useGoToEntityEditor } from "@/lib/hooks"
+import { useGoToEntityEditor } from "@/lib/hooks/hooks"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { ValidationResult } from "@/lib/validation/validation-result"
 import Markdown from "react-markdown"

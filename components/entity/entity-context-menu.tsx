@@ -11,9 +11,9 @@ import { Eye, Folder, Save, Trash, Undo2 } from "lucide-react"
 import { PropsWithChildren, useCallback, useContext, useMemo } from "react"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
-import { useGoToEntityEditor, useGoToFileExplorer } from "@/lib/hooks"
+import { useGoToEntityEditor, useGoToFileExplorer } from "@/lib/hooks/hooks"
 
 export function EntityContextMenu({
     entity,
@@ -22,7 +22,7 @@ export function EntityContextMenu({
 }: PropsWithChildren<{ entity?: IEntity; asChild: boolean }>) {
     const openTab = useEntityEditorTabs((store) => store.openTab)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
-    const { saveEntity } = useContext(CrateDataContext)
+    const { saveEntity } = useCrateMutations()
     const revertEntity = useEditorState((store) => store.revertEntity)
     const { showDeleteEntityModal } = useContext(GlobalModalContext)
     const diff = useEditorState((state) => (entity ? state.getEntityDiff(entity["@id"]) : null))

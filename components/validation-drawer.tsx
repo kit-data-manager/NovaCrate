@@ -18,7 +18,7 @@ import { ValidationDrawerSection } from "@/components/validation-drawer-section"
 import type { DefaultSectionOpen } from "@/components/file-explorer/explorer"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { useGoToEntityEditor } from "@/lib/hooks"
+import { useGoToEntityEditor } from "@/lib/hooks/hooks"
 import { validationSettings } from "@/lib/state/validation-settings"
 
 export function ValidationDrawer() {

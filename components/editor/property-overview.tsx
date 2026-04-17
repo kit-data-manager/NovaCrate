@@ -1,4 +1,4 @@
-import { useCurrentEntity } from "@/lib/hooks"
+import { useCurrentEntity } from "@/lib/hooks/hooks"
 import { useCallback, useMemo, useState } from "react"
 import { AtSign, Minus, SearchIcon, TableOfContents, XIcon } from "lucide-react"
 import { camelCaseReadable } from "@/lib/utils"

@@ -1,5 +1,4 @@
-import { useCallback, useContext } from "react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useCallback } from "react"
 import useSWR from "swr"
 import { Progress } from "@/components/ui/progress"
 import prettyBytes from "pretty-bytes"
@@ -8,22 +7,28 @@ import { useInterval } from "usehooks-ts"
 import { Error } from "@/components/error"
 import HelpTooltip from "@/components/help-tooltip"
 import { Skeleton } from "@/components/ui/skeleton"
+import { usePersistence } from "@/components/providers/persistence-provider"
 
 export function StorageInfo() {
-    const { serviceProvider } = useContext(CrateDataContext)
+    const persistence = usePersistence()
 
-    const fetcher = useCallback(() => {
-        return serviceProvider?.getStorageInfo()
-    }, [serviceProvider])
+    const fetcher = useCallback(async () => {
+        const fileServiceQuota = persistence.getCrateService()?.getFileService()?.getStorageQuota()
+
+        if (fileServiceQuota) {
+            return await fileServiceQuota
+        } else {
+            return persistence.getRepositoryService()?.getStorageQuota() ?? null
+        }
+    }, [persistence])
 
     const { data, mutate, error, isLoading } = useSWR("storage-info", fetcher)
 
     useInterval(mutate, 60000)
 
     if (isLoading) return <Skeleton className="w-full p-4 h-14 mb-2" />
-    if (!data) return <div>Current crate service does not provide storage information.</div>
-
     if (error) return <Error error={error} title={"Storage Info not available"} />
+    if (!data) return <div>Current persistence service does not provide storage information.</div>
 
     return (
         <div className="space-y-1 p-4">

@@ -29,8 +29,10 @@ import { useTheme } from "next-themes"
 import React, { useCallback, useContext, useMemo, useState } from "react"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { useAction, useCrateName, useCurrentEntity } from "@/lib/hooks"
+import { useOperationState } from "@/lib/state/operation-state"
+import { usePersistence } from "@/components/providers/persistence-provider"
+import { downloadCrateAs } from "@/lib/core/util"
+import { useAction, useCrateName, useCurrentEntity } from "@/lib/hooks/hooks"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
 import { useInterval } from "usehooks-ts"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -44,6 +46,7 @@ import { Error } from "@/components/error"
 import { ValidationOverview } from "@/components/editor/validation/validation-overview"
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { useStore } from "zustand"
+import { toast } from "sonner"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -79,18 +82,13 @@ export function NavHeader() {
     const theme = useTheme()
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const { showCreateEntityModal, showCrateExportedModal } = useContext(GlobalModalContext)
-    const {
-        serviceProvider,
-        crateId,
-        isSaving,
-        crateDataIsLoading,
-        error,
-        saveError,
-        clearSaveError,
-        healthTestError
-    } = useContext(CrateDataContext)
+    const persistence = usePersistence()
+    const isSaving = useOperationState((s) => s.isSaving)
+    const saveErrors = useOperationState((s) => s.saveErrors)
+    const clearSaveError = useOperationState((s) => s.clearSaveError)
+    const healthTestError = useOperationState((s) => s.healthError)
+    const loadError = useOperationState((s) => s.loadError)
     // const { undo, redo } = useEditorState.temporal.getState()
-    const crateContextError = useStore(editorState, (s) => s.crateContextError)
     const crateContext = useStore(editorState, (s) => s.crateContext)
     const [schemaIssues, setSchemaIssues] = useState<Map<string, unknown>>(new Map())
 
@@ -128,28 +126,50 @@ export function NavHeader() {
         ])
     }, [showCreateEntityModal])
 
-    const downloadCrateZip = useCallback(() => {
-        if (serviceProvider && crateId) {
-            showCrateExportedModal()
-            serviceProvider.downloadCrateZip(crateId).then()
-        }
-    }, [crateId, serviceProvider, showCrateExportedModal])
-
-    const downloadCrateEln = useCallback(() => {
-        if (serviceProvider && crateId) {
-            showCrateExportedModal()
-            serviceProvider.downloadCrateEln(crateId).then()
-        }
-    }, [crateId, serviceProvider, showCrateExportedModal])
-
-    const downloadRoCrateMetadataFile = useCallback(() => {
-        if (serviceProvider && crateId) {
-            showCrateExportedModal()
-            serviceProvider.downloadRoCrateMetadataJSON(crateId).then()
-        }
-    }, [crateId, serviceProvider, showCrateExportedModal])
-
     const crateName = useCrateName()
+
+    const downloadCrateZip = useCallback(async () => {
+        const repo = persistence.getRepositoryService()
+        const crateId = persistence.getCrateId()
+        if (repo && crateId) {
+            try {
+                await downloadCrateAs(repo, crateId, "zip", crateName + ".zip")
+                showCrateExportedModal()
+            } catch (e) {
+                console.error("Failed to export crate as .zip", e)
+                toast.error("Failed to export crate as .zip")
+            }
+        }
+    }, [crateName, persistence, showCrateExportedModal])
+
+    const downloadCrateEln = useCallback(async () => {
+        const repo = persistence.getRepositoryService()
+        const crateId = persistence.getCrateId()
+        if (repo && crateId) {
+            try {
+                await downloadCrateAs(repo, crateId, "eln", crateName + ".eln")
+                showCrateExportedModal()
+            } catch (e) {
+                console.error("Failed to export crate as .eln", e)
+                toast.error("Failed to export crate as .eln")
+            }
+        }
+    }, [crateName, persistence, showCrateExportedModal])
+
+    const downloadRoCrateMetadataFile = useCallback(async () => {
+        const repo = persistence.getRepositoryService()
+        const crateId = persistence.getCrateId()
+        if (repo && crateId) {
+            try {
+                await downloadCrateAs(repo, crateId, "standalone-json", "ro-crate-metadata.json")
+                showCrateExportedModal()
+            } catch (e) {
+                console.error("Failed to export crate as JSON", e)
+                toast.error("Failed to export crate as JSON")
+            }
+        }
+    }, [persistence, showCrateExportedModal])
+
     const searchAction = useAction("editor.global-search")
 
     const menubar = useMemo(() => {
@@ -218,8 +238,6 @@ export function NavHeader() {
                             actionId="crate.revert-all-entities"
                         />
                         <MenubarSeparator />
-                        <ActionMenubarItem actionId="crate.reload-entities" />
-                        <MenubarSeparator />
                         <MenubarSub>
                             <MenubarSubTrigger>
                                 <Download className="size-4" /> Export
@@ -257,7 +275,7 @@ export function NavHeader() {
         <div className="p-4 py-2 pr-3 w-full grid grid-cols-[1fr_auto_1fr]">
             <div className="flex items-center">
                 <Package className="w-7 h-7 mr-2" />
-                {crateDataIsLoading || !crateName ? (
+                {!crateName ? (
                     <Skeleton className="bg-background h-8 w-32" />
                 ) : (
                     <div className="mr-6 font-bold max-w-75 truncate animate-in">
@@ -282,11 +300,10 @@ export function NavHeader() {
 
             <div className="flex justify-end items-center gap-2" id={"header-right-side"}>
                 <ValidationOverview />
-                {error ||
-                saveError.size > 0 ||
+                {loadError ||
+                saveErrors.size > 0 ||
                 healthTestError ||
                 schemaIssues.size > 0 ||
-                crateContextError ||
                 crateContext.errors.length > 0 ? (
                     <Popover>
                         <PopoverTrigger asChild>
@@ -301,12 +318,8 @@ export function NavHeader() {
                         <PopoverContent className="w-100 flex flex-col gap-2">
                             <div className="text-sm font-bold">Internal Error Log</div>
                             <Error title="Crate service is not reachable" error={healthTestError} />
-                            <Error title="Error while loading crate data" error={error} />
-                            <Error
-                                title="Error while parsing crate context"
-                                error={crateContextError}
-                            />
-                            {Array.from(saveError.entries()).map(([key, value]) => (
+                            <Error title="Error while loading crate data" error={loadError} />
+                            {Array.from(saveErrors.entries()).map(([key, value]) => (
                                 <Error
                                     title={`Error while saving entity "${key}"`}
                                     key={key}

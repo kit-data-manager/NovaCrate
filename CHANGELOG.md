@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- Reengineered the core of the NovaCrate application to make it more modular, extensible, and maintainable. Some behavioural changes in the editor are expected, the functionality should not be impacted, though.
+
 ## [1.10.0] - 2026-04-17
 
 ### Added

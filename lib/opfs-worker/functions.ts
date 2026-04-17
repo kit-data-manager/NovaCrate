@@ -196,6 +196,11 @@ export async function createCrateFromZip(zip: Blob) {
         const subFolder = files.find((f) => f.handle.kind === "directory")
         if (!subFolder) throw "Could not find subFolder"
 
+        const metadataFile = await fs.stat(
+            resolveCratePath(id) + "/" + subFolder.path + "/ro-crate-metadata.json"
+        )
+        if (!metadataFile.isOk()) throw metadataFile.unwrapErr()
+
         const moveResult = await fs.move(
             resolveCratePath(id) + "/" + subFolder.path,
             resolveCratePath(id),

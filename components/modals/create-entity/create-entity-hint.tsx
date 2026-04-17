@@ -1,4 +1,4 @@
-import { useEditorState } from "@/lib/state/editor-state"
+import { useContextResolver } from "@/lib/hooks/hooks"
 import { useMemo } from "react"
 import {
     SCHEMA_ORG_CONTACT_POINT,
@@ -12,27 +12,27 @@ import { ExternalLink } from "lucide-react"
 import { CollapsibleHint } from "@/components/collapsible-hint"
 
 export function CreateEntityHint({ selectedType }: { selectedType: string }) {
-    const context = useEditorState((store) => store.crateContext)
+    const resolver = useContextResolver()
 
     const showPersonHint = useMemo(() => {
-        return context.resolve(selectedType) === SCHEMA_ORG_PERSON
-    }, [context, selectedType])
+        return resolver.resolve(selectedType) === SCHEMA_ORG_PERSON
+    }, [resolver, selectedType])
 
     const showOrganizationHint = useMemo(() => {
-        return context.resolve(selectedType) === SCHEMA_ORG_ORGANIZATION
-    }, [context, selectedType])
+        return resolver.resolve(selectedType) === SCHEMA_ORG_ORGANIZATION
+    }, [resolver, selectedType])
 
     const showPlaceHint = useMemo(() => {
-        return context.resolve(selectedType) === SCHEMA_ORG_PLACE
-    }, [context, selectedType])
+        return resolver.resolve(selectedType) === SCHEMA_ORG_PLACE
+    }, [resolver, selectedType])
 
     const showScholarlyArticleHint = useMemo(() => {
-        return context.resolve(selectedType) === SCHEMA_ORG_SCHOLARLY_ARTICLE
-    }, [context, selectedType])
+        return resolver.resolve(selectedType) === SCHEMA_ORG_SCHOLARLY_ARTICLE
+    }, [resolver, selectedType])
 
     const showContactPointHint = useMemo(() => {
-        return context.resolve(selectedType) === SCHEMA_ORG_CONTACT_POINT
-    }, [context, selectedType])
+        return resolver.resolve(selectedType) === SCHEMA_ORG_CONTACT_POINT
+    }, [resolver, selectedType])
 
     return useMemo(() => {
         if (showPersonHint)

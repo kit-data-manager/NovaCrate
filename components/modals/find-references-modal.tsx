@@ -13,7 +13,7 @@ import { camelCaseReadable, getEntityDisplayName } from "@/lib/utils"
 import { useEditorState } from "@/lib/state/editor-state"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { EntityIcon } from "@/components/entity/entity-icon"
-import { useGoToEntityEditor } from "@/lib/hooks"
+import { useGoToEntityEditor } from "@/lib/hooks/hooks"
 
 interface ReferencingEntity extends IEntity {
     "@propertyNameReadable": string

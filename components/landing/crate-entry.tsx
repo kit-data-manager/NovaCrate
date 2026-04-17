@@ -9,8 +9,10 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { getEntityDisplayName } from "@/lib/utils"
+import { usePersistence } from "@/components/providers/persistence-provider"
+import { CrateFactory } from "@/lib/core/impl/CrateFactory"
+import { downloadCrateAs } from "@/lib/core/util"
+import { getEntityDisplayName, getRootEntityID } from "@/lib/utils"
 import { crateDetailsKey } from "@/components/landing/util"
 import {
     DropdownMenu,
@@ -25,6 +27,7 @@ import {
 import { Error } from "@/components/error"
 import { DateTime } from "luxon"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { toast } from "sonner"
 
 export interface CrateDetails {
     name?: string
@@ -42,7 +45,7 @@ export function CrateEntry({
     deleteCrate(id: string): void
     search: string
 }) {
-    const { serviceProvider } = useContext(CrateDataContext)
+    const persistence = usePersistence()
     const { showCrateExportedModal } = useContext(GlobalModalContext)
     const [crateDetails, setCrateDetails] = useState<CrateDetails | undefined>()
     const [error, setError] = useState<unknown>()
@@ -58,33 +61,33 @@ export function CrateEntry({
             }
         }
 
-        if (serviceProvider) {
-            serviceProvider
-                .getCrate(crateId)
-                .then((crate) => {
-                    const root = crate["@graph"].find((e) => e["@id"] === "./")
-                    if (root) {
-                        setCrateDetails((old) => {
-                            const data = {
-                                ...old,
-                                name: getEntityDisplayName(root)
-                            }
+        // Try to read metadata to get the crate name
+        persistence
+            .createCrateServiceFor(crateId)
+            .then(async (cs) => {
+                if (!cs) return
+                const raw = await cs.getMetadata()
+                const crate = JSON.parse(raw) as ICrate
+                const rootID = getRootEntityID(crate["@graph"])
+                const root = rootID ? crate["@graph"].find((e) => e["@id"] === rootID) : undefined
+                if (root) {
+                    setCrateDetails((old) => {
+                        const data = {
+                            ...old,
+                            name: getEntityDisplayName(root)
+                        }
 
-                            window.localStorage.setItem(
-                                crateDetailsKey(crateId),
-                                JSON.stringify(data)
-                            )
+                        window.localStorage.setItem(crateDetailsKey(crateId), JSON.stringify(data))
 
-                            return data
-                        })
-                    }
-                })
-                .catch((e) => {
-                    console.warn("Failed to fetch crate details from server", e)
-                    setError(e)
-                })
-        }
-    }, [serviceProvider, crateId])
+                        return data
+                    })
+                }
+            })
+            .catch((e: unknown) => {
+                console.warn("Failed to fetch crate details from server", e)
+                setError(e)
+            })
+    }, [persistence, crateId])
 
     const title = useMemo(() => {
         if (crateDetails && crateDetails.name) {
@@ -97,7 +100,8 @@ export function CrateEntry({
     const [createCrateCopyError, setCreateCrateCopyError] = useState<unknown>(undefined)
     const createCrateCopy = useCallback(async () => {
         try {
-            const newCrateID = await serviceProvider?.duplicateCrate(
+            const factory = new CrateFactory(persistence)
+            const newCrateID = await factory.duplicateCrate(
                 crateId,
                 "Copy of " + (crateDetails?.name ?? crateId)
             )
@@ -105,7 +109,7 @@ export function CrateEntry({
         } catch (e) {
             setCreateCrateCopyError(e)
         }
-    }, [crateDetails?.name, crateId, openEditor, serviceProvider])
+    }, [crateDetails?.name, crateId, openEditor, persistence])
 
     if (search && !crateDetails) return null
     if (search && !crateDetails?.name?.toUpperCase().includes(search.toUpperCase())) return null
@@ -154,32 +158,63 @@ export function CrateEntry({
                             </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent>
                                 <DropdownMenuItem
-                                    onClick={() => {
-                                        if (serviceProvider) {
-                                            showCrateExportedModal()
-                                            serviceProvider.downloadCrateZip(crateId).then()
+                                    onClick={async () => {
+                                        const repo = persistence.getRepositoryService()
+                                        if (repo) {
+                                            try {
+                                                await downloadCrateAs(
+                                                    repo,
+                                                    crateId,
+                                                    "zip",
+                                                    "crate.zip"
+                                                )
+                                                showCrateExportedModal()
+                                            } catch (e) {
+                                                console.error("Failed to export crate as .zip", e)
+                                                toast.error("Failed to export crate as .zip")
+                                            }
                                         }
                                     }}
                                 >
                                     <FolderArchive className="size-4 mr-2" /> As .zip Archive
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={() => {
-                                        if (serviceProvider) {
-                                            showCrateExportedModal()
-                                            serviceProvider.downloadCrateEln(crateId).then()
+                                    onClick={async () => {
+                                        const repo = persistence.getRepositoryService()
+                                        if (repo) {
+                                            try {
+                                                await downloadCrateAs(
+                                                    repo,
+                                                    crateId,
+                                                    "eln",
+                                                    "crate.eln"
+                                                )
+                                                showCrateExportedModal()
+                                            } catch (e) {
+                                                console.error("Failed to export crate as .eln", e)
+                                                toast.error("Failed to export crate as .eln")
+                                            }
                                         }
                                     }}
                                 >
                                     <Notebook className="size-4 mr-2" /> As ELN
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={() => {
-                                        if (serviceProvider) {
-                                            showCrateExportedModal()
-                                            serviceProvider
-                                                .downloadRoCrateMetadataJSON(crateId)
-                                                .then()
+                                    onClick={async () => {
+                                        const repo = persistence.getRepositoryService()
+                                        if (repo) {
+                                            try {
+                                                await downloadCrateAs(
+                                                    repo,
+                                                    crateId,
+                                                    "standalone-json",
+                                                    "ro-crate-metadata.json"
+                                                )
+                                                showCrateExportedModal()
+                                            } catch (e) {
+                                                console.error("Failed to export crate as JSON", e)
+                                                toast.error("Failed to export crate as JSON")
+                                            }
                                         }
                                     }}
                                 >
