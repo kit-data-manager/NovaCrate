@@ -21,13 +21,20 @@ export function ValidationContextProvider({ children }: PropsWithChildren) {
     const core = useCore()
     const editorState = useEditorState((s) => s)
 
-    const fileService = useMemo(() => {
-        return persistence.getCrateService()?.getFileService()
-    }, [persistence])
+    const [crateService, setCrateService] = useState(() => persistence.getCrateService())
+    const [fileService, setFileService] = useState(() => crateService?.getFileService())
 
-    const resolver = useMemo(() => {
-        return core.getContextService().getResolver()
-    }, [core])
+    useEffect(() => {
+        const remove = persistence.events.addEventListener("crate-service-changed", setCrateService)
+        return () => remove()
+    }, [persistence.events])
+
+    useEffect(() => {
+        const remove = crateService?.events.addEventListener("file-service-changed", setFileService)
+        return () => remove?.()
+    }, [crateService?.events])
+
+    const resolver = core.getContextService().getResolver()
 
     const ctx = useMemo(() => {
         return {
