@@ -43,7 +43,7 @@ export function DeleteCrateModal({
                 .finally(() => {
                     setIsDeleting(false)
                 })
-        }
+        } else setDeleteError("No repository service available, cannot delete crates")
     }, [persistence, crateId, onDeleted])
 
     const onCloseClick = useCallback(() => {
