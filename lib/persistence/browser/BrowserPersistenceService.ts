@@ -62,6 +62,10 @@ export class BrowserPersistenceService implements IPersistenceService {
     }
 
     async createCrateServiceFor(crateId: string): Promise<ICrateService | null> {
+        const existingCrates = await this.repositoryService.getCratesList()
+        if (!existingCrates.includes(crateId)) {
+            return null
+        }
         return new BrowserCrateService(crateId, this.worker)
     }
 
