@@ -65,9 +65,9 @@ export class BrowserFileService implements IFileService {
         await this.worker.execute("moveFileOrFolder", this.crateId, src, dest)
         const isFolder = src.endsWith("/")
         if (isFolder) {
-            this._events.emit("folder-moved", dest)
+            this._events.emit("folder-moved", src, dest)
         } else {
-            this._events.emit("file-moved", dest)
+            this._events.emit("file-moved", src, dest)
         }
     }
 

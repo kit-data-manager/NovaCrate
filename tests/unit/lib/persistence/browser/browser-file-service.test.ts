@@ -261,7 +261,7 @@ describe("BrowserFileService", () => {
 
             await service.move("old.txt", "new.txt")
 
-            expect(listener).toHaveBeenCalledWith("new.txt")
+            expect(listener).toHaveBeenCalledWith("old.txt", "new.txt")
         })
 
         it("should emit folder-moved for folders (trailing slash on source)", async () => {
@@ -273,7 +273,7 @@ describe("BrowserFileService", () => {
 
             await service.move("old-folder/", "new-folder/")
 
-            expect(folderListener).toHaveBeenCalledWith("new-folder/")
+            expect(folderListener).toHaveBeenCalledWith("old-folder/", "new-folder/")
             expect(fileListener).not.toHaveBeenCalled()
         })
     })

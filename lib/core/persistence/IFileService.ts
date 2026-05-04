@@ -9,14 +9,14 @@ export type IFileServiceEvents = {
     "file-updated": (path: string, newContent: Blob) => void
     /** Fired after a file at `path` is removed. */
     "file-deleted": (path: string) => void
-    /** Fired after a file is renamed/moved; `path` is the new destination. */
-    "file-moved": (path: string) => void
+    /** Fired after a file is renamed/moved */
+    "file-moved": (src: string, dst: string) => void
     /** Fired after a new directory is created at `path`. */
     "folder-created": (path: string) => void
     /** Fired after a directory at `path` is removed. */
     "folder-deleted": (path: string) => void
-    /** Fired after a directory is renamed/moved; `path` is the new destination. */
-    "folder-moved": (path: string) => void
+    /** Fired after a directory is renamed/moved */
+    "folder-moved": (src: string, dst: string) => void
     /** Fired when the measured storage usage changes. */
     "quota-changed": (quota: IStorageQuota) => void
 }
