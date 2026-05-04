@@ -125,7 +125,7 @@ export class SchemaGraph {
             console.warn(`class with classId "${classId}" does not exist`)
             return []
         }
-        if (!self.isClass()) throw new Error("Node is not a class")
+        if (!self.isClass()) throw new Error(`Node ${classId} is not a class`)
 
         if (self.parentClass) {
             if (Array.isArray(self.parentClass)) {

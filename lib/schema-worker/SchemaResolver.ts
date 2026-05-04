@@ -2,6 +2,7 @@ import { SchemaFile, schemaFileSchema } from "./types"
 import type { SchemaResolverStore } from "../state/schema-resolver"
 import { parse as parseTtl } from "@frogcat/ttl2jsonld"
 import { RO_CRATE_VERSION } from "@/lib/constants"
+import { toArray } from "../../lib/utils"
 
 export const DedupedSymbol = Symbol(
     "return value for fetch operations that are deduped and therefore aborted"
@@ -127,13 +128,13 @@ export class SchemaResolver {
                     rawJson["@graph"] = rawJson["@graph"].map((e) => {
                         if ("rdf:type" in e) {
                             e["@type"] = (e["rdf:type"] as IReference)["@id"]
-                            if (e["@type"] === "owl:Class") {
-                                e["@type"] = "rdfs:Class"
-                            }
-                            if (e["@type"] === "owl:ObjectProperty") {
-                                e["@type"] = "rdf:Property"
-                            }
                         }
+
+                        e["@type"] = toArray(e["@type"] ?? []).map((type) => {
+                            if (type === "owl:Class") return "rdfs:Class"
+                            if (type === "owl:ObjectProperty") return "rdf:Property"
+                            return type
+                        })
 
                         return e
                     })
