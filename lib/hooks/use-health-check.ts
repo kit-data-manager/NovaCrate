@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { useInterval } from "usehooks-ts"
 import { toast } from "sonner"
 import { IPersistenceService } from "@/lib/core/persistence/IPersistenceService"
@@ -16,19 +16,21 @@ const HEALTH_CHECK_INTERVAL_MS = 10_000
  * open.
  */
 export function useHealthCheck(persistence: IPersistenceService): void {
+    const sequenceGuard = useRef(0)
     const runHealthCheck = useCallback(async () => {
         const { healthStatus, setHealthStatus } = operationState.getState()
+        const seq = ++sequenceGuard.current
         try {
             await persistence.healthCheck()
             if (healthStatus === "unhealthy") {
                 toast.info("Crate service has recovered")
             }
-            setHealthStatus("healthy")
+            if (seq === sequenceGuard.current) setHealthStatus("healthy")
         } catch (e) {
             if (healthStatus !== "unhealthy") {
                 toast.error("Crate service is no longer reachable")
             }
-            setHealthStatus("unhealthy", e)
+            if (seq === sequenceGuard.current) setHealthStatus("unhealthy", e)
         }
     }, [persistence])
 
