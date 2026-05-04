@@ -4,7 +4,7 @@ import { useGoToMainMenu, useRegisterAction, useSaveAllEntities } from "@/lib/ho
 import { useEditorState } from "@/lib/state/editor-state"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
-import { ArrowLeft, Cog, Plus, SaveAll, Search, Undo2, File, Info } from "lucide-react"
+import { ArrowLeft, Cog, Plus, SaveAll, Search, Undo2, FileIcon, Info } from "lucide-react"
 import { generateCratePreview } from "@/lib/ro-crate-preview"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 
@@ -41,18 +41,20 @@ export default function DefaultActions() {
         const raw = await crateService.getMetadata()
         const crateData = JSON.parse(raw) as ICrate
         const result = await generateCratePreview(crateData)
+        if (!result) return
+
         const entity: IEntity = {
             "@id": "./ro-crate-preview.html",
             "@type": "File",
             name: "RO-Crate HTML Preview",
             description: "A HTML Preview for this RO-Crate generated with ro-crate-html"
         }
-        // @ts-expect-error Blob is used as a File, but it works
-        await createFileEntity(entity, result, true)
+        const file = new File([result], "ro-crate-preview.html", { type: "text/html" })
+        await createFileEntity(entity, file, true)
         openTab(createEntityEditorTab(entity), true)
     }, [createFileEntity, openTab, persistence])
     useRegisterAction("crate.generate-html-preview", "Generate HTML Preview", generateHTMLPreview, {
-        icon: File
+        icon: FileIcon
     })
 
     useRegisterAction("editor.global-search", "Search", showGlobalSearchModal, {
