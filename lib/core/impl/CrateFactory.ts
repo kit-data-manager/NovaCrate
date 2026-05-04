@@ -67,8 +67,13 @@ export class CrateFactory {
      * For uploading normal files, use {@link createCrateFromFiles} instead.
      * @returns The crate ID of the newly created crate.
      */
-    async createCrateFromFile(file: Blob): Promise<string> {
-        if (file.type === "application/json" || file.type === "application/ld+json") {
+    async createCrateFromFile(file: File): Promise<string> {
+        if (
+            file.type === "application/json" ||
+            file.type === "application/ld+json" ||
+            file.name.endsWith(".json") ||
+            file.name.endsWith(".jsonld")
+        ) {
             return this.createCrateFromMetadataFile(file)
         }
 

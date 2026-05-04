@@ -147,8 +147,9 @@ describe("CrateFactory", () => {
                 "@graph": [{ "@id": "./", "@type": "Dataset" }]
             })
             const blob = new Blob([validJson], { type: "application/json" })
+            const file = new File([blob], "ro-crate-metadata.json", { type: "application/json" })
 
-            const id = await factory.createCrateFromFile(blob)
+            const id = await factory.createCrateFromFile(file)
 
             expect(repo.createCrateFromMetadata).toHaveBeenCalledWith(validJson)
             expect(id).toBe("meta-crate-id")
@@ -164,8 +165,11 @@ describe("CrateFactory", () => {
                 "@graph": []
             })
             const blob = new Blob([validJson], { type: "application/ld+json" })
+            const file = new File([blob], "ro-crate-metadata.jsonld", {
+                type: "application/ld+json"
+            })
 
-            await factory.createCrateFromFile(blob)
+            await factory.createCrateFromFile(file)
 
             expect(repo.createCrateFromMetadata).toHaveBeenCalled()
             expect(repo.createCrateFromZip).not.toHaveBeenCalled()
@@ -177,10 +181,11 @@ describe("CrateFactory", () => {
             const factory = new CrateFactory(persistence)
 
             const blob = new Blob(["fake zip"], { type: "application/zip" })
+            const file = new File([blob], "crate.zip", { type: "application/zip" })
 
-            const id = await factory.createCrateFromFile(blob)
+            const id = await factory.createCrateFromFile(file)
 
-            expect(repo.createCrateFromZip).toHaveBeenCalledWith(blob)
+            expect(repo.createCrateFromZip).toHaveBeenCalledWith(file)
             expect(repo.createCrateFromMetadata).not.toHaveBeenCalled()
             expect(id).toBe("zip-crate-id")
         })
@@ -191,10 +196,11 @@ describe("CrateFactory", () => {
             const factory = new CrateFactory(persistence)
 
             const blob = new Blob(["data"], { type: "application/octet-stream" })
+            const file = new File([blob], "data")
 
-            await factory.createCrateFromFile(blob)
+            await factory.createCrateFromFile(file)
 
-            expect(repo.createCrateFromZip).toHaveBeenCalledWith(blob)
+            expect(repo.createCrateFromZip).toHaveBeenCalledWith(file)
         })
     })
 
