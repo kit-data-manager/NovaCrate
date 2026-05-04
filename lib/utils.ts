@@ -222,13 +222,15 @@ export function propertyHasChanged(_value: EntityPropertyTypes, _oldValue: Entit
  * -> Some Example
  * purl:anotherExample
  * -> [purl] Another Example
+ * purl:Software/anotherExample
+ * -> [purl] Software/Another Example
  */
 export function camelCaseReadable(str: string) {
     if (str === "@id") return "Identifier"
     if (str === "@type") return "Type"
     const [prefix, ...suffix] = str.includes(":") ? str.split(":") : ["", str]
     // If the string contains more than one :, we just use the first one as suffix and join everything else back together
-    let split = suffix.join(":").replace(/([A-Z][a-z])/g, " $1")
+    let split = suffix.join(":").replace(/([^\/ ])([A-Z][a-z])/g, "$1 $2")
     if (split.startsWith(" ")) split = split.slice(1)
     return (prefix ? `[${prefix}] ` : "") + split.charAt(0).toUpperCase() + split.slice(1)
 }
