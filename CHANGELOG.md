@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed handling of custom vocabularies where an entry has more than one type
+- Improved formatting of types containing a slash
+
 ## [1.10.0] - 2026-04-17
 
 ### Added
