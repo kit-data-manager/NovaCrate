@@ -130,11 +130,13 @@ export class SchemaResolver {
                             e["@type"] = (e["rdf:type"] as IReference)["@id"]
                         }
 
-                        e["@type"] = toArray(e["@type"] ?? []).map((type) => {
-                            if (type === "owl:Class") return "rdfs:Class"
-                            if (type === "owl:ObjectProperty") return "rdf:Property"
-                            return type
-                        })
+                        if (e["@type"]) {
+                            e["@type"] = toArray(e["@type"]).map((type) => {
+                                if (type === "owl:Class") return "rdfs:Class"
+                                if (type === "owl:ObjectProperty") return "rdf:Property"
+                                return type
+                            })
+                        }
 
                         return e
                     })
