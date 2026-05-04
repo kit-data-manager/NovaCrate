@@ -5,6 +5,7 @@ import { IRepositoryService } from "@/lib/core/persistence/IRepositoryService"
 import { getRootEntityID } from "@/lib/utils"
 import { CoreServiceImpl } from "@/lib/core/impl/CoreServiceImpl"
 import { PersistenceAdapterImpl } from "@/lib/core/impl/PersistenceAdapterImpl"
+import { IGNORED_FILES } from "@/lib/constants"
 
 const DEFAULT_CONTEXT = "https://w3id.org/ro/crate/1.2/context"
 const DEFAULT_CONFORMS_TO = "https://w3id.org/ro/crate/1.2"
@@ -138,6 +139,8 @@ export class CrateFactory {
         for (const file of sorted) {
             const filePath = normalizeRelativePath(file.relativePath)
             const fileName = extractFileName(filePath)
+
+            if (IGNORED_FILES.includes(fileName)) continue
 
             try {
                 await coreService.addFileEntity(fileName, filePath, file.data)

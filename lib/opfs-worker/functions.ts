@@ -1,5 +1,6 @@
 import * as fs from "happy-opfs"
 import { collectAsyncIterator } from "./helpers"
+import { IGNORED_FILES } from "@/lib/constants"
 
 const CRATE_STORAGE = "crate-storage" as const
 
@@ -180,10 +181,8 @@ export async function createCrateFromZip(zip: Blob) {
     const readDirResult = await fs.readDir(resolveCratePath(id))
     if (!readDirResult.isOk()) throw readDirResult.unwrapErr()
 
-    const ignore = ["__MACOSX", ".DS_Store"]
     const rawFiles = await collectAsyncIterator(readDirResult.unwrap())
-
-    const files = rawFiles.filter((f) => !ignore.includes(f.path))
+    const files = rawFiles.filter((f) => !IGNORED_FILES.some((ignored) => f.path.endsWith(ignored)))
     if (files.length === 0) throw "Crate archive is empty"
 
     if (files.find((file) => file.path === "ro-crate-metadata.json")) {

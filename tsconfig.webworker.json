@@ -23,7 +23,8 @@
         "lib/CrateServiceProvider.ts",
         "lib/state/schema-resolver.ts",
         "lib/types/frogcat__ttl2jsonld.d.ts",
-        "lib/property-value-utils.ts"
+        "lib/property-value-utils.ts",
+        "lib/constants.ts"
     ],
     "exclude": ["node_modules"]
 }
