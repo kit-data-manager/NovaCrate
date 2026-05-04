@@ -173,7 +173,10 @@ export default function EditorLandingPage() {
         const repo = persistence.getRepositoryService()
         if (repo) {
             return await repo.getCratesList()
-        } else return []
+        } else
+            throw new window.Error(
+                "The current backend does not provide RO-Crate storage information"
+            )
     }, [persistence])
 
     const {
