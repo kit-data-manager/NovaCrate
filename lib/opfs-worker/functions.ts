@@ -1,6 +1,6 @@
 import * as fs from "happy-opfs"
 import { collectAsyncIterator } from "./helpers"
-import { IGNORED_FILES } from "@/lib/constants"
+import { IGNORED_FILES } from "../../lib/constants"
 
 const CRATE_STORAGE = "crate-storage" as const
 
