@@ -61,7 +61,11 @@ export class CoreServiceImpl implements ICoreService {
                 : DateTime.now().toISO()
         }
 
-        await this.metadata.addEntity(entity, overwrite)
+        const result = await this.metadata.addEntity(entity, overwrite)
+        if (!result)
+            throw new Error(
+                "Failed to add metadata entity for file, does the entity already exist?"
+            )
     }
 
     async addFolderEntity(name: string, path: string, overwrite?: boolean): Promise<void> {
@@ -77,7 +81,11 @@ export class CoreServiceImpl implements ICoreService {
             name: name
         }
 
-        await this.metadata.addEntity(entity, overwrite)
+        const result = await this.metadata.addEntity(entity, overwrite)
+        if (!result)
+            throw new Error(
+                "Failed to add metadata entity for folder, does the entity already exist?"
+            )
     }
 
     async changeEntityIdentifier(from: string, to: string): Promise<void> {

@@ -148,10 +148,10 @@ export function useCrateMutations() {
                             file.entity["@id"],
                             file.file
                         )
-                        if (progressCallback) progressCallback(progress++, files.length, errors)
+                        if (progressCallback) progressCallback(++progress, files.length, errors)
                     } catch (e) {
                         errors.push(e)
-                        if (progressCallback) progressCallback(progress++, files.length, errors)
+                        if (progressCallback) progressCallback(++progress, files.length, errors)
                     }
                 }
 
