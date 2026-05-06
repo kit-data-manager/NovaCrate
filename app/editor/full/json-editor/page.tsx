@@ -23,6 +23,7 @@ import { useSaveAllEntities } from "@/lib/hooks/hooks"
 import { useHandleMonacoMount } from "@/lib/monaco"
 import { Metadata } from "@/components/Metadata"
 import fileDownload from "js-file-download"
+import { formatJSON } from "@/lib/utils"
 
 export default function JSONEditorPage() {
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
@@ -47,20 +48,30 @@ export default function JSONEditorPage() {
         // Initial load
         crateService
             .getMetadata()
-            .then(setData)
+            .then((data) => setData(formatJSON(data)))
             .catch((e: unknown) => setLoadError(e))
 
         // Re-load when metadata changes externally
         const removeListener = crateService.events.addEventListener(
             "metadata-changed",
             (newMetadata: string) => {
-                setData(newMetadata)
-                setLoadError(undefined)
+                if (editorHasChanges) {
+                    const discardChanged = window.confirm(
+                        "The JSON Metadata has changed in the background. Would you like to discard your changes and load the new file content?"
+                    )
+                    if (discardChanged) {
+                        setData(newMetadata)
+                        setLoadError(undefined)
+                    }
+                } else {
+                    setData(newMetadata)
+                    setLoadError(undefined)
+                }
             }
         )
 
         return removeListener
-    }, [persistence])
+    }, [editorHasChanges, persistence])
 
     const handleMount = useHandleMonacoMount()
 
@@ -84,11 +95,13 @@ export default function JSONEditorPage() {
     const saveChanges = useCallback(() => {
         const crateService = persistence.getCrateService()
         if (editorValue.current && crateService) {
+            const formatted = formatJSON(editorValue.current)
             setSaving(true)
             setEditorHasChanges(false)
             crateService
-                .setMetadata(editorValue.current)
+                .setMetadata(formatted)
                 .then(() => {
+                    setData(formatted)
                     setSaveError(undefined)
                 })
                 .catch(setSaveError)

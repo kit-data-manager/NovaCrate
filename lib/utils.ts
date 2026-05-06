@@ -411,3 +411,7 @@ export function deepEqual(a: unknown, b: unknown): boolean {
 
     return false
 }
+
+export function formatJSON(json: string) {
+    return JSON.stringify(JSON.parse(json), null, 2)
+}
