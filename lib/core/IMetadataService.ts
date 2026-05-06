@@ -39,7 +39,7 @@ export interface IMetadataService {
     /**
      * Rename an entity's `@id` from `from` to `to`, updating all inbound
      * {@link IReference} values across the entire graph to point at the new ID.
-     * To reliably rename an entity including referenced files, call {@link ICoreService.changeEntityIdentifier}
+     * To reliably rename an entity including referenced files, call {@link ICoreService.moveEntity}
      * @param from - The current `@id` of the entity.
      * @param to - The new `@id` to assign.
      */

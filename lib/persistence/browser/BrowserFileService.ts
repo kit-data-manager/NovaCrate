@@ -61,14 +61,19 @@ export class BrowserFileService implements IFileService {
         await this.emitQuotaChanged()
     }
 
-    async move(src: string, dest: string): Promise<void> {
-        await this.worker.execute("moveFileOrFolder", this.crateId, src, dest)
-        const isFolder = src.endsWith("/")
-        if (isFolder) {
-            this._events.emit("folder-moved", src, dest)
-        } else {
-            this._events.emit("file-moved", src, dest)
+    async move(src: string, dest: string): Promise<{ from: string; to: string }[]> {
+        const impact = await this.worker.execute("moveFileOrFolder", this.crateId, src, dest)
+
+        for (const entry of impact) {
+            const isFolder = entry.from.endsWith("/")
+            if (isFolder) {
+                this._events.emit("folder-moved", entry.from, entry.to)
+            } else {
+                this._events.emit("file-moved", entry.from, entry.to)
+            }
         }
+
+        return impact
     }
 
     async delete(path: string): Promise<string[]> {

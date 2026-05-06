@@ -43,11 +43,13 @@ export interface ICoreService {
     /**
      * Rename an entity's `@id` from `from` to `to`. If the entity is a data
      * entity backed by a file or folder, the physical path is also moved via
-     * {@link IFileService}.
-     * @param from - The current `@id` of the entity.
-     * @param to - The new `@id` to assign.
+     * {@link IFileService}. Any contained entities will also have their identifiers changed.
+     * This can also be called if there is no entity at `from`, then the file or folder at `from`
+     * will be moved, and any entities linked to contained files will be changed appropriately.
+     * @param from - The current `@id` of the entity. Can alternatively be the path to an existing file or folder in the crate with no matching entity.
+     * @param to - The new `@id` to assign. Can alternatively be the new path for the file or folder.
      */
-    changeEntityIdentifier(from: string, to: string): Promise<void>
+    moveEntity(from: string, to: string): Promise<void>
     /**
      * Remove an entity from the metadata graph. If `deleteData` is `true` and
      * the entity is a data entity, the corresponding file or folder is also

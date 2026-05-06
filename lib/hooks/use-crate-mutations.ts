@@ -94,7 +94,7 @@ export function useCrateMutations() {
 
             const { addSaveError } = operationState.getState()
             try {
-                await core.changeEntityIdentifier(entity["@id"], newEntityId)
+                await core.moveEntity(entity["@id"], newEntityId)
                 return true
             } catch (e) {
                 console.error("Error occurred while trying to rename entity", e)

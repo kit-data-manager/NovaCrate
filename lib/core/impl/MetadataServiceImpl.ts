@@ -118,7 +118,7 @@ export class MetadataServiceImpl implements IMetadataService {
      * @param newId New ID of entity to be renamed
      */
     private changeEntityIdOccurrences(oldId: string, newId: string) {
-        const entities = this.graph.values()
+        const entities = [...this.graph.values()]
         entities.forEach((e) => {
             if (e["@id"] === oldId) {
                 e["@id"] = newId
@@ -138,6 +138,7 @@ export class MetadataServiceImpl implements IMetadataService {
                 }
             }
         })
+
         this.graph = new Map(entities.map((e) => [e["@id"], e]))
     }
 

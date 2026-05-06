@@ -13,6 +13,7 @@ import useSWR from "swr"
 import { ArrowRightIcon, FileIcon, FolderIcon, LoaderCircleIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Error as ErrorDisplay } from "@/components/error"
+import { normalizeIdentifier } from "@/lib/utils"
 
 /**
  * Multi for executing a multi-rename operation where the target identifier is already known.
@@ -21,7 +22,7 @@ import { Error as ErrorDisplay } from "@/components/error"
 export const MultiRenameModal = memo(function MultiRenameModal({
     open,
     onOpenChange,
-    changes
+    changes: changesUnnormalized
 }: {
     open: boolean
     onOpenChange: (isOpen: boolean) => void
@@ -30,6 +31,11 @@ export const MultiRenameModal = memo(function MultiRenameModal({
     const entities = useEditorState((store) => store.entities)
     const { changeEntityId } = useCrateMutations()
     const persistence = usePersistence()
+
+    const changes = structuredClone(changesUnnormalized).map(({ from, to }) => ({
+        from: normalizeIdentifier(from),
+        to: normalizeIdentifier(to)
+    }))
 
     const committingChangesCorrect = useMemo(() => {
         const issues: string[] = []
@@ -84,18 +90,15 @@ export const MultiRenameModal = memo(function MultiRenameModal({
 
     const executeChanges = useCallback(async () => {
         if (!data) return []
-        const fileService = persistence.getCrateService()?.getFileService()
         const issues = []
 
         for (const [from, to] of JSON.parse(data) as [string, string][]) {
             try {
                 const impactedEntity = entities.get(from) ?? entities.get("./" + from)
-                if (impactedEntity) {
-                    // This will also rename the file if there is one
-                    await changeEntityId(impactedEntity, to)
-                } else if (fileService) {
-                    await fileService.move(from, to)
-                }
+
+                // This will also rename the file if there is one
+                // If there is no impacted entity, then this is a file or folder in the filesystem
+                await changeEntityId(impactedEntity ?? { "@id": from, "@type": "Dataset" }, to)
             } catch (e) {
                 console.error("Renaming failed partially", e)
                 issues.push(new Error("Renaming failed partially: " + e))

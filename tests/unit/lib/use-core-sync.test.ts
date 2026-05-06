@@ -75,7 +75,7 @@ function createMockCoreService(
         getContextService: () => contextService,
         addFileEntity: jest.fn(),
         addFolderEntity: jest.fn(),
-        changeEntityIdentifier: jest.fn(),
+        moveEntity: jest.fn(),
         deleteEntity: jest.fn()
     }
 }

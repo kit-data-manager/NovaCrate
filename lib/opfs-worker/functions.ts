@@ -78,7 +78,7 @@ export async function moveFileOrFolder(crateId: string, filePath: string, newFil
     if (!existsSource.isOk()) throw existsSource.unwrapErr()
 
     // Fail silently if the source file does not exist
-    if (!existsSource.unwrap()) return
+    if (!existsSource.unwrap()) return []
 
     const existsTarget = await fs.exists(resolveCratePath(crateId, newFilePath))
     if (!existsTarget.isOk()) throw existsTarget.unwrapErr()
@@ -86,12 +86,22 @@ export async function moveFileOrFolder(crateId: string, filePath: string, newFil
     // Fail if the target file does not exist
     if (existsTarget.unwrap()) throw `A file with name ${newFilePath} already exists`
 
+    const contentBeforeMove = (await getCrateDirContents(crateId)).filter((path) =>
+        path.startsWith(filePath)
+    )
+
     const move = await fs.move(
         resolveCratePath(crateId, filePath),
         resolveCratePath(crateId, newFilePath),
         { overwrite: false }
     )
     if (!move.isOk()) throw move.unwrapErr()
+
+    const filePathChanges: { from: string; to: string }[] = contentBeforeMove.map((path) => {
+        return { from: path, to: path.replace(filePath, newFilePath) }
+    })
+
+    return filePathChanges
 }
 
 export async function getCrateDirContents(crateId: string) {

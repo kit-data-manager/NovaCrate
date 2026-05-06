@@ -73,8 +73,9 @@ export interface IFileService {
      * `"file-moved"` or `"folder-moved"` via {@link IFileService.events}.
      * @param src - Crate-relative source path.
      * @param dest - Crate-relative destination path.
+     * @returns an array of objects. Each object corresponds to a moved file or folder, with source and destination paths
      */
-    move(src: string, dest: string): Promise<void>
+    move(src: string, dest: string): Promise<{ from: string; to: string }[]>
     /**
      * Delete a file or directory (recursively) at `path`. Emits
      * `"file-deleted"` or `"folder-deleted"` via {@link IFileService.events}.

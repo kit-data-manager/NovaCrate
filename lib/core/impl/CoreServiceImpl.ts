@@ -88,12 +88,14 @@ export class CoreServiceImpl implements ICoreService {
             )
     }
 
-    async changeEntityIdentifier(from: string, to: string): Promise<void> {
+    async moveEntity(from: string, to: string): Promise<void> {
         const entities = this.metadata.getEntities()
         const entity = entities.find((e) => e["@id"] === from)
 
-        if (entity && isDataEntity(entity) && this.fileService) {
-            await this.fileService.move(from, to)
+        if (this.fileService) {
+            if (!entity || isDataEntity(entity)) {
+                await this.fileService.move(from, to)
+            }
         }
 
         await this.metadata.changeEntityIdentifier(from, to)

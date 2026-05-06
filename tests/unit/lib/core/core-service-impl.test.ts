@@ -40,8 +40,8 @@ function createMockFileService(): IFileService {
         addFile: jest.fn(async () => {}),
         addFolder: jest.fn(async () => {}),
         updateFile: jest.fn(async () => {}),
-        move: jest.fn(async () => {}),
-        delete: jest.fn(async () => {}),
+        move: jest.fn(async () => []),
+        delete: jest.fn(async () => []),
         getStorageQuota: jest.fn(async () => ({ usedSpace: 0, totalSpace: 0, persistent: false }))
     }
 }
@@ -226,7 +226,7 @@ describe("CoreServiceImpl", () => {
             const crateService = createMockCrateService(fileService)
             const core = await CoreServiceImpl.newInstance(adapter, crateService)
 
-            await core.changeEntityIdentifier("code.py", "renamed-code.py")
+            await core.moveEntity("code.py", "renamed-code.py")
 
             // Should call file move because entity with ["File", "SoftwareSourceCode"] IS a data entity
             expect(fileService.move).toHaveBeenCalledWith("code.py", "renamed-code.py")
@@ -239,7 +239,7 @@ describe("CoreServiceImpl", () => {
             const crateService = createMockCrateService()
             const core = await CoreServiceImpl.newInstance(adapter, crateService)
 
-            await core.changeEntityIdentifier("#test-person", "#renamed-person")
+            await core.moveEntity("#test-person", "#renamed-person")
 
             const entities = core.getMetadataService().getEntities()
             expect(entities.find((e) => e["@id"] === "#test-person")).toBeUndefined()
@@ -252,7 +252,7 @@ describe("CoreServiceImpl", () => {
             const crateService = createMockCrateService(fileService)
             const core = await CoreServiceImpl.newInstance(adapter, crateService)
 
-            await core.changeEntityIdentifier("result.json", "output.json")
+            await core.moveEntity("result.json", "output.json")
 
             expect(fileService.move).toHaveBeenCalledWith("result.json", "output.json")
         })
@@ -263,7 +263,7 @@ describe("CoreServiceImpl", () => {
             const crateService = createMockCrateService(fileService)
             const core = await CoreServiceImpl.newInstance(adapter, crateService)
 
-            await core.changeEntityIdentifier("#test-person", "#renamed-person")
+            await core.moveEntity("#test-person", "#renamed-person")
 
             expect(fileService.move).not.toHaveBeenCalled()
         })
@@ -273,9 +273,7 @@ describe("CoreServiceImpl", () => {
             const crateService = createMockCrateService(null)
             const core = await CoreServiceImpl.newInstance(adapter, crateService)
 
-            await expect(
-                core.changeEntityIdentifier("result.json", "output.json")
-            ).resolves.not.toThrow()
+            await expect(core.moveEntity("result.json", "output.json")).resolves.not.toThrow()
         })
     })
 
