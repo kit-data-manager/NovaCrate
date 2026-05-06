@@ -6,7 +6,6 @@ import { PersistenceAdapterImpl } from "@/lib/core/impl/PersistenceAdapterImpl"
 import { CoreServiceImpl } from "@/lib/core/impl/CoreServiceImpl"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { useCoreSync } from "@/lib/hooks/use-core-sync"
-import { useRouter } from "next/navigation"
 import { useCrateIdPersistence } from "@/lib/hooks/use-crate-id-persistence"
 import { LoadingHero } from "@/components/loading-hero"
 
@@ -24,7 +23,6 @@ const CoreContext = createContext<ICoreService | null>(null)
  */
 export function CoreProvider({ children }: PropsWithChildren) {
     const persistence = usePersistence()
-    const router = useRouter()
 
     useCrateIdPersistence(persistence)
 
