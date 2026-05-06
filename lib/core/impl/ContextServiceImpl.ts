@@ -79,24 +79,24 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
     }
 
     async addCustomContextPair(prefix: string, url: string): Promise<void> {
-        this._customPairs[prefix] = url
+        const customPairs = structuredClone(this._customPairs)
+        customPairs[prefix] = url
         const updatedContext = {
             "@vocab": this._specificationUrl,
-            ...this.customPairs
+            ...customPairs
         } as Record<string, string>
-        this.raw = updatedContext
-        this._events.emit("context-changed", this.raw!)
+        await this.update(updatedContext)
         await this.persistenceAdapter.updateMetadataContext(updatedContext)
     }
 
     async removeCustomContextPair(prefix: string): Promise<void> {
-        delete this._customPairs[prefix]
+        const customPairs = structuredClone(this._customPairs)
+        delete customPairs[prefix]
         const updatedContext = {
             "@vocab": this._specificationUrl,
-            ...this.customPairs
+            ...customPairs
         } as Record<string, string>
-        this.raw = updatedContext
-        this._events.emit("context-changed", this.raw!)
+        await this.update(updatedContext)
         await this.persistenceAdapter.updateMetadataContext(updatedContext)
     }
 

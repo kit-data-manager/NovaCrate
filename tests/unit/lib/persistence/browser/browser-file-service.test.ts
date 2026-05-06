@@ -1,6 +1,6 @@
 import { BrowserFileService } from "@/lib/persistence/browser/BrowserFileService"
-import { FunctionWorker } from "@/lib/function-worker"
-import { opfsFunctions } from "@/lib/opfs-worker/functions"
+import type { FunctionWorker } from "@/lib/function-worker"
+import type { opfsFunctions } from "@/lib/opfs-worker/functions"
 
 type MockWorker = {
     [K in keyof FunctionWorker<typeof opfsFunctions>]: jest.Mock
@@ -376,6 +376,7 @@ describe("BrowserFileService", () => {
 
             await expect(service.delete("test.txt")).resolves.not.toThrow()
 
+            expect(warnSpy).toHaveBeenCalled()
             warnSpy.mockRestore()
         })
     })
