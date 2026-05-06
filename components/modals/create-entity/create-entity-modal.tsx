@@ -124,7 +124,6 @@ export function CreateEntityModal({
 
     const onUploadFolder = useCallback(
         async (id: string, name: string, files: File[]) => {
-            console.log("Uploading folder", id, name, files)
             setUploading(true)
             setMaxUploadProgress(files.length > 0 ? files.length : 1)
             try {

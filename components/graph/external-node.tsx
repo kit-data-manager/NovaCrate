@@ -31,7 +31,6 @@ export default function ExternalNode({
                     type="target"
                     position={Position.Left}
                     style={{ background: "#555" }}
-                    onConnect={(params) => console.log("handle onConnect", params)}
                     isConnectable={isConnectable}
                     className="border-none! bg-primary/80!"
                 />
