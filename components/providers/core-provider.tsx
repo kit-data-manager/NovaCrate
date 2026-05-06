@@ -44,13 +44,13 @@ export function CoreProvider({ children }: PropsWithChildren) {
         }
 
         async function initCore() {
+            disposeCurrent()
             const crateService = persistence.getCrateService()
 
             if (!crateService) {
+                setCore(null)
                 return
             }
-
-            disposeCurrent()
 
             const adapter = new PersistenceAdapterImpl(crateService)
             const coreInstance = await CoreServiceImpl.newInstance(adapter, crateService)
@@ -78,7 +78,7 @@ export function CoreProvider({ children }: PropsWithChildren) {
             remove()
             disposeCurrent()
         }
-    }, [persistence, router])
+    }, [persistence])
 
     useCoreSync(core)
 

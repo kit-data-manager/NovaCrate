@@ -25,7 +25,13 @@ export function ValidationContextProvider({ children }: PropsWithChildren) {
     const [fileService, setFileService] = useState(() => crateService?.getFileService())
 
     useEffect(() => {
-        const remove = persistence.events.addEventListener("crate-service-changed", setCrateService)
+        const remove = persistence.events.addEventListener(
+            "crate-service-changed",
+            (crateService) => {
+                setCrateService(crateService)
+                setFileService(crateService?.getFileService())
+            }
+        )
         return () => remove()
     }, [persistence.events])
 

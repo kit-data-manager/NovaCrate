@@ -275,14 +275,10 @@ export function NavHeader() {
         <div className="p-4 py-2 pr-3 w-full grid grid-cols-[1fr_auto_1fr]">
             <div className="flex items-center">
                 <Package className="w-7 h-7 mr-2" />
-                {!crateName ? (
-                    <Skeleton className="bg-background h-8 w-32" />
-                ) : (
-                    <div className="mr-6 font-bold max-w-75 truncate animate-in">
-                        <div className="text-xs font-normal">NovaCrate</div>
-                        {crateName}
-                    </div>
-                )}
+                <div className="mr-6 font-bold max-w-75 truncate animate-in">
+                    <div className="text-xs font-normal">NovaCrate</div>
+                    {crateName}
+                </div>
 
                 {menubar}
                 {/* Disabled until a proper implementation is done */}

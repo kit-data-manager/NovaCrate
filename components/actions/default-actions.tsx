@@ -7,6 +7,7 @@ import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { ArrowLeft, Cog, Plus, SaveAll, Search, Undo2, FileIcon, Info } from "lucide-react"
 import { generateCratePreview } from "@/lib/ro-crate-preview"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
+import { toast } from "sonner"
 
 export default function DefaultActions() {
     const { showCreateEntityModal, showGlobalSearchModal, showSettingsModal, showAboutModal } =
@@ -50,8 +51,12 @@ export default function DefaultActions() {
             description: "A HTML Preview for this RO-Crate generated with ro-crate-html"
         }
         const file = new File([result], "ro-crate-preview.html", { type: "text/html" })
-        await createFileEntity(entity, file, true)
-        openTab(createEntityEditorTab(entity), true)
+        const writeSuccess = await createFileEntity(entity, file, true)
+        if (writeSuccess) {
+            openTab(createEntityEditorTab(entity), true)
+        } else {
+            toast.error("Failed to create preview file")
+        }
     }, [createFileEntity, openTab, persistence])
     useRegisterAction("crate.generate-html-preview", "Generate HTML Preview", generateHTMLPreview, {
         icon: FileIcon
