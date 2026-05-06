@@ -18,7 +18,7 @@ export class CoreServiceImpl implements ICoreService {
     private readonly context: IContextService
 
     private fileService: IFileService | null
-    private removeFileServiceListener: (() => void) | null = null
+    private removeFileServiceChangedListener: (() => void) | null = null
 
     private constructor(
         metadata: IMetadataService,
@@ -30,7 +30,7 @@ export class CoreServiceImpl implements ICoreService {
         this.fileService = crateService.getFileService()
 
         this.onFileServiceChanged = this.onFileServiceChanged.bind(this)
-        this.removeFileServiceListener = crateService.events.addEventListener(
+        this.removeFileServiceChangedListener = crateService.events.addEventListener(
             "file-service-changed",
             this.onFileServiceChanged
         )
@@ -100,12 +100,14 @@ export class CoreServiceImpl implements ICoreService {
     }
 
     async deleteEntity(id: string, deleteData: boolean): Promise<void> {
+        let deleted = [id]
         if (deleteData && this.fileService) {
-            await this.fileService.delete(id)
+            deleted = await this.fileService.delete(id)
         }
 
-        // TODO: Child entities also need to be deleted when deleteData is true and id references a folder
-        await this.metadata.deleteEntity(id)
+        for (const deletedItem of deleted) {
+            await this.metadata.deleteEntity(deletedItem)
+        }
     }
 
     getContextService(): IContextService {
@@ -117,9 +119,9 @@ export class CoreServiceImpl implements ICoreService {
     }
 
     dispose() {
-        if (this.removeFileServiceListener) {
-            this.removeFileServiceListener()
-            this.removeFileServiceListener = null
+        if (this.removeFileServiceChangedListener) {
+            this.removeFileServiceChangedListener()
+            this.removeFileServiceChangedListener = null
         }
     }
 

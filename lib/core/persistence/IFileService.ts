@@ -79,8 +79,9 @@ export interface IFileService {
      * Delete a file or directory (recursively) at `path`. Emits
      * `"file-deleted"` or `"folder-deleted"` via {@link IFileService.events}.
      * @param path - Crate-relative path of the file or directory to remove.
+     * @returns an array of strings. These are the file paths of all files and folders that were deleted
      */
-    delete(path: string): Promise<void>
+    delete(path: string): Promise<string[]>
     /** Return the current storage quota and usage for the current persistence implementation. */
     getStorageQuota(): Promise<IStorageQuota>
 }

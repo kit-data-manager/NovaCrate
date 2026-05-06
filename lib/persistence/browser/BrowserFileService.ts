@@ -71,16 +71,20 @@ export class BrowserFileService implements IFileService {
         }
     }
 
-    async delete(path: string): Promise<void> {
-        // TODO emit delete event for all files that are recursively deleted on folder delete?
-        const isFolder = path.endsWith("/")
-        await this.worker.execute("deleteFileOrFolder", this.crateId, path)
-        if (isFolder) {
-            this._events.emit("folder-deleted", path)
-        } else {
-            this._events.emit("file-deleted", path)
+    async delete(path: string): Promise<string[]> {
+        const deleted = await this.worker.execute("deleteFileOrFolder", this.crateId, path)
+
+        for (const deletedItem of deleted) {
+            const isFolder = deletedItem.endsWith("/")
+            if (isFolder) {
+                this._events.emit("folder-deleted", deletedItem)
+            } else {
+                this._events.emit("file-deleted", deletedItem)
+            }
         }
+
         await this.emitQuotaChanged()
+        return deleted
     }
 
     async getStorageQuota(): Promise<IStorageQuota> {

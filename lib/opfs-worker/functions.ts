@@ -53,15 +53,24 @@ export async function createFolder(crateId: string, path: string) {
     if (result.isErr()) throw result.unwrapErr()
 }
 
+/**
+ * Delete a file or folder at the given location. Also removes all files and folders inside the folder.
+ * @param crateId ID of the target crate
+ * @param filePath Path of the file relative to the crate root
+ * @returns an array of strings representing file paths to files that were deleted
+ */
 export async function deleteFileOrFolder(crateId: string, filePath: string) {
     const exists = await fs.exists(resolveCratePath(crateId, filePath))
     if (!exists.isOk()) throw exists.unwrapErr()
 
     // Fail silently if the file does not exist
-    if (!exists.unwrap()) return
+    if (!exists.unwrap()) return []
 
+    const content = await getCrateDirContents(crateId)
     const result = await fs.remove(resolveCratePath(crateId, filePath))
     if (!result.isOk()) throw result.unwrapErr()
+
+    return filePath.endsWith("/") ? content.filter((path) => path.startsWith(filePath)) : [filePath]
 }
 
 export async function moveFileOrFolder(crateId: string, filePath: string, newFilePath: string) {
