@@ -54,7 +54,6 @@ export default function EntityNode({
             <Handle
                 type="target"
                 position={Position.Left}
-                onConnect={(params) => console.log("handle onConnect", params)}
                 isConnectable={isConnectable}
                 className="border-none! bg-primary/80!"
             />
