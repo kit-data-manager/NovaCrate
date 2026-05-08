@@ -242,7 +242,7 @@ describe("BrowserFileService", () => {
 
     describe("move", () => {
         it("should move a file via the worker", async () => {
-            worker.execute.mockResolvedValue(undefined)
+            worker.execute.mockResolvedValue([{ from: "old.txt", to: "new.txt" }])
 
             await service.move("old.txt", "new.txt")
 
@@ -255,7 +255,7 @@ describe("BrowserFileService", () => {
         })
 
         it("should emit file-moved for files (no trailing slash)", async () => {
-            worker.execute.mockResolvedValue(undefined)
+            worker.execute.mockResolvedValue([{ from: "old.txt", to: "new.txt" }])
             const listener = jest.fn()
             service.events.addEventListener("file-moved", listener)
 
@@ -265,7 +265,7 @@ describe("BrowserFileService", () => {
         })
 
         it("should emit folder-moved for folders (trailing slash on source)", async () => {
-            worker.execute.mockResolvedValue(undefined)
+            worker.execute.mockResolvedValue([{ from: "old-folder/", to: "new-folder/" }])
             const folderListener = jest.fn()
             const fileListener = jest.fn()
             service.events.addEventListener("folder-moved", folderListener)
@@ -275,6 +275,37 @@ describe("BrowserFileService", () => {
 
             expect(folderListener).toHaveBeenCalledWith("old-folder/", "new-folder/")
             expect(fileListener).not.toHaveBeenCalled()
+        })
+
+        it("should emit folder-moved and file-moved for sub-entries of moved folder", async () => {
+            worker.execute.mockResolvedValue([
+                { from: "old-folder/", to: "new-folder/" },
+                { from: "old-folder/someEntry.txt", to: "new-folder/someEntry.txt" },
+                { from: "old-folder/anotherEntry.md", to: "new-folder/anotherEntry.md" },
+                { from: "old-folder/inner-folder/", to: "new-folder/inner-folder/" }
+            ])
+            const folderListener = jest.fn()
+            const fileListener = jest.fn()
+            service.events.addEventListener("folder-moved", folderListener)
+            service.events.addEventListener("file-moved", fileListener)
+
+            await service.move("old-folder/", "new-folder/")
+
+            expect(folderListener).toHaveBeenCalledWith("old-folder/", "new-folder/")
+            expect(folderListener).toHaveBeenCalledWith(
+                "old-folder/inner-folder/",
+                "new-folder/inner-folder/"
+            )
+            expect(folderListener).toHaveBeenCalledTimes(2)
+            expect(fileListener).toHaveBeenCalledWith(
+                "old-folder/someEntry.txt",
+                "new-folder/someEntry.txt"
+            )
+            expect(fileListener).toHaveBeenCalledWith(
+                "old-folder/anotherEntry.md",
+                "new-folder/anotherEntry.md"
+            )
+            expect(fileListener).toHaveBeenCalledTimes(2)
         })
     })
 
@@ -289,6 +320,7 @@ describe("BrowserFileService", () => {
         })
 
         it("should delete a file via the worker", async () => {
+            worker.execute.mockResolvedValue(["test.txt"])
             await service.delete("test.txt")
 
             expect(worker.execute).toHaveBeenCalledWith(
@@ -299,6 +331,8 @@ describe("BrowserFileService", () => {
         })
 
         it("should emit file-deleted for files (no trailing slash)", async () => {
+            worker.execute.mockResolvedValue(["test.txt"])
+
             const listener = jest.fn()
             service.events.addEventListener("file-deleted", listener)
 
@@ -308,6 +342,8 @@ describe("BrowserFileService", () => {
         })
 
         it("should emit folder-deleted for folders (trailing slash)", async () => {
+            worker.execute.mockResolvedValue(["images/"])
+
             const folderListener = jest.fn()
             const fileListener = jest.fn()
             service.events.addEventListener("folder-deleted", folderListener)
@@ -319,7 +355,25 @@ describe("BrowserFileService", () => {
             expect(fileListener).not.toHaveBeenCalled()
         })
 
+        it("should emit events for all files deleted in a folder delete", async () => {
+            worker.execute.mockResolvedValue(["images/", "images/me.png", "images/them.png"])
+
+            const folderListener = jest.fn()
+            const fileListener = jest.fn()
+            service.events.addEventListener("folder-deleted", folderListener)
+            service.events.addEventListener("file-deleted", fileListener)
+
+            await service.delete("images/")
+
+            expect(folderListener).toHaveBeenCalledWith("images/")
+            expect(fileListener).toHaveBeenCalledWith("images/me.png")
+            expect(fileListener).toHaveBeenCalledWith("images/them.png")
+            expect(fileListener).toHaveBeenCalledTimes(2)
+        })
+
         it("should emit quota-changed event after deleting", async () => {
+            worker.execute.mockResolvedValue(["test.txt"])
+
             const listener = jest.fn()
             service.events.addEventListener("quota-changed", listener)
 
@@ -370,6 +424,8 @@ describe("BrowserFileService", () => {
             worker.execute.mockImplementation(async (name: string) => {
                 if (name === "getStorageInfo") {
                     throw new Error("Storage API unavailable")
+                } else if (name === "deleteFileOrFolder") {
+                    return "test.txt"
                 }
                 return undefined
             })
