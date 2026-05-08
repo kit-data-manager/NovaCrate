@@ -86,9 +86,9 @@ export async function moveFileOrFolder(crateId: string, filePath: string, newFil
     // Fail if the target file does not exist
     if (existsTarget.unwrap()) throw `A file with name ${newFilePath} already exists`
 
-    const contentBeforeMove = (await getCrateDirContents(crateId)).filter((path) =>
-        path.startsWith(filePath)
-    )
+    const contentBeforeMove = filePath.endsWith("/")
+        ? (await getCrateDirContents(crateId)).filter((path) => path.startsWith(filePath))
+        : [filePath]
 
     const move = await fs.move(
         resolveCratePath(crateId, filePath),
