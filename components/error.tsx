@@ -1,6 +1,5 @@
 import { CircleAlert, TriangleAlert, XIcon } from "lucide-react"
 import { PropsWithChildren, useMemo } from "react"
-import { handleSpringError } from "@/lib/spring-error-handling"
 
 function cn(size?: "md" | "xl") {
     if (!size || size == "md") {
@@ -18,6 +17,22 @@ function cnIcon(size?: "md" | "xl") {
     }
 }
 
+export function stringifyError(e: unknown) {
+    if (typeof e === "string") return e
+    if (e instanceof globalThis.Error) return `${e.message} (type: ${e.name})`
+
+    if (e && typeof e === "object") {
+        try {
+            return JSON.stringify(e)
+        } catch {
+            console.log(e)
+            return e.toString()
+        }
+    } else {
+        return e + ""
+    }
+}
+
 export function Error(
     props: (
         | {
@@ -30,7 +45,7 @@ export function Error(
 ) {
     const parsedText = useMemo(() => {
         if (!("error" in props)) return undefined
-        return props.error ? handleSpringError(props.error) : ""
+        return props.error ? stringifyError(props.error) : ""
     }, [props])
 
     if ("error" in props && !props.error) return null

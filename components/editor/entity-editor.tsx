@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useContext, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { PropertyEditor } from "@/components/editor/property-editor"
 import {
     Diff,
@@ -10,14 +10,14 @@ import {
     canHavePreview as canHavePreviewUtil
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useOperationState } from "@/lib/state/operation-state"
 import { Error } from "@/components/error"
 import { EntityEditorHeader } from "@/components/editor/entity-editor-header"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { InternalEntityHint } from "@/components/editor/hints/internal-entity-hint"
 import { ActionButton } from "@/components/actions/action-buttons"
-import { useGoToFileExplorer, useGoToGraph } from "@/lib/hooks"
+import { useGoToFileExplorer, useGoToGraph } from "@/lib/hooks/hooks"
 import { EntityBadge } from "../entity/entity-badge"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useShallow } from "zustand/react/shallow"
@@ -32,7 +32,9 @@ export function EntityEditor({
     entityId: string
     toggleEntityBrowserPanel(): void
 }) {
-    const { isSaving, saveError, clearSaveError } = useContext(CrateDataContext)
+    const isSaving = useOperationState((s) => s.isSaving)
+    const saveErrors = useOperationState((s) => s.saveErrors)
+    const clearSaveError = useOperationState((s) => s.clearSaveError)
     const entity = useEditorState((store) => store.entities.get(entityId))
     const originalEntity = useEditorState((store) => store.initialEntities.get(entityId))
     const entitiesChangelist = useEditorState(useShallow((store) => store.getEntitiesChangelist()))
@@ -145,10 +147,10 @@ export function EntityEditor({
     }, [entity])
 
     const ownSaveError = useMemo(() => {
-        if (saveError.has(entityId)) {
-            return saveError.get(entityId)
+        if (saveErrors.has(entityId)) {
+            return saveErrors.get(entityId)
         } else return undefined
-    }, [entityId, saveError])
+    }, [entityId, saveErrors])
 
     const clearOwnSaveError = useCallback(() => {
         clearSaveError(entityId)

@@ -15,6 +15,7 @@ import { SinglePropertyEditor } from "@/components/editor/single-property-editor
 import { camelCaseReadable } from "@/lib/utils"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
+import { useContextResolver } from "@/lib/hooks/hooks"
 import { Trash, TriangleAlert } from "lucide-react"
 import { MarkdownComment } from "@/components/markdown-comment"
 import { Pagination } from "@/components/pagination"
@@ -51,8 +52,8 @@ export const PropertyEditor = memo(function PropertyEditor({
     const { isReady: crateVerifyReady, worker } = useContext(SchemaWorker)
     const focusedProperty = useEntityEditorTabs((store) => store.focusedProperty)
     const unFocusProperty = useEntityEditorTabs((store) => store.unFocusProperty)
-    const crateContext = useEditorState((store) => store.crateContext)
     const crateContextReady = useEditorState((store) => store.crateContextReady)
+    const resolver = useContextResolver()
     const container = createRef<HTMLDivElement>()
 
     const isFocused = useMemo(() => {
@@ -86,8 +87,8 @@ export const PropertyEditor = memo(function PropertyEditor({
         if (!crateContextReady) return null
         if (property.propertyName === "@id" || property.propertyName === "@type")
             return property.propertyName
-        return crateContext.resolve(property.propertyName)
-    }, [crateContext, crateContextReady, property.propertyName])
+        return resolver.resolve(property.propertyName)
+    }, [resolver, crateContextReady, property.propertyName])
 
     const referenceTypeRangeResolver = useCallback(async () => {
         if (property.propertyName.startsWith("@")) return []

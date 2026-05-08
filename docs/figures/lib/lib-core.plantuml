@@ -1,0 +1,79 @@
+@startuml
+
+package core {
+    package persistence {
+        interface IPersistenceService
+        interface ICrateService
+        interface IRepositoryService
+
+        IPersistenceService --* ICrateService
+        IPersistenceService --* IRepositoryService
+    }
+
+    note top of persistence
+        See lib-persistence
+    endnote
+
+    interface ICoreService {
+        addFileEntity()
+        addFolderEntity()
+        changeEntityIdentifier()
+        deleteEntity()
+        getContextService()
+        getMetadataService()
+    }
+
+    interface IPersistenceAdapter {
+        + events
+        getMetadataGraph()
+        getMetadataContext()
+        updateMetadataGraph()
+        updateMetadataContext()
+    }
+
+    ICoreService --> ICrateService
+    ICoreService *-- IContextService
+    ICoreService *-- IMetadataService
+
+    interface IContextService {
+        - context
+        + events
+        getSpecification()
+        getUsesFallback()
+        getCustomContextPairs()
+        removeCustomContextPair()
+        addCustomContextPair()
+    }
+
+    interface IContextResolverService {
+        resolve(id)
+        reverse(id)
+    }
+
+    IContextResolverService "resolver" --* IContextService
+
+    interface IMetadataService {
+        - graph
+        + events
+
+        getEntities()
+        addEntity()
+        updateEntity()
+        changeEntityIdentifier()
+        deleteEntity()
+    }
+
+    class CrateFactory {
+        createEmptyCrate(name, description)
+        createCrateFromFile()
+        createCrateFromFiles()
+        createCrateFromMetadataFile()
+    }
+
+    IPersistenceAdapter <-- IMetadataService
+    IPersistenceAdapter <-- IContextService
+    IPersistenceAdapter --> ICrateService
+    IRepositoryService <-- CrateFactory
+}
+
+@enduml

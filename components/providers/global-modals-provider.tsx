@@ -1,11 +1,10 @@
 "use client"
 
-import { createContext, PropsWithChildren, useCallback, useContext, useState } from "react"
+import { createContext, PropsWithChildren, useCallback, useState } from "react"
 import { CreateEntityModal } from "@/components/modals/create-entity/create-entity-modal"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { SaveEntityChangesModal } from "@/components/modals/save-entity-changes-modal"
 import { DeleteEntityModal } from "@/components/modals/delete-entity-modal"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
 import { GlobalSearch } from "@/components/modals/global-search"
 import { AddPropertyModal } from "@/components/modals/add-property/add-property-modal"
 import { FindReferencesModal } from "@/components/modals/find-references-modal"
@@ -16,6 +15,7 @@ import { AutoReference } from "@/lib/utils"
 import { AboutModal } from "@/components/modals/about-modal"
 import { CrateExportedModal } from "@/components/modals/crate-exported-modal"
 import { MultiRenameModal } from "@/components/modals/multi-rename-modal"
+import { CoreGuard } from "@/components/providers/core-provider"
 
 export interface IGlobalModalContext {
     showCreateEntityModal(
@@ -65,8 +65,6 @@ export const GlobalModalContext = createContext<IGlobalModalContext>({
 })
 
 export function GlobalModalProvider(props: PropsWithChildren) {
-    const { saveEntity } = useContext(CrateDataContext)
-
     const [createEntityModalState, setCreateEntityModalState] = useState<{
         open: boolean
         autoReference?: AutoReference
@@ -272,16 +270,6 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         [multiRenameModal]
     )
 
-    const onEntityCreated = useCallback(
-        (entity?: IEntity) => {
-            setCreateEntityModalState({
-                open: false
-            })
-            if (entity) saveEntity(entity).catch(console.error)
-        },
-        [saveEntity]
-    )
-
     return (
         <GlobalModalContext.Provider
             value={{
@@ -299,46 +287,53 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 showMultiRenameModal
             }}
         >
-            <CreateEntityModal
-                open={createEntityModalState.open}
-                onEntityCreated={onEntityCreated}
-                onOpenChange={onCreateEntityModalOpenChange}
-                restrictToClasses={createEntityModalState.restrictToClasses}
-                autoReference={createEntityModalState.autoReference}
-                forceId={createEntityModalState.id}
-                basePath={createEntityModalState.basePath}
-            />
-            <SaveEntityChangesModal
-                open={saveEntityChangesModalState.open}
-                onOpenChange={onSaveEntityChangesModalOpenChange}
-                entityId={saveEntityChangesModalState.entityId}
-            />
-            <DeleteEntityModal
-                open={deleteEntityModalState.open}
-                onOpenChange={onDeleteEntityModalOpenChange}
-                entityId={deleteEntityModalState.entityId}
-            />
-            <GlobalSearch
-                open={globalSearchState.open}
-                onOpenChange={onGlobalSearchModalOpenChange}
-            />
-            <AddPropertyModal
-                open={addPropertyModalState.open}
-                onPropertyAdd={addPropertyModalState.onPropertyAdd}
-                onOpenChange={onAddPropertyModalOpenChange}
-                typeArray={addPropertyModalState.typeArray}
-                onlyReferences={addPropertyModalState.onlyReferences}
-            />
-            <FindReferencesModal
-                open={findReferencesModalState.open}
-                onOpenChange={onFindReferencesModalOpenChange}
-                entityId={findReferencesModalState.entityId}
-            />
-            <SaveAsModal
-                open={saveAsModalState.open}
-                onOpenChange={onSaveAsModalOpenChange}
-                entityId={saveAsModalState.entityId}
-            />
+            <CoreGuard>
+                <CreateEntityModal
+                    open={createEntityModalState.open}
+                    onOpenChange={onCreateEntityModalOpenChange}
+                    restrictToClasses={createEntityModalState.restrictToClasses}
+                    autoReference={createEntityModalState.autoReference}
+                    forceId={createEntityModalState.id}
+                    basePath={createEntityModalState.basePath}
+                />
+                <SaveEntityChangesModal
+                    open={saveEntityChangesModalState.open}
+                    onOpenChange={onSaveEntityChangesModalOpenChange}
+                    entityId={saveEntityChangesModalState.entityId}
+                />
+                <DeleteEntityModal
+                    open={deleteEntityModalState.open}
+                    onOpenChange={onDeleteEntityModalOpenChange}
+                    entityId={deleteEntityModalState.entityId}
+                />
+                <SaveAsModal
+                    open={saveAsModalState.open}
+                    onOpenChange={onSaveAsModalOpenChange}
+                    entityId={saveAsModalState.entityId}
+                />
+                <MultiRenameModal
+                    open={multiRenameModal.open}
+                    onOpenChange={onRenameEntityOpenChange}
+                    changes={multiRenameModal.changes}
+                />
+                <GlobalSearch
+                    open={globalSearchState.open}
+                    onOpenChange={onGlobalSearchModalOpenChange}
+                />
+                <AddPropertyModal
+                    open={addPropertyModalState.open}
+                    onPropertyAdd={addPropertyModalState.onPropertyAdd}
+                    onOpenChange={onAddPropertyModalOpenChange}
+                    typeArray={addPropertyModalState.typeArray}
+                    onlyReferences={addPropertyModalState.onlyReferences}
+                />
+                <FindReferencesModal
+                    open={findReferencesModalState.open}
+                    onOpenChange={onFindReferencesModalOpenChange}
+                    entityId={findReferencesModalState.entityId}
+                />
+            </CoreGuard>
+
             <SettingsModal
                 open={settingsModalState.open}
                 onOpenChange={onSettingsModalOpenChange}
@@ -351,11 +346,6 @@ export function GlobalModalProvider(props: PropsWithChildren) {
             <CrateExportedModal
                 open={crateExportedModalState.open}
                 onOpenChange={onCrateExportedModalOpenChange}
-            />
-            <MultiRenameModal
-                open={multiRenameModal.open}
-                onOpenChange={onRenameEntityOpenChange}
-                changes={multiRenameModal.changes}
             />
 
             {props.children}

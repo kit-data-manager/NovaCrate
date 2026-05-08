@@ -107,7 +107,7 @@ test("uploading with tree picker works", async ({ page }) => {
     await page.getByRole("textbox", { name: "Folder Name" }).click()
     await page.getByRole("textbox", { name: "Folder Name" }).fill("extraData")
     await page.getByRole("button", { name: "Create" }).click()
-    await expect(page.getByRole("button", { name: "D extraData" }).nth(1)).toBeVisible()
+    await expect(page.getByRole("button", { name: "D extraDataDataset" })).toBeVisible()
     await page.getByRole("link", { name: "File Explorer" }).getByRole("button").click()
     await expect(
         page
@@ -128,7 +128,7 @@ test("uploading with tree picker works", async ({ page }) => {
     await expect(page.locator("body")).toMatchAriaSnapshot(`
     - heading "File candles-9247498_1280.jpg" [level=2]:
       - button "File"
-      - text: ""
+      - text: candles-9247498_1280.jpg
     - button
     - text: Identifier
     - paragraph: The unique identifier of the entity
@@ -152,6 +152,12 @@ test("uploading with tree picker works", async ({ page }) => {
     - paragraph: File size in (mega/kilo)bytes.
     - button
     - textbox: /\\d+/
+    - button
+    - button
+    - button "Add another entry"
+    - text: Date Modified
+    - paragraph: The date on which the CreativeWork was most recently modified or when the item's entry was modified within a DataFeed.
+    - textbox: /\\d+-\\d+-\\d+T\\d+:\\d+/
     - button
     - button
     - button "Add another entry"

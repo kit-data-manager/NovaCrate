@@ -1,8 +1,8 @@
-import React, { useCallback, useContext, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Trash } from "lucide-react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { usePersistence } from "@/components/providers/persistence-provider"
 import { Error } from "@/components/error"
 
 export function DeleteCrateModal({
@@ -16,7 +16,7 @@ export function DeleteCrateModal({
     onDeleted(crateId: string): void
     crateId: string
 }) {
-    const { serviceProvider } = useContext(CrateDataContext)
+    const persistence = usePersistence()
     const [isDeleting, setIsDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState<unknown>()
 
@@ -28,23 +28,23 @@ export function DeleteCrateModal({
     )
 
     const onDeleteCrateClick = useCallback(() => {
-        if (serviceProvider) {
+        const repo = persistence.getRepositoryService()
+        if (repo) {
             setIsDeleting(true)
-            serviceProvider
-                .deleteCrate(crateId)
+            repo.deleteCrate(crateId)
                 .then(() => {
                     setDeleteError(undefined)
                     onDeleted(crateId)
                 })
-                .catch((e) => {
+                .catch((e: unknown) => {
                     console.error(e)
                     setDeleteError(e)
                 })
                 .finally(() => {
                     setIsDeleting(false)
                 })
-        }
-    }, [serviceProvider, crateId, onDeleted])
+        } else setDeleteError("No repository service available, cannot delete crates")
+    }, [persistence, crateId, onDeleted])
 
     const onCloseClick = useCallback(() => {
         onOpenChange(false)

@@ -1,12 +1,13 @@
 "use client"
 
-import { memo, PropsWithChildren, useContext, useEffect } from "react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { memo, PropsWithChildren, useEffect } from "react"
+import { CoreProvider } from "@/components/providers/core-provider"
+import { usePersistence } from "@/components/providers/persistence-provider"
 import { Nav } from "@/components/nav/nav"
 import { usePathname } from "next/navigation"
 import { SchemaWorkerProvider } from "@/components/providers/schema-worker-provider"
 import { GlobalModalProvider } from "@/components/providers/global-modals-provider"
-import { useCrateName, useRecentCrates } from "@/lib/hooks"
+import { useCrateName, useRecentCrates } from "@/lib/hooks/hooks"
 import DefaultActions from "@/components/actions/default-actions"
 import { ActionKeyboardShortcuts } from "@/components/actions/action-keyboard-shortcuts"
 import EntityActions from "@/components/actions/entity-actions"
@@ -18,13 +19,15 @@ import { UnsavedChangesProtector } from "@/components/UnsavedChangesProtector"
 
 export default function EditorLayout(props: PropsWithChildren) {
     return (
-        <SchemaWorkerProvider>
-            <GlobalModalProvider>
-                <ValidationContextProvider>
-                    <ProviderBoundary>{props.children}</ProviderBoundary>
-                </ValidationContextProvider>
-            </GlobalModalProvider>
-        </SchemaWorkerProvider>
+        <CoreProvider>
+            <SchemaWorkerProvider>
+                <GlobalModalProvider>
+                    <ValidationContextProvider>
+                        <ProviderBoundary>{props.children}</ProviderBoundary>
+                    </ValidationContextProvider>
+                </GlobalModalProvider>
+            </SchemaWorkerProvider>
+        </CoreProvider>
     )
 }
 
@@ -53,7 +56,8 @@ const ProviderBoundary = memo(function ProviderBoundary(props: PropsWithChildren
 function RecentlyUsed() {
     const pathname = usePathname()
     const { addRecentCrate } = useRecentCrates()
-    const { crateId } = useContext(CrateDataContext)
+    const persistence = usePersistence()
+    const crateId = persistence.getCrateId()
     const crateName = useCrateName()
 
     useEffect(() => {

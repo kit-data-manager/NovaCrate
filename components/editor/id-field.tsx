@@ -22,7 +22,7 @@ import { canHavePreview as canHavePreviewUtil } from "@/lib/utils"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { Button } from "@/components/ui/button"
 import { RenameEntityModal } from "@/components/modals/rename-entity-modal"
-import { useGoToFileExplorer } from "@/lib/hooks"
+import { useGoToFileExplorer } from "@/lib/hooks/hooks"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export function IDField({ value }: { value: string }) {

@@ -11,3 +11,7 @@ export async function loadTestCrate(page: Page) {
     await page.getByRole("button", { name: "Import RO-Crate" }).click()
     await page.getByTestId("create-upload-input").setInputFiles("tests/data/TestCrate.zip")
 }
+
+export async function wait(time: number) {
+    return new Promise<void>((resolve) => setTimeout(resolve, time))
+}

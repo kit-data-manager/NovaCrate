@@ -3,8 +3,9 @@
 import { Download, Eye, FileIcon, XIcon } from "lucide-react"
 import HelpTooltip from "@/components/help-tooltip"
 import { Button } from "@/components/ui/button"
-import { useCallback, useContext, useEffect, useMemo, useState } from "react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { usePersistence } from "@/components/providers/persistence-provider"
+import { getFileAsURL, downloadBlob } from "@/lib/core/util"
 import { Error } from "@/components/error"
 import { BaseViewer } from "@/components/file-explorer/viewers/base"
 import useSWR from "swr"
@@ -22,24 +23,34 @@ export function FilePreview({
     setPreviewingFilePath(path: string): void
     setDownloadError(e: unknown): void
 }) {
-    const { serviceProvider, crateId } = useContext(CrateDataContext)
+    const persistence = usePersistence()
     const [previewNotSupported, setPreviewNotSupported] = useState(false)
     const [previewError, setPreviewError] = useState<unknown>()
 
     const downloadFile = useCallback(() => {
-        if (serviceProvider && crateId) {
-            serviceProvider.downloadFile(crateId, previewingFilePath).catch(setDownloadError)
+        const fileService = persistence.getCrateService()?.getFileService()
+        if (fileService && previewingFilePath) {
+            fileService
+                .getFile(previewingFilePath)
+                .then((blob) =>
+                    downloadBlob(blob, previewingFilePath.split("/").pop() || previewingFilePath)
+                )
+                .catch(setDownloadError)
         }
-    }, [crateId, previewingFilePath, serviceProvider, setDownloadError])
+    }, [persistence, previewingFilePath, setDownloadError])
 
+    // TODO: Preview depends on IFileService being available. If not present,
+    // the preview panel should be hidden from the user.
     const resourceUrl = useMemo(() => {
-        if (serviceProvider && serviceProvider.getCrateFileURL && crateId && previewingFilePath) {
-            return serviceProvider.getCrateFileURL(crateId, previewingFilePath)
+        const fileService = persistence.getCrateService()?.getFileService()
+        if (fileService && previewingFilePath) {
+            return getFileAsURL(fileService, previewingFilePath)
         } else return undefined
-    }, [crateId, previewingFilePath, serviceProvider])
+    }, [persistence, previewingFilePath])
 
     const fileFetcher = useCallback(async (url: Promise<string>) => {
-        const req = await fetch(await url)
+        const resolvedUrl = await url
+        const req = await fetch(resolvedUrl)
         if (req.ok) {
             return await req.blob()
         } else {

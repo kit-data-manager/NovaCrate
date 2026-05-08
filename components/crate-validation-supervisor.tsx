@@ -1,5 +1,5 @@
-import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { memo, useCallback, useEffect, useMemo, useState } from "react"
+import { usePersistence } from "@/components/providers/persistence-provider"
 import { useValidation, useValidationStore } from "@/lib/validation/hooks"
 import { useDebounceCallback } from "usehooks-ts"
 import { useEditorState } from "@/lib/state/editor-state"
@@ -17,8 +17,8 @@ import { validationSettings } from "@/lib/state/validation-settings"
  * @constructor
  */
 export function CrateValidationSupervisor() {
-    const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
-    const { crateId } = useContext(CrateDataContext)
+    const persistence = usePersistence()
+    const crateId = persistence.getCrateId()
     const entities = useEditorState((store) => store.entities)
     const crateContextReady = useEditorState((store) => store.crateContextReady)
     const validation = useValidation()
@@ -33,12 +33,12 @@ export function CrateValidationSupervisor() {
 
     useEffect(() => {
         if (runValidation) debouncedValidateCrate()
-    }, [crateData, debouncedValidateCrate, runValidation])
+    }, [entities, debouncedValidateCrate, runValidation])
 
     useEffect(() => {
-        if (!crateDataIsLoading && crateId && crateContextReady) setRunValidation(true)
+        if (crateId && crateContextReady) setRunValidation(true)
         else setRunValidation(false)
-    }, [crateContextReady, crateDataIsLoading, crateId])
+    }, [crateContextReady, crateId])
 
     useEffect(() => {
         if (!validationEnabled) {

@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { memo } from "react"
 import { ActionButton, ActionDropdownMenuItem } from "@/components/actions/action-buttons"
-import { useAction } from "@/lib/hooks"
+import { useAction } from "@/lib/hooks/hooks"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export const EntityEditorHeader = memo(function EntityEditorHeader({

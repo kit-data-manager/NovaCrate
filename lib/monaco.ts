@@ -11,10 +11,6 @@ export function useHandleMonacoMount() {
 
     return useCallback(
         (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-            setTimeout(() => {
-                editor.getAction("editor.action.formatDocument")?.run()
-            }, 100)
-
             monaco.editor.defineTheme("crate-dark", {
                 base: "vs-dark",
                 colors: {

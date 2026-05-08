@@ -6,7 +6,7 @@ import { Diff } from "@/lib/utils"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useShallow } from "zustand/react/shallow"
 import { usePathname, useRouter } from "next/navigation"
-import { useHash } from "@/lib/hooks"
+import { useHash } from "@/lib/hooks/hooks"
 
 /**
  * Maintains the state of entity editor tabs by opening tabs for changed or new entities
