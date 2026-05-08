@@ -8,6 +8,9 @@ import { BrowserFileService } from "@/lib/persistence/browser/BrowserFileService
 
 const METADATA_FILE = "ro-crate-metadata.json"
 
+/** How long a cached metadata value stays valid (ms). */
+const CACHE_TTL_MS = 60000
+
 /**
  * Browser-based crate service backed by OPFS.
  * Manages metadata read/write for a single crate and owns its file service.
@@ -18,6 +21,10 @@ const METADATA_FILE = "ro-crate-metadata.json"
  * listening to the `"file-updated"` event on the file service and re-emitted
  * as `"metadata-changed"` so that {@link IPersistenceAdapter} can propagate
  * the change into the core layer.
+ *
+ * `getMetadata()` results are cached for up to {@link CACHE_TTL_MS}. The cache
+ * is invalidated whenever `setMetadata()` is called or the underlying file is
+ * changed externally (detected via the `"file-updated"` event).
  */
 export class BrowserCrateService implements ICrateService {
     private _events = new Observable<ICrateServiceEvents>()
@@ -25,25 +32,39 @@ export class BrowserCrateService implements ICrateService {
 
     private fileService: BrowserFileService
 
+    /** Cached metadata string and the timestamp (epoch ms) it was stored. */
+    private metadataCache: { value: string; storedAt: number } | null = null
+
     constructor(crateId: string, worker: FunctionWorker<typeof opfsFunctions>) {
         this.fileService = new BrowserFileService(crateId, worker)
         this.fileService.events.addEventListener("file-updated", this.onFileUpdated)
     }
 
+    private invalidateCache(): void {
+        this.metadataCache = null
+    }
+
     private onFileUpdated = async (path: string, content: Blob) => {
         if (path === METADATA_FILE) {
+            this.invalidateCache()
             const metadata = await content.text()
             this._events.emit("metadata-changed", metadata)
         }
     }
 
     async getMetadata(): Promise<string> {
-        // TODO cache
+        if (this.metadataCache && Date.now() - this.metadataCache.storedAt < CACHE_TTL_MS) {
+            return this.metadataCache.value
+        }
+
         const blob = await this.fileService.getFile(METADATA_FILE)
-        return await blob.text()
+        const metadata = await blob.text()
+        this.metadataCache = { value: metadata, storedAt: Date.now() }
+        return metadata
     }
 
     async setMetadata(metadata: string): Promise<void> {
+        this.invalidateCache()
         await this.fileService.updateFile(
             METADATA_FILE,
             new Blob([metadata], { type: "application/json" })
