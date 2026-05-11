@@ -11,9 +11,9 @@ import { Eye, Folder, Save, Trash, Undo2 } from "lucide-react"
 import { PropsWithChildren, useCallback, useContext, useMemo } from "react"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
-import { useCrateServiceFeatureFlags, useGoToEntityEditor, useGoToFileExplorer } from "@/lib/hooks"
+import { useGoToEntityEditor, useGoToFileExplorer } from "@/lib/hooks/hooks"
 
 export function EntityContextMenu({
     entity,
@@ -22,15 +22,14 @@ export function EntityContextMenu({
 }: PropsWithChildren<{ entity?: IEntity; asChild: boolean }>) {
     const openTab = useEntityEditorTabs((store) => store.openTab)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
-    const { saveEntity } = useContext(CrateDataContext)
+    const { saveEntity } = useCrateMutations()
     const revertEntity = useEditorState((store) => store.revertEntity)
     const { showDeleteEntityModal } = useContext(GlobalModalContext)
     const diff = useEditorState((state) => (entity ? state.getEntityDiff(entity["@id"]) : null))
-    const flags = useCrateServiceFeatureFlags()
 
     const canHavePreview = useMemo(() => {
-        return entity && flags?.fileManagement ? canHavePreviewUtil(entity) : false
-    }, [entity, flags?.fileManagement])
+        return entity ? canHavePreviewUtil(entity) : false
+    }, [entity])
 
     const hasUnsavedChanges = useMemo(() => {
         return entity ? diff !== Diff.None : false
@@ -88,7 +87,7 @@ export function EntityContextMenu({
                     <Undo2 className="size-4 mr-2" /> Revert Changes
                 </ContextMenuItem>
                 <ContextMenuSeparator />
-                <ContextMenuItem variant={"destructive"} onClick={onDeleteClick}>
+                <ContextMenuItem onClick={onDeleteClick}>
                     <Trash className="size-4 mr-2" /> Delete
                 </ContextMenuItem>
             </ContextMenuContent>

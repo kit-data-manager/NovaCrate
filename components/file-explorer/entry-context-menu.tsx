@@ -6,17 +6,28 @@ import {
     ContextMenuSubContent,
     ContextMenuSubTrigger
 } from "@/components/ui/context-menu"
-import { Copy, CurlyBraces, Download, FileIcon, FolderOpen, Plus, Trash } from "lucide-react"
+import {
+    Copy,
+    CurlyBraces,
+    Download,
+    EyeIcon,
+    FileIcon,
+    FolderOpen,
+    PenLineIcon,
+    Plus,
+    Trash
+} from "lucide-react"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import HelpTooltip from "@/components/help-tooltip"
 import { useCallback, useContext, useMemo } from "react"
 import { useCopyToClipboard } from "usehooks-ts"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { usePersistence } from "@/components/providers/persistence-provider"
+import { downloadBlob } from "@/lib/core/util"
 import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { encodeFilePath, getFolderPath } from "@/lib/utils"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
-import { useGoToPage } from "@/lib/hooks"
+import { useGoToPage } from "@/lib/hooks/hooks"
 
 export function EntryContextMenu({
     entity,
@@ -24,7 +35,8 @@ export function EntryContextMenu({
     fileName,
     folder,
     goToEntity,
-    blankSpace
+    blankSpace,
+    rename
 }: {
     entity?: IEntity
     filePath?: string
@@ -32,9 +44,12 @@ export function EntryContextMenu({
     folder?: boolean
     goToEntity?: () => void
     blankSpace?: boolean
+    rename?: () => void
 }) {
-    const { serviceProvider, crateId } = useContext(CrateDataContext)
+    const persistence = usePersistence()
     const setDownloadError = useFileExplorerState((store) => store.setDownloadError)
+    const setPreviewingFilePath = useFileExplorerState((s) => s.setPreviewingFilePath)
+
     const { showCreateEntityModal, showDeleteEntityModal } = useContext(GlobalModalContext)
     const [, copy] = useCopyToClipboard()
 
@@ -46,10 +61,14 @@ export function EntryContextMenu({
     )
 
     const downloadFile = useCallback(() => {
-        if (serviceProvider && filePath && crateId) {
-            serviceProvider.downloadFile(crateId, filePath).catch(setDownloadError)
+        const fileService = persistence.getCrateService()?.getFileService()
+        if (fileService && filePath) {
+            fileService
+                .getFile(filePath)
+                .then((blob) => downloadBlob(blob, filePath.split("/").pop() || filePath))
+                .catch(setDownloadError)
         }
-    }, [crateId, filePath, serviceProvider, setDownloadError])
+    }, [filePath, persistence, setDownloadError])
 
     const createEntityForExistingFile = useCallback(() => {
         if (!filePath) return null
@@ -116,6 +135,11 @@ export function EntryContextMenu({
                     </HelpTooltip>
                 </ContextMenuItem>
             )}
+            {filePath && !filePath.endsWith("/") && (
+                <ContextMenuItem onClick={() => setPreviewingFilePath(filePath)}>
+                    <EyeIcon className="size-4 mr-2" /> Preview File
+                </ContextMenuItem>
+            )}
 
             <ContextMenuSeparator />
 
@@ -153,9 +177,14 @@ export function EntryContextMenu({
                 </ContextMenuSubContent>
             </ContextMenuSub>
 
+            {rename && (
+                <ContextMenuItem onClick={() => rename()}>
+                    <PenLineIcon className="size-4 mr-2" /> Change{" "}
+                    {filePath?.endsWith("/") ? "Folder" : "File"} Name
+                </ContextMenuItem>
+            )}
             {entity || filePath ? (
                 <ContextMenuItem
-                    variant={"destructive"}
                     onClick={() => showDeleteEntityModal(entity?.["@id"] || filePath!)}
                 >
                     <Trash className="size-4 mr-2" /> Delete

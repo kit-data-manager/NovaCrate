@@ -6,7 +6,8 @@ import {
     makeBaseValidator,
     makeSpecificationValidators
 } from "@/lib/validation/validators/specification-validator"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { usePersistence } from "@/components/providers/persistence-provider"
+import { useCore } from "@/components/providers/core-provider"
 
 export interface ValidationContext {
     validation: ValidationProvider | undefined
@@ -16,17 +17,39 @@ export const ValidationContext = createContext<ValidationContext>({ validation: 
 
 export function ValidationContextProvider({ children }: PropsWithChildren) {
     const schemaWorker = useContext(SchemaWorker)
-    const crateDataProvider = useContext(CrateDataContext)
+    const persistence = usePersistence()
+    const core = useCore()
     const editorState = useEditorState((s) => s)
+
+    const [crateService, setCrateService] = useState(() => persistence.getCrateService())
+    const [fileService, setFileService] = useState(() => crateService?.getFileService())
+
+    useEffect(() => {
+        const remove = persistence.events.addEventListener(
+            "crate-service-changed",
+            (crateService) => {
+                setCrateService(crateService)
+                setFileService(crateService?.getFileService())
+            }
+        )
+        return () => remove()
+    }, [persistence.events])
+
+    useEffect(() => {
+        const remove = crateService?.events.addEventListener("file-service-changed", setFileService)
+        return () => remove?.()
+    }, [crateService?.events])
+
+    const resolver = core.getContextService().getResolver()
 
     const ctx = useMemo(() => {
         return {
             editorState,
             schemaWorker,
-            serviceProvider: crateDataProvider.serviceProvider,
-            crateData: crateDataProvider
+            fileService: fileService ?? undefined,
+            resolver
         }
-    }, [crateDataProvider, editorState, schemaWorker])
+    }, [editorState, fileService, resolver, schemaWorker])
 
     const [validation] = useState(() => {
         const validation = new ValidationProvider(ctx)

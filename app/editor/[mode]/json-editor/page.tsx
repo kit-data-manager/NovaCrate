@@ -1,8 +1,8 @@
 "use client"
 
 import { Editor } from "@monaco-editor/react"
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import React, { useCallback, useEffect, useRef, useState } from "react"
+import { usePersistence } from "@/components/providers/persistence-provider"
 import { useTheme } from "next-themes"
 import type { editor } from "monaco-editor"
 import {
@@ -16,18 +16,20 @@ import {
     Undo2
 } from "lucide-react"
 import { useEditorState } from "@/lib/state/editor-state"
+import { useOperationState } from "@/lib/state/operation-state"
 import { Error } from "@/components/error"
 import { Button } from "@/components/ui/button"
-import { useSaveAllEntities } from "@/lib/hooks"
+import { useSaveAllEntities } from "@/lib/hooks/hooks"
 import { useHandleMonacoMount } from "@/lib/monaco"
 import { Metadata } from "@/components/Metadata"
 import fileDownload from "js-file-download"
+import { formatJSON } from "@/lib/utils"
 
 export default function JSONEditorPage() {
     const hasUnsavedChanges = useEditorState((store) => store.getHasUnsavedChanges())
     const revertAllEntities = useEditorState((store) => store.revertAllEntities)
-    const { crateData, saveRoCrateMetadataJSON, isSaving } = useContext(CrateDataContext)
-    const [crateDataProxy, setCrateDataProxy] = useState(crateData)
+    const persistence = usePersistence()
+    const isSaving = useOperationState((s) => s.isSaving)
     const theme = useTheme()
     const [editorHasErrors, setEditorHasErrors] = useState(false)
     const editorValue = useRef<string | undefined>(undefined)
@@ -35,11 +37,41 @@ export default function JSONEditorPage() {
     const [saving, setSaving] = useState(false)
     const [saveError, setSaveError] = useState<unknown>()
 
+    // Raw metadata state — loaded from persistence and refreshed on metadata-changed events
+    const [data, setData] = useState<string | undefined>(undefined)
+    const [loadError, setLoadError] = useState<unknown>()
+
     useEffect(() => {
-        if (crateDataProxy === undefined && crateData) {
-            setCrateDataProxy(crateData)
-        }
-    }, [crateData, crateDataProxy])
+        const crateService = persistence.getCrateService()
+        if (!crateService) return
+
+        // Initial load
+        crateService
+            .getMetadata()
+            .then((data) => setData(formatJSON(data)))
+            .catch((e: unknown) => setLoadError(e))
+
+        // Re-load when metadata changes externally
+        const removeListener = crateService.events.addEventListener(
+            "metadata-changed",
+            (newMetadata: string) => {
+                if (editorHasChanges) {
+                    const discardChanged = window.confirm(
+                        "The JSON Metadata has changed in the background. Would you like to discard your changes and load the new file content?"
+                    )
+                    if (discardChanged) {
+                        setData(newMetadata)
+                        setLoadError(undefined)
+                    }
+                } else {
+                    setData(newMetadata)
+                    setLoadError(undefined)
+                }
+            }
+        )
+
+        return removeListener
+    }, [editorHasChanges, persistence])
 
     const handleMount = useHandleMonacoMount()
 
@@ -61,11 +93,15 @@ export default function JSONEditorPage() {
     }, [])
 
     const saveChanges = useCallback(() => {
-        if (editorValue.current) {
+        const crateService = persistence.getCrateService()
+        if (editorValue.current && crateService) {
+            const formatted = formatJSON(editorValue.current)
             setSaving(true)
             setEditorHasChanges(false)
-            saveRoCrateMetadataJSON(editorValue.current)
+            crateService
+                .setMetadata(formatted)
                 .then(() => {
+                    setData(formatted)
                     setSaveError(undefined)
                 })
                 .catch(setSaveError)
@@ -73,7 +109,7 @@ export default function JSONEditorPage() {
                     setSaving(false)
                 })
         }
-    }, [saveRoCrateMetadataJSON])
+    }, [persistence])
 
     const download = useCallback(() => {
         if (editorValue.current)
@@ -123,7 +159,7 @@ export default function JSONEditorPage() {
             <Metadata page={"JSON Editor"} />
             <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center shrink-0 bg-accent overflow-x-hidden no-scrollbar">
                 <Braces className="size-4 shrink-0 mr-2" />
-                JSON Editor
+                JSON Metadata Editor
                 <span className="flex gap-1 items-center text-muted-foreground ml-1">
                     <Dot className="size-4" />
                     ro-crate-metadata.json
@@ -178,11 +214,12 @@ export default function JSONEditorPage() {
             ) : (
                 <>
                     <Error error={saveError} title="Failed to save changes" />
+                    <Error error={loadError} title="Failed to load JSON" />
                     <div className="flex gap-2 absolute top-12 right-35 z-10 bg-accent/60 items-center rounded-lg">
                         <Noticer hasErrors={editorHasErrors} hasChanges={editorHasChanges} />
                     </div>
                     <Editor
-                        value={JSON.stringify(crateDataProxy)}
+                        value={data}
                         defaultLanguage="json"
                         theme={theme.resolvedTheme === "dark" ? "crate-dark" : "light"}
                         onMount={handleMount}

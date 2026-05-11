@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test"
-import { loadTestCrate, loadTestFolder } from "@/tests/e2e/common"
+import { loadTestCrate, loadTestFolder, wait } from "@/tests/e2e/common"
 
 test("Edit Properties", async ({ page }) => {
     await loadTestFolder(page)
@@ -185,6 +185,7 @@ test("Add Entries of different types and save", async ({ page }) => {
     await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
+    await wait(100) // Necessary due to animations
     await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Number" }).click()
     await page.getByRole("textbox").nth(4).click()
@@ -305,30 +306,39 @@ test("Add many properties and test pagination", async ({ page }) => {
     await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
+    await wait(100) // Necessary due to animations
     await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
+    await wait(100) // Necessary due to animations
     await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
+    await wait(100) // Necessary due to animations
     await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
+    await wait(100) // Necessary due to animations
     await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
+    await wait(100) // Necessary due to animations
     await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
+    await wait(100) // Necessary due to animations
     await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
+    await wait(100) // Necessary due to animations
     await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
+    await wait(100) // Necessary due to animations
     await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()
+    await wait(100) // Necessary due to animations
     await page.locator("#property-editor-version-right #add-property-dropdown-trigger").click()
     await page.getByRole("menuitem", { name: "Text" }).click()
     await expect(page.getByText("Text Number")).not.toBeVisible()

@@ -2,18 +2,28 @@ import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState }
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Plus, TriangleAlert } from "lucide-react"
-import { camelCaseReadable, encodeFilePath, fileNameWithoutEnding, isValidUrl } from "@/lib/utils"
+import {
+    ArrowLeft,
+    File,
+    Folder,
+    FolderDot,
+    Globe,
+    HardDrive,
+    Plus,
+    TriangleAlert
+} from "lucide-react"
+import { camelCaseReadable, isValidUrl } from "@/lib/utils"
 import { Error } from "@/components/error"
+import prettyBytes from "pretty-bytes"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
-import { useEditorState } from "@/lib/state/editor-state"
+import { useContextResolver } from "@/lib/hooks/hooks"
 import HelpTooltip from "@/components/help-tooltip"
-import { useAutoId } from "@/lib/hooks"
+import { useAutoId } from "@/lib/hooks/hooks"
 import { CreateEntityHint } from "@/components/modals/create-entity/create-entity-hint"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { FileUpload } from "@/components/modals/create-entity/file-upload"
-import { FolderUpload } from "@/components/modals/create-entity/folder-upload"
+import { PathPicker } from "@/components/file-explorer/path-picker"
 
 export function CreateEntity({
     selectedType,
@@ -32,17 +42,17 @@ export function CreateEntity({
     onUploadFile(id: string, name: string, file: File): void
     onUploadFolder(id: string, name: string, files: File[]): void
 }) {
-    const context = useEditorState((store) => store.crateContext)
+    const resolver = useContextResolver()
 
     const [externalResource, setExternalResource] = useState(false)
     const [path, setPath] = useState("")
     const fileUpload = useMemo(() => {
-        return context.resolve(selectedType) === RO_CRATE_FILE
-    }, [context, selectedType])
+        return resolver.resolve(selectedType) === RO_CRATE_FILE
+    }, [resolver, selectedType])
 
     const folderUpload = useMemo(() => {
-        return context.resolve(selectedType) === RO_CRATE_DATASET
-    }, [context, selectedType])
+        return resolver.resolve(selectedType) === RO_CRATE_DATASET
+    }, [resolver, selectedType])
 
     const defaultName = useMemo(() => {
         if ((fileUpload || folderUpload) && forceId) {
@@ -107,31 +117,19 @@ export function CreateEntity({
         } else return undefined
     }, [folderFiles, plainFiles])
 
-    useEffect(() => {
-        setPath((currentPath) => {
-            if (emptyFolder) {
-                return (basePath || "") + (encodeFilePath(name.replaceAll("/", "")) || "")
-            } else return currentPath
-        })
-    }, [basePath, emptyFolder, name])
-
-    useEffect(() => {
-        setPath((currentPath) => {
-            if (!emptyFolder) {
-                return (basePath || "") + encodeFilePath(baseFileName || "")
-            } else return currentPath
-        })
-    }, [baseFileName, basePath, emptyFolder])
-
     const localOnCreateClick = useCallback(() => {
         if (
             !forceId &&
             ((hasFileUpload && !externalResource) || (hasFolderUpload && !externalResource))
         ) {
             if (hasFileUpload) {
-                onUploadFile(path, name, plainFiles[0])
+                onUploadFile(path.replace(/^\.\//, "") + name, name, plainFiles[0])
             } else {
-                onUploadFolder(path, name, emptyFolder ? [] : folderFiles)
+                onUploadFolder(
+                    path.replace(/^\.\//, "") + name,
+                    name,
+                    emptyFolder ? [] : folderFiles
+                )
             }
         } else onCreateClick(forceId || identifier || autoId, name)
     }, [
@@ -162,9 +160,7 @@ export function CreateEntity({
 
     useEffect(() => {
         if (plainFiles.length > 0) {
-            setName((oldName) =>
-                oldName === "" ? fileNameWithoutEnding(plainFiles[0].name) : oldName
-            )
+            setName((oldName) => (oldName === "" ? plainFiles[0].name : oldName))
         }
     }, [plainFiles])
 
@@ -239,58 +235,109 @@ export function CreateEntity({
 
             <CreateEntityHint selectedType={selectedType} />
 
-            {hasFileUpload && (
-                <FileUpload
-                    externalResource={externalResource}
-                    onValueChange={(v) => {
-                        setExternalResource(v === "without-file")
-                    }}
-                    onClick={openFilePicker}
-                    files={plainFiles}
-                />
-            )}
-
-            {hasFolderUpload && (
-                <FolderUpload
-                    externalResource={externalResource}
-                    onValueChange={(v) => {
-                        setExternalResource(v === "without-file")
-                    }}
-                    emptyFolder={emptyFolder}
-                    onClickSelectFolder={openFolderPicker}
-                    files={folderFiles}
-                    baseFileName={baseFileName}
-                    onClickEmptyFolder={() => setEmptyFolder((v) => !v)}
-                />
-            )}
-
-            {/* Only show the path field if either
-                  1. This is a file upload and there is a file selected
-                  2. This is a folder upload and either...
-                      2a. there are files selected
-                      2b. the user wants to create an empty folder
-                AND
-                  The ID is not being forced (this would also force the path)
-                AND
-                  This is not an external resource (external resources have no file path in the crate)
-            */}
-            {((hasFileUpload && plainFiles.length > 0) ||
-                (hasFolderUpload && (folderFiles.length > 0 || emptyFolder))) &&
-            !forceId &&
-            !externalResource ? (
+            {hasFileUpload ? (
                 <div>
-                    <Label>
-                        Path
-                        <HelpTooltip>
-                            The path where the file(s) will be located in the Crate. To upload to a
-                            different path, use the File Explorer for more convenience.
-                        </HelpTooltip>
-                    </Label>
-                    <Input
-                        value={path}
-                        onChange={(e) => setPath(e.target.value)}
-                        placeholder={"/"}
-                    />
+                    <Tabs
+                        className="mb-4"
+                        value={externalResource ? "without-file" : "with-file"}
+                        onValueChange={(v) => {
+                            setExternalResource(v === "without-file")
+                        }}
+                    >
+                        <TabsList className="flex self-center">
+                            <TabsTrigger value="with-file">
+                                <HardDrive className="size-4" /> Local File
+                            </TabsTrigger>
+                            <TabsTrigger value="without-file">
+                                <Globe className="size-4" /> Web Resource
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                    {externalResource ? null : (
+                        <div className="space-y-4">
+                            <Label>Destination</Label>
+                            <PathPicker onPathPicked={setPath} defaultPath={basePath} />
+                            <Label>File</Label>
+                            <div>
+                                <Button
+                                    className="min-w-0 max-w-full truncate"
+                                    variant="outline"
+                                    onClick={openFilePicker}
+                                >
+                                    <File className="size-4 mr-2 shrink-0" />
+                                    <span className="truncate min-w-0">
+                                        {plainFiles.length == 0
+                                            ? "Select File"
+                                            : plainFiles[0].name}
+                                    </span>
+                                </Button>
+                                <span className="ml-2 text-muted-foreground">
+                                    {plainFiles.length == 0 ? "" : prettyBytes(plainFiles[0].size)}
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            ) : null}
+
+            {hasFolderUpload ? (
+                <div>
+                    <Tabs
+                        className="mb-4"
+                        value={externalResource ? "without-file" : "with-file"}
+                        onValueChange={(v) => {
+                            setExternalResource(v === "without-file")
+                        }}
+                    >
+                        <TabsList className="flex self-center">
+                            <TabsTrigger value="with-file">
+                                <HardDrive className="size-4" /> Local Folder
+                            </TabsTrigger>
+                            <TabsTrigger value="without-file">
+                                <Globe className="size-4" /> Web Resource
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                    {externalResource ? null : (
+                        <div className="space-y-4">
+                            <Label>Destination</Label>
+                            <PathPicker onPathPicked={setPath} defaultPath={basePath} />
+                            <Label>Folder</Label>
+                            <div className="flex items-center">
+                                {!emptyFolder ? (
+                                    <Button
+                                        className="min-w-0 max-w-full truncate shrink"
+                                        variant="outline"
+                                        onClick={openFolderPicker}
+                                    >
+                                        <Folder className="size-4 mr-2" />
+                                        <span className={"truncate min-w-0"}>
+                                            {folderFiles.length == 0
+                                                ? "Select Folder"
+                                                : folderFiles[0].webkitRelativePath.split("/")[0]}
+                                        </span>
+                                    </Button>
+                                ) : null}
+                                {baseFileName || emptyFolder ? null : (
+                                    <span className="m-2 text-muted-foreground">or</span>
+                                )}
+                                {baseFileName ? null : (
+                                    <Button
+                                        variant={emptyFolder ? "default" : "outline"}
+                                        onClick={() => setEmptyFolder((v) => !v)}
+                                    >
+                                        <FolderDot className="size-4 mr-2" />
+                                        Empty Folder
+                                    </Button>
+                                )}
+                                <span className="ml-2 text-muted-foreground">
+                                    {folderFiles.length == 0
+                                        ? ""
+                                        : `${folderFiles.length} files (${prettyBytes(folderFiles.map((f) => f.size).reduce((a, b) => a + b))} total)`}
+                                </span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             ) : null}
 

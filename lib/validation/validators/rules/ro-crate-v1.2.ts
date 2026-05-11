@@ -212,16 +212,12 @@ export const RoCrateV1_2 = {
             return results
         },
         async (entity) => {
-            if (!ctx.serviceProvider || !ctx.crateData.crateId) return []
-            if (!ctx.serviceProvider.featureFlags.fileManagement) return []
             const results: EntityValidationResult[] = []
+            if (!ctx.fileService) return results
 
             if (isDataEntity(entity) && canHavePreview(entity)) {
                 try {
-                    const result = await ctx.serviceProvider.getCrateFileInfo(
-                        ctx.crateData.crateId,
-                        entity["@id"]
-                    )
+                    const result = await ctx.fileService.getInfo(entity["@id"])
 
                     if (result.type === "file" && !isFileDataEntity(entity)) {
                         results.push(

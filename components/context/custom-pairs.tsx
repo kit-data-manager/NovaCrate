@@ -12,7 +12,7 @@ import {
     TableRow
 } from "@/components/ui/table"
 import { useEditorState } from "@/lib/state/editor-state"
-import { ChangeEvent, useCallback, useContext, useMemo, useState } from "react"
+import { ChangeEvent, useCallback, useMemo, useState } from "react"
 import {
     Dialog,
     DialogContent,
@@ -22,13 +22,14 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useCore } from "@/components/providers/core-provider"
 import { Error } from "@/components/error"
 
 export function CustomPairs() {
     const context = useEditorState((store) => store.crateContext)
+    const core = useCore()
+    const contextService = core.getContextService()
     const [addPairModalOpen, setAddPairModalOpen] = useState(false)
-    const { crateDataIsLoading } = useContext(CrateDataContext)
 
     const [addPairKey, setAddPairKey] = useState("")
     const [addPairValue, setAddPairValue] = useState("")
@@ -45,40 +46,40 @@ export function CustomPairs() {
         setAddPairValue(e.target.value)
     }, [])
 
-    const { addCustomContextPair, removeCustomContextPair } = useContext(CrateDataContext)
-
     const addPair = useCallback(() => {
         setAdding(true)
-        addCustomContextPair(addPairKey, addPairValue)
+        contextService
+            .addCustomContextPair(addPairKey, addPairValue)
             .then(() => {
                 setAddPairError(undefined)
                 setAddPairKey("")
                 setAddPairValue("")
                 setAddPairModalOpen(false)
             })
-            .catch((e) => {
+            .catch((e: unknown) => {
                 setAddPairError(e)
             })
             .finally(() => {
                 setAdding(false)
             })
-    }, [addCustomContextPair, addPairKey, addPairValue])
+    }, [contextService, addPairKey, addPairValue])
 
     const removePair = useCallback(
         (key: string) => {
             setRemoving(true)
-            removeCustomContextPair(key)
+            contextService
+                .removeCustomContextPair(key)
                 .then(() => {
                     setRemovePairError(undefined)
                 })
-                .catch((e) => {
+                .catch((e: unknown) => {
                     setRemovePairError(e)
                 })
                 .finally(() => {
                     setRemoving(false)
                 })
         },
-        [removeCustomContextPair]
+        [contextService]
     )
 
     const customPairs = useMemo(() => {
@@ -188,19 +189,11 @@ export function CustomPairs() {
                         </TableRow>
                     ))}
                     {customPairs.length === 0 ? (
-                        crateDataIsLoading ? (
-                            <TableRow>
-                                <TableCell className="p-4 text-muted-foreground">
-                                    Loading...
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            <TableRow>
-                                <TableCell className="p-4 text-muted-foreground">
-                                    No Custom Context pairs have been configured
-                                </TableCell>
-                            </TableRow>
-                        )
+                        <TableRow>
+                            <TableCell className="p-4 text-muted-foreground">
+                                No Custom Context pairs have been configured
+                            </TableCell>
+                        </TableRow>
                     ) : null}
                 </TableBody>
             </Table>

@@ -15,11 +15,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The path parameter `iframe` was added in addition to the query parameter `full` to distinguish between iframe mode and full mode
   - Currently, some limitations apply for the iframe. Take a look at the documentation at docs/iframe-interface.md for more information.
 - Added internal feature flags to disable certain features for different backends
-- Added proper handling of custom types defined in the context of the crate
-- Added unit testing capabilities with jest
+
+### Changed
+
+- Reengineered the core of the NovaCrate application to make it more modular, extensible, and maintainable. Some behavioural changes in the editor are expected, the functionality should not be impacted, though.
+
+## [1.10.1] - 2026-05-04
 
 ### Fixed
+
+- Fixed handling of custom vocabularies where an entry has more than one type
+- Improved formatting of types containing a slash
+
+## [1.10.0] - 2026-04-17
+
+### Added
+
+- Added impact analysis to the entity deletion modal. It informs the user over how many entities and files/folders will be deleted.
+- Added the option to delete entities but keep corresponding files/folders.
+
+### Changed
+
+- Added more content to the landing page to increase findability
+
+## [1.9.0] - 2026-03-10
+
+### Added
+- Added a new tree-based file explorer based on the React Arborist library
+  - Includes the ability for moving one or more files to a different folder through drag-and-drop
+  - Includes renaming files or folders inline in the explorer
+- Added tree-based file explorer to the entity creation modal for selecting the target folder for a new file or folder
+- Added proper handling of custom types defined in the context of the crate
+- Internal: Added unit testing capabilities with jest
+- The JSON Editor can now be used even if the ro-crate-metadata.json file does not parse as JSON. This allows fixing metadata files with invalid JSON directly inside the editor.
+
+### Fixed
+- Fixed issues relating to renaming files and folders, especially leading to broken entity references when renaming a folder
 - Correctly determine whether a schema for a type is loaded or not
+- Fixed NovaCrate logo in main menu
+- If the crate context contains elements that can't be parsed, an error message will be shown instead of silently ignoring the failure.
+- Fixed air quality example in quickstart
+
+### Changed
+- Entity IDs and file/folder names are no longer being URL-encoded when they are created through NovaCrate. The specification only requires encoding spaces and `%` characters, which will be covered in another release. Previously, NovaCrate was too aggressive in encoding entity IDs, and also encoded file and folder names, leading to invalid names on Windows.
 
 ## [1.8.1] - 2026-02-17
 

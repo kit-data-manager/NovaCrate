@@ -185,8 +185,6 @@ export function EntityBrowser() {
                             <DropdownMenuItem onClick={expandAllSections}>
                                 <ChevronsUpDown className={"size-4 mr-2"} /> Expand All
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <ActionDropdownMenuItem actionId={"crate.reload-entities"} />
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

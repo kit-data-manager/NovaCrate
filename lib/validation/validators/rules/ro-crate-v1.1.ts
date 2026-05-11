@@ -222,16 +222,12 @@ export const RoCrateV1_1 = {
         },
 
         async (entity) => {
-            if (!ctx.serviceProvider || !ctx.crateData.crateId) return []
-            if (!ctx.serviceProvider.featureFlags.fileManagement) return []
             const results: EntityValidationResult[] = []
+            if (!ctx.fileService) return results
 
             if (isDataEntity(entity) && canHavePreview(entity)) {
                 try {
-                    const result = await ctx.serviceProvider.getCrateFileInfo(
-                        ctx.crateData.crateId,
-                        entity["@id"]
-                    )
+                    const result = await ctx.fileService.getInfo(entity["@id"])
 
                     if (result.type === "file" && !isFileDataEntity(entity)) {
                         results.push(
@@ -375,7 +371,7 @@ export const RoCrateV1_1 = {
         async (entity, propertyName) => {
             const results: PropertyValidationResult[] = []
             try {
-                const propertyId = ctx.editorState.crateContext.resolve(propertyName)
+                const propertyId = ctx.resolver.resolve(propertyName)
                 if (!propertyId) return []
                 const range = await ctx.schemaWorker.worker.execute("getPropertyRange", propertyId)
 

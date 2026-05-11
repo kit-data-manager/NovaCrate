@@ -1,9 +1,11 @@
 import * as fs from "happy-opfs"
 import { collectAsyncIterator } from "./helpers"
 import { DateTime } from "luxon"
+import { IGNORED_FILES } from "../../lib/constants"
 
 let CRATE_STORAGE = "crate-storage"
 
+// TODO is this still the correct approach for iFrame mode?
 /**
  * Creates a new temporary directory for storing crates. Also sets the CRATE_STORAGE variable to the path of this directory.
  */
@@ -72,15 +74,24 @@ export async function createFolder(crateId: string, path: string) {
     if (result.isErr()) throw result.unwrapErr()
 }
 
+/**
+ * Delete a file or folder at the given location. Also removes all files and folders inside the folder.
+ * @param crateId ID of the target crate
+ * @param filePath Path of the file relative to the crate root
+ * @returns an array of strings representing file paths to files that were deleted
+ */
 export async function deleteFileOrFolder(crateId: string, filePath: string) {
     const exists = await fs.exists(resolveCratePath(crateId, filePath))
     if (!exists.isOk()) throw exists.unwrapErr()
 
     // Fail silently if the file does not exist
-    if (!exists.unwrap()) return
+    if (!exists.unwrap()) return []
 
+    const content = await getCrateDirContents(crateId)
     const result = await fs.remove(resolveCratePath(crateId, filePath))
     if (!result.isOk()) throw result.unwrapErr()
+
+    return filePath.endsWith("/") ? content.filter((path) => path.startsWith(filePath)) : [filePath]
 }
 
 export async function moveFileOrFolder(crateId: string, filePath: string, newFilePath: string) {
@@ -88,7 +99,7 @@ export async function moveFileOrFolder(crateId: string, filePath: string, newFil
     if (!existsSource.isOk()) throw existsSource.unwrapErr()
 
     // Fail silently if the source file does not exist
-    if (!existsSource.unwrap()) return
+    if (!existsSource.unwrap()) return []
 
     const existsTarget = await fs.exists(resolveCratePath(crateId, newFilePath))
     if (!existsTarget.isOk()) throw existsTarget.unwrapErr()
@@ -96,12 +107,22 @@ export async function moveFileOrFolder(crateId: string, filePath: string, newFil
     // Fail if the target file does not exist
     if (existsTarget.unwrap()) throw `A file with name ${newFilePath} already exists`
 
+    const contentBeforeMove = filePath.endsWith("/")
+        ? (await getCrateDirContents(crateId)).filter((path) => path.startsWith(filePath))
+        : [filePath]
+
     const move = await fs.move(
         resolveCratePath(crateId, filePath),
         resolveCratePath(crateId, newFilePath),
         { overwrite: false }
     )
     if (!move.isOk()) throw move.unwrapErr()
+
+    const filePathChanges: { from: string; to: string }[] = contentBeforeMove.map((path) => {
+        return { from: path, to: path.replace(filePath, newFilePath) }
+    })
+
+    return filePathChanges
 }
 
 export async function getCrateDirContents(crateId: string) {
@@ -200,10 +221,8 @@ export async function createCrateFromZip(zip: Blob) {
     const readDirResult = await fs.readDir(resolveCratePath(id))
     if (!readDirResult.isOk()) throw readDirResult.unwrapErr()
 
-    const ignore = ["__MACOSX", ".DS_Store"]
     const rawFiles = await collectAsyncIterator(readDirResult.unwrap())
-
-    const files = rawFiles.filter((f) => !ignore.includes(f.path))
+    const files = rawFiles.filter((f) => !IGNORED_FILES.some((ignored) => f.path.endsWith(ignored)))
     if (files.length === 0) throw "Crate archive is empty"
 
     if (files.find((file) => file.path === "ro-crate-metadata.json")) {
@@ -215,6 +234,11 @@ export async function createCrateFromZip(zip: Blob) {
         // ELN Format has one single folder in root that contains the crate
         const subFolder = files.find((f) => f.handle.kind === "directory")
         if (!subFolder) throw "Could not find subFolder"
+
+        const metadataFile = await fs.stat(
+            resolveCratePath(id) + "/" + subFolder.path + "/ro-crate-metadata.json"
+        )
+        if (!metadataFile.isOk()) throw metadataFile.unwrapErr()
 
         const moveResult = await fs.move(
             resolveCratePath(id) + "/" + subFolder.path,

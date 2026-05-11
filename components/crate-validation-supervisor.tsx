@@ -1,5 +1,5 @@
-import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { memo, useCallback, useEffect, useMemo, useState } from "react"
+import { usePersistence } from "@/components/providers/persistence-provider"
 import { useValidation, useValidationStore } from "@/lib/validation/hooks"
 import { useDebounceCallback } from "usehooks-ts"
 import { useEditorState } from "@/lib/state/editor-state"
@@ -17,14 +17,13 @@ import { validationSettings } from "@/lib/state/validation-settings"
  * @constructor
  */
 export function CrateValidationSupervisor() {
-    const { crateData, crateDataIsLoading } = useContext(CrateDataContext)
-    const { crateId } = useContext(CrateDataContext)
+    const persistence = usePersistence()
+    const crateId = persistence.getCrateId()
     const entities = useEditorState((store) => store.entities)
     const crateContextReady = useEditorState((store) => store.crateContextReady)
     const validation = useValidation()
     const [runValidation, setRunValidation] = useState(false)
     const validationEnabled = useStore(validationSettings, (s) => s.enabled)
-    const crateContext = useEditorState((store) => store.crateContext)
 
     const validateCrate = useCallback(() => {
         validation.validateCrate().catch((e) => console.error("Crate validation failed: ", e))
@@ -34,20 +33,23 @@ export function CrateValidationSupervisor() {
 
     useEffect(() => {
         if (runValidation) debouncedValidateCrate()
-        // Additional dependencies: crateData, crateContext
-        // make sure that crate validation is run after crate data or crate context changes
-    }, [crateData, debouncedValidateCrate, runValidation, crateContext])
+    }, [entities, debouncedValidateCrate, runValidation])
 
     useEffect(() => {
-        if (!crateDataIsLoading && crateId && crateContextReady) setRunValidation(true)
+        if (crateId && crateContextReady) setRunValidation(true)
         else setRunValidation(false)
-    }, [crateContextReady, crateDataIsLoading, crateId])
+    }, [crateContextReady, crateId])
 
     useEffect(() => {
         if (!validationEnabled) {
             validation.resultStore.getState().clear()
         }
     }, [validation.resultStore, validationEnabled])
+
+    const crateContext = useEditorState((store) => store.crateContext)
+    useEffect(() => {
+        if (runValidation) debouncedValidateCrate()
+    }, [debouncedValidateCrate, crateContext, runValidation])
 
     const entitiesArray = useMemo(() => {
         return Array.from(entities.values())

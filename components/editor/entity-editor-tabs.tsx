@@ -15,7 +15,7 @@ import {
     ContextMenuItem,
     ContextMenuTrigger
 } from "@/components/ui/context-menu"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+
 import { Skeleton } from "@/components/ui/skeleton"
 import { ActionButton } from "@/components/actions/action-buttons"
 import { useShallow } from "zustand/react/shallow"
@@ -36,7 +36,6 @@ function Tab({
     const closeAllTabs = useEntityEditorTabs((store) => store.closeAllTabs)
     const closeOtherTabs = useEntityEditorTabs((store) => store.closeOtherTabs)
     const { showSaveEntityChangesModal } = useContext(GlobalModalContext)
-    const { crateDataIsLoading } = useContext(CrateDataContext)
 
     const button = useRef<HTMLButtonElement>(null)
 
@@ -64,11 +63,11 @@ function Tab({
     })
 
     useEffect(() => {
-        if (!entity && !crateDataIsLoading && entitiesSize > 0) {
+        if (!entity && entitiesSize > 0) {
             console.warn("Closed a tab because the entity could not be found. ", tab)
             close()
         }
-    }, [close, crateDataIsLoading, entitiesSize, entity, tab])
+    }, [close, entitiesSize, entity, tab])
 
     if (!entity)
         return (
