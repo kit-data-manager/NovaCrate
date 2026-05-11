@@ -106,7 +106,7 @@ export const MultiRenameModal = memo(function MultiRenameModal({
         }
 
         return issues
-    }, [changeEntityId, data, entities, persistence])
+    }, [changeEntityId, data, entities])
 
     const [isExecutingChanges, setIsExecutingChanges] = useState(false)
     const [changeExecutionIssues, setChangeExecutionIssues] = useState<Error[]>([])

@@ -122,7 +122,7 @@ describe("BrowserFileService", () => {
     describe("addFile", () => {
         beforeEach(() => {
             // Default: getStorageInfo resolves so emitQuotaChanged doesn't throw
-            worker.execute.mockImplementation(async (name: string, ...args: any[]) => {
+            worker.execute.mockImplementation(async (name: string) => {
                 if (name === "getStorageInfo") {
                     return { usedSpace: 100, totalSpace: 1000, persistent: true }
                 }
