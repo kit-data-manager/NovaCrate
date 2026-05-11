@@ -50,7 +50,7 @@ export function CrateValidationSupervisor() {
 
     // Validate everything when graph-changed or context-changed events fire (typically on save)
     useEffect(() => {
-        if (!runValidation || !validationEnabled) return
+        if (!runValidation) return
 
         const removeListener1 = metadata.events.addEventListener(
             "graph-changed",
@@ -68,9 +68,9 @@ export function CrateValidationSupervisor() {
 
     // Automatically turn runValidation on and off
     useEffect(() => {
-        if (crateId && crateContextReady && runValidation) setRunValidation(true)
+        if (crateId && crateContextReady && validationEnabled) setRunValidation(true)
         else setRunValidation(false)
-    }, [crateContextReady, crateId, runValidation])
+    }, [crateContextReady, crateId, validationEnabled])
 
     // Clear the validation store results when the validation is turned off in the settings
     useEffect(() => {
@@ -83,7 +83,7 @@ export function CrateValidationSupervisor() {
         return Array.from(entities.values())
     }, [entities])
 
-    if (!crateId || !runValidation || !validationEnabled) return null
+    if (!crateId || !runValidation) return null
 
     // EntitySupervisor and PropertySupervisor hook into the live editor state for faster validation of entities and properties while editing
     return (
