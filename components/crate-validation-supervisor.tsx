@@ -50,7 +50,7 @@ export function CrateValidationSupervisor() {
 
     // Validate everything when graph-changed or context-changed events fire (typically on save)
     useEffect(() => {
-        if (!runValidation) return
+        if (!runValidation || !validationEnabled) return
 
         const removeListener1 = metadata.events.addEventListener(
             "graph-changed",
@@ -64,13 +64,13 @@ export function CrateValidationSupervisor() {
             removeListener1()
             removeListener2()
         }
-    }, [context.events, debouncedValidateAll, metadata.events, runValidation])
+    }, [context.events, debouncedValidateAll, metadata.events, runValidation, validationEnabled])
 
     // Automatically turn runValidation on and off
     useEffect(() => {
-        if (crateId && crateContextReady) setRunValidation(true)
+        if (crateId && crateContextReady && runValidation) setRunValidation(true)
         else setRunValidation(false)
-    }, [crateContextReady, crateId])
+    }, [crateContextReady, crateId, runValidation])
 
     // Clear the validation store results when the validation is turned off in the settings
     useEffect(() => {
