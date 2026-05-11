@@ -11,6 +11,7 @@ import { useActionsStore } from "@/lib/state/actions"
 import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { useCore } from "@/components/providers/core-provider"
+import { usePersistence } from "@/components/providers/persistence-provider"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
 
 const MAX_LIST_LENGTH = 100
@@ -164,11 +165,12 @@ export function useGoToFileExplorer(entity?: IEntity) {
     const pathname = usePathname()
     const router = useRouter()
     const setPreviewingFilePath = useFileExplorerState((store) => store.setPreviewingFilePath)
-    const flags = useCrateServiceFeatureFlags()
+    const persistence = usePersistence()
 
     return useCallback(
         (_entity?: IEntity) => {
-            if (!flags?.fileManagement) return
+            const fileService = persistence.getCrateService()?.getFileService()
+            if (!fileService) return
 
             if (_entity || entity) {
                 setPreviewingFilePath(_entity?.["@id"] || entity?.["@id"] || "")
@@ -181,7 +183,7 @@ export function useGoToFileExplorer(entity?: IEntity) {
                     .join("/") + "/file-explorer"
             router.push(href)
         },
-        [entity, flags?.fileManagement, pathname, router, setPreviewingFilePath]
+        [entity, pathname, persistence, router, setPreviewingFilePath]
     )
 }
 
@@ -402,16 +404,4 @@ export const useHash = () => {
     }, [])
 
     return { hash }
-}
-
-export const useCrateServiceFeatureFlags = () => {
-    const { serviceProvider } = useContext(CrateDataContext)
-
-    const flags = useMemo(() => {
-        if (serviceProvider?.featureFlags) {
-            return JSON.stringify(serviceProvider.featureFlags)
-        }
-    }, [serviceProvider?.featureFlags])
-
-    return flags ? (JSON.parse(flags) as CrateServiceFeatureFlags) : undefined
 }

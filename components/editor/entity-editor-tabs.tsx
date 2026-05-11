@@ -150,13 +150,6 @@ function Tabs({ tabs, currentTab }: { tabs: IEntityEditorTab[]; currentTab?: IEn
                 }
             }}
         >
-            {tabs.length === 0 && (
-                <div className="flex">
-                    <Skeleton className="m-1 h-7 w-32 bg-muted-foreground/30" />
-                    <Skeleton className="m-1 h-7 w-32 bg-muted-foreground/30" />
-                    <Skeleton className="m-1 h-7 w-32 bg-muted-foreground/30" />
-                </div>
-            )}
             {tabs.map((tab) => {
                 return (
                     <Tab
@@ -176,7 +169,6 @@ export function EntityEditorTabs({
 }: {
     toggleEntityBrowserPanel(): void
 }) {
-    const { crateData } = useContext(CrateDataContext)
     const tabs = useEntityEditorTabs((store) => store.tabs)
     const activeTabEntityID = useEntityEditorTabs((store) => store.activeTabEntityID)
 
@@ -184,7 +176,7 @@ export function EntityEditorTabs({
         return tabs.find((tab) => tab.entityId === activeTabEntityID)
     }, [activeTabEntityID, tabs])
 
-    if (tabs.length == 0 && crateData) {
+    if (tabs.length == 0) {
         return (
             <div className="relative flex flex-col justify-center items-center h-full rounded-lg overflow-hidden bg-background border">
                 <Button

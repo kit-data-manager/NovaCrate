@@ -4,15 +4,16 @@ import { Label } from "@/components/ui/label"
 import React from "react"
 import { Button } from "@/components/ui/button"
 import prettyBytes from "pretty-bytes"
-import { useCrateServiceFeatureFlags } from "@/lib/hooks"
+import { usePersistence } from "@/components/providers/persistence-provider"
 
+// TODO integrate
 export function FileUpload(props: {
     externalResource: boolean
     onValueChange: (v: string) => void
     onClick: () => void
     files: File[]
 }) {
-    const flags = useCrateServiceFeatureFlags()
+    const fileService = usePersistence().getCrateService()?.getFileService()
 
     return (
         <div>
@@ -30,7 +31,7 @@ export function FileUpload(props: {
                     </TabsTrigger>
                 </TabsList>
             </Tabs>
-            {props.externalResource ? null : flags?.fileManagement ? (
+            {props.externalResource ? null : fileService ? (
                 <>
                     <Label>File</Label>
                     <div>

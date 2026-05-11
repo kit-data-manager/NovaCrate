@@ -17,7 +17,7 @@ import { usePathname } from "next/navigation"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { useCrateServiceFeatureFlags } from "@/lib/hooks"
+import { usePersistence } from "@/components/providers/persistence-provider"
 
 function NavSidebarButton({
     children,
@@ -73,7 +73,7 @@ export function NavSidebar({ children }: PropsWithChildren) {
     const { showDocumentationModal } = useContext(GlobalModalContext)
     const showValidationDrawer = useEditorState((s) => s.showValidationDrawer)
     const setShowValidationDrawer = useEditorState((s) => s.setShowValidationDrawer)
-    const flags = useCrateServiceFeatureFlags()
+    const fileService = usePersistence().getCrateService()?.getFileService()
 
     const toggleShowValidationDrawer = useCallback(() => {
         setShowValidationDrawer(!showValidationDrawer)
@@ -86,7 +86,7 @@ export function NavSidebar({ children }: PropsWithChildren) {
                     <NavSidebarLink page="entities" name={"Entity Editor"}>
                         <PackageSearch className="size-5" />
                     </NavSidebarLink>
-                    {flags?.fileManagement && (
+                    {fileService && (
                         <NavSidebarLink page="file-explorer" name={"File Explorer"}>
                             <Folder className="size-5" />
                         </NavSidebarLink>
