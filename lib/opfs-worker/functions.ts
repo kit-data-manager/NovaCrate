@@ -1,29 +1,8 @@
 import * as fs from "happy-opfs"
 import { collectAsyncIterator } from "./helpers"
-import { DateTime } from "luxon"
 import { IGNORED_FILES } from "../../lib/constants"
 
-let CRATE_STORAGE = "crate-storage"
-
-// TODO is this still the correct approach for iFrame mode?
-/**
- * Creates a new temporary directory for storing crates. Also sets the CRATE_STORAGE variable to the path of this directory.
- */
-async function setupTempCrateStorage() {
-    await fs.pruneTemp(DateTime.now().minus({ days: 1 }).toJSDate())
-    const tempDir = await fs.mkTemp({ isDirectory: true })
-    if (!tempDir.isOk()) throw tempDir.unwrapErr()
-    CRATE_STORAGE = tempDir.unwrap().slice(1)
-    return CRATE_STORAGE
-}
-
-/**
- * Set the CRATE_STORAGE variable to the provided directory.
- * @param dir
- */
-function setCrateStorageDir(dir: string) {
-    CRATE_STORAGE = dir
-}
+const CRATE_STORAGE = "crate-storage"
 
 function toArrayBuffer(buf: Uint8Array): ArrayBuffer {
     const { buffer, byteOffset, byteLength } = buf
@@ -279,8 +258,6 @@ export async function getStorageInfo(): Promise<{
 }
 
 export const opfsFunctions = {
-    setupTempCrateStorage,
-    setCrateStorageDir,
     writeFile,
     readFile,
     getCrates,
