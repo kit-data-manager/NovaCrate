@@ -1,12 +1,15 @@
 "use client"
 
-import { createContext, PropsWithChildren, useContext, useState } from "react"
+import { createContext, PropsWithChildren, useContext, useMemo, useState } from "react"
 import { IPersistenceService } from "@/lib/core/persistence/IPersistenceService"
 import { BrowserPersistenceService } from "@/lib/persistence/browser/BrowserPersistenceService"
 import { IFramePersistenceService } from "@/lib/persistence/iframe/IFramePersistenceService"
 import { useHealthCheck } from "@/lib/hooks/use-health-check"
 
-const PersistenceContext = createContext<IPersistenceService | null>(null)
+const PersistenceContext = createContext<{
+    setService: (name: string) => void
+    service: IPersistenceService
+} | null>(null)
 
 /**
  * Provides the appropriate {@link IPersistenceService} implementation based on
@@ -21,17 +24,32 @@ const PersistenceContext = createContext<IPersistenceService | null>(null)
  * the editor have access to the persistence service.
  */
 export function PersistenceProvider({
-    mode = "full",
+    defaultMode = "full",
     children
-}: PropsWithChildren<{ mode?: string }>) {
+}: PropsWithChildren<{ defaultMode?: string }>) {
+    const parentPersistence = useContext(PersistenceContext)
+    if (parentPersistence)
+        throw new Error(
+            "PersistenceProvider should only be present once in the page, but you are trying to mount a PersistenceProvider inside another PersistenceProvider"
+        )
+
+    const [mode, setMode] = useState(defaultMode ?? "full")
     const isIframe = mode === "iframe"
 
     const [persistence] = useState<IPersistenceService>(() =>
         isIframe ? new IFramePersistenceService() : new BrowserPersistenceService()
     )
 
+    const value = useMemo(
+        () => ({
+            setService: setMode,
+            service: persistence
+        }),
+        [persistence]
+    )
+
     return (
-        <PersistenceContext.Provider value={persistence}>
+        <PersistenceContext.Provider value={value}>
             {!isIframe && <HealthCheckRunner persistence={persistence} />}
             {children}
         </PersistenceContext.Provider>
@@ -57,5 +75,13 @@ export function usePersistence(): IPersistenceService {
     if (!ctx) {
         throw new Error("usePersistence must be used within a PersistenceProvider")
     }
-    return ctx
+    return ctx.service
+}
+
+export function useSetPersistence() {
+    const ctx = useContext(PersistenceContext)
+    if (!ctx) {
+        throw new Error("useSetPersistence must be used within a PersistenceProvider")
+    }
+    return ctx.setService
 }

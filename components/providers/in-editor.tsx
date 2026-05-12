@@ -1,7 +1,7 @@
 "use client"
 
 import { memo, PropsWithChildren, useEffect } from "react"
-import { PersistenceProvider, usePersistence } from "@/components/providers/persistence-provider"
+import { usePersistence, useSetPersistence } from "@/components/providers/persistence-provider"
 import { IFrameMessenger } from "@/components/iframe-messenger"
 import { CoreProvider } from "@/components/providers/core-provider"
 import { SchemaWorkerProvider } from "@/components/providers/schema-worker-provider"
@@ -19,8 +19,14 @@ import { usePathname } from "next/navigation"
 import { useCrateName, useRecentCrates } from "@/lib/hooks/hooks"
 
 export function InEditorProviders({ children, mode }: PropsWithChildren<{ mode: string }>) {
+    const setPersistence = useSetPersistence()
+
+    useEffect(() => {
+        setPersistence(mode)
+    }, [mode, setPersistence])
+
     return (
-        <PersistenceProvider mode={mode}>
+        <>
             {mode === "iframe" && <IFrameMessenger />}
             <CoreProvider>
                 <SchemaWorkerProvider>
@@ -31,7 +37,7 @@ export function InEditorProviders({ children, mode }: PropsWithChildren<{ mode: 
                     </GlobalModalProvider>
                 </SchemaWorkerProvider>
             </CoreProvider>
-        </PersistenceProvider>
+        </>
     )
 }
 
