@@ -29,6 +29,15 @@ function createMockPersistence(
     }
 }
 
+const routerPush = jest.fn()
+jest.mock("next/navigation", () => ({
+    useRouter() {
+        return {
+            push: routerPush
+        }
+    }
+}))
+
 // ─── Tests ─────────────────────────────────────────────────────────────────
 
 describe("useCrateIdPersistence", () => {
@@ -48,6 +57,31 @@ describe("useCrateIdPersistence", () => {
             renderHook(() => useCrateIdPersistence(persistence))
 
             expect(persistence.setCrateId).toHaveBeenCalledWith("test-crate-123")
+        })
+
+        it("should not call router.push when a crate ID is set", () => {
+            localStorage.setItem("crate-id", "test-crate-123")
+            const persistence = createMockPersistence()
+
+            renderHook(() => useCrateIdPersistence(persistence))
+
+            expect(routerPush).not.toHaveBeenCalled()
+        })
+
+        it("should call router.push when no crate ID is set and the crate ID can be set by the user", () => {
+            const persistence = createMockPersistence()
+
+            renderHook(() => useCrateIdPersistence(persistence))
+
+            expect(routerPush).toHaveBeenCalled()
+        })
+
+        it("should not call router.push when no crate ID is set and the crate ID can not be set by the user", () => {
+            const persistence = createMockPersistence({ canSetCrateId: false })
+
+            renderHook(() => useCrateIdPersistence(persistence))
+
+            expect(routerPush).not.toHaveBeenCalled()
         })
 
         it("should not call setCrateId when localStorage is empty", () => {
