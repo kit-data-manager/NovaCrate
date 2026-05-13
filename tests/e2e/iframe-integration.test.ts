@@ -9,24 +9,7 @@ test("iframe integration", async ({ page }) => {
             '{"@context":"https://w3id.org/ro/crate/1.1/context","@graph":[{"@id":"./","@type":"Dataset","name":"Air quality measurements in Karlsruhe","description":"Ai measurements conducted in different places across Karlsruhe","datePublished":"2024","license":{"@id":"https://creativecommons.org/licenses/by/4.0/"},"hasPart":[{"@id":"map.pdf"},{"@id":"measurements/HVV%2520Anwesenheit%2520WiSe%25202526.pdf"}],"author":[{"@id":"creator"},{"@id":"#christopher%20raquet"}]},{"@type":"CreativeWork","@id":"ro-crate-metadata.json","conformsTo":{"@id":"https://w3id.org/ro/crate/1.1"},"about":{"@id":"./"}},{"@id":"map.pdf","@type":"File","name":"Map of measurements","description":"A map of all the location where the tests have been conducted","datePublished":"2021-10-22T00:00:00Z","encodingFormat":"application/pdf","author":{"@id":"creator"}},{"@id":"creator","@type":"Person","email":"john.doe@kit.edu","givenName":"John","familyName":"Doe","nationality":{"@id":"https://www.geonames.org/2921044"},"affiliation":{"@id":"https://www.geonames.org/7288147"}},{"@id":"https://creativecommons.org/licenses/by/4.0/","@type":"CreativeWork","name":"CC BY 4.0","description":"Creative Commons Attribution 4.0 International License"},{"@id":"https://www.geonames.org/2921044","@type":"Place","description":"Big country in central Europe."},{"@id":"#MeasurementCapture_23231","@type":"CreateAction","agent":{"@id":"creator"},"instrument":{"@id":"https://www.aeroqual.com/product/outdoor-portable-monitor-starter-kit"}},{"@id":"kit_location","@type":"Place","geo":{"@id":"#4241434-33413"}},{"@id":"#4241434-33413","@type":"GeoCoordinates","latitude":"49.00944","longitude":"8.41167"},{"@id":"https://www.geonames.org/7288147","@type":"Organization","name":"Karlsruher Institut fuer Technologie","url":"https://www.kit.edu/","location":{"@id":"kit_location"}},{"@id":"https://www.aeroqual.com/product/outdoor-portable-monitor-starter-kit","@type":"IndividualProduct","description":"The Outdoor Air Quality Test Kit (Starter) is for users who want an affordable set of tools to measure the common pollutants in ambient outdoor air."},{"@id":"measurements/HVV%2520Anwesenheit%2520WiSe%25202526.pdf","@type":"File","name":"HVV Anwesenheit WiSe 2526","contentSize":"225285","encodingFormat":"application/pdf"},{"name":"Christopher Raquet","@id":"#christopher%20raquet","@type":["Person"]}]}'
         )
     await expect(
-        page.locator("iframe").contentFrame().locator(".animate-pulse.rounded-md.m-1").first()
-    ).toBeVisible()
-    await expect(
-        page
-            .locator("iframe")
-            .contentFrame()
-            .locator(".animate-pulse.rounded-md.w-32.h-8.bg-muted-foreground\\/30")
-            .first()
-    ).toBeVisible()
-    await expect(
-        page.locator("iframe").contentFrame().locator(".animate-pulse.rounded-md.bg-muted.h-10")
-    ).toBeVisible()
-    await expect(
-        page
-            .locator("iframe")
-            .contentFrame()
-            .locator(".animate-pulse.rounded-md.bg-muted.h-6")
-            .first()
+        page.locator("iframe").contentFrame().getByText("NovaCrate is getting ready...")
     ).toBeVisible()
     await expect(page.locator("#received-messages")).toMatchAriaSnapshot(
         `- text: "Received Messages: 0: READY"`
