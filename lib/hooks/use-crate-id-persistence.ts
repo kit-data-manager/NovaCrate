@@ -1,7 +1,6 @@
 import { useEffect } from "react"
 import { IPersistenceService } from "@/lib/core/persistence/IPersistenceService"
 import { useRouter } from "next/navigation"
-import { useGoToMainMenu } from "@/lib/hooks/hooks"
 
 const CRATE_ID_STORAGE_KEY = "crate-id"
 
@@ -21,7 +20,6 @@ const CRATE_ID_STORAGE_KEY = "crate-id"
  */
 export function useCrateIdPersistence(persistence: IPersistenceService): void {
     const router = useRouter()
-    const goToMainMenu = useGoToMainMenu()
 
     useEffect(() => {
         // Restore crate ID from localStorage on mount
@@ -31,7 +29,7 @@ export function useCrateIdPersistence(persistence: IPersistenceService): void {
                 persistence.setCrateId(saved)
             } else {
                 // There is no crate ID set and no crate ID stored, we should return the user to the main menu
-                goToMainMenu()
+                router.push("/editor")
             }
         } else if (persistence.getCrateId() !== null) {
             localStorage.setItem(CRATE_ID_STORAGE_KEY, persistence.getCrateId()!)
@@ -50,5 +48,5 @@ export function useCrateIdPersistence(persistence: IPersistenceService): void {
         )
 
         return () => removeListener()
-    }, [goToMainMenu, persistence, router])
+    }, [persistence, router])
 }
