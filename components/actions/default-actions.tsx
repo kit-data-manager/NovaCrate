@@ -17,7 +17,7 @@ export default function DefaultActions() {
     const revertAllEntities = useEditorState((store) => store.revertAllEntities)
     const openTab = useEntityEditorTabs((s) => s.openTab)
     const saveAllEntities = useSaveAllEntities()
-    const gotToMainMenu = useGoToMainMenu()
+    const goToMainMenu = useGoToMainMenu()
 
     const createEntityAction = useCallback(() => {
         showCreateEntityModal()
@@ -66,7 +66,7 @@ export default function DefaultActions() {
         keyboardShortcut: ["command", "k"],
         icon: Search
     })
-    useRegisterAction("editor.close", "Back to Main Menu", gotToMainMenu, {
+    useRegisterAction("editor.close", "Back to Main Menu", goToMainMenu, {
         icon: ArrowLeft
     })
 
