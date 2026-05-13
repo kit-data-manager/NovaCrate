@@ -223,10 +223,15 @@ export function useCurrentPageName() {
  */
 export function useGoToMainMenu() {
     const router = useRouter()
+    const isEmbedded = useIsEmbedded()
 
     return useCallback(() => {
+        if (isEmbedded)
+            return console.warn(
+                "User tried to go to main menu, but that is not allowed in embedded mode"
+            )
         router.push("/editor")
-    }, [router])
+    }, [isEmbedded, router])
 }
 
 /**
@@ -404,4 +409,12 @@ export const useHash = () => {
     }, [])
 
     return { hash }
+}
+
+export function useIsEmbedded() {
+    const path = usePathname()
+    const extract = /.*\/editor\/([^\/]+)/gm.exec(path)
+    const mode = extract && extract?.length > 1 ? extract[1] : undefined
+
+    return mode === "iframe"
 }
