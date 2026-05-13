@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Reengineered the core of the NovaCrate application to make it more modular, extensible, and maintainable. Some behavioural changes in the editor are expected, the functionality should not be impacted, though.
+- Improved and hardened the RO-Crate import schema checks
+
+### Fixed
+
+- Fixed import of RO-Crates where the metadata contained null values
+- Fixed formatting of camelCase names
 
 ## [1.10.1] - 2026-05-04
 
