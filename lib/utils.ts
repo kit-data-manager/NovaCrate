@@ -12,6 +12,7 @@ import {
 } from "./constants"
 import { ValidationResult } from "@/lib/validation/validation-result"
 import { PropertyValueUtils } from "./property-value-utils"
+import { z } from "zod/mini"
 
 /**
  * Utility from shadcn/ui to merge multiple className strings into one
@@ -221,7 +222,7 @@ export function camelCaseReadable(str: string) {
     if (str === "@type") return "Type"
     const [prefix, ...suffix] = str.includes(":") ? str.split(":") : ["", str]
     // If the string contains more than one :, we just use the first one as suffix and join everything else back together
-    let split = suffix.join(":").replace(/([^\/ ])([A-Z][a-z])/g, "$1 $2")
+    let split = suffix.join(":").replaceAll(/([a-z:])([A-Z])/g, "$1 $2")
     if (split.startsWith(" ")) split = split.slice(1)
     return (prefix ? `[${prefix}] ` : "") + split.charAt(0).toUpperCase() + split.slice(1)
 }
@@ -415,3 +416,27 @@ export function deepEqual(a: unknown, b: unknown): boolean {
 export function formatJSON(json: string) {
     return JSON.stringify(JSON.parse(json), null, 2)
 }
+
+export const EntitySchema = z.intersection(
+    z.record(
+        z.string(),
+        z.union([
+            z.object({ "@id": z.coerce.string() }),
+            z.array(z.union([z.object({ "@id": z.coerce.string() }), z.coerce.string()])),
+            z.coerce.string()
+        ])
+    ),
+    z.object({
+        "@id": z.coerce.string(),
+        "@type": z.union([z.array(z.coerce.string()), z.coerce.string()])
+    })
+)
+
+export const CrateSchema = z.object({
+    "@context": z.union([
+        z.record(z.string(), z.coerce.string()),
+        z.array(z.union([z.record(z.coerce.string(), z.coerce.string()), z.coerce.string()])),
+        z.coerce.string()
+    ]),
+    "@graph": z.array(EntitySchema)
+})

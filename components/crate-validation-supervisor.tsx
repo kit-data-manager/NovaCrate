@@ -5,6 +5,7 @@ import { useDebounceCallback } from "usehooks-ts"
 import { useEditorState } from "@/lib/state/editor-state"
 import { useStore } from "zustand"
 import { validationSettings } from "@/lib/state/validation-settings"
+import { useCore } from "@/components/providers/core-provider"
 
 /**
  * Hooks into the editor state and the crate data context to watch for changes in the crate, each entity, and each property. It then starts the validation of any changed
@@ -24,39 +25,67 @@ export function CrateValidationSupervisor() {
     const validation = useValidation()
     const [runValidation, setRunValidation] = useState(false)
     const validationEnabled = useStore(validationSettings, (s) => s.enabled)
+    const core = useCore()
+    const metadata = core.getMetadataService()
+    const context = core.getContextService()
 
-    const validateCrate = useCallback(() => {
+    const validateAll = useCallback(async () => {
+        const entities = metadata.getEntities()
         validation.validateCrate().catch((e) => console.error("Crate validation failed: ", e))
-    }, [validation])
+        entities.forEach((entity) => {
+            validation
+                .validateEntity(entity["@id"])
+                .catch((e) => console.error(`Entity validation failed on ${entity["@id"]}: `, e))
+            Object.keys(entity).forEach((prop) => {
+                validation
+                    .validateProperty(entity["@id"], prop)
+                    .catch((e) =>
+                        console.error(`Property validation failed on ${entity["@id"]} ${prop}: `, e)
+                    )
+            })
+        })
+    }, [metadata, validation])
 
-    const debouncedValidateCrate = useDebounceCallback(validateCrate, 200)
+    const debouncedValidateAll = useDebounceCallback(validateAll, 200, { maxWait: 500 })
 
+    // Validate everything when graph-changed or context-changed events fire (typically on save)
     useEffect(() => {
-        if (runValidation) debouncedValidateCrate()
-    }, [entities, debouncedValidateCrate, runValidation])
+        if (!runValidation) return
 
+        const removeListener1 = metadata.events.addEventListener(
+            "graph-changed",
+            debouncedValidateAll
+        )
+        const removeListener2 = context.events.addEventListener(
+            "context-changed",
+            debouncedValidateAll
+        )
+        return () => {
+            removeListener1()
+            removeListener2()
+        }
+    }, [context.events, debouncedValidateAll, metadata.events, runValidation, validationEnabled])
+
+    // Automatically turn runValidation on and off
     useEffect(() => {
-        if (crateId && crateContextReady) setRunValidation(true)
+        if (crateId && crateContextReady && validationEnabled) setRunValidation(true)
         else setRunValidation(false)
-    }, [crateContextReady, crateId])
+    }, [crateContextReady, crateId, validationEnabled])
 
+    // Clear the validation store results when the validation is turned off in the settings
     useEffect(() => {
         if (!validationEnabled) {
             validation.resultStore.getState().clear()
         }
     }, [validation.resultStore, validationEnabled])
 
-    const crateContext = useEditorState((store) => store.crateContext)
-    useEffect(() => {
-        if (runValidation) debouncedValidateCrate()
-    }, [debouncedValidateCrate, crateContext, runValidation])
-
     const entitiesArray = useMemo(() => {
         return Array.from(entities.values())
     }, [entities])
 
-    if (!crateId || !runValidation || !validationEnabled) return null
+    if (!crateId || !runValidation) return null
 
+    // EntitySupervisor and PropertySupervisor hook into the live editor state for faster validation of entities and properties while editing
     return (
         <>
             {entitiesArray.map((entity) => (
