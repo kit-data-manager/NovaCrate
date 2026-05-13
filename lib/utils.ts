@@ -12,6 +12,7 @@ import {
 } from "./constants"
 import { ValidationResult } from "@/lib/validation/validation-result"
 import { PropertyValueUtils } from "./property-value-utils"
+import { z } from "zod/mini"
 
 /**
  * Utility from shadcn/ui to merge multiple className strings into one
@@ -415,3 +416,27 @@ export function deepEqual(a: unknown, b: unknown): boolean {
 export function formatJSON(json: string) {
     return JSON.stringify(JSON.parse(json), null, 2)
 }
+
+export const EntitySchema = z.intersection(
+    z.record(
+        z.string(),
+        z.union([
+            z.object({ "@id": z.coerce.string() }),
+            z.array(z.union([z.object({ "@id": z.coerce.string() }), z.coerce.string()])),
+            z.coerce.string()
+        ])
+    ),
+    z.object({
+        "@id": z.coerce.string(),
+        "@type": z.union([z.array(z.coerce.string()), z.coerce.string()])
+    })
+)
+
+export const CrateSchema = z.object({
+    "@context": z.union([
+        z.record(z.string(), z.coerce.string()),
+        z.array(z.union([z.record(z.coerce.string(), z.coerce.string()), z.coerce.string()])),
+        z.coerce.string()
+    ]),
+    "@graph": z.array(EntitySchema)
+})

@@ -2,6 +2,7 @@ import { IPersistenceAdapter, IPersistenceAdapterEvents } from "@/lib/core/IPers
 import { ICrateService } from "@/lib/core/persistence/ICrateService"
 import { Observable } from "@/lib/core/impl/Observable"
 import { IObservable } from "@/lib/core/IObservable"
+import { CrateSchema } from "@/lib/utils"
 
 /**
  * Bridges the persistence layer (ICrateService) and the core services
@@ -72,6 +73,15 @@ export class PersistenceAdapterImpl implements IPersistenceAdapter {
         if (!("@context" in parsed)) {
             throw new Error('Invalid crate metadata: missing "@context"')
         }
-        return parsed as ICrate
+
+        const fullyParsed = CrateSchema.safeParse(parsed)
+
+        if (fullyParsed.success) {
+            return fullyParsed.data as ICrate
+        } else {
+            throw new Error("Failed to parse crate data, invalid format", {
+                cause: fullyParsed.error
+            })
+        }
     }
 }
