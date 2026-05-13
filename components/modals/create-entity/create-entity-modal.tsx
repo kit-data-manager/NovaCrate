@@ -113,13 +113,14 @@ export function CreateEntityModal({
                 if (!result) setUploadErrors(["File upload failed"])
                 else {
                     setCurrentUploadProgress(1)
+                    openTab({ entityId: id }, true)
                     onOpenChange(false)
                 }
             } catch (e) {
                 setUploadErrors([e])
             }
         },
-        [createFileEntity, onOpenChange, selectedType]
+        [createFileEntity, onOpenChange, openTab, selectedType]
     )
 
     const onUploadFolder = useCallback(
@@ -154,13 +155,14 @@ export function CreateEntityModal({
                 if (!result) setUploadErrors(["Folder upload failed"])
                 else {
                     setCurrentUploadProgress(files.length > 0 ? files.length : 1)
+                    openTab({ entityId: id }, true)
                     onOpenChange(false)
                 }
             } catch (e) {
                 setUploadErrors([e])
             }
         },
-        [resolver, createFolderEntity, onOpenChange, selectedType]
+        [createFolderEntity, selectedType, resolver, openTab, onOpenChange]
     )
 
     const backToTypeSelect = useCallback(() => {
