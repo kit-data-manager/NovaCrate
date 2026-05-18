@@ -12,7 +12,8 @@
             "@/*": ["./*"]
         },
         "target": "ES2015",
-        "outDir": "public/schema-worker"
+        "outDir": "public/schema-worker",
+        "rootDir": "lib"
     },
     "include": [
         "lib/schema-worker/**/*.ts",
