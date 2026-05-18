@@ -240,6 +240,7 @@ export default function EditorLandingPage() {
                             width={600}
                             height={195}
                             className={`dark:invert ${geist.className}`}
+                            loading={"eager"}
                         />
                     </div>
 
