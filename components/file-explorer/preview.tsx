@@ -39,8 +39,6 @@ export function FilePreview({
         }
     }, [persistence, previewingFilePath, setDownloadError])
 
-    // TODO: Preview depends on IFileService being available. If not present,
-    // the preview panel should be hidden from the user.
     const resourceUrl = useMemo(() => {
         const fileService = persistence.getCrateService()?.getFileService()
         if (fileService && previewingFilePath) {
