@@ -1,9 +1,9 @@
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { usePersistence } from "@/components/providers/persistence-provider"
 import useSWR from "swr"
 import { NodeRendererProps, Tree } from "react-arborist"
 import { ChevronRightIcon, FolderIcon, LoaderCircleIcon, PackageIcon } from "lucide-react"
-import { useCrateName } from "@/lib/hooks"
+import { useCrateName } from "@/lib/hooks/hooks"
 import { Error } from "@/components/error"
 import { FileTreeNode, getNameFromPath } from "@/components/file-explorer/utils"
 
@@ -14,7 +14,8 @@ export function PathPicker({
     onPathPicked: (path: string) => void
     defaultPath?: string
 }) {
-    const crateData = useContext(CrateDataContext)
+    const persistence = usePersistence()
+    const crateId = persistence.getCrateId()
     const crateName = useCrateName()
     const [selection, setSelection] = useState<string>(defaultPath)
 
@@ -23,16 +24,18 @@ export function PathPicker({
     }, [onPathPicked, selection])
 
     const filesListResolver = useCallback(async () => {
-        if (crateData.serviceProvider && crateData.crateId) {
-            return await crateData.serviceProvider.getCrateFilesList(crateData.crateId)
+        const fileService = persistence.getCrateService()?.getFileService()
+        if (fileService) {
+            const list = await fileService.getContentList()
+            return list.map((f) => f.path)
         }
-    }, [crateData.crateId, crateData.serviceProvider])
+    }, [persistence])
 
     const {
         data,
         error,
         isLoading: isPending
-    } = useSWR(crateData.crateId ? "files-list-" + crateData.crateId : null, filesListResolver)
+    } = useSWR(crateId ? "files-list-" + crateId : null, filesListResolver)
 
     const folders = useMemo(() => {
         return data?.filter((path) => path.endsWith("/")) ?? []

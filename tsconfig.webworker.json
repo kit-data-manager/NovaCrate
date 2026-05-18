@@ -12,18 +12,20 @@
             "@/*": ["./*"]
         },
         "target": "ES2015",
-        "outDir": "public/schema-worker"
+        "outDir": "public/schema-worker",
+        "rootDir": "lib"
     },
     "include": [
         "lib/schema-worker/**/*.ts",
         "lib/opfs-worker/**/*.ts",
-        "lib/data-types.d.ts",
+        "lib/types/data-types.d.ts",
         "lib/utils.ts",
         "lib/function-worker.ts",
         "lib/CrateServiceProvider.ts",
         "lib/state/schema-resolver.ts",
-        "lib/frogcat__ttl2jsonld.d.ts",
-        "lib/property-value-utils.ts"
+        "lib/types/frogcat__ttl2jsonld.d.ts",
+        "lib/property-value-utils.ts",
+        "lib/constants.ts"
     ],
     "exclude": ["node_modules"]
 }

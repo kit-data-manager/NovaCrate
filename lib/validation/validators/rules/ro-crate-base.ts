@@ -44,7 +44,7 @@ export const RoCrateBase = {
                 ) {
                 } else {
                     const resolved = toArray(entity["@type"]).map(
-                        (type, i) => [type, ctx.editorState.crateContext.resolve(type), i] as const
+                        (type, i) => [type, ctx.resolver.resolve(type), i] as const
                     )
                     const results: PropertyValidationResult[] = []
                     for (const [type, resolvedType, i] of resolved) {
@@ -86,7 +86,7 @@ export const RoCrateBase = {
             const results: PropertyValidationResult[] = []
             try {
                 const entities = ctx.editorState.getEntities()
-                const propertyId = ctx.editorState.crateContext.resolve(propertyName)
+                const propertyId = ctx.resolver.resolve(propertyName)
                 if (!propertyId)
                     return [
                         builder.rule("propertyNotInContext").info({
@@ -121,7 +121,7 @@ export const RoCrateBase = {
                         if (!target) return
 
                         const targetTypes = toArray(target["@type"])
-                            .map((v) => ctx.editorState.crateContext.resolve(v))
+                            .map((v) => ctx.resolver.resolve(v))
                             .filter((v) => v !== null)
                         if (targetTypes.length === 0) return // Could not determine type, abort
 

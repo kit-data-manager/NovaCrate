@@ -1,9 +1,9 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { CreateEntity } from "@/components/modals/create-entity/create-entity"
 import { toArray } from "@/lib/utils"
-import { memo, useCallback, useContext, useEffect, useState } from "react"
+import { memo, useCallback, useEffect, useState } from "react"
 import { useEditorState } from "@/lib/state/editor-state"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
+import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 
 export const SaveAsModal = memo(function SaveAsModal(props: {
     open: boolean
@@ -36,7 +36,7 @@ function SaveAsModalInner({
 }) {
     const addEntity = useEditorState((store) => store.addEntity)
     const entity = useEditorState((store) => store.entities.get(entityId))
-    const { saveEntity } = useContext(CrateDataContext)
+    const { saveEntity } = useCrateMutations()
 
     const onCreate = useCallback(
         (id: string, name: string) => {

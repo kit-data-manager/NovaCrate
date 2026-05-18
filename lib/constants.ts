@@ -3,6 +3,9 @@ export enum RO_CRATE_VERSION {
     V1_2_0 = "v1.2.0"
 }
 
+// Used to ignore some OS-specific files on folder or zip import
+export const IGNORED_FILES = ["__MACOSX", ".DS_Store"]
+
 // Constants inferred from the RO-Crate Specification v1.1
 
 export const SCHEMA_ORG_TIME = "https://schema.org/Time"

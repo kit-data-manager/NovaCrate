@@ -1,4 +1,4 @@
-import { useCrateName } from "@/lib/hooks"
+import { useCrateName } from "@/lib/hooks/hooks"
 
 export function Metadata({ page }: { page: string }) {
     const name = useCrateName()

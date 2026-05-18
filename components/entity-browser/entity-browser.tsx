@@ -20,7 +20,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
-import { ActionButton, ActionDropdownMenuItem } from "@/components/actions/action-buttons"
+import { ActionButton } from "@/components/actions/action-buttons"
 import { PropertyOverview } from "@/components/editor/property-overview"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { DefaultSectionOpen } from "@/components/entity-browser/entity-browser-section"
@@ -185,8 +185,6 @@ export function EntityBrowser() {
                             <DropdownMenuItem onClick={expandAllSections}>
                                 <ChevronsUpDown className={"size-4 mr-2"} /> Expand All
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <ActionDropdownMenuItem actionId={"crate.reload-entities"} />
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

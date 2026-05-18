@@ -22,8 +22,9 @@ import { canHavePreview as canHavePreviewUtil } from "@/lib/utils"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { Button } from "@/components/ui/button"
 import { RenameEntityModal } from "@/components/modals/rename-entity-modal"
-import { useGoToFileExplorer } from "@/lib/hooks"
+import { useGoToFileExplorer } from "@/lib/hooks/hooks"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { useFileService } from "@/lib/hooks/use-persistence"
 
 export function IDField({ value }: { value: string }) {
     const [, copy] = useCopyToClipboard()
@@ -31,10 +32,11 @@ export function IDField({ value }: { value: string }) {
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
     const [renameEntityModalOpen, setRenameEntityModalOpen] = useState(false)
+    const fileService = useFileService()
 
     const canHavePreview = useMemo(() => {
-        return entity ? canHavePreviewUtil(entity) : false
-    }, [entity])
+        return entity ? canHavePreviewUtil(entity) && fileService !== null : false
+    }, [entity, fileService])
 
     const showInFileExplorer = useGoToFileExplorer(entity)
 

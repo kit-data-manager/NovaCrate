@@ -8,7 +8,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import React, { useCallback, useMemo, useState } from "react"
-import { useStore } from "zustand/index"
+import { useStore } from "zustand"
 import { useShallow } from "zustand/react/shallow"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
 import { getEntityDisplayName, sortValidationResultByName } from "@/lib/utils"
@@ -18,7 +18,7 @@ import { ValidationDrawerSection } from "@/components/validation-drawer-section"
 import type { DefaultSectionOpen } from "@/components/file-explorer/explorer"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { useGoToEntityEditor } from "@/lib/hooks"
+import { useGoToEntityEditor } from "@/lib/hooks/hooks"
 import { validationSettings } from "@/lib/state/validation-settings"
 
 export function ValidationDrawer() {

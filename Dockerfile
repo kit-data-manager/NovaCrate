@@ -30,6 +30,8 @@ COPY . .
 # ENV NEXT_TELEMETRY_DISABLED=1
 
 ENV OUTPUT=standalone
+ARG IFRAME_TARGET_ORIGIN
+ARG BASE_PATH
 
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \

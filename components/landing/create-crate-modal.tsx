@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
     Dialog,
     DialogContent,
@@ -11,7 +11,8 @@ import { Input } from "../ui/input"
 import { Label } from "../ui/label"
 import { Button } from "../ui/button"
 import { ArrowLeft, Folder, PackagePlus } from "lucide-react"
-import { CrateDataContext } from "../providers/crate-data-provider"
+import { usePersistence } from "@/components/providers/persistence-provider"
+import { CrateFactory } from "@/lib/core/impl/CrateFactory"
 import { sum } from "@/lib/utils"
 import prettyBytes from "pretty-bytes"
 import { UploadProgressBar } from "@/components/upload-progress-bar"
@@ -27,7 +28,8 @@ export function CreateCrateModal({
     fromFile?: File
     openEditor(id: string): void
 }) {
-    const { serviceProvider } = useContext(CrateDataContext)
+    const persistence = usePersistence()
+    const factory = useMemo(() => new CrateFactory(persistence), [persistence])
 
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
@@ -55,10 +57,10 @@ export function CreateCrateModal({
     }, [])
 
     const createCrateFromCrateFiles = useCallback(() => {
-        if (files.length > 0 && serviceProvider) {
+        if (files.length > 0) {
             setUploading(true)
             setUploadErrors([])
-            serviceProvider
+            factory
                 .createCrateFromFiles(
                     name,
                     description,
@@ -66,62 +68,60 @@ export function CreateCrateModal({
                         relativePath: file.webkitRelativePath,
                         data: file
                     })),
-                    (current, max, errors) => {
+                    (current: number, max: number, errors: string[]) => {
                         setCurrentProgress(current)
                         setMaxProgress(max)
                         setUploadErrors(errors)
                     }
                 )
-                .then((id) => {
+                .then((id: string) => {
                     openEditor(id)
                 })
-                .catch((e) => {
+                .catch((e: unknown) => {
                     setUploading(false)
                     setError(e)
                 })
         }
-    }, [files, serviceProvider, name, description, openEditor])
+    }, [files, factory, name, description, openEditor])
 
     const createEmptyCrate = useCallback(() => {
-        if (serviceProvider) {
-            setUploading(true)
-            setCurrentProgress(0)
-            setMaxProgress(1)
-            setUploadErrors([])
-            serviceProvider
-                .createCrate(name, description)
-                .then((id) => {
-                    setCurrentProgress(1)
-                    openEditor(id)
-                })
-                .catch((e) => {
-                    setUploading(false)
-                    setError(e)
-                })
-        }
-    }, [serviceProvider, name, description, openEditor])
+        setUploading(true)
+        setCurrentProgress(0)
+        setMaxProgress(1)
+        setUploadErrors([])
+        factory
+            .createEmptyCrate(name, description)
+            .then((id: string) => {
+                setCurrentProgress(1)
+                openEditor(id)
+            })
+            .catch((e: unknown) => {
+                setUploading(false)
+                setError(e)
+            })
+    }, [factory, name, description, openEditor])
 
     const createFromFileLocked = useRef(false)
     const createCrateFromFile = useCallback(() => {
-        if (fromFile && serviceProvider && !createFromFileLocked.current) {
+        if (fromFile && !createFromFileLocked.current) {
             createFromFileLocked.current = true
 
             setUploading(true)
             setCurrentProgress(0)
             setMaxProgress(1)
             setUploadErrors([])
-            serviceProvider
+            factory
                 .createCrateFromFile(fromFile)
-                .then((id) => {
+                .then((id: string) => {
                     setCurrentProgress(1)
                     openEditor(id)
                 })
-                .catch((e) => {
+                .catch((e: unknown) => {
                     setUploading(false)
                     setError(e)
                 })
         }
-    }, [fromFile, serviceProvider, openEditor])
+    }, [fromFile, factory, openEditor])
 
     useEffect(() => {
         createCrateFromFile()

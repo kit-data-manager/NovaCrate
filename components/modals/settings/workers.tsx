@@ -1,10 +1,8 @@
-import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { Fragment, useCallback, useContext, useEffect, useState } from "react"
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { Error } from "@/components/error"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Check, HardHat, Loader, Loader2, XIcon } from "lucide-react"
-import { CrateDataContext } from "@/components/providers/crate-data-provider"
-import { BrowserBasedCrateService } from "@/lib/backend/BrowserBasedCrateService"
 import { SchemaStatus } from "@/lib/schema-worker/SchemaGraph"
 
 function ProvisioningStatusDisplay({ isLoaded, error }: { isLoaded?: boolean; error: unknown }) {
@@ -21,7 +19,7 @@ function ProvisioningStatusDisplay({ isLoaded, error }: { isLoaded?: boolean; er
             <div>
                 <Tooltip delayDuration={100}>
                     <TooltipTrigger asChild>
-                        <span className="text-error flex items-center max-w-[100px]">
+                        <span className="text-error flex items-center max-w-25">
                             <XIcon className="size-4 mr-2" /> Failed
                         </span>
                     </TooltipTrigger>
@@ -60,18 +58,6 @@ export function WorkerSettings() {
     const [schemaStatus, setSchemaStatus] = useState<SchemaStatus | undefined>(undefined)
     const [schemaWorkerError, setSchemaWorkerError] = useState<unknown>()
     const { worker, isUsingWebWorker } = useContext(SchemaWorker)
-
-    const { serviceProvider } = useContext(CrateDataContext)
-
-    const hasServiceProviderWorker = useMemo(() => {
-        return serviceProvider instanceof BrowserBasedCrateService
-    }, [serviceProvider])
-
-    const isServiceProviderWorkerHealthy = useMemo(() => {
-        if (serviceProvider instanceof BrowserBasedCrateService) {
-            return serviceProvider.isWorkerHealthy()
-        } else return false
-    }, [serviceProvider])
 
     const fetchData = useCallback(async () => {
         const { workerActive, schemaStatus } = await worker.executeUncached("getWorkerStatus")
@@ -125,26 +111,6 @@ export function WorkerSettings() {
                     </div>
                 </div>
             </div>
-
-            {hasServiceProviderWorker ? (
-                <div className="p-4 border rounded">
-                    <div>
-                        <h4 className="text-lg font-bold flex items-center">
-                            <HardHat className="w-5 h-5 mr-2" /> OPFS Worker
-                        </h4>
-                        <div className="text-sm text-muted-foreground mb-2">
-                            Manages the virtual file system of the crate.
-                        </div>
-                        <div className="flex gap-2">
-                            Worker Healthy:{" "}
-                            <SuccessDisplay success={isServiceProviderWorkerHealthy} />
-                        </div>
-                        <div className="flex gap-2">
-                            Worker in Use: <SuccessDisplay success={true} />
-                        </div>
-                    </div>
-                </div>
-            ) : null}
         </div>
     )
 }
