@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.11.1] - 2026-05-18
+
+### Fixed
+- The docker build was broken in 1.11.0 and is fixed in this release
+
 ## [1.11.0] - 2026-05-18
 
 ### Added
