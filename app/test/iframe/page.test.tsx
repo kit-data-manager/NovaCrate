@@ -2,7 +2,10 @@
 
 import { Button } from "@/components/ui/button"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { NovaCrateMessageIncoming, outgoingMessageSchema } from "@/lib/iframe-messages"
+import {
+    NovaCrateMessageIncoming,
+    outgoingMessageSchema
+} from "../../../lib/persistence/iframe/iframe-messages"
 import { Input } from "@/components/ui/input"
 
 const exampleCrate =

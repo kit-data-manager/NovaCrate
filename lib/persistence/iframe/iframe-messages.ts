@@ -1,6 +1,6 @@
-import { z } from "zod/mini"
+import * as z from "zod/mini"
 
-export const incomingMessageSchema = z.xor([
+export const incomingMessageSchema = z.discriminatedUnion("type", [
     z.object({
         target: z.literal("novacrate"),
         type: z.literal("LOAD_CRATE"),
@@ -17,7 +17,7 @@ export const incomingMessageSchema = z.xor([
     })
 ])
 
-export const outgoingMessageSchema = z.xor([
+export const outgoingMessageSchema = z.discriminatedUnion("type", [
     z.object({
         source: z.literal("novacrate"),
         type: z.literal("READY"),

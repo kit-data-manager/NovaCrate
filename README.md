@@ -26,11 +26,10 @@ For more information, see our  [privacy policy](https://www.kit.edu/privacypolic
 - ✅ Create, read, and edit RO-Crates
 - ✅ Live validation of RO-Crates
   - ⚙️ Supports validation of the RO-Crate Specification v1.1 and v1.2
-  - 🏗️ Easily extensible to validate profiles or specific RO-Crate types (e.g., Workflow crates)
+  - 🏗️ WIP: Validate profiles or specific RO-Crate types (e.g., Workflow crates)
   - 🚀 Autofix actions available for some issues
 - ✅ Visualize RO-Crates with a graph
-- ✅ Focused on usability and modern architecture
-- ✅ Context-information and property descriptions
+- ✅ RO-Crate context information and property descriptions
 - ✅ Automatic recommendation of fitting entity types and properties
 - ✅ Support for importing and exporting the ELN format
 - ✅ Extensible with custom schemas at runtime
@@ -46,11 +45,11 @@ You can access it directly [here](https://novacrate.datamanager.kit.edu/).
 <details>
 <summary>Details on NovaCrate Editions</summary>
 
-| Name               | Status  | Description                                                                                                                                                                                                             | Notes                                                                                                      |
-|--------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
-| Standalone Web App | Active  | Standalone Web App without a backend. Stores Crates in the local origin-private file system of the browser                                                                                                              | [Access here](https://novacrate.datamanager.kit.edu/)                                               |
-| Desktop App        | Concept | Tauri App with a local backend. Has full access to file system and can make use of arbitrary backend software.                                                                                                          | Suitable backend already implemented.                                                                      |
-| Cloud Frontend     | Concept | NovaCrate is a frontend that can be used with any compatible backend solution, for example a cloud based service that hosts RO-Crates. This approach has not been explored yet due to lack of viable backend solutions. | See `src/lib/backend/CrateService.d.ts` for a list of methods that a backend adapter should implement |
+| Name               | Status  | Description                                                                                                                                                                                                             | Notes                                                                                                                                                                                                                                                        |
+|--------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Standalone Web App | Active  | Standalone Web App without a backend. Stores Crates in the local origin-private file system of the browser                                                                                                              | [Access here](https://novacrate.datamanager.kit.edu/)                                                                                                                                                                                                        |
+| Desktop App        | Concept | Tauri App with a local backend. Has full access to file system and can make use of arbitrary backend software.                                                                                                          | Successful demonstration has been developed in the past, but is no longer maintained. See the lib persistence overview in the row below for details.                                                                                                         |
+| Cloud Frontend     | Concept | NovaCrate is a frontend that can be used with any compatible backend solution, for example a cloud based service that hosts RO-Crates. This approach has not been explored yet due to lack of viable backend solutions. | See the [lib persistence overview image](./docs/figures/lib/lib-persistence.png) or `lib/core/persistence` for interfaces that have to be implemented by the backend. Only IPersistenceService and ICrateService are required for a minimal working backend. |
 
 ### ℹ️ How To: Custom Backend
 

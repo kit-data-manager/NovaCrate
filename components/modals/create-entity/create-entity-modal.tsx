@@ -127,10 +127,11 @@ export function CreateEntityModal({
         async (id: string, name: string, files: File[]) => {
             setUploading(true)
             setMaxUploadProgress(files.length > 0 ? files.length : 1)
+            const folderPath = asValidPath(id, true)
             try {
                 const result = await createFolderEntity(
                     {
-                        "@id": asValidPath(id, true),
+                        "@id": folderPath,
                         "@type": selectedType,
                         name
                     },
@@ -138,7 +139,7 @@ export function CreateEntityModal({
                         return {
                             entity: {
                                 "@id":
-                                    asValidPath(id, true) +
+                                    folderPath +
                                     file.webkitRelativePath.split("/").slice(1).join("/"),
                                 "@type": resolver.reverse(RO_CRATE_FILE) || RO_CRATE_FILE,
                                 name: file.name
@@ -155,7 +156,7 @@ export function CreateEntityModal({
                 if (!result) setUploadErrors(["Folder upload failed"])
                 else {
                     setCurrentUploadProgress(files.length > 0 ? files.length : 1)
-                    openTab({ entityId: id }, true)
+                    openTab({ entityId: folderPath }, true)
                     onOpenChange(false)
                 }
             } catch (e) {

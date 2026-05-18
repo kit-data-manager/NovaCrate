@@ -1,6 +1,14 @@
 "use client"
 
-import { createContext, PropsWithChildren, useContext, useMemo, useState } from "react"
+import {
+    createContext,
+    PropsWithChildren,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState
+} from "react"
 import { IPersistenceService } from "@/lib/core/persistence/IPersistenceService"
 import { BrowserPersistenceService } from "@/lib/persistence/browser/BrowserPersistenceService"
 import { IFramePersistenceService } from "@/lib/persistence/iframe/IFramePersistenceService"
@@ -34,11 +42,20 @@ export function PersistenceProvider({
         )
 
     const [mode, setMode] = useState(defaultMode ?? "full")
-    const isIframe = mode === "iframe"
+    const isIframe = useMemo(() => {
+        return mode === "iframe"
+    }, [mode])
 
-    const [persistence] = useState<IPersistenceService>(() =>
-        isIframe ? new IFramePersistenceService() : new BrowserPersistenceService()
+    const persistence = useMemo<IPersistenceService>(
+        () => (isIframe ? new IFramePersistenceService() : new BrowserPersistenceService()),
+        [isIframe]
     )
+
+    const prev = useRef(persistence)
+    useEffect(() => {
+        if (prev.current !== persistence) console.warn("Persistence changed!")
+        prev.current = persistence
+    }, [persistence])
 
     const value = useMemo(
         () => ({

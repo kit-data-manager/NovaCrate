@@ -9,7 +9,7 @@ import {
     incomingMessageSchema,
     NovaCrateMessageIncoming,
     NovaCrateMessageOutgoing
-} from "@/lib/iframe-messages"
+} from "../lib/persistence/iframe/iframe-messages"
 
 function getTargetOrigin(): string {
     return z.string().parse(process.env.NEXT_PUBLIC_IFRAME_TARGET_ORIGIN)
@@ -74,9 +74,7 @@ export function IFrameMessenger() {
                     break
                 }
                 case "UPDATE_CRATE": {
-                    updateCrate(msg).catch((e) =>
-                        console.error("Error in IFrameMessenger: ", e)
-                    )
+                    updateCrate(msg).catch((e) => console.error("Error in IFrameMessenger: ", e))
                     break
                 }
                 case "GET_CRATE": {
