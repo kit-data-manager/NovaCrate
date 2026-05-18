@@ -8,6 +8,8 @@ import { usePersistence } from "@/components/providers/persistence-provider"
 import { useCoreSync } from "@/lib/hooks/use-core-sync"
 import { useCrateIdPersistence } from "@/lib/hooks/use-crate-id-persistence"
 import { LoadingHero } from "@/components/loading-hero"
+import { toast } from "sonner"
+import { useGoToMainMenu } from "@/lib/hooks/hooks"
 
 const CoreContext = createContext<ICoreService | null>(null)
 
@@ -30,6 +32,9 @@ export function CoreProvider({ children }: PropsWithChildren) {
 
     const adapterRef = useRef<PersistenceAdapterImpl | null>(null)
     const coreRef = useRef<CoreServiceImpl | null>(null)
+
+    // Used only in error handling
+    const goToMainMenu = useGoToMainMenu()
 
     useEffect(() => {
         let cancelled = false
@@ -65,18 +70,31 @@ export function CoreProvider({ children }: PropsWithChildren) {
             setCore(coreInstance)
         }
 
+        function handleException(error: unknown) {
+            console.error("Failed to initialize core", error)
+            toast.error(
+                "Failed to initialize NovaCrate. Check the browser console for details. Return to the main menu to select a different crate.",
+                {
+                    duration: Infinity,
+                    dismissible: true,
+                    action: { label: "Open Main Menu", onClick: goToMainMenu },
+                    closeButton: true
+                }
+            )
+        }
+
         const remove = persistence.events.addEventListener("crate-service-changed", () => {
-            initCore()
+            initCore().catch(handleException)
         })
 
-        initCore()
+        initCore().catch(handleException)
 
         return () => {
             cancelled = true
             remove()
             disposeCurrent()
         }
-    }, [persistence])
+    }, [goToMainMenu, persistence])
 
     useCoreSync(core)
 

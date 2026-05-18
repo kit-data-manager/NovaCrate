@@ -200,13 +200,11 @@ export function EntityEditorTabs({
             <div className="bg-background h-full flex flex-col overflow-hidden rounded-lg border">
                 <Tabs tabs={tabs} currentTab={currentTab} />
                 <div className="overflow-auto">
-                    {currentTab ? (
-                        <EntityEditor
-                            key={currentTab.entityId}
-                            entityId={currentTab.entityId}
-                            toggleEntityBrowserPanel={toggleEntityBrowserPanel}
-                        />
-                    ) : null}
+                    <EntityEditor
+                        key={currentTab?.entityId ?? "--loading--"}
+                        entityId={currentTab?.entityId ?? "--loading--"}
+                        toggleEntityBrowserPanel={toggleEntityBrowserPanel}
+                    />
                 </div>
             </div>
         )

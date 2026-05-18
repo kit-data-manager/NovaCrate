@@ -8,7 +8,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import React, { useCallback, useMemo, useState } from "react"
-import { useStore } from "zustand/index"
+import { useStore } from "zustand"
 import { useShallow } from "zustand/react/shallow"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
 import { getEntityDisplayName, sortValidationResultByName } from "@/lib/utils"

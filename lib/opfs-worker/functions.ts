@@ -2,7 +2,7 @@ import * as fs from "happy-opfs"
 import { collectAsyncIterator } from "./helpers"
 import { IGNORED_FILES } from "../../lib/constants"
 
-const CRATE_STORAGE = "crate-storage" as const
+const CRATE_STORAGE = "crate-storage"
 
 function toArrayBuffer(buf: Uint8Array): ArrayBuffer {
     const { buffer, byteOffset, byteLength } = buf

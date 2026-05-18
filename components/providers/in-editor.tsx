@@ -1,33 +1,43 @@
 "use client"
 
 import { memo, PropsWithChildren, useEffect } from "react"
+import { usePersistence, useSetPersistence } from "@/components/providers/persistence-provider"
+import { IFrameMessenger } from "@/components/iframe-messenger"
 import { CoreProvider } from "@/components/providers/core-provider"
-import { usePersistence } from "@/components/providers/persistence-provider"
-import { Nav } from "@/components/nav/nav"
-import { usePathname } from "next/navigation"
 import { SchemaWorkerProvider } from "@/components/providers/schema-worker-provider"
 import { GlobalModalProvider } from "@/components/providers/global-modals-provider"
-import { useCrateName, useRecentCrates } from "@/lib/hooks/hooks"
-import DefaultActions from "@/components/actions/default-actions"
-import { ActionKeyboardShortcuts } from "@/components/actions/action-keyboard-shortcuts"
-import EntityActions from "@/components/actions/entity-actions"
-import { EntityEditorTabsSupervisor } from "@/components/editor/entity-editor-tabs-supervisor"
 import { ValidationContextProvider } from "@/components/providers/validation-context"
+import DefaultActions from "@/components/actions/default-actions"
+import EntityActions from "@/components/actions/entity-actions"
+import { ActionKeyboardShortcuts } from "@/components/actions/action-keyboard-shortcuts"
+import { EntityEditorTabsSupervisor } from "@/components/editor/entity-editor-tabs-supervisor"
 import { CrateValidationSupervisor } from "@/components/crate-validation-supervisor"
 import { DataSaveHint } from "@/components/data-save-hint"
 import { UnsavedChangesProtector } from "@/components/UnsavedChangesProtector"
+import { Nav } from "@/components/nav/nav"
+import { usePathname } from "next/navigation"
+import { useCrateName, useRecentCrates } from "@/lib/hooks/hooks"
 
-export default function EditorLayout(props: PropsWithChildren) {
+export function InEditorProviders({ children, mode }: PropsWithChildren<{ mode: string }>) {
+    const setPersistence = useSetPersistence()
+
+    useEffect(() => {
+        setPersistence(mode)
+    }, [mode, setPersistence])
+
     return (
-        <CoreProvider>
-            <SchemaWorkerProvider>
-                <GlobalModalProvider>
-                    <ValidationContextProvider>
-                        <ProviderBoundary>{props.children}</ProviderBoundary>
-                    </ValidationContextProvider>
-                </GlobalModalProvider>
-            </SchemaWorkerProvider>
-        </CoreProvider>
+        <>
+            {mode === "iframe" && <IFrameMessenger />}
+            <CoreProvider>
+                <SchemaWorkerProvider>
+                    <GlobalModalProvider>
+                        <ValidationContextProvider>
+                            <ProviderBoundary>{children}</ProviderBoundary>
+                        </ValidationContextProvider>
+                    </GlobalModalProvider>
+                </SchemaWorkerProvider>
+            </CoreProvider>
+        </>
     )
 }
 

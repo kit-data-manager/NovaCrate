@@ -11,6 +11,7 @@ import { useActionsStore } from "@/lib/state/actions"
 import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { useCore } from "@/components/providers/core-provider"
+import { usePersistence } from "@/components/providers/persistence-provider"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
 
 const MAX_LIST_LENGTH = 100
@@ -164,9 +165,13 @@ export function useGoToFileExplorer(entity?: IEntity) {
     const pathname = usePathname()
     const router = useRouter()
     const setPreviewingFilePath = useFileExplorerState((store) => store.setPreviewingFilePath)
+    const persistence = usePersistence()
 
     return useCallback(
         (_entity?: IEntity) => {
+            const fileService = persistence.getCrateService()?.getFileService()
+            if (!fileService) return
+
             if (_entity || entity) {
                 setPreviewingFilePath(_entity?.["@id"] || entity?.["@id"] || "")
             }
@@ -178,7 +183,7 @@ export function useGoToFileExplorer(entity?: IEntity) {
                     .join("/") + "/file-explorer"
             router.push(href)
         },
-        [entity, pathname, router, setPreviewingFilePath]
+        [entity, pathname, persistence, router, setPreviewingFilePath]
     )
 }
 
@@ -218,10 +223,15 @@ export function useCurrentPageName() {
  */
 export function useGoToMainMenu() {
     const router = useRouter()
+    const isEmbedded = useIsEmbedded()
 
     return useCallback(() => {
+        if (isEmbedded)
+            return console.warn(
+                "User tried to go to main menu, but that is not allowed in embedded mode"
+            )
         router.push("/editor")
-    }, [router])
+    }, [isEmbedded, router])
 }
 
 /**
@@ -316,8 +326,8 @@ export function useAction(id: string) {
 }
 
 /**
- * Helper hook to determine if the Action Registry is ready yet. The Action Registry is always safe to use, but while
- * it is not ready, yet it may miss some actions
+ * Helper hook to determine if the Action Registry is ready. The Action Registry is always safe to use, but while
+ * it is not ready yet, it may miss some actions
  */
 export function useActionsReady() {
     return useActionsStore((store) => store.isReady())
@@ -399,4 +409,12 @@ export const useHash = () => {
     }, [])
 
     return { hash }
+}
+
+export function useIsEmbedded() {
+    const path = usePathname()
+    const extract = /.*\/editor\/([^\/]+)/gm.exec(path)
+    const mode = extract && extract?.length > 1 ? extract[1] : undefined
+
+    return mode === "iframe"
 }

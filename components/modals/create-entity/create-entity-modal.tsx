@@ -113,23 +113,25 @@ export function CreateEntityModal({
                 if (!result) setUploadErrors(["File upload failed"])
                 else {
                     setCurrentUploadProgress(1)
+                    openTab({ entityId: id }, true)
                     onOpenChange(false)
                 }
             } catch (e) {
                 setUploadErrors([e])
             }
         },
-        [createFileEntity, onOpenChange, selectedType]
+        [createFileEntity, onOpenChange, openTab, selectedType]
     )
 
     const onUploadFolder = useCallback(
         async (id: string, name: string, files: File[]) => {
             setUploading(true)
             setMaxUploadProgress(files.length > 0 ? files.length : 1)
+            const folderPath = asValidPath(id, true)
             try {
                 const result = await createFolderEntity(
                     {
-                        "@id": asValidPath(id, true),
+                        "@id": folderPath,
                         "@type": selectedType,
                         name
                     },
@@ -137,7 +139,7 @@ export function CreateEntityModal({
                         return {
                             entity: {
                                 "@id":
-                                    asValidPath(id, true) +
+                                    folderPath +
                                     file.webkitRelativePath.split("/").slice(1).join("/"),
                                 "@type": resolver.reverse(RO_CRATE_FILE) || RO_CRATE_FILE,
                                 name: file.name
@@ -154,13 +156,14 @@ export function CreateEntityModal({
                 if (!result) setUploadErrors(["Folder upload failed"])
                 else {
                     setCurrentUploadProgress(files.length > 0 ? files.length : 1)
+                    openTab({ entityId: folderPath }, true)
                     onOpenChange(false)
                 }
             } catch (e) {
                 setUploadErrors([e])
             }
         },
-        [resolver, createFolderEntity, onOpenChange, selectedType]
+        [createFolderEntity, selectedType, resolver, openTab, onOpenChange]
     )
 
     const backToTypeSelect = useCallback(() => {

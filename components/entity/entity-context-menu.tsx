@@ -14,6 +14,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { useGoToEntityEditor, useGoToFileExplorer } from "@/lib/hooks/hooks"
+import { useFileService } from "@/lib/hooks/use-persistence"
 
 export function EntityContextMenu({
     entity,
@@ -26,10 +27,11 @@ export function EntityContextMenu({
     const revertEntity = useEditorState((store) => store.revertEntity)
     const { showDeleteEntityModal } = useContext(GlobalModalContext)
     const diff = useEditorState((state) => (entity ? state.getEntityDiff(entity["@id"]) : null))
+    const fileService = useFileService()
 
     const canHavePreview = useMemo(() => {
-        return entity ? canHavePreviewUtil(entity) : false
-    }, [entity])
+        return entity ? canHavePreviewUtil(entity) && fileService !== null : false
+    }, [entity, fileService])
 
     const hasUnsavedChanges = useMemo(() => {
         return entity ? diff !== Diff.None : false

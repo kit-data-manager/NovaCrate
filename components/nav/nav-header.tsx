@@ -32,7 +32,7 @@ import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { useOperationState } from "@/lib/state/operation-state"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { downloadCrateAs } from "@/lib/core/util"
-import { useAction, useCrateName, useCurrentEntity } from "@/lib/hooks/hooks"
+import { useAction, useCrateName, useCurrentEntity, useIsEmbedded } from "@/lib/hooks/hooks"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
 import { useInterval } from "usehooks-ts"
 import { getEntityDisplayName } from "@/lib/utils"
@@ -90,6 +90,7 @@ export function NavHeader() {
     // const { undo, redo } = useEditorState.temporal.getState()
     const crateContext = useStore(editorState, (s) => s.crateContext)
     const [schemaIssues, setSchemaIssues] = useState<Map<string, unknown>>(new Map())
+    const isEmbedded = useIsEmbedded()
 
     const schemaWorker = useContext(SchemaWorker)
 
@@ -210,8 +211,12 @@ export function NavHeader() {
                         </MenubarSub>
                         <ActionMenubarItem actionId="editor.settings" />
                         <ActionMenubarItem actionId="editor.about" />
-                        <MenubarSeparator />
-                        <ActionMenubarItem actionId="editor.close" />
+                        {!isEmbedded && (
+                            <>
+                                <MenubarSeparator />
+                                <ActionMenubarItem actionId="editor.close" />
+                            </>
+                        )}
                     </MenubarContent>
                 </MenubarMenu>
                 <MenubarMenu>
@@ -264,6 +269,7 @@ export function NavHeader() {
         downloadCrateZip,
         downloadRoCrateMetadataFile,
         hasUnsavedChanges,
+        isEmbedded,
         isSaving,
         showUploadFileModal,
         showUploadFolderModal,

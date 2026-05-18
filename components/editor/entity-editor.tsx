@@ -24,6 +24,7 @@ import { useShallow } from "zustand/react/shallow"
 import { TypeSelectModal } from "@/components/modals/type-select-modal"
 import { ValidationOverview } from "@/components/editor/validation/validation-overview"
 import { EntityEditorProperty, mapEntityToProperties, PropertyType } from "@/lib/property"
+import { useFileService } from "@/lib/hooks/use-persistence"
 
 export function EntityEditor({
     entityId,
@@ -43,6 +44,7 @@ export function EntityEditor({
     const removePropertyEntry = useEditorState((store) => store.removePropertyEntry)
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
+    const fileService = useFileService()
 
     // Type selection for @type fields
     const [typeSelectModalOpen, setTypeSelectModalOpen] = useState(false)
@@ -62,8 +64,8 @@ export function EntityEditor({
 
     const canHavePreview = useMemo(() => {
         if (!entity) return false
-        return canHavePreviewUtil(entity)
-    }, [entity])
+        return canHavePreviewUtil(entity) && fileService !== null
+    }, [entity, fileService])
 
     const togglePreview = useCallback(() => {
         if (canHavePreview) {

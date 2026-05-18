@@ -24,6 +24,7 @@ import { CreateEntityHint } from "@/components/modals/create-entity/create-entit
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { PathPicker } from "@/components/file-explorer/path-picker"
+import { useFileService } from "@/lib/hooks/use-persistence"
 
 export function CreateEntity({
     selectedType,
@@ -43,6 +44,7 @@ export function CreateEntity({
     onUploadFolder(id: string, name: string, files: File[]): void
 }) {
     const resolver = useContextResolver()
+    const fileService = useFileService()
 
     const [externalResource, setExternalResource] = useState(false)
     const [path, setPath] = useState("")
@@ -257,6 +259,15 @@ export function CreateEntity({
                         <div className="space-y-4">
                             <Label>Destination</Label>
                             <PathPicker onPathPicked={setPath} defaultPath={basePath} />
+                            {fileService === null && (
+                                <Error
+                                    warn
+                                    title={"File won't be added to RO-Crate"}
+                                    error={
+                                        "The metadata for this file will be created as normal, but it is not possible to add data to this RO-Crate. (No FileService available)"
+                                    }
+                                />
+                            )}
                             <Label>File</Label>
                             <div>
                                 <Button
@@ -302,6 +313,15 @@ export function CreateEntity({
                         <div className="space-y-4">
                             <Label>Destination</Label>
                             <PathPicker onPathPicked={setPath} defaultPath={basePath} />
+                            {fileService === null && (
+                                <Error
+                                    warn
+                                    title={"Files won't be added to RO-Crate"}
+                                    error={
+                                        "The metadata for the selected folder will be created as normal, but it is not possible to add data to this RO-Crate. (No FileService available)"
+                                    }
+                                />
+                            )}
                             <Label>Folder</Label>
                             <div className="flex items-center">
                                 {!emptyFolder ? (
