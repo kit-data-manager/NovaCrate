@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [1.11.0] - 2026-05-18
 
 ### Added
 - Added the ability to embed a restricted parent-controlled NovaCrate instance in an iframe for use in other websites.
@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Reengineered the core of the NovaCrate application to make it more modular, extensible, and maintainable. Some behavioral changes in the editor are expected, the functionality should not be impacted, though.
+- Reengineered the core of the NovaCrate application to make it more modular, extensible, and maintainable. Some behavioral changes in the editor are expected; the functionality should not be impacted, though.
 - Improved and hardened the RO-Crate import schema checks
 
 ### Fixed
