@@ -33,7 +33,7 @@ const IFRAME_TYPES = ["text/html"]
 
 export function determineViewerType(blob: Blob): ViewerType {
     if (UNSUPPORTED.includes(blob.type)) {
-        return ViewerType.OBJECT
+        return ViewerType.UNKNOWN
     } else if (IMAGE_TYPES.includes(blob.type)) {
         return ViewerType.IMAGE
     } else if (TEXT_TYPES.includes(blob.type)) {
@@ -41,7 +41,7 @@ export function determineViewerType(blob: Blob): ViewerType {
     } else if (IFRAME_TYPES.includes(blob.type)) {
         return ViewerType.IFRAME
     } else {
-        return ViewerType.UNSUPPORTED
+        return ViewerType.OBJECT
     }
 }
 

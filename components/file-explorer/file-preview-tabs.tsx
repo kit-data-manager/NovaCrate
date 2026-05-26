@@ -120,9 +120,5 @@ export function FilePreviewTabs() {
         return filePreviewTabs.find((tab) => tab.filePath === activeFilePreviewTabPath)
     }, [activeFilePreviewTabPath, filePreviewTabs])
 
-    return (
-        <div className="bg-background h-full flex flex-col overflow-hidden rounded-lg border">
-            <FilePreviewTabsList tabs={filePreviewTabs} currentTab={activeTab} />
-        </div>
-    )
+    return <FilePreviewTabsList tabs={filePreviewTabs} currentTab={activeTab} />
 }

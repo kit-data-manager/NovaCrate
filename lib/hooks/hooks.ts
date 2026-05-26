@@ -431,7 +431,7 @@ export function useOpenPreviewTab() {
             if (existing) {
                 focusTab(existing.filePath)
             } else {
-                openTab(makeFilePreviewTab(path))
+                openTab(makeFilePreviewTab(path), true)
             }
         },
         [focusTab, openTab]

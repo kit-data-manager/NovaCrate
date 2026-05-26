@@ -23,12 +23,10 @@ import { useCallback, useContext, useMemo } from "react"
 import { useCopyToClipboard } from "usehooks-ts"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { downloadBlob } from "@/lib/core/util"
-import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { encodeFilePath, getFolderPath } from "@/lib/utils"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { useGoToPage, useOpenPreviewTab } from "@/lib/hooks/hooks"
-import { makeFilePreviewTab } from "@/components/file-explorer/utils"
 import { toast } from "sonner"
 
 export function EntryContextMenu({
