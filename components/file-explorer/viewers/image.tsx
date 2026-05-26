@@ -1,4 +1,4 @@
-import { ViewerProps } from "@/components/file-explorer/viewers/base"
+import { ViewerProps } from "@/lib/file-preview"
 
 export function ImageViewer(props: ViewerProps) {
     if (!props.data) return null

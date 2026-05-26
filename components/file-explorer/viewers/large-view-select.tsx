@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button"
-import { useFileExplorerState, ViewerType } from "@/lib/state/file-explorer-state"
+import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { ArrowRight } from "lucide-react"
 import { useCallback } from "react"
+import { VIEWERS, ViewerType } from "@/lib/file-preview"
 
 export function ViewSelectButton({ label, type }: { label: string; type: ViewerType }) {
     const openTab = useFileExplorerState((s) => s.openTab)
@@ -33,18 +34,24 @@ export function ViewSelectButton({ label, type }: { label: string; type: ViewerT
     )
 }
 
-export function LargeViewSelect() {
+export function LargeViewSelect({ exclude }: { exclude?: ViewerType[] }) {
     return (
         <div className="flex flex-col items-center justify-center gap-8 h-full bg-background">
             How do you want to view this file?
             <div className="flex flex-col items-center">
-                <ViewSelectButton label={"Text Viewer"} type={ViewerType.TEXT} />
-                <ViewSelectButton label={"Image Viewer"} type={ViewerType.IMAGE} />
-                <ViewSelectButton label={"HTML Viewer"} type={ViewerType.IFRAME} />
-                <ViewSelectButton label={"Object Viewer (e.g. PDF)"} type={ViewerType.OBJECT} />
+                {VIEWERS.filter((v) => (exclude ? !exclude.includes(v.type) : true)).map((v) => (
+                    <ViewSelectButton
+                        key={v.type}
+                        label={v.displayName + " " + (v.subtitle ?? "")}
+                        type={v.type}
+                    />
+                ))}
             </div>
-            <div className="text-sm text-muted-foreground">
-                You can always change this using the menu that will appear at the bottom
+            <div className="text-sm text-muted-foreground text-center">
+                You can always change this using the menu that will appear at the bottom. <br />
+                {exclude ? (
+                    <>Some options were excluded as they are not viable for this file.</>
+                ) : null}
             </div>
         </div>
     )

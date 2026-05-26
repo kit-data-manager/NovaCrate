@@ -1,8 +1,4 @@
-import { IFilePreviewTab, useFileExplorerState, ViewerType } from "@/lib/state/file-explorer-state"
-import { ImageViewer } from "@/components/file-explorer/viewers/image"
-import { TextViewer } from "@/components/file-explorer/viewers/text"
-import { ObjectViewer } from "@/components/file-explorer/viewers/object"
-import { IFrameViewer } from "@/components/file-explorer/viewers/iframe"
+import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { useCallback, useEffect, useMemo } from "react"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import useSWR from "swr"
@@ -17,11 +13,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-
-export interface ViewerProps {
-    tab: IFilePreviewTab
-    data: Blob | undefined
-}
+import { ViewerProps, VIEWERS, ViewerType } from "@/lib/file-preview"
 
 export function BaseViewer({ tab }: Omit<ViewerProps, "data">) {
     const persistence = usePersistence()
@@ -58,16 +50,29 @@ export function BaseViewer({ tab }: Omit<ViewerProps, "data">) {
                 )
             case ViewerType.UNKNOWN:
                 return <LargeViewSelect />
-            case ViewerType.IFRAME:
-                return <IFrameViewer tab={tab} data={data} />
-            case ViewerType.IMAGE:
-                return <ImageViewer tab={tab} data={data} />
-            case ViewerType.TEXT:
-                return <TextViewer tab={tab} data={data} />
-            case ViewerType.OBJECT:
-                return <ObjectViewer tab={tab} data={data} />
+            default:
+                const Viewer = VIEWERS.find((v) => v.type === tab.viewerType)!.component
+                return <Viewer data={data} tab={tab} />
         }
     }, [data, tab])
+
+    const setTabType = useCallback(
+        (type: ViewerType) => {
+            const activeTabPath = useFileExplorerState.getState().activeFilePreviewTabPath
+            const activeTab = useFileExplorerState
+                .getState()
+                .filePreviewTabs.find((tab) => tab.filePath === activeTabPath)
+            if (!activeTab) return
+            openTab(
+                {
+                    ...activeTab,
+                    viewerType: type
+                },
+                true
+            )
+        },
+        [openTab]
+    )
 
     return (
         <>
@@ -84,11 +89,22 @@ export function BaseViewer({ tab }: Omit<ViewerProps, "data">) {
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button size="sm" variant="ghost" className="text-sm font-normal">
-                            Text Viewer <ChevronDown className="size-4" />
+                            {VIEWERS.find((v) => v.type === tab.viewerType)?.displayName ??
+                                "Select Viewer"}
+                            <ChevronDown className="size-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem>Text iewe</DropdownMenuItem>
+                        {VIEWERS.map((v) => (
+                            <DropdownMenuItem
+                                key={v.type}
+                                onClick={() => {
+                                    setTabType(v.type)
+                                }}
+                            >
+                                {v.displayName}
+                            </DropdownMenuItem>
+                        ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

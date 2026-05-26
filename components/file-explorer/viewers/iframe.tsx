@@ -1,6 +1,6 @@
-import { ViewerProps } from "@/components/file-explorer/viewers/base"
 import { useMemo } from "react"
 import { InfoIcon } from "lucide-react"
+import { ViewerProps } from "@/lib/file-preview"
 
 export function IFrameViewer(props: ViewerProps) {
     const url = useMemo(() => {

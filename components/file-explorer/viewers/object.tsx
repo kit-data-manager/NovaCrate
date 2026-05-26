@@ -1,6 +1,6 @@
 import { createRef, useCallback, useEffect, useState } from "react"
-import { ViewerProps } from "@/components/file-explorer/viewers/base"
 import { LargeViewSelect } from "@/components/file-explorer/viewers/large-view-select"
+import { ViewerProps, ViewerType } from "@/lib/file-preview"
 
 export function ObjectViewer({ data }: ViewerProps) {
     const previewObject = createRef<HTMLObjectElement>()
@@ -29,7 +29,7 @@ export function ObjectViewer({ data }: ViewerProps) {
 
     return (
         <>
-            {previewNotSupported ? <LargeViewSelect /> : null}
+            {previewNotSupported ? <LargeViewSelect exclude={[ViewerType.OBJECT]} /> : null}
             <object
                 ref={previewObject}
                 className={"grow w-full h-full " + (previewNotSupported || !data ? "hidden" : "")}

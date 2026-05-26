@@ -1,15 +1,7 @@
 import { create } from "zustand"
 import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 import { immer } from "zustand/middleware/immer"
-
-export enum ViewerType {
-    UNKNOWN,
-    IMAGE,
-    TEXT,
-    OBJECT,
-    IFRAME,
-    NOT_IDENTIFIED_YET = 999
-}
+import { ViewerType } from "@/lib/file-preview"
 
 export interface IFilePreviewTab {
     filePath: string
