@@ -27,7 +27,9 @@ import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { encodeFilePath, getFolderPath } from "@/lib/utils"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
-import { useGoToPage } from "@/lib/hooks/hooks"
+import { useGoToPage, useOpenPreviewTab } from "@/lib/hooks/hooks"
+import { makeFilePreviewTab } from "@/components/file-explorer/utils"
+import { toast } from "sonner"
 
 export function EntryContextMenu({
     entity,
@@ -47,8 +49,6 @@ export function EntryContextMenu({
     rename?: () => void
 }) {
     const persistence = usePersistence()
-    const setDownloadError = useFileExplorerState((store) => store.setDownloadError)
-    const setPreviewingFilePath = useFileExplorerState((s) => s.setPreviewingFilePath)
 
     const { showCreateEntityModal, showDeleteEntityModal } = useContext(GlobalModalContext)
     const [, copy] = useCopyToClipboard()
@@ -66,9 +66,16 @@ export function EntryContextMenu({
             fileService
                 .getFile(filePath)
                 .then((blob) => downloadBlob(blob, filePath.split("/").pop() || filePath))
-                .catch(setDownloadError)
+                .catch((e) => {
+                    toast.error(
+                        "Failed to download file: " +
+                            (e instanceof Error ? e.message : JSON.stringify(e))
+                    )
+                })
         }
-    }, [filePath, persistence, setDownloadError])
+    }, [filePath, persistence])
+
+    const openPreviewTab = useOpenPreviewTab()
 
     const createEntityForExistingFile = useCallback(() => {
         if (!filePath) return null
@@ -136,7 +143,7 @@ export function EntryContextMenu({
                 </ContextMenuItem>
             )}
             {filePath && !filePath.endsWith("/") && (
-                <ContextMenuItem onClick={() => setPreviewingFilePath(filePath)}>
+                <ContextMenuItem onClick={() => openPreviewTab(filePath)}>
                     <EyeIcon className="size-4 mr-2" /> Preview File
                 </ContextMenuItem>
             )}

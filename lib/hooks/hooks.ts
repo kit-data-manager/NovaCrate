@@ -13,6 +13,7 @@ import { addBasePath } from "next/dist/client/add-base-path"
 import { useCore } from "@/components/providers/core-provider"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
+import { makeFilePreviewTab } from "@/components/file-explorer/utils"
 
 const MAX_LIST_LENGTH = 100
 
@@ -164,7 +165,7 @@ export function useGoToGraph() {
 export function useGoToFileExplorer(entity?: IEntity) {
     const pathname = usePathname()
     const router = useRouter()
-    const setPreviewingFilePath = useFileExplorerState((store) => store.setPreviewingFilePath)
+    const openPreviewTab = useOpenPreviewTab()
     const persistence = usePersistence()
 
     return useCallback(
@@ -173,7 +174,7 @@ export function useGoToFileExplorer(entity?: IEntity) {
             if (!fileService) return
 
             if (_entity || entity) {
-                setPreviewingFilePath(_entity?.["@id"] || entity?.["@id"] || "")
+                openPreviewTab(_entity?.["@id"] || entity?.["@id"] || "")
             }
 
             const href =
@@ -183,7 +184,7 @@ export function useGoToFileExplorer(entity?: IEntity) {
                     .join("/") + "/file-explorer"
             router.push(href)
         },
-        [entity, pathname, persistence, router, setPreviewingFilePath]
+        [entity, openPreviewTab, pathname, persistence, router]
     )
 }
 
@@ -269,11 +270,11 @@ export function useCurrentEntity() {
     const page = useCurrentPageName()
     const activeTabEntityID = useEntityEditorTabs((store) => store.activeTabEntityID)
     const activeNodeEntityID = useGraphState((store) => store.selectedEntityID)
-    const fileExplorerFilePath = useFileExplorerState((store) => store.previewingFilePath)
+    const fileExplorerFilePath = useFileExplorerState((store) => store.activeFilePreviewTabPath)
     return useEditorState((store) => {
         if (page === "entities") {
             return store.entities.get(activeTabEntityID)
-        } else if (page === "file-explorer") {
+        } else if (page === "file-explorer" && fileExplorerFilePath) {
             return store.entities.get(fileExplorerFilePath)
         } else if (page === "graph" && activeNodeEntityID) {
             return store.entities.get(activeNodeEntityID)
@@ -417,4 +418,22 @@ export function useIsEmbedded() {
     const mode = extract && extract?.length > 1 ? extract[1] : undefined
 
     return mode === "iframe"
+}
+
+export function useOpenPreviewTab() {
+    const openTab = useFileExplorerState((s) => s.openTab)
+    const focusTab = useFileExplorerState((s) => s.focusTab)
+    return useCallback(
+        (path: string) => {
+            const existing = useFileExplorerState
+                .getState()
+                .filePreviewTabs.find((tab) => tab.filePath === path)
+            if (existing) {
+                focusTab(existing.filePath)
+            } else {
+                openTab(makeFilePreviewTab(path))
+            }
+        },
+        [focusTab, openTab]
+    )
 }

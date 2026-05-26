@@ -21,12 +21,13 @@ function EntityEditorFilePreview(props: PropsWithChildren) {
             <ResizableHandle className="m-0.5" />
             <ResizablePanel defaultSize={34} minSize={20}>
                 <div className="h-full w-full overflow-auto">
-                    <FilePreview
-                        doubleHeight={true}
-                        previewingFilePath={previewingFilePath}
-                        setPreviewingFilePath={setPreviewingFilePath}
-                        setDownloadError={console.error}
-                    />
+                    {/* TODO */}
+                    {/*<FilePreview*/}
+                    {/*    doubleHeight={true}*/}
+                    {/*    previewingFilePath={previewingFilePath}*/}
+                    {/*    setPreviewingFilePath={setPreviewingFilePath}*/}
+                    {/*    setDownloadError={console.error}*/}
+                    {/*/>*/}
                 </div>
             </ResizablePanel>
         </ResizablePanelGroup>

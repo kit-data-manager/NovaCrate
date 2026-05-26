@@ -1,52 +1,74 @@
-import { ObjectViewer } from "@/components/file-explorer/viewers/object"
+import { IFilePreviewTab, useFileExplorerState, ViewerType } from "@/lib/state/file-explorer-state"
 import { ImageViewer } from "@/components/file-explorer/viewers/image"
 import { TextViewer } from "@/components/file-explorer/viewers/text"
-import { PreviewNotSupported } from "@/components/file-explorer/viewers/not-supported"
-import { Eye } from "lucide-react"
+import { ObjectViewer } from "@/components/file-explorer/viewers/object"
 import { IFrameViewer } from "@/components/file-explorer/viewers/iframe"
+import { PreviewNotSupported } from "@/components/file-explorer/viewers/not-supported"
+import { useCallback, useEffect, useMemo } from "react"
+import { usePersistence } from "@/components/providers/persistence-provider"
+import useSWR from "swr"
+import { getFileAsURL } from "@/lib/core/util"
+import { Error as ErrorDisplay } from "@/components/error"
+import { determineViewerType } from "@/components/file-explorer/utils"
 
 export interface ViewerProps {
-    data?: Blob
-    setPreviewNotSupported(val: boolean): void
-    previewNotSupported: boolean
-    loading: boolean
+    tab: IFilePreviewTab
+    data: Blob | undefined
 }
 
-const UNSUPPORTED = ["application/octet-stream"]
+export function BaseViewer({ tab }: Omit<ViewerProps, "data">) {
+    const persistence = usePersistence()
+    const openTab = useFileExplorerState((s) => s.openTab)
 
-const IMAGE_TYPES = [
-    "image/png",
-    "image/jpeg",
-    "image/gif",
-    "image/x-icon",
-    "image/svg+xml",
-    "image/webp",
-    "image/apng"
-]
-const TEXT_TYPES = ["text/plain", "application/json"]
-const IFRAME_TYPES = ["text/html"]
+    const resourceUrl = useMemo(() => {
+        const fileService = persistence.getCrateService()?.getFileService()
+        if (fileService) {
+            return getFileAsURL(fileService, tab.filePath)
+        } else return undefined
+    }, [persistence, tab.filePath])
 
-export function BaseViewer(props: ViewerProps) {
-    if (!props.data)
-        return (
-            <div className="grow flex justify-center items-center">
-                <div className="flex flex-col justify-center items-center p-10 text-center text-muted-foreground">
-                    <Eye className="w-20 h-20" />
-                    <div className="text-2xl py-4">File Preview</div>
-                    <div>Select a file on the left to preview it here</div>
-                </div>
-            </div>
-        )
+    const fileFetcher = useCallback(async (url: Promise<string>) => {
+        const resolvedUrl = await url
+        const req = await fetch(resolvedUrl)
+        if (req.ok) {
+            return await req.blob()
+        } else {
+            throw new Error("Failed to fetch file: " + req.statusText + " (" + req.status + ")")
+        }
+    }, [])
 
-    if (UNSUPPORTED.includes(props.data.type)) {
-        return <PreviewNotSupported />
-    } else if (IFRAME_TYPES.includes(props.data.type)) {
-        return <IFrameViewer {...props} />
-    } else if (IMAGE_TYPES.includes(props.data.type)) {
-        return <ImageViewer {...props} />
-    } else if (TEXT_TYPES.includes(props.data.type)) {
-        return <TextViewer {...props} />
-    } else {
-        return <ObjectViewer {...props} />
-    }
+    const { data, error, isLoading } = useSWR(resourceUrl, fileFetcher)
+
+    useEffect(() => {
+        if (data && tab.viewerType === ViewerType.NOT_IDENTIFIED_YET) {
+            openTab({
+                ...tab,
+                viewerType: determineViewerType(data)
+            })
+        }
+    }, [data, openTab, tab])
+
+    const Content = useMemo(() => {
+        switch (tab.viewerType) {
+            case ViewerType.NOT_IDENTIFIED_YET:
+                return <div>Identifying file type...</div>
+            case ViewerType.UNSUPPORTED:
+                return <PreviewNotSupported />
+            case ViewerType.IFRAME:
+                return <IFrameViewer tab={tab} data={data} />
+            case ViewerType.IMAGE:
+                return <ImageViewer tab={tab} data={data} />
+            case ViewerType.TEXT:
+                return <TextViewer tab={tab} data={data} />
+            case ViewerType.OBJECT:
+                return <ObjectViewer tab={tab} data={data} />
+        }
+    }, [data, tab])
+
+    return (
+        <div>
+            <ErrorDisplay title={"Could not load file for preview"} error={error} />
+            {isLoading ? <div>Loading...</div> : Content}
+        </div>
+    )
 }

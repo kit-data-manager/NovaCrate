@@ -1,14 +1,10 @@
-import { createRef, useCallback, useEffect } from "react"
+import { createRef, useCallback, useEffect, useState } from "react"
 import { ViewerProps } from "@/components/file-explorer/viewers/base"
 import { PreviewNotSupported } from "@/components/file-explorer/viewers/not-supported"
 
-export function ObjectViewer({
-    data,
-    setPreviewNotSupported,
-    previewNotSupported,
-    loading
-}: ViewerProps) {
+export function ObjectViewer({ data }: ViewerProps) {
     const previewObject = createRef<HTMLObjectElement>()
+    const [previewNotSupported, setPreviewNotSupported] = useState(false)
 
     const handlePreviewObjectError = useCallback(() => {
         setPreviewNotSupported(true)
@@ -36,7 +32,7 @@ export function ObjectViewer({
             {previewNotSupported ? <PreviewNotSupported /> : null}
             <object
                 ref={previewObject}
-                className={"grow " + (previewNotSupported || loading ? "hidden" : "")}
+                className={"grow " + (previewNotSupported || !data ? "hidden" : "")}
                 data={URL.createObjectURL(data || new Blob([]))}
             />
         </>
