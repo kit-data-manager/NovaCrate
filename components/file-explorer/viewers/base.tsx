@@ -14,6 +14,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { ViewerProps, VIEWERS, ViewerType } from "@/lib/file-preview"
+import { useFileService } from "@/lib/hooks/use-persistence"
 
 export function BaseViewer({ tab }: Omit<ViewerProps, "data">) {
     const persistence = usePersistence()
@@ -29,7 +30,7 @@ export function BaseViewer({ tab }: Omit<ViewerProps, "data">) {
         [persistence]
     )
 
-    const { data, error, isLoading } = useSWR(tab.filePath, fileFetcher)
+    const { data, error, isLoading, mutate } = useSWR(tab.filePath, fileFetcher)
 
     useEffect(() => {
         if (data && tab.viewerType === ViewerType.NOT_IDENTIFIED_YET) {
@@ -39,6 +40,22 @@ export function BaseViewer({ tab }: Omit<ViewerProps, "data">) {
             })
         }
     }, [data, openTab, tab])
+
+    const fileService = useFileService()
+
+    useEffect(() => {
+        if (fileService) {
+            const remove = fileService.events.addEventListener("file-updated", (path) => {
+                if (path === tab.filePath) {
+                    mutate().then()
+                }
+            })
+
+            return () => {
+                remove()
+            }
+        }
+    }, [fileService, mutate, tab.filePath])
 
     const Content = useMemo(() => {
         switch (tab.viewerType) {

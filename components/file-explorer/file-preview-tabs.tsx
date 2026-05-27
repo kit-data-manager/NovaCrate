@@ -10,6 +10,7 @@ import {
     ContextMenuTrigger
 } from "@/components/ui/context-menu"
 import { IFilePreviewTab, useFileExplorerState } from "@/lib/state/file-explorer-state"
+import { useFileService } from "@/lib/hooks/use-persistence"
 
 function FilePreviewTab({ tab, active }: { tab: IFilePreviewTab; active: boolean }) {
     const focusTab = useFileExplorerState((store) => store.focusTab)
@@ -115,10 +116,47 @@ function FilePreviewTabsList({
 export function FilePreviewTabs() {
     const filePreviewTabs = useFileExplorerState((s) => s.filePreviewTabs)
     const activeFilePreviewTabPath = useFileExplorerState((s) => s.activeFilePreviewTabPath)
+    const closeTab = useFileExplorerState((s) => s.closeTab)
+    const openTab = useFileExplorerState((s) => s.openTab)
 
     const activeTab = useMemo(() => {
         return filePreviewTabs.find((tab) => tab.filePath === activeFilePreviewTabPath)
     }, [activeFilePreviewTabPath, filePreviewTabs])
+
+    const fileService = useFileService()
+
+    // Listen for file changes
+    useEffect(() => {
+        if (fileService) {
+            const remove1 = fileService.events.addEventListener("file-deleted", (path) => {
+                closeTab(path)
+            })
+
+            const remove2 = fileService.events.addEventListener(
+                "file-moved",
+                (oldPath, newPath) => {
+                    const existedPreviously = filePreviewTabs.find(
+                        (tab) => tab.filePath === oldPath
+                    )
+                    closeTab(oldPath)
+                    if (existedPreviously) {
+                        openTab(
+                            {
+                                ...existedPreviously,
+                                filePath: newPath
+                            },
+                            true
+                        )
+                    }
+                }
+            )
+
+            return () => {
+                remove1()
+                remove2()
+            }
+        }
+    }, [closeTab, filePreviewTabs, fileService, openTab])
 
     return <FilePreviewTabsList tabs={filePreviewTabs} currentTab={activeTab} />
 }
