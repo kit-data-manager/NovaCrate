@@ -16,6 +16,7 @@ export enum ViewerType {
 
 export interface ViewerProps {
     tab: IFilePreviewTab
+    updateTab: (tab: IFilePreviewTab) => void
     data: Blob | undefined
 }
 
