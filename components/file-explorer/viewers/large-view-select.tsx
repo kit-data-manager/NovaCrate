@@ -1,32 +1,21 @@
 import { Button } from "@/components/ui/button"
-import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { ArrowRight } from "lucide-react"
-import { useCallback } from "react"
 import { VIEWERS, ViewerType } from "@/lib/file-preview"
 
-export function ViewSelectButton({ label, type }: { label: string; type: ViewerType }) {
-    const openTab = useFileExplorerState((s) => s.openTab)
-
-    const setType = useCallback(() => {
-        const activeTabPath = useFileExplorerState.getState().activeFilePreviewTabPath
-        const activeTab = useFileExplorerState
-            .getState()
-            .filePreviewTabs.find((tab) => tab.filePath === activeTabPath)
-        if (!activeTab) return
-        openTab(
-            {
-                ...activeTab,
-                viewerType: type
-            },
-            true
-        )
-    }, [openTab, type])
-
+export function ViewSelectButton({
+    label,
+    type,
+    setType
+}: {
+    label: string
+    type: ViewerType
+    setType: (type: ViewerType) => void
+}) {
     return (
         <Button
             className="w-sm rounded-none first:rounded-t-lg last:rounded-b-lg border-b-0 last:border-b flex justify-between"
             variant="outline"
-            onClick={setType}
+            onClick={() => setType(type)}
         >
             {label}
             <ArrowRight className="size-4" />
@@ -34,7 +23,13 @@ export function ViewSelectButton({ label, type }: { label: string; type: ViewerT
     )
 }
 
-export function LargeViewSelect({ exclude }: { exclude?: ViewerType[] }) {
+export function LargeViewSelect({
+    exclude,
+    setType
+}: {
+    setType: (type: ViewerType) => void
+    exclude?: ViewerType[]
+}) {
     return (
         <div className="flex flex-col items-center justify-center gap-8 h-full bg-background">
             How do you want to view this file?
@@ -44,6 +39,7 @@ export function LargeViewSelect({ exclude }: { exclude?: ViewerType[] }) {
                         key={v.type}
                         label={v.displayName + " " + (v.subtitle ?? "")}
                         type={v.type}
+                        setType={setType}
                     />
                 ))}
             </div>

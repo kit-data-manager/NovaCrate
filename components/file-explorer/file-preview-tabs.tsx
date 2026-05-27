@@ -7,10 +7,15 @@ import {
     ContextMenu,
     ContextMenuContent,
     ContextMenuItem,
+    ContextMenuSeparator,
     ContextMenuTrigger
 } from "@/components/ui/context-menu"
 import { IFilePreviewTab, useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { useFileService } from "@/lib/hooks/use-persistence"
+import { EntryContextMenu } from "@/components/file-explorer/entry-context-menu"
+import { useEditorState } from "@/lib/state/editor-state"
+import { findEntity } from "@/lib/utils"
+import { useGoToEntityEditor } from "@/lib/hooks/hooks"
 
 function FilePreviewTab({ tab, active }: { tab: IFilePreviewTab; active: boolean }) {
     const focusTab = useFileExplorerState((store) => store.focusTab)
@@ -19,6 +24,9 @@ function FilePreviewTab({ tab, active }: { tab: IFilePreviewTab; active: boolean
     const closeOtherTabs = useFileExplorerState((store) => store.closeOtherTabs)
 
     const button = useRef<HTMLButtonElement>(null)
+
+    const entity = useEditorState((s) => findEntity(s.entities, tab.filePath))
+    const goToEntity = useGoToEntityEditor(entity)
 
     const focus = useCallback(() => {
         focusTab(tab.filePath)
@@ -71,6 +79,15 @@ function FilePreviewTab({ tab, active }: { tab: IFilePreviewTab; active: boolean
                 <ContextMenuItem onClick={closeOthers}>
                     <XIcon className="size-4 mr-2" /> Close Others
                 </ContextMenuItem>
+                <ContextMenuSeparator />
+                <EntryContextMenu
+                    filePath={tab.filePath}
+                    fileName={tab.fileName}
+                    as={"div"}
+                    entity={entity}
+                    folder={false}
+                    goToEntity={goToEntity}
+                />
             </ContextMenuContent>
         </ContextMenu>
     )

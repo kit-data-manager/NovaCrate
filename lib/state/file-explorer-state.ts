@@ -2,6 +2,7 @@ import { create } from "zustand"
 import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 import { immer } from "zustand/middleware/immer"
 import { ViewerType } from "@/lib/file-preview"
+import { normalizeIdentifier } from "@/lib/utils"
 
 export interface IFilePreviewTab {
     filePath: string
@@ -30,7 +31,7 @@ export const useFileExplorerState = create<FileExplorerState>()(
                     if (focus) store.activeFilePreviewTabPath = tab.filePath
 
                     const existing = store.filePreviewTabs.findIndex(
-                        (t) => t.filePath === tab.filePath
+                        (t) => normalizeIdentifier(t.filePath) === normalizeIdentifier(tab.filePath)
                     )
                     if (existing >= 0) {
                         store.filePreviewTabs[existing] = tab
@@ -43,7 +44,11 @@ export const useFileExplorerState = create<FileExplorerState>()(
             },
 
             focusTab(path: string) {
-                if (!get().filePreviewTabs.find((tab) => tab.filePath === path)) {
+                if (
+                    !get().filePreviewTabs.find(
+                        (tab) => normalizeIdentifier(tab.filePath) === normalizeIdentifier(path)
+                    )
+                ) {
                     console.warn(
                         `Tried to focus file preview tab for ${path}, but the tab does not exist`
                     )
@@ -57,7 +62,7 @@ export const useFileExplorerState = create<FileExplorerState>()(
             closeTab(path: string) {
                 set((store) => {
                     const indexBefore = store.filePreviewTabs.findIndex(
-                        (tab) => tab.filePath === path
+                        (tab) => normalizeIdentifier(tab.filePath) === normalizeIdentifier(path)
                     )
                     if (indexBefore >= 0) {
                         if (indexBefore > 0) {
@@ -73,7 +78,7 @@ export const useFileExplorerState = create<FileExplorerState>()(
                         }
                     }
                     store.filePreviewTabs = store.filePreviewTabs.filter(
-                        (tab) => tab.filePath !== path
+                        (tab) => normalizeIdentifier(tab.filePath) !== normalizeIdentifier(path)
                     )
 
                     return store
@@ -83,7 +88,7 @@ export const useFileExplorerState = create<FileExplorerState>()(
             closeOtherTabs(path: string) {
                 set((store) => {
                     store.filePreviewTabs = store.filePreviewTabs.filter(
-                        (tab) => tab.filePath === path
+                        (tab) => normalizeIdentifier(tab.filePath) === normalizeIdentifier(path)
                     )
                     store.activeFilePreviewTabPath = path
                     return store

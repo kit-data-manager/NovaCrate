@@ -1,4 +1,4 @@
-import { useFileExplorerState } from "@/lib/state/file-explorer-state"
+import { IFilePreviewTab } from "@/lib/state/file-explorer-state"
 import { useCallback, useEffect, useMemo } from "react"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import useSWR from "swr"
@@ -13,12 +13,17 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { ViewerProps, VIEWERS, ViewerType } from "@/lib/file-preview"
+import { VIEWERS, ViewerType } from "@/lib/file-preview"
 import { useFileService } from "@/lib/hooks/use-persistence"
 
-export function BaseViewer({ tab }: Omit<ViewerProps, "data">) {
+export function BaseViewer({
+    tab,
+    updateTab
+}: {
+    tab: IFilePreviewTab
+    updateTab: (tab: IFilePreviewTab) => void
+}) {
     const persistence = usePersistence()
-    const openTab = useFileExplorerState((s) => s.openTab)
 
     const fileFetcher = useCallback(
         async (filePath: string) => {
@@ -34,12 +39,12 @@ export function BaseViewer({ tab }: Omit<ViewerProps, "data">) {
 
     useEffect(() => {
         if (data && tab.viewerType === ViewerType.NOT_IDENTIFIED_YET) {
-            openTab({
+            updateTab({
                 ...tab,
                 viewerType: determineViewerType(data)
             })
         }
-    }, [data, openTab, tab])
+    }, [data, updateTab, tab])
 
     const fileService = useFileService()
 
@@ -57,6 +62,16 @@ export function BaseViewer({ tab }: Omit<ViewerProps, "data">) {
         }
     }, [fileService, mutate, tab.filePath])
 
+    const setType = useCallback(
+        (type: ViewerType) => {
+            updateTab({
+                ...tab,
+                viewerType: type
+            })
+        },
+        [tab, updateTab]
+    )
+
     const Content = useMemo(() => {
         switch (tab.viewerType) {
             case ViewerType.NOT_IDENTIFIED_YET:
@@ -66,30 +81,12 @@ export function BaseViewer({ tab }: Omit<ViewerProps, "data">) {
                     </div>
                 )
             case ViewerType.UNKNOWN:
-                return <LargeViewSelect />
+                return <LargeViewSelect setType={setType} />
             default:
                 const Viewer = VIEWERS.find((v) => v.type === tab.viewerType)!.component
                 return <Viewer data={data} tab={tab} />
         }
-    }, [data, tab])
-
-    const setTabType = useCallback(
-        (type: ViewerType) => {
-            const activeTabPath = useFileExplorerState.getState().activeFilePreviewTabPath
-            const activeTab = useFileExplorerState
-                .getState()
-                .filePreviewTabs.find((tab) => tab.filePath === activeTabPath)
-            if (!activeTab) return
-            openTab(
-                {
-                    ...activeTab,
-                    viewerType: type
-                },
-                true
-            )
-        },
-        [openTab]
-    )
+    }, [data, setType, tab])
 
     return (
         <>
@@ -116,7 +113,7 @@ export function BaseViewer({ tab }: Omit<ViewerProps, "data">) {
                             <DropdownMenuItem
                                 key={v.type}
                                 onClick={() => {
-                                    setTabType(v.type)
+                                    setType(v.type)
                                 }}
                             >
                                 {v.displayName}

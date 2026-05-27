@@ -4,7 +4,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { usePathname, useRouter } from "next/navigation"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
-import { getEntityDisplayName } from "@/lib/utils"
+import { findEntity, getEntityDisplayName } from "@/lib/utils"
 import { useGraphState } from "@/lib/state/graph-state"
 import { Action, notFoundAction } from "@/lib/state/actions"
 import { useActionsStore } from "@/lib/state/actions"
@@ -273,11 +273,11 @@ export function useCurrentEntity() {
     const fileExplorerFilePath = useFileExplorerState((store) => store.activeFilePreviewTabPath)
     return useEditorState((store) => {
         if (page === "entities") {
-            return store.entities.get(activeTabEntityID)
+            return findEntity(store.entities, activeTabEntityID)
         } else if (page === "file-explorer" && fileExplorerFilePath) {
-            return store.entities.get(fileExplorerFilePath)
+            return findEntity(store.entities, fileExplorerFilePath)
         } else if (page === "graph" && activeNodeEntityID) {
-            return store.entities.get(activeNodeEntityID)
+            return findEntity(store.entities, activeNodeEntityID)
         } else return undefined
     })
 }

@@ -257,3 +257,7 @@ The persistence layer handles storage. The only current implementation is browse
 - **Monaco Editor** - Code editor
 - **Playwright** - E2E testing
 - **Jest** - Unit testing
+
+## Important Restrictions
+
+- When getting an entity by its ID, use a utility method like findEntity from "@/lib/utils", as an ID can be formatted in multiple ways

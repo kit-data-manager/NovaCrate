@@ -19,7 +19,7 @@ import {
 } from "lucide-react"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import HelpTooltip from "@/components/help-tooltip"
-import { useCallback, useContext, useMemo } from "react"
+import { ComponentType, JSX, useCallback, useContext, useMemo } from "react"
 import { useCopyToClipboard } from "usehooks-ts"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { downloadBlob } from "@/lib/core/util"
@@ -36,7 +36,8 @@ export function EntryContextMenu({
     folder,
     goToEntity,
     blankSpace,
-    rename
+    rename,
+    as
 }: {
     entity?: IEntity
     filePath?: string
@@ -45,6 +46,7 @@ export function EntryContextMenu({
     goToEntity?: () => void
     blankSpace?: boolean
     rename?: () => void
+    as?: ComponentType | keyof JSX.IntrinsicElements
 }) {
     const persistence = usePersistence()
 
@@ -122,10 +124,12 @@ export function EntryContextMenu({
 
     const goToJsonEditor = useGoToPage("json-editor")
 
-    if (blankSpace) return <ContextMenuContent>{NewButtons}</ContextMenuContent>
+    const As = as ?? ContextMenuContent
+
+    if (blankSpace) return <As>{NewButtons}</As>
 
     return (
-        <ContextMenuContent className="min-w-52">
+        <As className="min-w-52">
             {entity ? (
                 <ContextMenuItem onClick={() => (goToEntity ? goToEntity() : "")}>
                     <EntityIcon entity={entity} size="sm" /> Go to Entity
@@ -198,6 +202,6 @@ export function EntryContextMenu({
 
             <ContextMenuSeparator />
             {NewButtons}
-        </ContextMenuContent>
+        </As>
     )
 }
