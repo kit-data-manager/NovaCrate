@@ -18,9 +18,11 @@
     "serve": "serve out -L -p 3000"
   },
   "dependencies": {
+    "@ai-sdk/react": "^3.0.187",
     "@frogcat/ttl2jsonld": "^0.0.10",
     "@monaco-editor/react": "^4.6.0",
     "@next/bundle-analyzer": "^16.0.0",
+    "@openrouter/ai-sdk-provider": "^2.9.0",
     "@radix-ui/react-accordion": "^1.2.7",
     "@radix-ui/react-alert-dialog": "^1.1.10",
     "@radix-ui/react-checkbox": "^1.2.2",
@@ -43,6 +45,7 @@
     "@types/dagre": "^0.7.52",
     "@types/luxon": "^3.4.2",
     "@types/memoizee": "^0.4.12",
+    "ai": "^6.0.185",
     "auto-bind": "^5.0.1",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.0",
@@ -76,7 +79,7 @@
     "tailwindcss-animate": "^1.0.7",
     "use-sync-external-store": "^1.5.0",
     "usehooks-ts": "^3.1.0",
-    "zod": "^4.0.10",
+    "zod": "^4.4.3",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
