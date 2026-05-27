@@ -21,7 +21,6 @@ export function getNameFromPath(path: string) {
 const UNSUPPORTED = ["application/octet-stream"]
 
 export function determineViewerType(blob: Blob): ViewerType {
-    console.log(blob.type)
     if (UNSUPPORTED.includes(blob.type)) {
         return ViewerType.UNKNOWN
     } else {

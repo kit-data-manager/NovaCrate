@@ -25,7 +25,7 @@ export function TextViewer(props: ViewerProps) {
             <Editor
                 value={data}
                 options={{ readOnly: true }}
-                defaultLanguage={props.data.type}
+                path={props.tab.filePath}
                 onMount={handleMount}
                 theme={theme.resolvedTheme === "dark" ? "crate-dark" : "light"}
             />

@@ -85,6 +85,7 @@ export const useFileExplorerState = create<FileExplorerState>()(
                     store.filePreviewTabs = store.filePreviewTabs.filter(
                         (tab) => tab.filePath === path
                     )
+                    store.activeFilePreviewTabPath = path
                     return store
                 })
             },
