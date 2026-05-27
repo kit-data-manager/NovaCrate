@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- Added a tabbed interface to the file explorer, resembling that of the entity explorer. You can now open multiple files and switch between them effortlessly.
+- Added the ability to change the type of the viewer in the file explorer. You can choose between the preexisting integrated viewers: Text view, Image view, Object view, Iframe view. This should be especially useful for file types that are not correctly recognized automatically. This also sets the groundwork for extending NovaCrate with other viewers (e.g. CSV) in the future
+
 ## [1.11.1] - 2026-05-18
 
 ### Fixed
