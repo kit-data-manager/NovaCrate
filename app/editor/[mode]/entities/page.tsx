@@ -38,8 +38,6 @@ function EntityEditorFilePreview(props: PropsWithChildren) {
         setPreviewTab(makeFilePreviewTab(previewingFilePath))
     }
 
-    // TODO there are path resolving issues in the file explorer!
-
     return (
         <ResizablePanelGroup direction="horizontal">
             <ResizablePanel defaultSize={66} minSize={20}>

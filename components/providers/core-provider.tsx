@@ -13,7 +13,6 @@ import { useGoToMainMenu } from "@/lib/hooks/hooks"
 import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useGraphState } from "@/lib/state/graph-state"
-import { useValidationStore } from "@/lib/validation/hooks"
 
 const CoreContext = createContext<ICoreService | null>(null)
 
