@@ -1,8 +1,6 @@
 "use client"
 
-import { tool, DirectChatTransport, ToolLoopAgent } from "ai"
-import { createOpenRouter } from "@openrouter/ai-sdk-provider"
-import { z } from "zod/mini"
+import { DirectChatTransport } from "ai"
 import { useChat } from "@ai-sdk/react"
 import { Input } from "@/components/ui/input"
 import { PropsWithChildren, useCallback, useState } from "react"
@@ -11,46 +9,13 @@ import { ChevronRight, EyeIcon, LoaderCircle, PencilIcon, SquareStopIcon } from 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Error } from "@/components/error"
 import Markdown from "react-markdown"
-
-const API_KEY = "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"
-
-const readEntityTool = tool({
-    description: "Read the metadata of a specific entity",
-    inputSchema: z.object({
-        entityId: z.string()
-    }),
-    execute: async ({ entityId }) => {
-        return { "@id": entityId, "@type": "File", author: "#christopher", license: "Apache-2.0" }
-    }
-})
-
-const editEntityTool = tool({
-    description: "Edit a specific metadata entity",
-    inputSchema: z.object({
-        entityId: z.string(),
-        content: z.json()
-    }),
-    execute: async ({ entityId, content }) => {
-        console.log("edit entity executed", entityId, content)
-    }
-})
-
-const openRouter = createOpenRouter({
-    apiKey: API_KEY
-})
-
-const agent = new ToolLoopAgent({
-    model: openRouter("openrouter/owl-alpha"),
-    tools: {
-        editEntityTool,
-        readEntityTool
-    },
-    instructions:
-        "You are a helpful assistant that can read and edit metadata entities. The metadata follows the JSON-LD format and is embedded in a Research Object Crate. Make sure to READ FIRST and WRITE SECOND, when changing metadata of entities. Always consider the request of the user as the HIGHEST PRIORITY"
-})
+import { ModelSelection } from "@/app/ai/model-selection"
+import { useAgent } from "@/app/ai/utils"
 
 export default function AIPage() {
     const [message, setMessage] = useState("")
+
+    const agent = useAgent()
 
     const {
         messages,
@@ -60,9 +25,11 @@ export default function AIPage() {
         error,
         clearError
     } = useChat({
-        transport: new DirectChatTransport({
-            agent
-        })
+        transport: agent
+            ? new DirectChatTransport({
+                  agent
+              })
+            : undefined
     })
 
     const sendMessage = useCallback(() => {
@@ -181,13 +148,18 @@ export default function AIPage() {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                 />
-                {status === "ready" && <Button onClick={sendMessage}>Send</Button>}
+                {status === "ready" && (
+                    <Button onClick={sendMessage} disabled={!agent}>
+                        Send
+                    </Button>
+                )}
                 {(status === "submitted" || status === "streaming") && (
                     <Button onClick={stop}>
                         <SquareStopIcon className="size-4" />
                     </Button>
                 )}
             </div>
+            <ModelSelection />
         </div>
     )
 }

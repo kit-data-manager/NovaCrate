@@ -7,22 +7,27 @@ export enum LanguageModelProvider {
     OPEN_ROUTER = "openrouter"
 }
 
-interface TextModel {
+export interface TextModel {
+    id: string
+    displayName: string
     free: boolean
 }
 
-interface ProviderConfiguration {
-    apiToken: string
+export interface ProviderConfiguration {
+    provider: LanguageModelProvider
+    displayName: string
+    apiKey: string
     selectedModel?: string
-    models: Map<string, TextModel>
+    models: TextModel[]
 }
 
 export interface AIAssistantSettings {
     activeProvider?: LanguageModelProvider
-    providers: Map<LanguageModelProvider, ProviderConfiguration>
-    configureProvider(provider: LanguageModelProvider, config: ProviderConfiguration): void
+    providers: ProviderConfiguration[]
+    getActiveProvider(): ProviderConfiguration | undefined
+    configureProvider(config: ProviderConfiguration): void
     activateProvider(provider: LanguageModelProvider): void
-    addModel(provider: LanguageModelProvider, modelName: string, modelConfig: TextModel): void
+    addModel(provider: LanguageModelProvider, modelConfig: TextModel): void
     removeModel(provider: LanguageModelProvider, modelName: string): void
     activateModel(provider: LanguageModelProvider, modelName: string): void
 }
@@ -31,43 +36,58 @@ export const useAIAssistantSettings = create<AIAssistantSettings>()(
     ssrSafe(
         immer(
             persist(
-                (set) => ({
+                (set, get) => ({
                     activeProvider: undefined,
-                    providers: new Map(),
-                    configureProvider(
-                        provider: LanguageModelProvider,
-                        config: ProviderConfiguration
-                    ) {
+                    providers: [],
+                    getActiveProvider() {
+                        return get().providers.find((p) => p.provider === get().activeProvider)
+                    },
+                    configureProvider(config: ProviderConfiguration) {
                         set((store) => {
-                            store.providers.set(provider, config)
+                            const existing = store.providers.findIndex(
+                                (p) => p.provider === config.provider
+                            )
+                            if (existing >= 0) {
+                                store.providers[existing] = config
+                            } else {
+                                store.providers.push(config)
+                            }
                         })
                     },
                     activateProvider(provider: LanguageModelProvider) {
                         set({ activeProvider: provider })
                     },
-                    addModel(
-                        provider: LanguageModelProvider,
-                        modelName: string,
-                        modelConfig: TextModel
-                    ) {
+                    addModel(provider: LanguageModelProvider, modelConfig: TextModel) {
                         set((store) => {
-                            if (store.providers.has(provider)) {
-                                store.providers.get(provider)!.models.set(modelName, modelConfig)
+                            const match = store.providers.find((p) => p.provider === provider)
+                            if (match) {
+                                const existing = match.models.findIndex(
+                                    (m) => m.id === modelConfig.id
+                                )
+                                if (existing >= 0) {
+                                    match.models[existing] = modelConfig
+                                } else {
+                                    match.models.push(modelConfig)
+                                }
                             }
                         })
                     },
                     removeModel(provider: LanguageModelProvider, modelName: string) {
                         set((store) => {
-                            if (store.providers.has(provider)) {
-                                store.providers.get(provider)!.models.delete(modelName)
-                            }
+                            store.providers.forEach((p) => {
+                                if (p.provider === provider) {
+                                    p.models = p.models.filter((m) => m.id !== modelName)
+                                }
+                            })
                         })
                     },
                     activateModel(provider: LanguageModelProvider, modelName: string) {
                         set((store) => {
-                            if (store.providers.has(provider)) {
-                                if (store.providers.get(provider)!.models.has(modelName)) {
-                                    store.providers.get(provider)!.selectedModel = modelName
+                            const match = store.providers.find((p) => p.provider === provider)
+                            if (match) {
+                                const model = match.models.find((m) => m.id === modelName)
+                                if (model) {
+                                    match.selectedModel = model.id
                                 }
                             }
                         })
