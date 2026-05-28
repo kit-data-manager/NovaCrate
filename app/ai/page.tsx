@@ -1,11 +1,16 @@
 "use client"
 
-import { useCallback, useState } from "react"
-import { stepCountIs, streamText, tool } from "ai"
-import { Button } from "@/components/ui/button"
+import { tool, DirectChatTransport, ToolLoopAgent } from "ai"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 import { z } from "zod/mini"
-import { LoaderCircle } from "lucide-react"
+import { useChat } from "@ai-sdk/react"
+import { Input } from "@/components/ui/input"
+import { PropsWithChildren, useCallback, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { ChevronRight, EyeIcon, LoaderCircle, PencilIcon, SquareStopIcon } from "lucide-react"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Error } from "@/components/error"
+import Markdown from "react-markdown"
 
 const API_KEY = "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"
 
@@ -30,67 +35,159 @@ const editEntityTool = tool({
     }
 })
 
+const openRouter = createOpenRouter({
+    apiKey: API_KEY
+})
+
+const agent = new ToolLoopAgent({
+    model: openRouter("openrouter/owl-alpha"),
+    tools: {
+        editEntityTool,
+        readEntityTool
+    },
+    instructions:
+        "You are a helpful assistant that can read and edit metadata entities. The metadata follows the JSON-LD format and is embedded in a Research Object Crate. Make sure to READ FIRST and WRITE SECOND, when changing metadata of entities. Always consider the request of the user as the HIGHEST PRIORITY"
+})
+
 export default function AIPage() {
-    const [pastMessages, setPastMessages] = useState<string[]>([])
-    const [response, setResponse] = useState("")
-    const [running, setRunning] = useState(false)
+    const [message, setMessage] = useState("")
 
-    const run = useCallback(async () => {
-        const openRouter = createOpenRouter({
-            apiKey: API_KEY
+    const {
+        messages,
+        sendMessage: _sendMessage,
+        status,
+        stop,
+        error,
+        clearError
+    } = useChat({
+        transport: new DirectChatTransport({
+            agent
         })
+    })
 
-        const result = streamText({
-            model: openRouter("nvidia/nemotron-3-super-120b-a12b:free"),
-            prompt: "Make sure to use the readEntityTool to read the metadata of a specific entity. Then use the editEntityTool to edit the metadata of that entity. Your task is: Read the metadata of the entity with the ID 'myFile.json'. THEN, use the editEntityTool and pass it an ALMOST UNCHANGED version, but only change the license key to 'MIT'",
-            tools: {
-                readEntityTool,
-                editEntityTool
-            },
-            stopWhen: stepCountIs(10)
-        })
-
-        let response = ""
-
-        for await (const part of result.fullStream) {
-            console.log(part)
-            switch (part.type) {
-                case "start":
-                    setRunning(true)
-                    break
-                case "finish":
-                    setRunning(false)
-                    break
-                case "text-start":
-                    setResponse("")
-                    response = ""
-                    break
-                case "text-delta":
-                    setResponse((r) => r + part.text)
-                    response += part.text
-                    break
-                case "text-end":
-                    setPastMessages((p) => [...p, response])
-                    setResponse("")
-                    break
-                default:
-                    setPastMessages((p) => [...p, `[${part.type}]\n`])
-            }
-        }
-    }, [])
+    const sendMessage = useCallback(() => {
+        _sendMessage({
+            text: message
+        }).catch(console.error)
+        setMessage("")
+    }, [_sendMessage, message])
 
     return (
-        <div>
-            <Button onClick={run}>Start</Button>
-            {running && (
-                <div>
-                    <LoaderCircle className="size-4 animate-spin" />
+        <div className="flex flex-col h-full pb-20">
+            <div className="flex flex-col grow justify-end overflow-y-auto">
+                {messages.map((m) => (
+                    <div
+                        className={`space-y-1 m-2 p-2 rounded-xl ${m.role === "user" ? "bg-accent self-end" : ""}`}
+                        key={m.id}
+                    >
+                        {m.parts.map((part, i) => {
+                            if (part.type === "text") {
+                                return (
+                                    <Markdown
+                                        key={i}
+                                        skipHtml
+                                        components={{
+                                            ul: (props: PropsWithChildren) => (
+                                                <ul className="list-disc pl-4">{props.children}</ul>
+                                            ),
+                                            ol: (props: PropsWithChildren) => (
+                                                <ol className="list-decimal pl-4">
+                                                    {props.children}
+                                                </ol>
+                                            )
+                                        }}
+                                    >
+                                        {part.text}
+                                    </Markdown>
+                                )
+                            }
+
+                            if (part.type === "tool-readEntityTool") {
+                                return (
+                                    <div
+                                        key={i}
+                                        className="flex items-center gap-1 text-muted-foreground"
+                                    >
+                                        <EyeIcon className="size-4" /> Reading Entity{" "}
+                                        {part.input?.entityId ?? "..."}
+                                    </div>
+                                )
+                            }
+
+                            if (part.type === "tool-editEntityTool") {
+                                return (
+                                    <div
+                                        key={i}
+                                        className="flex items-center gap-1 text-muted-foreground"
+                                    >
+                                        <PencilIcon className="size-4" /> Editing Entity{" "}
+                                        {part.input?.entityId ?? "..."}
+                                    </div>
+                                )
+                            }
+
+                            if (part.type === "reasoning") {
+                                return (
+                                    <Collapsible key={i}>
+                                        <CollapsibleTrigger asChild>
+                                            <button
+                                                key={i}
+                                                className="flex items-center gap-1 font-medium text-muted-foreground group"
+                                            >
+                                                {part.state === "streaming" ? (
+                                                    <LoaderCircle className="size-4 animate-spin" />
+                                                ) : (
+                                                    <ChevronRight className="size-4 group-aria-expanded:rotate-90" />
+                                                )}
+                                                Reasoning
+                                            </button>
+                                        </CollapsibleTrigger>
+                                        <CollapsibleContent className={"pl-2 mb-3"}>
+                                            {part.text}
+                                        </CollapsibleContent>
+                                    </Collapsible>
+                                )
+                            }
+
+                            if (part.type === "step-start") return null
+
+                            return <div key={i}>{part.type}</div>
+                        })}
+                    </div>
+                ))}
+            </div>
+
+            {status === "submitted" && (
+                <div className="flex items-center gap-1 p-2 text-muted-foreground">
+                    <LoaderCircle className="size-4 animate-spin" /> Submitting your request...
                 </div>
             )}
-            {pastMessages.map((m, i) => (
-                <pre key={i}>{m}</pre>
-            ))}
-            <pre>{response}</pre>
+            {status === "streaming" && (
+                <div className="flex items-center gap-1 p-2 text-muted-foreground">
+                    <LoaderCircle className="size-4 animate-spin" /> Working...
+                </div>
+            )}
+            {status === "error" && (
+                <Error
+                    title={"Your request to the AI Assistant failed"}
+                    error={error}
+                    onClear={clearError}
+                />
+            )}
+
+            <div className="flex items-center gap-2 p-2">
+                <Input
+                    placeholder="Enter your request here..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                />
+                {status === "ready" && <Button onClick={sendMessage}>Send</Button>}
+                {(status === "submitted" || status === "streaming") && (
+                    <Button onClick={stop}>
+                        <SquareStopIcon className="size-4" />
+                    </Button>
+                )}
+            </div>
         </div>
     )
 }
