@@ -86,13 +86,14 @@ export function ModelSelection() {
 
     const connectToProvider = useCallback(
         (models: TextModel[]) => {
-            settings.configureProvider(makeProviderConfig(models))
-            settings.activateProvider(configureProvider as LanguageModelProvider)
+            const config = makeProviderConfig(models)
+            settings.configureProvider(config)
+            settings.activateProvider(config.id)
             setShowProviderCreateModal(false)
             setConfigureProvider("")
             setConfigureAPIKey("")
         },
-        [configureProvider, makeProviderConfig, settings]
+        [makeProviderConfig, settings]
     )
 
     const testConnection = useCallback(async () => {
@@ -245,7 +246,7 @@ export function ModelSelection() {
                 </DialogContent>
             </Dialog>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 text-sm pt-2">
                 <div className="flex items-center gap-1">
                     Provider:{" "}
                     <Select value={settings.activeProvider} onValueChange={handleProviderSelect}>

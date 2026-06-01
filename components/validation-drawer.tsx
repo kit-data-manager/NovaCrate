@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import React, { useCallback, useMemo, useState } from "react"
 import { useStore } from "zustand"
 import { useShallow } from "zustand/react/shallow"
-import { editorState, useEditorState } from "@/lib/state/editor-state"
+import { editorState } from "@/lib/state/editor-state"
 import { getEntityDisplayName, sortValidationResultByName } from "@/lib/utils"
 import { useValidationStore } from "@/lib/validation/hooks"
 import { ValidationResultSeverity } from "@/lib/validation/validation-result"
@@ -20,6 +20,7 @@ import { EntityIcon } from "@/components/entity/entity-icon"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useGoToEntityEditor } from "@/lib/hooks/hooks"
 import { validationSettings } from "@/lib/state/validation-settings"
+import { useLayoutState } from "@/lib/state/layout-state"
 
 export function ValidationDrawer() {
     const validationStore = useValidationStore()
@@ -38,7 +39,7 @@ export function ValidationDrawer() {
         setValidationEnabled(true)
     }, [setValidationEnabled])
 
-    const setShowValidationDrawer = useEditorState((store) => store.setShowValidationDrawer)
+    const setShowValidationDrawer = useLayoutState((store) => store.setShowValidationDrawer)
 
     const goToEntityExplorer = useGoToEntityEditor()
 
