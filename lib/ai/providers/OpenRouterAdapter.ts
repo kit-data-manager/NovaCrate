@@ -1,9 +1,9 @@
 import { IProviderAdapter } from "@/lib/ai/providers/IProviderAdapter"
-import { ProviderConfiguration, TextModel } from "@/lib/state/ai-assistant-settings"
+import { ProviderConfigurationWithoutModels, TextModel } from "@/lib/state/ai-assistant-settings"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 
 export class OpenRouterAdapter implements IProviderAdapter {
-    constructor(private config: ProviderConfiguration) {}
+    constructor(private config: ProviderConfigurationWithoutModels) {}
 
     async testConnection() {
         const url = `${this.config.baseUrl || "https://openrouter.ai/api/v1"}/key`

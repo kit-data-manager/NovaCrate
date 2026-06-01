@@ -1,9 +1,9 @@
 import { IProviderAdapter } from "@/lib/ai/providers/IProviderAdapter"
-import { ProviderConfiguration, TextModel } from "@/lib/state/ai-assistant-settings"
+import { ProviderConfigurationWithoutModels, TextModel } from "@/lib/state/ai-assistant-settings"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
 
 export class OpenAICompatibleAdapter implements IProviderAdapter {
-    constructor(private config: ProviderConfiguration) {}
+    constructor(private config: ProviderConfigurationWithoutModels) {}
 
     async fetchModels(): Promise<TextModel[]> {
         const req = await fetch(`${this.config.baseUrl}/models`, {

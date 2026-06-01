@@ -29,7 +29,14 @@ export const ProviderConfigurationSchema = z.object({
     headers: z.optional(z.record(z.string(), z.string()))
 })
 
+export const ProviderConfigurationWithoutModelsSchema = z.omit(ProviderConfigurationSchema, {
+    models: true
+})
+
 export type ProviderConfiguration = z.infer<typeof ProviderConfigurationSchema>
+export type ProviderConfigurationWithoutModels = z.infer<
+    typeof ProviderConfigurationWithoutModelsSchema
+>
 
 export interface AIAssistantSettings {
     activeProvider?: string

@@ -46,7 +46,7 @@ export function ModelSelection() {
 
     const handleProviderSelect = useCallback(
         (v: string) => {
-            settings.activateProvider(v as LanguageModelProvider)
+            settings.activateProvider(v)
         },
         [settings]
     )
@@ -54,7 +54,7 @@ export function ModelSelection() {
     const handleModelSelect = useCallback(
         (model: string) => {
             if (!activeProvider) return
-            settings.activateModel(activeProvider.provider, model)
+            settings.activateModel(activeProvider.id, model)
         },
         [activeProvider, settings]
     )

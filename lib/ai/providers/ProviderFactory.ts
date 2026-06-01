@@ -1,10 +1,13 @@
-import { LanguageModelProvider, ProviderConfiguration } from "@/lib/state/ai-assistant-settings"
+import {
+    LanguageModelProvider,
+    ProviderConfigurationWithoutModels
+} from "@/lib/state/ai-assistant-settings"
 import { OpenRouterAdapter } from "@/lib/ai/providers/OpenRouterAdapter"
 import { IProviderAdapter } from "@/lib/ai/providers/IProviderAdapter"
 import { OpenAICompatibleAdapter } from "@/lib/ai/providers/OpenAICompatibleAdapter"
 
 export class ProviderFactory {
-    makeAdapter(config: ProviderConfiguration): IProviderAdapter {
+    makeAdapter(config: ProviderConfigurationWithoutModels): IProviderAdapter {
         switch (config.provider) {
             case LanguageModelProvider.OPEN_ROUTER:
                 return this.makeOpenRouterAdapter(config)
@@ -15,11 +18,11 @@ export class ProviderFactory {
         }
     }
 
-    makeOpenRouterAdapter(config: ProviderConfiguration) {
+    makeOpenRouterAdapter(config: ProviderConfigurationWithoutModels) {
         return new OpenRouterAdapter(config)
     }
 
-    makeOpenAICompatibleAdapter(config: ProviderConfiguration) {
+    makeOpenAICompatibleAdapter(config: ProviderConfigurationWithoutModels) {
         return new OpenAICompatibleAdapter(config)
     }
 }

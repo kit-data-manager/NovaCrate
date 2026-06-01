@@ -1,9 +1,9 @@
-import { ProviderConfigurationSchema } from "@/lib/state/ai-assistant-settings"
+import { ProviderConfigurationWithoutModelsSchema } from "@/lib/state/ai-assistant-settings"
 import { ProviderFactory } from "@/lib/ai/providers/ProviderFactory"
 
 export async function POST(req: Request) {
     const body: { config: unknown } = await req.json()
-    const config = ProviderConfigurationSchema.parse(body.config)
+    const config = ProviderConfigurationWithoutModelsSchema.parse(body.config)
 
     const provider = new ProviderFactory().makeAdapter(config)
     try {

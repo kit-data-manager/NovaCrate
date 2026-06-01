@@ -9,9 +9,18 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Error } from "@/components/error"
 import Markdown from "react-markdown"
 import { ModelSelection } from "@/components/ai/model-selection"
-import { useAIAssistantSettings } from "@/lib/state/ai-assistant-settings"
+import { ProviderConfiguration, useAIAssistantSettings } from "@/lib/state/ai-assistant-settings"
 import { DefaultChatTransport, InferUITools, UIMessage } from "ai"
 import type { tools } from "@/lib/ai/tools"
+
+function withoutModels(
+    config: ProviderConfiguration | undefined
+): Omit<ProviderConfiguration, "models"> | undefined {
+    if (!config) return undefined
+    const copy: Omit<ProviderConfiguration, "models"> & { models?: any[] } = structuredClone(config)
+    delete copy.models
+    return copy
+}
 
 export default function AIPage() {
     const [message, setMessage] = useState("")
@@ -39,7 +48,7 @@ export default function AIPage() {
         transport: new DefaultChatTransport<UIMessage<never, never, InferUITools<typeof tools>>>({
             api: "/api/ai/chat",
             body: () => ({
-                config: settings.getActiveProvider()
+                config: withoutModels(settings.getActiveProvider())
             })
         })
     })

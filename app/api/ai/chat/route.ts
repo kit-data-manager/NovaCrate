@@ -1,4 +1,4 @@
-import { ProviderConfigurationSchema } from "@/lib/state/ai-assistant-settings"
+import { ProviderConfigurationWithoutModelsSchema } from "@/lib/state/ai-assistant-settings"
 import { createAgentUIStreamResponse, ToolLoopAgent, UIMessage } from "ai"
 import { tools } from "@/lib/ai/tools"
 import { ProviderFactory } from "@/lib/ai/providers/ProviderFactory"
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
         config: unknown
     } = await req.json()
     const config = z
-        .extend(ProviderConfigurationSchema, {
+        .extend(ProviderConfigurationWithoutModelsSchema, {
             selectedModel: z.string()
         })
         .parse(body.config)
