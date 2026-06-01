@@ -9,6 +9,7 @@ import {
     EyeIcon,
     LoaderCircle,
     PencilIcon,
+    PlusIcon,
     SparklesIcon,
     SquareStopIcon
 } from "lucide-react"
@@ -25,7 +26,7 @@ import {
 } from "ai"
 import type { tools } from "@/lib/ai/tools"
 import { editorState } from "@/lib/state/editor-state"
-import { findEntity } from "@/lib/utils"
+import { findEntity, toArray } from "@/lib/utils"
 import remarkGfm from "remark-gfm"
 
 function withoutModels(
@@ -72,23 +73,38 @@ export default function AIAssistantChat() {
             if (toolCall.dynamic) return
 
             switch (toolCall.toolName) {
-                case "editEntityTool":
+                case "editEntity":
                     const result = editorState
                         .getState()
                         .editEntity(toolCall.input.entityId, toolCall.input.content)
                     addToolOutput({
-                        tool: "editEntityTool",
+                        tool: "editEntity",
                         toolCallId: toolCall.toolCallId,
                         output: result ?? undefined
                     })
                     return
-                case "readEntityTool":
+                case "readEntity":
                     addToolOutput({
-                        tool: "readEntityTool",
+                        tool: "readEntity",
                         toolCallId: toolCall.toolCallId,
                         output: findEntity(editorState.getState().entities, toolCall.input.entityId)
                     })
                     return
+                case "createEntity":
+                    const created = editorState
+                        .getState()
+                        .addEntity(
+                            toolCall.input.content["@id"],
+                            toArray(toolCall.input.content["@type"]),
+                            toolCall.input.content
+                        )
+                    addToolOutput({
+                        tool: "createEntity",
+                        toolCallId: toolCall.toolCallId,
+                        output: created
+                    })
+                    return
+                // TODO add missing tools
             }
         }
     })
@@ -113,7 +129,7 @@ export default function AIAssistantChat() {
                 <SparklesIcon className="size-4" /> AI Assistant
             </div>
             <div className="grow overflow-y-auto">
-                <div className="flex flex-col grow justify-end">
+                <div className="flex flex-col min-h-full grow justify-end">
                     {messages.map((m) => (
                         <div
                             className={`space-y-1 m-2 p-2 rounded-xl ${m.role === "user" ? "w-[70%] bg-accent self-end p-4 py-3" : ""} overflow-x-auto overflow-y-hidden shrink-0`}
@@ -144,7 +160,7 @@ export default function AIAssistantChat() {
                                     )
                                 }
 
-                                if (part.type === "tool-readEntityTool") {
+                                if (part.type === "tool-readEntity") {
                                     return (
                                         <div
                                             key={i}
@@ -156,7 +172,7 @@ export default function AIAssistantChat() {
                                     )
                                 }
 
-                                if (part.type === "tool-editEntityTool") {
+                                if (part.type === "tool-editEntity") {
                                     return (
                                         <div
                                             key={i}
@@ -164,6 +180,42 @@ export default function AIAssistantChat() {
                                         >
                                             <PencilIcon className="size-4" /> Editing Entity{" "}
                                             {part.input?.entityId ?? "..."}
+                                        </div>
+                                    )
+                                }
+
+                                if (part.type === "tool-createEntity") {
+                                    return (
+                                        <div
+                                            key={i}
+                                            className="flex items-center gap-1 text-muted-foreground"
+                                        >
+                                            <PlusIcon className="size-4" /> Creating Entity{" "}
+                                            {part.input?.content?.["@id"] ?? "..."}
+                                        </div>
+                                    )
+                                }
+
+                                if (part.type === "tool-getFilesList") {
+                                    return (
+                                        <div
+                                            key={i}
+                                            className="flex items-center gap-1 text-muted-foreground"
+                                        >
+                                            <EyeIcon className="size-4" /> Listing files in this
+                                            RO-Crate
+                                        </div>
+                                    )
+                                }
+
+                                if (part.type === "tool-getMetadataSummary") {
+                                    return (
+                                        <div
+                                            key={i}
+                                            className="flex items-center gap-1 text-muted-foreground"
+                                        >
+                                            <EyeIcon className="size-4" /> Listing entities in this
+                                            RO-Crate
                                         </div>
                                     )
                                 }

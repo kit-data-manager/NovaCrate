@@ -170,7 +170,9 @@ export function NavSidebar({ children }: PropsWithChildren) {
                         </div>
                     </div>
 
-                    <div className="relative w-full h-full overflow-hidden pb-2 pr-3">
+                    <div
+                        className={`relative w-full h-full overflow-hidden pb-2 ${showAIAssistant ? "pr-1" : "pr-3"}`}
+                    >
                         {children}
                     </div>
                 </div>
