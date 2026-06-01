@@ -18,8 +18,11 @@ export function useAgent() {
             return
         }
 
+        let cancelThisUpdate = false
+
         if (
             !stableModelConfig.current ||
+            active.id !== stableModelConfig.current.id ||
             active.provider !== stableModelConfig.current.provider ||
             active.selectedModel !== stableModelConfig.current.selectedModel ||
             active.apiKey !== stableModelConfig.current.apiKey
@@ -27,8 +30,15 @@ export function useAgent() {
             const adapter = new ProviderFactory().makeAdapter(active)
             const model = adapter.getLanguageModel(active.selectedModel)
 
-            setStableModel(model)
-            stableModelConfig.current = active
+            model.then((m) => {
+                if (cancelThisUpdate) return
+                setStableModel(m)
+                stableModelConfig.current = active
+            })
+        }
+
+        return () => {
+            cancelThisUpdate = true
         }
     }, [settings])
 

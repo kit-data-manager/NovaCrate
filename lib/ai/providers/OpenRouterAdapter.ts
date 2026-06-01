@@ -1,16 +1,14 @@
 import { IProviderAdapter } from "@/lib/ai/providers/IProviderAdapter"
 import { ProviderConfiguration, TextModel } from "@/lib/state/ai-assistant-settings"
-import { LanguageModel } from "ai"
-import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 
 export class OpenRouterAdapter implements IProviderAdapter {
     constructor(private config: ProviderConfiguration) {}
 
     async testConnection() {
-        const url = "https://openrouter.ai/api/v1/key"
+        const url = `${this.config.baseUrl || "https://openrouter.ai/api/v1"}/key`
         const options = {
             method: "GET",
-            headers: { Authorization: `Bearer ${this.config.apiKey}` }
+            headers: { Authorization: `Bearer ${this.config.apiKey}`, ...this.config.headers }
         }
 
         try {
@@ -25,7 +23,9 @@ export class OpenRouterAdapter implements IProviderAdapter {
     }
 
     async fetchModels(): Promise<TextModel[]> {
-        const req = await fetch("https://openrouter.ai/api/v1/models")
+        const req = await fetch(`${this.config.baseUrl || "https://openrouter.ai/api/v1"}/models`, {
+            headers: this.config.headers
+        })
         if (req.ok) {
             const data = (await req.json()) as {
                 data: {
@@ -55,9 +55,12 @@ export class OpenRouterAdapter implements IProviderAdapter {
         }
     }
 
-    getLanguageModel(modelId: string): LanguageModel {
+    async getLanguageModel(modelId: string) {
+        const { createOpenRouter } = await import("@openrouter/ai-sdk-provider")
         const openRouter = createOpenRouter({
-            apiKey: this.config.apiKey
+            apiKey: this.config.apiKey,
+            headers: this.config.headers,
+            baseUrl: this.config.baseUrl
         })
 
         return openRouter(modelId)

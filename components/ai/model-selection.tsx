@@ -1,5 +1,6 @@
 import {
     LanguageModelProvider,
+    ProviderConfiguration,
     TextModel,
     useAIAssistantSettings
 } from "@/lib/state/ai-assistant-settings"
@@ -7,7 +8,6 @@ import {
     Select,
     SelectContent,
     SelectItem,
-    SelectSeparator,
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select"
@@ -24,13 +24,17 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ProviderFactory } from "@/lib/ai/providers/ProviderFactory"
 import { toast } from "sonner"
-import { LoaderCircle } from "lucide-react"
+import { LoaderCircle, PlusIcon } from "lucide-react"
 import { Error } from "@/components/error"
+import { Checkbox } from "@/components/ui/checkbox"
+import { RecordInput } from "@/components/ui/record"
 
 function providerDisplayName(provider: LanguageModelProvider) {
     switch (provider) {
         case LanguageModelProvider.OPEN_ROUTER:
             return "OpenRouter"
+        case LanguageModelProvider.OPEN_AI_COMPATIBLE:
+            return "OpenAI Compatible"
         default:
             return provider
     }
@@ -40,19 +44,20 @@ export function ModelSelection() {
     const settings = useAIAssistantSettings()
     const activeProvider = settings.getActiveProvider()
 
-    const [showProviderConfigureModal, setShowProviderConfigureModal] = useState(false)
+    const [showProviderCreateModal, setShowProviderCreateModal] = useState(false)
     const [configureProvider, setConfigureProvider] = useState("")
+    const [configureDisplayName, setConfigureDisplayName] = useState("")
+    const [configureBaseUrl, setConfigureBaseUrl] = useState("")
+    const [configureHeaders, setConfigureHeaders] = useState<[string, string][]>([])
+    const [fetchModelsAutomatically, setFetchModelsAutomatically] = useState(true)
+    const [configureModels, setConfigureModels] = useState<[string, string][]>([])
     const [configureAPIKey, setConfigureAPIKey] = useState("")
     const [configureError, setConfigureError] = useState<unknown>()
     const [testingNewProvider, setTestingNewProvider] = useState(false)
 
     const handleProviderSelect = useCallback(
         (v: string) => {
-            if (v === "configure-new") {
-                setShowProviderConfigureModal(true)
-            } else {
-                settings.activateProvider(v as LanguageModelProvider)
-            }
+            settings.activateProvider(v as LanguageModelProvider)
         },
         [settings]
     )
@@ -65,43 +70,71 @@ export function ModelSelection() {
         [activeProvider, settings]
     )
 
-    const connectToProvider = useCallback(
-        (models: TextModel[]) => {
-            settings.configureProvider({
+    const makeProviderConfig = useCallback(
+        (models: TextModel[] = []) => {
+            return {
+                id: window.crypto.randomUUID(),
                 models,
                 provider: configureProvider as LanguageModelProvider,
                 apiKey: configureAPIKey,
-                displayName: providerDisplayName(configureProvider as LanguageModelProvider)
-            })
+                displayName:
+                    (configureProvider as LanguageModelProvider) ===
+                    LanguageModelProvider.OPEN_AI_COMPATIBLE
+                        ? configureDisplayName
+                        : providerDisplayName(configureProvider as LanguageModelProvider),
+                baseUrl: configureBaseUrl,
+                headers: Object.fromEntries(configureHeaders)
+            } satisfies ProviderConfiguration
+        },
+        [
+            configureAPIKey,
+            configureBaseUrl,
+            configureDisplayName,
+            configureHeaders,
+            configureProvider
+        ]
+    )
+
+    const connectToProvider = useCallback(
+        (models: TextModel[]) => {
+            settings.configureProvider(makeProviderConfig(models))
             settings.activateProvider(configureProvider as LanguageModelProvider)
-            setShowProviderConfigureModal(false)
+            setShowProviderCreateModal(false)
             setConfigureProvider("")
             setConfigureAPIKey("")
         },
-        [configureAPIKey, configureProvider, settings]
+        [configureProvider, makeProviderConfig, settings]
     )
 
     const testConnection = useCallback(() => {
         setTestingNewProvider(true)
-        const adapter = new ProviderFactory().makeAdapter({
-            models: [],
-            provider: configureProvider as LanguageModelProvider,
-            apiKey: configureAPIKey,
-            displayName: providerDisplayName(configureProvider as LanguageModelProvider)
-        })
+        const adapter = new ProviderFactory().makeAdapter(makeProviderConfig())
         adapter
             .testConnection()
             .then(() => {
-                adapter
-                    .fetchModels()
-                    .then((models) => {
-                        connectToProvider(models)
-                    })
-                    .catch((error) => {
-                        toast.error("Failed to fetch models from provider. Please try again later.")
-                        console.error(error)
-                        connectToProvider([])
-                    })
+                const then = (models: TextModel[]) => {
+                    connectToProvider(models)
+                }
+
+                if (fetchModelsAutomatically) {
+                    adapter
+                        .fetchModels()
+                        .then(then)
+                        .catch((error) => {
+                            toast.error(
+                                "Failed to fetch models from provider. Please try again later."
+                            )
+                            console.error(error)
+                            connectToProvider([])
+                        })
+                } else {
+                    then(
+                        configureModels.map(
+                            ([key, value]) =>
+                                ({ id: key, displayName: value, free: false }) satisfies TextModel
+                        )
+                    )
+                }
             })
             .catch((error) => {
                 console.error(error)
@@ -110,11 +143,11 @@ export function ModelSelection() {
             .finally(() => {
                 setTestingNewProvider(false)
             })
-    }, [configureAPIKey, configureProvider, connectToProvider])
+    }, [configureModels, connectToProvider, fetchModelsAutomatically, makeProviderConfig])
 
     return (
         <div>
-            <Dialog open={showProviderConfigureModal} onOpenChange={setShowProviderConfigureModal}>
+            <Dialog open={showProviderCreateModal} onOpenChange={setShowProviderCreateModal}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Configure AI Assistant</DialogTitle>
@@ -132,11 +165,24 @@ export function ModelSelection() {
                                 <SelectValue placeholder="Select a provider" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value={LanguageModelProvider.OPEN_ROUTER}>
-                                    OpenRouter
-                                </SelectItem>
+                                {Object.values(LanguageModelProvider).map((provider) => (
+                                    <SelectItem value={provider} key={provider}>
+                                        {providerDisplayName(provider)}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
+                        {configureProvider === LanguageModelProvider.OPEN_AI_COMPATIBLE && (
+                            <div>
+                                <Label htmlFor="display-name">Display Name</Label>
+                                <Input
+                                    id="display-name"
+                                    placeholder="My AI Provider"
+                                    value={configureDisplayName}
+                                    onChange={(e) => setConfigureDisplayName(e.target.value)}
+                                />
+                            </div>
+                        )}
                         <div>
                             <Label htmlFor="api-key">API Key</Label>
                             <Input
@@ -146,14 +192,57 @@ export function ModelSelection() {
                                 onChange={(e) => setConfigureAPIKey(e.target.value)}
                             />
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                            Available models will be fetched automatically after connecting to the
-                            provider. This might take a minute.
+
+                        <div>
+                            <Label htmlFor="base-url">Base URL</Label>
+                            <Input
+                                id="base-url"
+                                placeholder="Leave empty for default"
+                                value={configureBaseUrl}
+                                onChange={(e) => setConfigureBaseUrl(e.target.value)}
+                            />
                         </div>
+                        <div>
+                            <Label>Headers</Label>
+                            <RecordInput
+                                value={configureHeaders}
+                                onValueChange={setConfigureHeaders}
+                                exampleValue="Bearer ..."
+                                exampleKey={"Authorization"}
+                                itemName={"Header"}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Models</Label>
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="fetch-models-automatically"
+                                    checked={fetchModelsAutomatically}
+                                    onCheckedChange={(v) =>
+                                        setFetchModelsAutomatically(
+                                            v === "indeterminate" ? true : v
+                                        )
+                                    }
+                                />
+                                <Label htmlFor="fetch-models-automatically" className="mb-0">
+                                    Fetch models automatically
+                                </Label>
+                            </div>
+                            {!fetchModelsAutomatically && (
+                                <RecordInput
+                                    value={configureModels}
+                                    onValueChange={setConfigureModels}
+                                    exampleValue="Model Display Name"
+                                    exampleKey={"model-id"}
+                                    itemName={"Model"}
+                                />
+                            )}
+                        </div>
+
                         <Error title="Failed to connect to provider" error={configureError} />
                         <div className="flex justify-between">
                             <Button
-                                onClick={() => setShowProviderConfigureModal(false)}
+                                onClick={() => setShowProviderCreateModal(false)}
                                 variant="secondary"
                             >
                                 Cancel
@@ -178,14 +267,19 @@ export function ModelSelection() {
                         </SelectTrigger>
                         <SelectContent>
                             {settings.providers.map((provider) => (
-                                <SelectItem value={provider.provider} key={provider.provider}>
+                                <SelectItem value={provider.id} key={provider.id}>
                                     {provider.displayName}
                                 </SelectItem>
                             ))}
-                            <SelectSeparator />
-                            <SelectItem value={"configure-new"}>Configure...</SelectItem>
                         </SelectContent>
                     </Select>
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => setShowProviderCreateModal(true)}
+                    >
+                        <PlusIcon className="size-4" />
+                    </Button>
                 </div>
                 {activeProvider && (
                     <div className="flex items-center gap-1">

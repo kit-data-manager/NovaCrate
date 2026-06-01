@@ -4,5 +4,5 @@ import { LanguageModel } from "ai"
 export interface IProviderAdapter {
     testConnection(): Promise<void>
     fetchModels(): Promise<TextModel[]>
-    getLanguageModel(modelId: string): LanguageModel
+    getLanguageModel(modelId: string): Promise<LanguageModel>
 }

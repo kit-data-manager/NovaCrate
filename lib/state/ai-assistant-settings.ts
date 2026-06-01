@@ -2,34 +2,46 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 import { immer } from "zustand/middleware/immer"
+import { z } from "zod/mini"
 
 export enum LanguageModelProvider {
-    OPEN_ROUTER = "openrouter"
+    OPEN_ROUTER = "openrouter",
+    OPEN_AI_COMPATIBLE = "openai-compatible"
 }
 
-export interface TextModel {
-    id: string
-    displayName: string
-    free: boolean
-}
+export const LanguageModelProviderSchema = z.enum(Object.values(LanguageModelProvider))
 
-export interface ProviderConfiguration {
-    provider: LanguageModelProvider
-    displayName: string
-    apiKey: string
-    selectedModel?: string
-    models: TextModel[]
-}
+export const TextModelSchema = z.object({
+    id: z.string(),
+    displayName: z.string(),
+    free: z.boolean()
+})
+
+export type TextModel = z.infer<typeof TextModelSchema>
+
+export const ProviderConfigurationSchema = z.object({
+    id: z.string(),
+    provider: LanguageModelProviderSchema,
+    displayName: z.string(),
+    apiKey: z.string(),
+    selectedModel: z.optional(z.string()),
+    models: z.array(TextModelSchema),
+    baseUrl: z.optional(z.string()),
+    headers: z.optional(z.record(z.string(), z.string()))
+})
+
+export type ProviderConfiguration = z.infer<typeof ProviderConfigurationSchema>
 
 export interface AIAssistantSettings {
-    activeProvider?: LanguageModelProvider
+    activeProvider?: string
     providers: ProviderConfiguration[]
     getActiveProvider(): ProviderConfiguration | undefined
     configureProvider(config: ProviderConfiguration): void
-    activateProvider(provider: LanguageModelProvider): void
-    addModel(provider: LanguageModelProvider, modelConfig: TextModel): void
-    removeModel(provider: LanguageModelProvider, modelName: string): void
-    activateModel(provider: LanguageModelProvider, modelName: string): void
+    removeProvider(id: string): void
+    activateProvider(id: string): void
+    addModel(providerId: string, modelConfig: TextModel): void
+    removeModel(providerId: string, modelName: string): void
+    activateModel(providerId: string, modelName: string): void
 }
 
 export const useAIAssistantSettings = create<AIAssistantSettings>()(
@@ -40,7 +52,7 @@ export const useAIAssistantSettings = create<AIAssistantSettings>()(
                     activeProvider: undefined,
                     providers: [],
                     getActiveProvider() {
-                        return get().providers.find((p) => p.provider === get().activeProvider)
+                        return get().providers.find((p) => p.id === get().activeProvider)
                     },
                     configureProvider(config: ProviderConfiguration) {
                         set((store) => {
@@ -54,12 +66,17 @@ export const useAIAssistantSettings = create<AIAssistantSettings>()(
                             }
                         })
                     },
-                    activateProvider(provider: LanguageModelProvider) {
-                        set({ activeProvider: provider })
-                    },
-                    addModel(provider: LanguageModelProvider, modelConfig: TextModel) {
+                    removeProvider(id: string) {
                         set((store) => {
-                            const match = store.providers.find((p) => p.provider === provider)
+                            store.providers = store.providers.filter((p) => p.id !== id)
+                        })
+                    },
+                    activateProvider(id: string) {
+                        set({ activeProvider: id })
+                    },
+                    addModel(providerId: string, modelConfig: TextModel) {
+                        set((store) => {
+                            const match = store.providers.find((p) => p.id === providerId)
                             if (match) {
                                 const existing = match.models.findIndex(
                                     (m) => m.id === modelConfig.id
@@ -72,18 +89,18 @@ export const useAIAssistantSettings = create<AIAssistantSettings>()(
                             }
                         })
                     },
-                    removeModel(provider: LanguageModelProvider, modelName: string) {
+                    removeModel(providerId: string, modelName: string) {
                         set((store) => {
                             store.providers.forEach((p) => {
-                                if (p.provider === provider) {
+                                if (p.id === providerId) {
                                     p.models = p.models.filter((m) => m.id !== modelName)
                                 }
                             })
                         })
                     },
-                    activateModel(provider: LanguageModelProvider, modelName: string) {
+                    activateModel(providerId: string, modelName: string) {
                         set((store) => {
-                            const match = store.providers.find((p) => p.provider === provider)
+                            const match = store.providers.find((p) => p.id === providerId)
                             if (match) {
                                 const model = match.models.find((m) => m.id === modelName)
                                 if (model) {

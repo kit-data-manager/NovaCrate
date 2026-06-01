@@ -18,6 +18,7 @@
     "serve": "serve out -L -p 3000"
   },
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^2.0.48",
     "@ai-sdk/provider-utils": "^4.0.27",
     "@ai-sdk/react": "^3.0.187",
     "@frogcat/ttl2jsonld": "^0.0.10",
