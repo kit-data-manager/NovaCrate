@@ -1,57 +1,63 @@
-import { ProviderConfiguration, useAIAssistantSettings } from "@/lib/state/ai-assistant-settings"
-import { useEffect, useMemo, useRef, useState } from "react"
-import { LanguageModel, ToolLoopAgent } from "ai"
-import { editEntityTool, readEntityTool } from "@/lib/ai/tools"
-import { ProviderFactory } from "@/lib/ai/providers/ProviderFactory"
+import {
+    LanguageModelProvider,
+    ProviderConfiguration,
+    TextModel
+} from "@/lib/state/ai-assistant-settings"
 
-export function useAgent() {
-    const settings = useAIAssistantSettings()
+export function providerDisplayName(provider: LanguageModelProvider) {
+    switch (provider) {
+        case LanguageModelProvider.OPEN_ROUTER:
+            return "OpenRouter"
+        case LanguageModelProvider.OPEN_AI_COMPATIBLE:
+            return "OpenAI Compatible"
+        default:
+            return provider
+    }
+}
 
-    const stableModelConfig = useRef<ProviderConfiguration | null>(null)
-    const [stableModel, setStableModel] = useState<LanguageModel | null>(null)
+export async function testProvider(config: ProviderConfiguration) {
+    const res = await fetch("/api/ai/test", {
+        body: JSON.stringify({ config }),
+        headers: {
+            "Content-Type": "application/json"
+        },
+        method: "POST"
+    })
 
-    useEffect(() => {
-        const active = settings.getActiveProvider()
-        if (!active || !active.selectedModel) {
-            setStableModel(null)
-            stableModelConfig.current = null
-            return
+    if (res.ok) {
+        return
+    } else {
+        let error
+        try {
+            const data: { error: string } = await res.json()
+            error = data.error
+        } catch (e) {
+            error = res.statusText
         }
+        throw new Error(error)
+    }
+}
 
-        let cancelThisUpdate = false
+export async function fetchModels(config: ProviderConfiguration) {
+    const res = await fetch("/api/ai/models", {
+        body: JSON.stringify({ config }),
+        headers: {
+            "Content-Type": "application/json"
+        },
+        method: "POST"
+    })
 
-        if (
-            !stableModelConfig.current ||
-            active.id !== stableModelConfig.current.id ||
-            active.provider !== stableModelConfig.current.provider ||
-            active.selectedModel !== stableModelConfig.current.selectedModel ||
-            active.apiKey !== stableModelConfig.current.apiKey
-        ) {
-            const adapter = new ProviderFactory().makeAdapter(active)
-            const model = adapter.getLanguageModel(active.selectedModel)
-
-            model.then((m) => {
-                if (cancelThisUpdate) return
-                setStableModel(m)
-                stableModelConfig.current = active
-            })
+    if (res.ok) {
+        const data: { models: TextModel[] } = await res.json()
+        return data.models
+    } else {
+        let error
+        try {
+            const data: { error: string } = await res.json()
+            error = data.error
+        } catch (e) {
+            error = res.statusText
         }
-
-        return () => {
-            cancelThisUpdate = true
-        }
-    }, [settings])
-
-    return useMemo(() => {
-        if (!stableModel) return null
-        return new ToolLoopAgent({
-            model: stableModel,
-            tools: {
-                editEntityTool,
-                readEntityTool
-            },
-            instructions:
-                "You are a helpful assistant that can read and edit metadata entities. The metadata follows the JSON-LD format and is embedded in a Research Object Crate. Make sure to READ FIRST and WRITE SECOND, when changing metadata of entities. Always consider the request of the user as the HIGHEST PRIORITY"
-        })
-    }, [stableModel])
+        throw new Error(error)
+    }
 }

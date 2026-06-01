@@ -22,4 +22,4 @@ const editEntityTool = tool({
     }
 })
 
-export { readEntityTool, editEntityTool }
+export const tools = { readEntityTool, editEntityTool }

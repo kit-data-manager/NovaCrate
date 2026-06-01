@@ -22,23 +22,12 @@ import {
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ProviderFactory } from "@/lib/ai/providers/ProviderFactory"
 import { toast } from "sonner"
 import { LoaderCircle, PlusIcon } from "lucide-react"
-import { Error } from "@/components/error"
+import { Error as ErrorDisplay } from "@/components/error"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RecordInput } from "@/components/ui/record"
-
-function providerDisplayName(provider: LanguageModelProvider) {
-    switch (provider) {
-        case LanguageModelProvider.OPEN_ROUTER:
-            return "OpenRouter"
-        case LanguageModelProvider.OPEN_AI_COMPATIBLE:
-            return "OpenAI Compatible"
-        default:
-            return provider
-    }
-}
+import { fetchModels, providerDisplayName, testProvider } from "@/lib/ai/utils"
 
 export function ModelSelection() {
     const settings = useAIAssistantSettings()
@@ -106,43 +95,38 @@ export function ModelSelection() {
         [configureProvider, makeProviderConfig, settings]
     )
 
-    const testConnection = useCallback(() => {
+    const testConnection = useCallback(async () => {
         setTestingNewProvider(true)
-        const adapter = new ProviderFactory().makeAdapter(makeProviderConfig())
-        adapter
-            .testConnection()
-            .then(() => {
-                const then = (models: TextModel[]) => {
-                    connectToProvider(models)
-                }
+        try {
+            await testProvider(makeProviderConfig())
+        } catch (e) {
+            console.error("Error while trying to fetch models", e)
+            setConfigureError(e instanceof Error ? e.message : JSON.stringify(e))
+            setTestingNewProvider(false)
+            return
+        }
 
-                if (fetchModelsAutomatically) {
-                    adapter
-                        .fetchModels()
-                        .then(then)
-                        .catch((error) => {
-                            toast.error(
-                                "Failed to fetch models from provider. Please try again later."
-                            )
-                            console.error(error)
-                            connectToProvider([])
-                        })
-                } else {
-                    then(
-                        configureModels.map(
-                            ([key, value]) =>
-                                ({ id: key, displayName: value, free: false }) satisfies TextModel
-                        )
-                    )
-                }
-            })
-            .catch((error) => {
-                console.error(error)
-                setConfigureError(error)
-            })
-            .finally(() => {
-                setTestingNewProvider(false)
-            })
+        const then = (models: TextModel[]) => {
+            connectToProvider(models)
+        }
+
+        if (fetchModelsAutomatically) {
+            fetchModels(makeProviderConfig())
+                .then((res) => {
+                    then(res)
+                })
+                .catch((error) => {
+                    toast.error("Failed to fetch models from provider. Please try again later.")
+                    console.error(error)
+                    connectToProvider([])
+                })
+        } else {
+            then(
+                configureModels.map(
+                    ([key, value]) => ({ id: key, displayName: value }) satisfies TextModel
+                )
+            )
+        }
     }, [configureModels, connectToProvider, fetchModelsAutomatically, makeProviderConfig])
 
     return (
@@ -239,7 +223,10 @@ export function ModelSelection() {
                             )}
                         </div>
 
-                        <Error title="Failed to connect to provider" error={configureError} />
+                        <ErrorDisplay
+                            title="Failed to connect to provider"
+                            error={configureError}
+                        />
                         <div className="flex justify-between">
                             <Button
                                 onClick={() => setShowProviderCreateModal(false)}

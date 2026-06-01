@@ -2,15 +2,16 @@
 
 import { useChat } from "@ai-sdk/react"
 import { Input } from "@/components/ui/input"
-import { PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
+import { PropsWithChildren, useCallback, useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ChevronRight, EyeIcon, LoaderCircle, PencilIcon, SquareStopIcon } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Error } from "@/components/error"
 import Markdown from "react-markdown"
 import { ModelSelection } from "@/components/ai/model-selection"
-import { useAgent } from "@/lib/ai/utils"
-import { DynamicDirectChatTransport } from "@/lib/ai/DynamicTransport"
+import { useAIAssistantSettings } from "@/lib/state/ai-assistant-settings"
+import { DefaultChatTransport, InferUITools, UIMessage } from "ai"
+import type { tools } from "@/lib/ai/tools"
 
 export default function AIPage() {
     const [message, setMessage] = useState("")
@@ -22,14 +23,10 @@ export default function AIPage() {
         setShow(true)
     }, [])
 
-    const agent = useAgent()
-    const agentRef = useRef(agent)
-
-    useEffect(() => {
-        if (agentRef.current !== agent) {
-            agentRef.current = agent
-        }
-    }, [agent])
+    const settings = useAIAssistantSettings()
+    const activeConfig = useMemo(() => {
+        return settings.getActiveProvider()
+    }, [settings])
 
     const {
         messages,
@@ -39,10 +36,11 @@ export default function AIPage() {
         error,
         clearError
     } = useChat({
-        transport: new DynamicDirectChatTransport({
-            agent: () => {
-                return agentRef.current
-            }
+        transport: new DefaultChatTransport<UIMessage<never, never, InferUITools<typeof tools>>>({
+            api: "/api/ai/chat",
+            body: () => ({
+                config: settings.getActiveProvider()
+            })
         })
     })
 
@@ -170,7 +168,7 @@ export default function AIPage() {
                     onChange={(e) => setMessage(e.target.value)}
                 />
                 {(status === "ready" || status === "error") && (
-                    <Button onClick={sendMessage} disabled={!agent}>
+                    <Button onClick={sendMessage} disabled={!activeConfig}>
                         Send
                     </Button>
                 )}

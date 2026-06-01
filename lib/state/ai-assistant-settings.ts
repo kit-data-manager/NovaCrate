@@ -13,8 +13,7 @@ export const LanguageModelProviderSchema = z.enum(Object.values(LanguageModelPro
 
 export const TextModelSchema = z.object({
     id: z.string(),
-    displayName: z.string(),
-    free: z.boolean()
+    displayName: z.string()
 })
 
 export type TextModel = z.infer<typeof TextModelSchema>

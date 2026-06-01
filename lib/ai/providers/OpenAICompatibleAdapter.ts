@@ -1,5 +1,6 @@
 import { IProviderAdapter } from "@/lib/ai/providers/IProviderAdapter"
 import { ProviderConfiguration, TextModel } from "@/lib/state/ai-assistant-settings"
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
 
 export class OpenAICompatibleAdapter implements IProviderAdapter {
     constructor(private config: ProviderConfiguration) {}
@@ -30,7 +31,6 @@ export class OpenAICompatibleAdapter implements IProviderAdapter {
     async getLanguageModel(modelId: string) {
         if (!this.config.baseUrl) throw new Error("OpenAI Compatible Provider requires a base URL")
 
-        const { createOpenAICompatible } = await import("@ai-sdk/openai-compatible")
         const provider = createOpenAICompatible({
             name: this.config.displayName,
             apiKey: this.config.apiKey,

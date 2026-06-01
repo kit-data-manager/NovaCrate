@@ -1,5 +1,6 @@
 import { IProviderAdapter } from "@/lib/ai/providers/IProviderAdapter"
 import { ProviderConfiguration, TextModel } from "@/lib/state/ai-assistant-settings"
+import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 
 export class OpenRouterAdapter implements IProviderAdapter {
     constructor(private config: ProviderConfiguration) {}
@@ -45,8 +46,7 @@ export class OpenRouterAdapter implements IProviderAdapter {
             }
             return data.data.map((m) => ({
                 id: m.id,
-                displayName: m.name,
-                free: Object.values(m.pricing).every((p) => p === "0")
+                displayName: m.name
             }))
         } else {
             throw new Error(`Failed to fetch models (${req.status}: ${req.statusText})`, {
@@ -56,7 +56,6 @@ export class OpenRouterAdapter implements IProviderAdapter {
     }
 
     async getLanguageModel(modelId: string) {
-        const { createOpenRouter } = await import("@openrouter/ai-sdk-provider")
         const openRouter = createOpenRouter({
             apiKey: this.config.apiKey,
             headers: this.config.headers,
