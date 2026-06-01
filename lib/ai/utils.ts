@@ -1,12 +1,8 @@
-import {
-    LanguageModelProvider,
-    ProviderConfiguration,
-    useAIAssistantSettings
-} from "@/lib/state/ai-assistant-settings"
+import { ProviderConfiguration, useAIAssistantSettings } from "@/lib/state/ai-assistant-settings"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 import { LanguageModel, ToolLoopAgent } from "ai"
-import { editEntityTool, readEntityTool } from "@/app/ai/tools"
+import { editEntityTool, readEntityTool } from "@/lib/ai/tools"
+import { ProviderFactory } from "@/lib/ai/providers/ProviderFactory"
 
 export function useAgent() {
     const settings = useAIAssistantSettings()
@@ -28,14 +24,11 @@ export function useAgent() {
             active.selectedModel !== stableModelConfig.current.selectedModel ||
             active.apiKey !== stableModelConfig.current.apiKey
         ) {
-            if (active.provider === LanguageModelProvider.OPEN_ROUTER) {
-                const openRouter = createOpenRouter({
-                    apiKey: active.apiKey
-                })
+            const adapter = new ProviderFactory().makeAdapter(active)
+            const model = adapter.getLanguageModel(active.selectedModel)
 
-                setStableModel(openRouter(active.selectedModel))
-                stableModelConfig.current = active
-            }
+            setStableModel(model)
+            stableModelConfig.current = active
         }
     }, [settings])
 

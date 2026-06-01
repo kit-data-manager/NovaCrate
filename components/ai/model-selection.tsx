@@ -1,4 +1,8 @@
-import { LanguageModelProvider, useAIAssistantSettings } from "@/lib/state/ai-assistant-settings"
+import {
+    LanguageModelProvider,
+    TextModel,
+    useAIAssistantSettings
+} from "@/lib/state/ai-assistant-settings"
 import {
     Select,
     SelectContent,
@@ -18,6 +22,10 @@ import {
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { ProviderFactory } from "@/lib/ai/providers/ProviderFactory"
+import { toast } from "sonner"
+import { LoaderCircle } from "lucide-react"
+import { Error } from "@/components/error"
 
 function providerDisplayName(provider: LanguageModelProvider) {
     switch (provider) {
@@ -35,6 +43,8 @@ export function ModelSelection() {
     const [showProviderConfigureModal, setShowProviderConfigureModal] = useState(false)
     const [configureProvider, setConfigureProvider] = useState("")
     const [configureAPIKey, setConfigureAPIKey] = useState("")
+    const [configureError, setConfigureError] = useState<unknown>()
+    const [testingNewProvider, setTestingNewProvider] = useState(false)
 
     const handleProviderSelect = useCallback(
         (v: string) => {
@@ -55,18 +65,52 @@ export function ModelSelection() {
         [activeProvider, settings]
     )
 
-    const connectToProvider = useCallback(() => {
-        settings.configureProvider({
+    const connectToProvider = useCallback(
+        (models: TextModel[]) => {
+            settings.configureProvider({
+                models,
+                provider: configureProvider as LanguageModelProvider,
+                apiKey: configureAPIKey,
+                displayName: providerDisplayName(configureProvider as LanguageModelProvider)
+            })
+            settings.activateProvider(configureProvider as LanguageModelProvider)
+            setShowProviderConfigureModal(false)
+            setConfigureProvider("")
+            setConfigureAPIKey("")
+        },
+        [configureAPIKey, configureProvider, settings]
+    )
+
+    const testConnection = useCallback(() => {
+        setTestingNewProvider(true)
+        const adapter = new ProviderFactory().makeAdapter({
             models: [],
             provider: configureProvider as LanguageModelProvider,
             apiKey: configureAPIKey,
             displayName: providerDisplayName(configureProvider as LanguageModelProvider)
         })
-        settings.activateProvider(configureProvider as LanguageModelProvider)
-        setShowProviderConfigureModal(false)
-        setConfigureProvider("")
-        setConfigureAPIKey("")
-    }, [configureAPIKey, configureProvider, settings])
+        adapter
+            .testConnection()
+            .then(() => {
+                adapter
+                    .fetchModels()
+                    .then((models) => {
+                        connectToProvider(models)
+                    })
+                    .catch((error) => {
+                        toast.error("Failed to fetch models from provider. Please try again later.")
+                        console.error(error)
+                        connectToProvider([])
+                    })
+            })
+            .catch((error) => {
+                console.error(error)
+                setConfigureError(error)
+            })
+            .finally(() => {
+                setTestingNewProvider(false)
+            })
+    }, [configureAPIKey, configureProvider, connectToProvider])
 
     return (
         <div>
@@ -106,6 +150,7 @@ export function ModelSelection() {
                             Available models will be fetched automatically after connecting to the
                             provider. This might take a minute.
                         </div>
+                        <Error title="Failed to connect to provider" error={configureError} />
                         <div className="flex justify-between">
                             <Button
                                 onClick={() => setShowProviderConfigureModal(false)}
@@ -113,46 +158,56 @@ export function ModelSelection() {
                             >
                                 Cancel
                             </Button>
-                            <Button onClick={connectToProvider}>Connect</Button>
+                            <Button onClick={testConnection} disabled={testingNewProvider}>
+                                {testingNewProvider && (
+                                    <LoaderCircle className="size-4 animate-spin" />
+                                )}{" "}
+                                Connect
+                            </Button>
                         </div>
                     </div>
                 </DialogContent>
             </Dialog>
 
-            <div>
-                Provider:{" "}
-                <Select value={settings.activeProvider} onValueChange={handleProviderSelect}>
-                    <SelectTrigger>
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {settings.providers.map((provider) => (
-                            <SelectItem value={provider.provider} key={provider.provider}>
-                                {provider.displayName}
-                            </SelectItem>
-                        ))}
-                        <SelectSeparator />
-                        <SelectItem value={"configure-new"}>Configure...</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-            {activeProvider && (
-                <div>
-                    Model:{" "}
-                    <Select value={activeProvider.selectedModel} onValueChange={handleModelSelect}>
+            <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
+                    Provider:{" "}
+                    <Select value={settings.activeProvider} onValueChange={handleProviderSelect}>
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            {activeProvider.models.map((model) => (
-                                <SelectItem value={model.id} key={model.id}>
-                                    {model.displayName}
+                            {settings.providers.map((provider) => (
+                                <SelectItem value={provider.provider} key={provider.provider}>
+                                    {provider.displayName}
                                 </SelectItem>
                             ))}
+                            <SelectSeparator />
+                            <SelectItem value={"configure-new"}>Configure...</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
-            )}
+                {activeProvider && (
+                    <div className="flex items-center gap-1">
+                        Model:{" "}
+                        <Select
+                            value={activeProvider.selectedModel}
+                            onValueChange={handleModelSelect}
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {activeProvider.models.map((model) => (
+                                    <SelectItem value={model.id} key={model.id}>
+                                        {model.displayName}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

@@ -1,21 +1,35 @@
 "use client"
 
-import { DirectChatTransport } from "ai"
 import { useChat } from "@ai-sdk/react"
 import { Input } from "@/components/ui/input"
-import { PropsWithChildren, useCallback, useState } from "react"
+import { PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ChevronRight, EyeIcon, LoaderCircle, PencilIcon, SquareStopIcon } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Error } from "@/components/error"
 import Markdown from "react-markdown"
-import { ModelSelection } from "@/app/ai/model-selection"
-import { useAgent } from "@/app/ai/utils"
+import { ModelSelection } from "@/components/ai/model-selection"
+import { useAgent } from "@/lib/ai/utils"
+import { DynamicDirectChatTransport } from "@/lib/ai/DynamicTransport"
 
 export default function AIPage() {
     const [message, setMessage] = useState("")
 
+    // Hidden at the start to prevent hydration issues
+    const [show, setShow] = useState(false)
+
+    useEffect(() => {
+        setShow(true)
+    }, [])
+
     const agent = useAgent()
+    const agentRef = useRef(agent)
+
+    useEffect(() => {
+        if (agentRef.current !== agent) {
+            agentRef.current = agent
+        }
+    }, [agent])
 
     const {
         messages,
@@ -25,11 +39,11 @@ export default function AIPage() {
         error,
         clearError
     } = useChat({
-        transport: agent
-            ? new DirectChatTransport({
-                  agent
-              })
-            : undefined
+        transport: new DynamicDirectChatTransport({
+            agent: () => {
+                return agentRef.current
+            }
+        })
     })
 
     const sendMessage = useCallback(() => {
@@ -38,6 +52,13 @@ export default function AIPage() {
         }).catch(console.error)
         setMessage("")
     }, [_sendMessage, message])
+
+    if (!show)
+        return (
+            <div className="flex h-full items-center justify-center">
+                <LoaderCircle className="size-4 text-muted-foreground animate-spin" />
+            </div>
+        )
 
     return (
         <div className="flex flex-col h-full pb-20">
@@ -148,7 +169,7 @@ export default function AIPage() {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                 />
-                {status === "ready" && (
+                {(status === "ready" || status === "error") && (
                     <Button onClick={sendMessage} disabled={!agent}>
                         Send
                     </Button>
