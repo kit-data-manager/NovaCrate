@@ -1,7 +1,6 @@
 "use client"
 
 import { useChat } from "@ai-sdk/react"
-import { Input } from "@/components/ui/input"
 import { PropsWithChildren, useCallback, useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,7 +10,6 @@ import {
     PencilIcon,
     PlusIcon,
     SparklesIcon,
-    SquareStopIcon,
     TrashIcon,
     XIcon
 } from "lucide-react"
@@ -42,6 +40,8 @@ import {
 } from "@/components/ui/table"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useLayoutState } from "@/lib/state/layout-state"
+import { ChatInput } from "@/components/ai/input"
+import { toast } from "sonner"
 
 function withoutModels(
     config: ProviderConfiguration | undefined
@@ -53,8 +53,6 @@ function withoutModels(
 }
 
 export default function AIAssistantChat() {
-    const [message, setMessage] = useState("")
-
     const fileService = useFileService()
     const setShowAIAssistant = useLayoutState((s) => s.setShowAIAssistant)
 
@@ -220,12 +218,20 @@ export default function AIAssistantChat() {
         setMessages([])
     }, [setMessages])
 
-    const sendMessage = useCallback(() => {
-        _sendMessage({
-            text: message
-        }).catch(console.error)
-        setMessage("")
-    }, [_sendMessage, message])
+    const sendMessage = useCallback(
+        (msg: string) => {
+            _sendMessage({
+                text: msg
+            }).catch((err) => {
+                toast.error(
+                    "Failed to send message: " + (err instanceof Error)
+                        ? err.message
+                        : JSON.stringify(err)
+                )
+            })
+        },
+        [_sendMessage]
+    )
 
     if (!show)
         return (
@@ -409,29 +415,12 @@ export default function AIAssistantChat() {
             )}
 
             <div className="p-2">
-                <div className="flex items-center gap-2">
-                    <Input
-                        placeholder="Enter your request here..."
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault()
-                                sendMessage()
-                            }
-                        }}
-                    />
-                    {(status === "ready" || status === "error") && (
-                        <Button onClick={sendMessage} disabled={!activeConfig}>
-                            Send
-                        </Button>
-                    )}
-                    {(status === "submitted" || status === "streaming") && (
-                        <Button onClick={stop}>
-                            <SquareStopIcon className="size-4" />
-                        </Button>
-                    )}
-                </div>
+                <ChatInput
+                    sendMessage={sendMessage}
+                    status={status}
+                    disableSend={!activeConfig}
+                    stop={stop}
+                />
                 <ModelSelection />
             </div>
         </div>

@@ -23,7 +23,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { LoaderCircle, PlusIcon } from "lucide-react"
+import { LoaderCircle } from "lucide-react"
 import { Error as ErrorDisplay } from "@/components/error"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RecordInput } from "@/components/ui/record"
@@ -246,11 +246,11 @@ export function ModelSelection() {
                 </DialogContent>
             </Dialog>
 
-            <div className="flex items-center gap-4 text-sm pt-2">
+            <div className="flex items-center gap-4 text-sm pt-2 px-2 opacity-50 hover:opacity-100 transition-opacity">
                 <div className="flex items-center gap-1">
                     Provider:{" "}
                     <Select value={settings.activeProvider} onValueChange={handleProviderSelect}>
-                        <SelectTrigger>
+                        <SelectTrigger variant={"inline"}>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -261,13 +261,6 @@ export function ModelSelection() {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => setShowProviderCreateModal(true)}
-                    >
-                        <PlusIcon className="size-4" />
-                    </Button>
                 </div>
                 {activeProvider && (
                     <div className="flex items-center gap-1">
@@ -276,7 +269,7 @@ export function ModelSelection() {
                             value={activeProvider.selectedModel}
                             onValueChange={handleModelSelect}
                         >
-                            <SelectTrigger>
+                            <SelectTrigger variant={"inline"}>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
