@@ -1,5 +1,5 @@
 import { tool } from "ai"
-import { z } from "zod/mini"
+import { z } from "zod"
 import { EntitySchema } from "@/lib/utils"
 
 const readEntity = tool({
@@ -8,26 +8,35 @@ const readEntity = tool({
     inputSchema: z.object({
         entityId: z.string()
     }),
-    outputSchema: z.optional(EntitySchema)
+    outputSchema: EntitySchema
 })
 
 const editEntity = tool({
     description:
         "Edit a specific metadata entity. If the edit succeeded, returns the new entity. If the edit failed, returns nothing",
     inputSchema: z.object({
-        entityId: z.string(),
+        entityId: z
+            .string()
+            .describe(
+                "The id of the entity you want to edit. You can specify a different id in the content field to change the id"
+            ),
         content: EntitySchema
     }),
-    outputSchema: z.optional(EntitySchema)
+    outputSchema: EntitySchema
 })
 
 const createEntity = tool({
     description:
-        "Create a new metadata entity. You need to provide the full metadata for this entity, with mandatory @id and @type attributes. An entity with the same @id must not exist yet. If the creation succeeded, returns the new entity. If the creation failed, returns nothing",
+        "Create a new metadata entity. You need to provide the full metadata for this entity, with mandatory @id and @type attributes. An entity with the same @id must not exist yet. If the creation succeeded, returns the new entity. If this entity is created to describe a specific file in the RO-Crate, make sure to set the @id to the file path and set autoCompleteFromFile to true.",
     inputSchema: z.object({
-        content: EntitySchema
+        content: EntitySchema,
+        autoCompleteFromFile: z
+            .boolean()
+            .describe(
+                "If this entity describes a file in the RO-Crate, set this to true to infer some additional attributes from the file system (file size, file encoding). The id of the entity must resolve to the file path in this case."
+            )
     }),
-    outputSchema: z.optional(EntitySchema)
+    outputSchema: EntitySchema
 })
 
 const getMetadataSummary = tool({
@@ -44,10 +53,35 @@ const getFilesList = tool({
     outputSchema: z.array(z.string())
 })
 
+const readFilePlainText = tool({
+    description:
+        "Read the content of a file in the RO-Crate. The output is a string. This is suitable for plain text, code, structured data (JSON, YAML, XML, and so on). This is NOT SUITABLE for PDF, PNG, JPG, or other files that can't be read by an LLM without preprocessing.",
+    inputSchema: z.object({
+        path: z.string().describe("The path to the file relative to the RO-Crate"),
+        offset: z
+            .number()
+            .min(0)
+            .describe(
+                "The offset in bytes from which to read the file. Use 0 to read from the start. Must be at least 0."
+            ),
+        limit: z
+            .number()
+            .min(1)
+            .describe(
+                "The number of bytes to read from the file at maximum. Always stay below 10000 to keep the context window clean, unless the user forcefully requests to read the full file. Must be at least 1."
+            )
+    }),
+    inputExamples: [
+        { input: { path: "series A/experiments/experiment1.txt", offset: 0, limit: 10000 } }
+    ],
+    outputSchema: z.string()
+})
+
 export const tools = {
     readEntity,
     editEntity,
     createEntity,
     getMetadataSummary,
-    getFilesList
+    getFilesList,
+    readFilePlainText
 }
