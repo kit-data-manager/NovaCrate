@@ -1,7 +1,15 @@
 "use client"
 
 import { useChat } from "@ai-sdk/react"
-import { PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import {
+    PropsWithChildren,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState
+} from "react"
 import { Button } from "@/components/ui/button"
 import {
     ChevronRight,
@@ -222,8 +230,21 @@ export default function AIAssistantChat() {
         setMessages([])
     }, [setMessages])
 
+    const chatContainer = useRef<HTMLDivElement>(null)
+    const chatContent = useRef<HTMLDivElement>(null)
+    const stickToBottom = useRef(true)
+
+    const scrollChatToBottom = useCallback(() => {
+        const cc = chatContainer.current
+        cc?.scrollTo({
+            top: cc.scrollHeight - cc.clientHeight,
+            behavior: "instant"
+        })
+    }, [])
+
     const sendMessage = useCallback(
         (msg: string) => {
+            scrollChatToBottom()
             _sendMessage({
                 text: msg
             }).catch((err) => {
@@ -234,8 +255,35 @@ export default function AIAssistantChat() {
                 )
             })
         },
-        [_sendMessage]
+        [_sendMessage, scrollChatToBottom]
     )
+
+    useEffect(() => {
+        if (!chatContainer.current) return
+        const cc = chatContainer.current
+        const content = chatContent.current
+
+        const onScroll = () => {
+            if (cc.scrollHeight < cc.clientHeight) {
+                stickToBottom.current = true
+            } else {
+                stickToBottom.current = cc.scrollTop + cc.clientHeight >= cc.scrollHeight
+            }
+        }
+
+        const observer = new MutationObserver(() => {
+            if (stickToBottom.current) {
+                scrollChatToBottom()
+            }
+        })
+
+        if (content) observer.observe(content, { childList: true, subtree: true })
+        cc.addEventListener("scroll", onScroll)
+        return () => {
+            cc.removeEventListener("scroll", onScroll)
+            observer.disconnect()
+        }
+    }, [show, settings, scrollChatToBottom])
 
     if (!show)
         return (
@@ -283,8 +331,24 @@ export default function AIAssistantChat() {
                     <XIcon />
                 </Button>
             </div>
-            <div className="grow overflow-y-auto">
-                <div className="flex flex-col min-h-full grow justify-end">
+            <div className="grow overflow-y-auto" ref={chatContainer}>
+                <div className="flex flex-col min-h-full grow justify-end" ref={chatContent}>
+                    {messages.length === 0 && (
+                        <div className="p-4">
+                            What can I help you with today? To get started, here are some prompt
+                            ideas:
+                            <ul className="list-disc pl-4">
+                                <li>Explain this RO-Crate to me</li>
+                                <li>Create a new Person entity describing me as an author</li>
+                                <li>
+                                    Find undescribed files in this RO-Crate and extract metadata for
+                                    them
+                                </li>
+                                <li>Find all unused contextual entities in this RO-Crate</li>
+                                <li>Please check if every Data Entity has an author</li>
+                            </ul>
+                        </div>
+                    )}
                     {messages.map((m) => (
                         <div
                             className={`space-y-1 m-2 p-2 rounded-xl ${m.role === "user" ? "w-[70%] bg-accent self-end p-4 py-3" : ""} overflow-x-auto overflow-y-hidden shrink-0`}
