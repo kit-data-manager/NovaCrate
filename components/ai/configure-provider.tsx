@@ -23,9 +23,8 @@ import {
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { RecordInput } from "@/components/ui/record"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
-import { LoaderCircle } from "lucide-react"
+import { CheckIcon, CloudDownload, LoaderCircle } from "lucide-react"
 import { Error as ErrorDisplay } from "@/components/error"
 
 export function ConfigureProvider({
@@ -47,31 +46,28 @@ export function ConfigureProvider({
     const [configureHeaders, setConfigureHeaders] = useState<[string, string][]>(
         existingConfig?.headers ? Object.entries(existingConfig.headers) : []
     )
-    const [fetchModelsAutomatically, setFetchModelsAutomatically] = useState(
-        !(existingConfig?.models.length ?? 0 > 0)
-    )
     const [configureModels, setConfigureModels] = useState<[string, string][]>(
         existingConfig?.models.map((model) => [model.id, model.displayName]) ?? []
     )
     const [configureAPIKey, setConfigureAPIKey] = useState(existingConfig?.apiKey ?? "")
     const [configureError, setConfigureError] = useState<unknown>()
-    const [shouldTestProvider, setShouldTestProvider] = useState(true)
     const [testingNewProvider, setTestingNewProvider] = useState(false)
+    const [providerTestedSuccessfully, setProviderTestedSuccessfully] = useState(false)
+    const [fetchingModels, setFetchingModels] = useState(false)
 
     const makeProviderConfig = useCallback(
         (models: TextModel[] = []) => {
             return {
                 id: existingConfig?.id ?? window.crypto.randomUUID(),
                 models,
+                selectedModel: models.length > 0 ? models[0].id : undefined,
                 provider: configureProvider as LanguageModelProvider,
                 apiKey: configureAPIKey,
                 displayName:
-                    (configureProvider as LanguageModelProvider) ===
-                    LanguageModelProvider.OPEN_AI_COMPATIBLE
-                        ? configureDisplayName
-                        : providerDisplayName(configureProvider as LanguageModelProvider),
+                    configureDisplayName ||
+                    providerDisplayName(configureProvider as LanguageModelProvider),
                 baseUrl: configureBaseUrl,
-                headers: Object.fromEntries(configureHeaders)
+                headers: Object.fromEntries(configureHeaders.filter((h) => h[0].trim() !== ""))
             } satisfies ProviderConfiguration
         },
         [
@@ -84,61 +80,59 @@ export function ConfigureProvider({
         ]
     )
 
-    const connectToProvider = useCallback(
-        (models: TextModel[]) => {
-            const config = makeProviderConfig(models)
-            settings.configureProvider(config)
-            settings.activateProvider(config.id)
-            onOpenChange(false)
-            setConfigureProvider("")
-            setConfigureAPIKey("")
-        },
-        [makeProviderConfig, onOpenChange, settings]
-    )
-
-    const testConnection = useCallback(async () => {
-        setTestingNewProvider(true)
-        try {
-            if (shouldTestProvider) await testProvider(makeProviderConfig())
-        } catch (e) {
-            console.error("Error while trying to fetch models", e)
-            setConfigureError(e instanceof Error ? e.message : JSON.stringify(e))
-            setTestingNewProvider(false)
+    const save = useCallback(() => {
+        if (!configureProvider) {
+            setConfigureError("Please select a provider")
             return
         }
 
-        const then = (models: TextModel[]) => {
-            connectToProvider(models)
+        const sanitizedModels = configureModels.filter(
+            (m) => m[0].trim() !== "" && m[1].trim() !== ""
+        )
+        if (sanitizedModels.length === 0) {
+            setConfigureError("Please add at least one model")
+            return
         }
 
-        if (fetchModelsAutomatically) {
-            fetchModels(makeProviderConfig())
-                .then((res) => {
-                    then(res)
-                })
-                .catch((error) => {
-                    setConfigureError(
-                        "Failed to fetch models from provider: " + (error instanceof Error)
-                            ? error.message
-                            : JSON.stringify(error)
-                    )
-                    setTestingNewProvider(false)
-                    return
-                })
-        } else {
-            then(
-                configureModels.map(
-                    ([key, value]) => ({ id: key, displayName: value }) satisfies TextModel
-                )
-            )
+        const config = makeProviderConfig(
+            sanitizedModels.map(([id, displayName]) => ({ id, displayName }))
+        )
+        settings.configureProvider(config)
+        settings.activateProvider(config.id)
+        onOpenChange(false)
+        setConfigureProvider("")
+        setConfigureAPIKey("")
+    }, [configureModels, configureProvider, makeProviderConfig, onOpenChange, settings])
+
+    const _testProvider = useCallback(async () => {
+        setTestingNewProvider(true)
+        setProviderTestedSuccessfully(false)
+        try {
+            await testProvider(makeProviderConfig())
+            setConfigureError(undefined)
+            setProviderTestedSuccessfully(true)
+        } catch (e) {
+            console.error("Error while testing connection", e)
+            setConfigureError(e instanceof Error ? e.message : JSON.stringify(e))
+        } finally {
+            setTestingNewProvider(false)
         }
-    }, [
-        configureModels,
-        connectToProvider,
-        fetchModelsAutomatically,
-        makeProviderConfig,
-        shouldTestProvider
-    ])
+    }, [makeProviderConfig])
+
+    const _fetchModels = useCallback(async () => {
+        try {
+            setFetchingModels(true)
+            const models = await fetchModels(makeProviderConfig())
+            setConfigureModels(models.map((model) => [model.id, model.displayName]))
+        } catch (error) {
+            setConfigureError(
+                "Failed to fetch models from provider: " +
+                    (error instanceof Error ? error.message : JSON.stringify(error))
+            )
+        } finally {
+            setFetchingModels(false)
+        }
+    }, [makeProviderConfig])
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -166,17 +160,15 @@ export function ConfigureProvider({
                             ))}
                         </SelectContent>
                     </Select>
-                    {configureProvider === LanguageModelProvider.OPEN_AI_COMPATIBLE && (
-                        <div>
-                            <Label htmlFor="display-name">Display Name</Label>
-                            <Input
-                                id="display-name"
-                                placeholder="My AI Provider"
-                                value={configureDisplayName}
-                                onChange={(e) => setConfigureDisplayName(e.target.value)}
-                            />
-                        </div>
-                    )}
+                    <div>
+                        <Label htmlFor="display-name">Display Name</Label>
+                        <Input
+                            id="display-name"
+                            placeholder="My AI Provider"
+                            value={configureDisplayName}
+                            onChange={(e) => setConfigureDisplayName(e.target.value)}
+                        />
+                    </div>
                     <div>
                         <Label htmlFor="api-key">API Key</Label>
                         <Input
@@ -207,42 +199,44 @@ export function ConfigureProvider({
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label>Models</Label>
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                id="fetch-models-automatically"
-                                checked={fetchModelsAutomatically}
-                                onCheckedChange={(v) =>
-                                    setFetchModelsAutomatically(v === "indeterminate" ? true : v)
-                                }
-                            />
-                            <Label htmlFor="fetch-models-automatically" className="mb-0">
-                                Fetch models automatically
-                            </Label>
+                        <div className="flex justify-between items-end">
+                            <Label>Models</Label>
+                            <Button
+                                variant="outline"
+                                onClick={_fetchModels}
+                                disabled={fetchingModels}
+                            >
+                                {fetchingModels ? (
+                                    <LoaderCircle className="animate-spin" />
+                                ) : (
+                                    <CloudDownload />
+                                )}{" "}
+                                Fetch Models automatically
+                            </Button>
                         </div>
-                        {!fetchModelsAutomatically && (
-                            <RecordInput
-                                value={configureModels}
-                                onValueChange={setConfigureModels}
-                                exampleValue="Model Display Name"
-                                exampleKey={"model-id"}
-                                itemName={"Model"}
-                            />
-                        )}
+
+                        <RecordInput
+                            value={configureModels}
+                            onValueChange={setConfigureModels}
+                            exampleValue="Model Display Name"
+                            exampleKey={"model-id"}
+                            itemName={"Model"}
+                        />
                     </div>
-                    <div className="space-y-2 mt-8">
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                id="test-provider"
-                                checked={shouldTestProvider}
-                                onCheckedChange={(v) =>
-                                    setShouldTestProvider(v === "indeterminate" ? true : v)
-                                }
-                            />
-                            <Label htmlFor="test-provider" className="mb-0">
-                                Test connection
-                            </Label>
-                        </div>
+                    <div className="flex gap-2 mt-8">
+                        <Button
+                            variant="outline"
+                            onClick={_testProvider}
+                            disabled={testingNewProvider}
+                        >
+                            {testingNewProvider && <LoaderCircle className="animate-spin" />} Test
+                            connection
+                        </Button>
+                        {providerTestedSuccessfully && (
+                            <div className="flex items-center gap-1 text-success">
+                                <CheckIcon className="size-4" /> Connection successful
+                            </div>
+                        )}
                     </div>
 
                     <ErrorDisplay title="Failed to connect to provider" error={configureError} />
@@ -250,9 +244,8 @@ export function ConfigureProvider({
                         <Button onClick={() => onOpenChange(false)} variant="secondary">
                             Cancel
                         </Button>
-                        <Button onClick={testConnection} disabled={testingNewProvider}>
-                            {testingNewProvider && <LoaderCircle className="size-4 animate-spin" />}{" "}
-                            Connect
+                        <Button onClick={save} disabled={testingNewProvider || fetchingModels}>
+                            Save
                         </Button>
                     </div>
                 </div>

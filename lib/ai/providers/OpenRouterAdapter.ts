@@ -12,15 +12,25 @@ export class OpenRouterAdapter implements IProviderAdapter {
             headers: { Authorization: `Bearer ${this.config.apiKey}`, ...this.config.headers }
         }
 
+        let response
         try {
-            const response = await fetch(url, options)
-            await response.json()
-            // If this succeeds, then the API key is valid
+            response = await fetch(url, options)
         } catch (error) {
-            throw new Error(`Connection to AI Provider failed. ${JSON.stringify(error)}`, {
-                cause: error
-            })
+            throw new Error(
+                `Connection to AI Provider failed. ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+                {
+                    cause: error
+                }
+            )
         }
+
+        if (!response.ok) {
+            throw new Error(
+                `Connection to AI Provider failed. ${response.status}: ${response.statusText}`
+            )
+        }
+
+        // If this succeeds, then the API key is valid
     }
 
     async fetchModels(): Promise<TextModel[]> {

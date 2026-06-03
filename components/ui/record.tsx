@@ -42,6 +42,10 @@ export function RecordInput(props: {
         [update]
     )
 
+    const removeAll = useCallback(() => {
+        update(() => [])
+    }, [update])
+
     return (
         <div>
             <div className="space-y-2 mb-2 max-h-50 overflow-y-auto border rounded-lg p-1">
@@ -62,9 +66,19 @@ export function RecordInput(props: {
                         </Button>
                     </div>
                 ))}
-                <Button variant="outline" size="sm" onClick={addPair}>
-                    <PlusIcon className="size-4" /> Add {props.itemName || "Item"}
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={addPair}>
+                        <PlusIcon className="size-4" /> Add {props.itemName || "Item"}
+                    </Button>
+                    <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={removeAll}
+                        disabled={props.value.length === 0}
+                    >
+                        <TrashIcon className="size-4" /> Remove All
+                    </Button>
+                </div>
             </div>
         </div>
     )

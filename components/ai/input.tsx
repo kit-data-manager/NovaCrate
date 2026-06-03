@@ -18,10 +18,11 @@ export function ChatInput({
     const [message, setMessage] = useState("")
 
     const sendMessage = useCallback(() => {
+        if (disableSend) return
         if (!message.trim()) return
         setMessage("")
         _sendMessage(message)
-    }, [_sendMessage, message])
+    }, [_sendMessage, disableSend, message])
 
     return (
         <div className="flex items-end gap-2">

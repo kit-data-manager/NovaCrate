@@ -257,6 +257,11 @@ export default function AIAssistantChat() {
 
     const sendMessage = useCallback(
         (msg: string) => {
+            if (!activeConfig || !activeConfig.selectedModel) {
+                toast.error("Please select a model first")
+                return
+            }
+
             scrollChatToBottom()
             _sendMessage({
                 text: msg
@@ -268,7 +273,7 @@ export default function AIAssistantChat() {
                 )
             })
         },
-        [_sendMessage, scrollChatToBottom]
+        [_sendMessage, activeConfig, scrollChatToBottom]
     )
 
     useEffect(() => {
