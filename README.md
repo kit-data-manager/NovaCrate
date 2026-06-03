@@ -24,10 +24,8 @@ For more information, see our  [privacy policy](https://www.kit.edu/privacypolic
 ## 🚀 Features
 
 - ✅ Create, read, and edit RO-Crates
+- ✅ Integrated AI Assistant to help you create, maintain, and understand RO-Crates
 - ✅ Live validation of RO-Crates
-  - ⚙️ Supports validation of the RO-Crate Specification v1.1 and v1.2
-  - 🏗️ WIP: Validate profiles or specific RO-Crate types (e.g., Workflow crates)
-  - 🚀 Autofix actions available for some issues
 - ✅ Visualize RO-Crates with a graph
 - ✅ RO-Crate context information and property descriptions
 - ✅ Automatic recommendation of fitting entity types and properties
