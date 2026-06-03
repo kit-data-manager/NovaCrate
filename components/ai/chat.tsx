@@ -12,6 +12,7 @@ import {
 } from "react"
 import { Button } from "@/components/ui/button"
 import {
+    BugIcon,
     ChevronRight,
     CogIcon,
     EyeIcon,
@@ -53,6 +54,7 @@ import { ChatInput } from "@/components/ai/input"
 import { toast } from "sonner"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { SettingsPages } from "@/components/modals/settings/settings-modal"
+import { useValidation } from "@/lib/validation/hooks"
 
 function withoutModels(
     config: ProviderConfiguration | undefined
@@ -67,6 +69,7 @@ export default function AIAssistantChat() {
     const fileService = useFileService()
     const setShowAIAssistant = useLayoutState((s) => s.setShowAIAssistant)
     const { showSettingsModal } = useContext(GlobalModalContext)
+    const validation = useValidation()
 
     // Hidden at the start to prevent hydration issues
     const [show, setShow] = useState(false)
@@ -222,6 +225,16 @@ export default function AIAssistantChat() {
                             })
                         }
                     }
+                    return
+                case "getValidationResults":
+                    setTimeout(() => {
+                        addToolOutput({
+                            tool: "getValidationResults",
+                            toolCallId: toolCall.toolCallId,
+                            output: validation.resultStore.getState().results
+                        })
+                    }, 500)
+                    return
             }
         }
     })
@@ -303,6 +316,9 @@ export default function AIAssistantChat() {
                 </div>
                 <Button onClick={() => showSettingsModal(SettingsPages.AI_ASSISTANT)}>
                     <CogIcon /> Configure in Settings
+                </Button>
+                <Button variant="secondary" onClick={() => setShowAIAssistant(false)}>
+                    Close AI Assistant
                 </Button>
             </div>
         )
@@ -443,6 +459,14 @@ export default function AIAssistantChat() {
                                     return (
                                         <ToolCall key={i} part={part} icon={EyeIcon}>
                                             Reading File {part.input?.path ?? "..."}
+                                        </ToolCall>
+                                    )
+                                }
+
+                                if (part.type === "tool-getValidationResults") {
+                                    return (
+                                        <ToolCall key={i} part={part} icon={BugIcon}>
+                                            Validating RO-Crate
                                         </ToolCall>
                                     )
                                 }

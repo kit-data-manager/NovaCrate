@@ -67,7 +67,10 @@ export async function POST(req: Request) {
             Whenever you create a contextual entity, you need to put additional thought into the choice of identifier. You may also ask the user for a persistent identifier if you don't have one.
             
             ## Data Protection
-            To prevent data loss, you should ALWAYS READ AN ENTITY BEFORE EDITING IT. It is very well possible that the user has edited an entity since you last read it!`
+            To prevent data loss, you should ALWAYS READ AN ENTITY BEFORE EDITING IT. It is very well possible that the user has edited an entity since you last read it!
+            
+            ## Validation
+            NovaCrate has built-in validation. You can read validation results using a tool.`
     })
 
     return createAgentUIStreamResponse<never, typeof tools, never>({

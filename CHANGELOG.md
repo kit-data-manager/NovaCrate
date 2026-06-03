@@ -9,9 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added an **AI Assistant** to NovaCrate. It can be enabled with a button on the top right of the page.
+
 ### Fixed
 
 - Fixed security vulnerabilities and installed countermeasures against npm supply chain attacks
+- Fixed a validation issue where Dataset entities were not being validated correctly
 
 ## [1.11.1] - 2026-05-18
 

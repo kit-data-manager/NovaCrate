@@ -377,7 +377,7 @@ export function NavHeader() {
                     <Button
                         size="icon"
                         variant="outline"
-                        className={showAIAssistant ? "bg-accent" : ""}
+                        className={showAIAssistant ? "bg-accent!" : ""}
                         onClick={toggleShowAIAssistant}
                     >
                         <SparklesIcon />

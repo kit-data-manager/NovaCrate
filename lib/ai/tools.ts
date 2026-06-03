@@ -1,6 +1,7 @@
 import { tool } from "ai"
 import { z } from "zod"
 import { EntitySchema } from "@/lib/utils"
+import { ValidationResultSchema } from "@/lib/validation/validation-result"
 
 const readEntity = tool({
     description:
@@ -77,11 +78,19 @@ const readFilePlainText = tool({
     outputSchema: z.string()
 })
 
+const getValidationResults = tool({
+    description:
+        "Get errors, warnings, and recommendations from the built-in validation tool. You should call this tool whenever you want to make sure that your own changes are not yielding any errors.",
+    inputSchema: z.object({}),
+    outputSchema: z.array(ValidationResultSchema)
+})
+
 export const tools = {
     readEntity,
     editEntity,
     createEntity,
     getMetadataSummary,
     getFilesList,
-    readFilePlainText
+    readFilePlainText,
+    getValidationResults
 }
