@@ -18,6 +18,7 @@ export function ChatInput({
     const [message, setMessage] = useState("")
 
     const sendMessage = useCallback(() => {
+        if (!message.trim()) return
         setMessage("")
         _sendMessage(message)
     }, [_sendMessage, message])

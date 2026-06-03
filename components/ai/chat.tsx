@@ -418,7 +418,7 @@ export default function AIAssistantChat() {
                 <ChatInput
                     sendMessage={sendMessage}
                     status={status}
-                    disableSend={!activeConfig}
+                    disableSend={!activeConfig || !activeConfig.selectedModel}
                     stop={stop}
                 />
                 <ModelSelection />

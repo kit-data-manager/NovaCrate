@@ -44,7 +44,7 @@ export interface AIAssistantSettings {
     getActiveProvider(): ProviderConfiguration | undefined
     configureProvider(config: ProviderConfiguration): void
     removeProvider(id: string): void
-    activateProvider(id: string): void
+    activateProvider(id: string | undefined): void
     addModel(providerId: string, modelConfig: TextModel): void
     removeModel(providerId: string, modelName: string): void
     activateModel(providerId: string, modelName: string): void
@@ -62,9 +62,7 @@ export const useAIAssistantSettings = create<AIAssistantSettings>()(
                     },
                     configureProvider(config: ProviderConfiguration) {
                         set((store) => {
-                            const existing = store.providers.findIndex(
-                                (p) => p.provider === config.provider
-                            )
+                            const existing = store.providers.findIndex((p) => p.id === config.id)
                             if (existing >= 0) {
                                 store.providers[existing] = config
                             } else {
@@ -77,7 +75,7 @@ export const useAIAssistantSettings = create<AIAssistantSettings>()(
                             store.providers = store.providers.filter((p) => p.id !== id)
                         })
                     },
-                    activateProvider(id: string) {
+                    activateProvider(id: string | undefined) {
                         set({ activeProvider: id })
                     },
                     addModel(providerId: string, modelConfig: TextModel) {

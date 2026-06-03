@@ -42,7 +42,7 @@ export class OpenAICompatibleAdapter implements IProviderAdapter {
     }
 
     async testConnection(): Promise<void> {
-        const url = `${this.config.baseUrl}/models`
+        const url = `${this.config.baseUrl}/auths/`
         const options = {
             method: "GET",
             headers: { Authorization: `Bearer ${this.config.apiKey}`, ...this.config.headers }

@@ -10,6 +10,7 @@ export async function POST(req: Request) {
         await provider.testConnection()
         return Response.json({ success: true })
     } catch (error) {
+        console.error(error)
         return Response.json(
             {
                 success: false,

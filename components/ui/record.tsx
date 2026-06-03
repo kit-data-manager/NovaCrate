@@ -44,7 +44,7 @@ export function RecordInput(props: {
 
     return (
         <div>
-            <div className="space-y-2 mb-2">
+            <div className="space-y-2 mb-2 max-h-50 overflow-y-auto border rounded-lg p-1">
                 {props.value.map(([key, value], i) => (
                     <div key={i} className="flex items-center gap-2">
                         <Input
@@ -62,10 +62,10 @@ export function RecordInput(props: {
                         </Button>
                     </div>
                 ))}
+                <Button variant="outline" size="sm" onClick={addPair}>
+                    <PlusIcon className="size-4" /> Add {props.itemName || "Item"}
+                </Button>
             </div>
-            <Button variant="outline" size="sm" onClick={addPair}>
-                <PlusIcon className="size-4" /> Add {props.itemName || "Item"}
-            </Button>
         </div>
     )
 }
