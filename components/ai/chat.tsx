@@ -1,15 +1,7 @@
 "use client"
 
 import { useChat } from "@ai-sdk/react"
-import {
-    PropsWithChildren,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useRef,
-    useState
-} from "react"
+import { PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
     BugIcon,
@@ -79,9 +71,6 @@ export default function AIAssistantChat() {
     }, [])
 
     const settings = useAIAssistantSettings()
-    const activeConfig = useMemo(() => {
-        return settings.getActiveProvider()
-    }, [settings])
 
     const {
         messages,
@@ -95,9 +84,11 @@ export default function AIAssistantChat() {
     } = useChat({
         transport: new DefaultChatTransport<UIMessage<never, never, InferUITools<typeof tools>>>({
             api: "/api/ai/chat",
-            body: () => ({
-                config: withoutModels(settings.getActiveProvider())
-            })
+            body: () => {
+                return {
+                    config: withoutModels(settings.getActiveProvider())
+                }
+            }
         }),
         sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
         onToolCall: async ({ toolCall }) => {
@@ -257,7 +248,8 @@ export default function AIAssistantChat() {
 
     const sendMessage = useCallback(
         (msg: string) => {
-            if (!activeConfig || !activeConfig.selectedModel) {
+            const activeProvider = settings.getActiveProvider()
+            if (!activeProvider || !activeProvider.selectedModel) {
                 toast.error("Please select a model first")
                 return
             }
@@ -273,7 +265,7 @@ export default function AIAssistantChat() {
                 )
             })
         },
-        [_sendMessage, activeConfig, scrollChatToBottom]
+        [_sendMessage, scrollChatToBottom, settings]
     )
 
     useEffect(() => {
@@ -530,7 +522,9 @@ export default function AIAssistantChat() {
                 <ChatInput
                     sendMessage={sendMessage}
                     status={status}
-                    disableSend={!activeConfig || !activeConfig.selectedModel}
+                    disableSend={
+                        !settings.activeProvider || !settings.getActiveProvider()?.selectedModel
+                    }
                     stop={stop}
                 />
                 <ModelSelection />

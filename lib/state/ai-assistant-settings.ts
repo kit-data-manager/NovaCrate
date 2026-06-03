@@ -6,7 +6,9 @@ import { z } from "zod/mini"
 
 export enum LanguageModelProvider {
     OPEN_ROUTER = "openrouter",
-    OPEN_AI_COMPATIBLE = "openai-compatible"
+    OPEN_AI_COMPATIBLE = "openai-compatible",
+    OPEN_AI = "openai",
+    ANTHROPIC = "anthropic"
 }
 
 export const LanguageModelProviderSchema = z.enum(Object.values(LanguageModelProvider))

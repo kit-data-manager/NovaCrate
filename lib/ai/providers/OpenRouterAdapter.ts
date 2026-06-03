@@ -69,7 +69,7 @@ export class OpenRouterAdapter implements IProviderAdapter {
         const openRouter = createOpenRouter({
             apiKey: this.config.apiKey,
             headers: this.config.headers,
-            baseUrl: this.config.baseUrl
+            baseUrl: this.config.baseUrl || undefined
         })
 
         return openRouter(modelId)

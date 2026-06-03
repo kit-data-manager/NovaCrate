@@ -10,6 +10,10 @@ export function providerDisplayName(provider: LanguageModelProvider) {
             return "OpenRouter"
         case LanguageModelProvider.OPEN_AI_COMPATIBLE:
             return "OpenAI Compatible"
+        case LanguageModelProvider.OPEN_AI:
+            return "OpenAI"
+        case LanguageModelProvider.ANTHROPIC:
+            return "Anthropic"
         default:
             return provider
     }

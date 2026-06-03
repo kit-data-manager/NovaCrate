@@ -68,7 +68,7 @@ export function AiAssistantSettings() {
             {settings.providers.map((provider) => (
                 <div
                     key={provider.id}
-                    className="p-2 border rounded-lg flex justify-between items-center gap-2"
+                    className="p-2 border rounded-lg flex justify-between items-center gap-2 mb-2"
                 >
                     <div>
                         <div>

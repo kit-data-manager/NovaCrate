@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added an **AI Assistant** to NovaCrate. It can be enabled with a button on the top right of the page.
+  - Supported LLM providers are: OpenAI, Anthropic, OpenRouter, OpenAI-Compatible (such as Open WebUI)
+  - The AI Assistant supports a number of tools, such as entity listing, entity editing, and file reading.
 
 ### Fixed
 

@@ -18,6 +18,8 @@
     "serve": "serve out -L -p 3000"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.79",
+    "@ai-sdk/openai": "^3.0.65",
     "@ai-sdk/openai-compatible": "^2.0.48",
     "@ai-sdk/provider-utils": "^4.0.27",
     "@ai-sdk/react": "^3.0.187",
