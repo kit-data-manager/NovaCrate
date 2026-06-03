@@ -109,6 +109,11 @@ export function AiAssistantSettings() {
                     </div>
                 </div>
             ))}
+            {settings.providers.length === 0 && (
+                <div className="text-center text-muted-foreground p-4">
+                    No providers configured. Click the button above to add one.
+                </div>
+            )}
         </div>
     )
 }

@@ -1,10 +1,11 @@
 "use client"
 
 import { useChat } from "@ai-sdk/react"
-import { PropsWithChildren, useCallback, useEffect, useMemo, useState } from "react"
+import { PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
     ChevronRight,
+    CogIcon,
     EyeIcon,
     LoaderCircle,
     PencilIcon,
@@ -42,6 +43,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useLayoutState } from "@/lib/state/layout-state"
 import { ChatInput } from "@/components/ai/input"
 import { toast } from "sonner"
+import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { SettingsPages } from "@/components/modals/settings/settings-modal"
 
 function withoutModels(
     config: ProviderConfiguration | undefined
@@ -55,6 +58,7 @@ function withoutModels(
 export default function AIAssistantChat() {
     const fileService = useFileService()
     const setShowAIAssistant = useLayoutState((s) => s.setShowAIAssistant)
+    const { showSettingsModal } = useContext(GlobalModalContext)
 
     // Hidden at the start to prevent hydration issues
     const [show, setShow] = useState(false)
@@ -237,6 +241,21 @@ export default function AIAssistantChat() {
         return (
             <div className="flex h-full items-center justify-center">
                 <LoaderCircle className="size-4 text-muted-foreground animate-spin" />
+            </div>
+        )
+
+    if (settings.providers.length === 0)
+        return (
+            <div className="flex flex-col h-full items-center justify-center gap-2 text-center p-4">
+                <SparklesIcon /> <div className="text-2xl font-black mb-4">AI Assistant</div>
+                <div className="text-sm mb-4">
+                    Connect your first LLM Provider to NovaCrate to use the AI Assistant. The AI
+                    Assistant is an Agentic AI driven by an LLM of your choice. It can view and edit
+                    your metadata, read your files, and generate new entities.
+                </div>
+                <Button onClick={() => showSettingsModal(SettingsPages.AI_ASSISTANT)}>
+                    <CogIcon /> Configure in Settings
+                </Button>
             </div>
         )
 
