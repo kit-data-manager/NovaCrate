@@ -9,11 +9,20 @@ export async function POST(req: Request) {
         messages: UIMessage[]
         config: unknown
     } = await req.json()
-    const config = z
-        .extend(ProviderConfigurationWithoutModelsSchema, {
-            selectedModel: z.string()
-        })
-        .parse(body.config)
+
+    let config
+    try {
+        config = z
+            .extend(ProviderConfigurationWithoutModelsSchema, {
+                selectedModel: z.string()
+            })
+            .parse(body.config)
+    } catch (e) {
+        console.error("Bad request to /ai/chat/", e)
+        return Response.json({ error: "Bad Request" }, { status: 400 })
+    }
+
+    if (!config.apiKey) return Response.json({ error: "No API key provided" }, { status: 400 })
 
     const provider = new ProviderFactory().makeAdapter(config)
     const model = await provider.getLanguageModel(config.selectedModel)
