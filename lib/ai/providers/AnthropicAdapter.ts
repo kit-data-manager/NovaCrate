@@ -1,10 +1,13 @@
 import { IProviderAdapter } from "@/lib/ai/providers/IProviderAdapter"
 import { ProviderConfigurationWithoutModels, TextModel } from "@/lib/state/ai-assistant-settings"
 import { createAnthropic } from "@ai-sdk/anthropic"
+import { sanitizeHeaders } from "@/lib/ai/providers/sanitize-headers"
+import { validateBaseUrl } from "@/lib/ai/providers/validate-base-url"
 
 export class AnthropicAdapter implements IProviderAdapter {
     constructor(private config: ProviderConfigurationWithoutModels) {
-        if (!this.config.headers) this.config.headers = {}
+        this.config.headers = sanitizeHeaders(this.config.headers)
+        validateBaseUrl(this.config.baseUrl)
 
         if (!("anthropic-version" in this.config.headers)) {
             this.config.headers["anthropic-version"] = "2023-06-01"

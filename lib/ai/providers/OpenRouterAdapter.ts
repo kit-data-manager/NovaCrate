@@ -1,9 +1,14 @@
 import { IProviderAdapter } from "@/lib/ai/providers/IProviderAdapter"
 import { ProviderConfigurationWithoutModels, TextModel } from "@/lib/state/ai-assistant-settings"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
+import { sanitizeHeaders } from "@/lib/ai/providers/sanitize-headers"
+import { validateBaseUrl } from "@/lib/ai/providers/validate-base-url"
 
 export class OpenRouterAdapter implements IProviderAdapter {
-    constructor(private config: ProviderConfigurationWithoutModels) {}
+    constructor(private config: ProviderConfigurationWithoutModels) {
+        this.config.headers = sanitizeHeaders(this.config.headers)
+        validateBaseUrl(this.config.baseUrl)
+    }
 
     async testConnection() {
         const url = `${this.config.baseUrl || "https://openrouter.ai/api/v1"}/key`

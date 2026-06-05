@@ -1,9 +1,14 @@
 import { IProviderAdapter } from "@/lib/ai/providers/IProviderAdapter"
 import { ProviderConfigurationWithoutModels, TextModel } from "@/lib/state/ai-assistant-settings"
 import { createOpenAI } from "@ai-sdk/openai"
+import { sanitizeHeaders } from "@/lib/ai/providers/sanitize-headers"
+import { validateBaseUrl } from "@/lib/ai/providers/validate-base-url"
 
 export class OpenAIAdapter implements IProviderAdapter {
-    constructor(private config: ProviderConfigurationWithoutModels) {}
+    constructor(private config: ProviderConfigurationWithoutModels) {
+        this.config.headers = sanitizeHeaders(this.config.headers)
+        validateBaseUrl(this.config.baseUrl)
+    }
 
     async testConnection() {
         await this.fetchModels()

@@ -1,9 +1,14 @@
 import { IProviderAdapter } from "@/lib/ai/providers/IProviderAdapter"
 import { ProviderConfigurationWithoutModels, TextModel } from "@/lib/state/ai-assistant-settings"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
+import { sanitizeHeaders } from "@/lib/ai/providers/sanitize-headers"
+import { validateBaseUrl } from "@/lib/ai/providers/validate-base-url"
 
 export class OpenAICompatibleAdapter implements IProviderAdapter {
-    constructor(private config: ProviderConfigurationWithoutModels) {}
+    constructor(private config: ProviderConfigurationWithoutModels) {
+        this.config.headers = sanitizeHeaders(this.config.headers)
+        validateBaseUrl(this.config.baseUrl)
+    }
 
     async fetchModels(): Promise<TextModel[]> {
         if (!this.config.baseUrl) throw new Error("OpenAI Compatible Provider requires a base URL")
@@ -52,10 +57,9 @@ export class OpenAICompatibleAdapter implements IProviderAdapter {
             headers: { Authorization: `Bearer ${this.config.apiKey}`, ...this.config.headers }
         }
 
+        let response
         try {
-            const response = await fetch(url, options)
-            await response.json()
-            // If this succeeds, then the API key is valid
+            response = await fetch(url, options)
         } catch (error) {
             throw new Error(
                 `Connection to AI Provider failed. ${error instanceof Error ? error.message : JSON.stringify(error)}`,
@@ -64,5 +68,13 @@ export class OpenAICompatibleAdapter implements IProviderAdapter {
                 }
             )
         }
+
+        if (!response.ok) {
+            throw new Error(
+                `Connection to AI Provider failed. ${response.status}: ${response.statusText}`
+            )
+        }
+
+        // If this succeeds, then the API key is valid
     }
 }
