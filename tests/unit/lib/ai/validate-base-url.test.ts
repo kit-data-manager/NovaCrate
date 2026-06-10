@@ -1,17 +1,72 @@
 import { validateBaseUrl } from "@/lib/ai/providers/validate-base-url"
 
+const ORIGINAL_REGEX = process.env.AI_ASSISTANT_BASE_URL_REGEX
+
+function setAllowedBaseUrlRegex(regex: string | undefined) {
+    if (regex === undefined) {
+        delete process.env.AI_ASSISTANT_BASE_URL_REGEX
+    } else {
+        process.env.AI_ASSISTANT_BASE_URL_REGEX = regex
+    }
+}
+
 describe("validateBaseUrl", () => {
+    beforeEach(() => {
+        setAllowedBaseUrlRegex(undefined)
+    })
+
+    afterAll(() => {
+        setAllowedBaseUrlRegex(ORIGINAL_REGEX)
+    })
+
     describe("no-op for empty values", () => {
-        it("should accept undefined", () => {
+        it("should accept undefined even when no regex is configured", () => {
             expect(() => validateBaseUrl(undefined)).not.toThrow()
         })
 
-        it("should accept an empty string", () => {
+        it("should accept an empty string even when no regex is configured", () => {
             expect(() => validateBaseUrl("")).not.toThrow()
         })
     })
 
+    describe("regex configuration", () => {
+        it("should reject custom base URLs when no regex is configured", () => {
+            expect(() => validateBaseUrl("https://api.openai.com/v1")).toThrow(
+                "Custom base URLs are not allowed on this deployment"
+            )
+        })
+
+        it("should accept a URL when its hostname matches the configured regex", () => {
+            setAllowedBaseUrlRegex("^api\\.openai\\.com$")
+            expect(() => validateBaseUrl("https://api.openai.com/v1")).not.toThrow()
+        })
+
+        it("should reject a URL when its hostname does not match the configured regex", () => {
+            setAllowedBaseUrlRegex("^api\\.openai\\.com$")
+            expect(() => validateBaseUrl("https://api.anthropic.com/v1")).toThrow(
+                "Not permitted on this deployment"
+            )
+        })
+
+        it("should apply the regex case-insensitively", () => {
+            setAllowedBaseUrlRegex("^api\\.openai\\.com$")
+            expect(() => validateBaseUrl("https://API.OPENAI.COM/v1")).not.toThrow()
+        })
+
+        it("should apply the regex to the hostname, not the full URL", () => {
+            setAllowedBaseUrlRegex("^api\\.openai\\.com$")
+            expect(() => validateBaseUrl("https://api.openai.com/v1/models")).not.toThrow()
+        })
+    })
+
     describe("valid URLs", () => {
+        beforeEach(() => {
+            setAllowedBaseUrlRegex(
+                "^(api\\.openai\\.com|api\\.anthropic\\.com|openrouter\\.ai|" +
+                    "my-custom-provider\\.example\\.com|ki-toolbox\\.scc\\.kit\\.edu)$"
+            )
+        })
+
         it("should accept https://api.openai.com/v1", () => {
             expect(() => validateBaseUrl("https://api.openai.com/v1")).not.toThrow()
         })
@@ -30,7 +85,7 @@ describe("validateBaseUrl", () => {
             ).not.toThrow()
         })
 
-        it("should accept the allowed KIT host ki-toolbox.scc.kit.edu", () => {
+        it("should accept an explicitly allowed KIT host", () => {
             expect(() =>
                 validateBaseUrl("https://ki-toolbox.scc.kit.edu/api/v1")
             ).not.toThrow()
@@ -38,26 +93,34 @@ describe("validateBaseUrl", () => {
     })
 
     describe("invalid URL format", () => {
-        it("should reject a completely invalid URL", () => {
+        it("should reject a completely invalid URL before checking the regex", () => {
             expect(() => validateBaseUrl("not-a-url")).toThrow("not a valid URL")
         })
     })
 
     describe("protocol checks", () => {
-        it("should reject http://", () => {
+        beforeEach(() => {
+            setAllowedBaseUrlRegex("^api\\.openai\\.com$")
+        })
+
+        it("should reject http:// before checking the regex", () => {
             expect(() => validateBaseUrl("http://api.openai.com/v1")).toThrow(
                 "protocol must be https"
             )
         })
 
-        it("should reject ftp://", () => {
-            expect(() => validateBaseUrl("ftp://files.example.com")).toThrow(
+        it("should reject ftp:// before checking the regex", () => {
+            expect(() => validateBaseUrl("ftp://api.openai.com")).toThrow(
                 "protocol must be https"
             )
         })
     })
 
     describe("IP address checks", () => {
+        beforeEach(() => {
+            setAllowedBaseUrlRegex(".*")
+        })
+
         it("should reject IPv4 localhost 127.0.0.1", () => {
             expect(() => validateBaseUrl("https://127.0.0.1")).toThrow(
                 "IP addresses are not allowed"
@@ -113,47 +176,49 @@ describe("validateBaseUrl", () => {
         })
     })
 
-    describe("kit.edu domain restrictions", () => {
-        it("should reject kit.edu itself", () => {
+    describe("deployment regex restrictions", () => {
+        beforeEach(() => {
+            setAllowedBaseUrlRegex("^ki-toolbox\\.scc\\.kit\\.edu$")
+        })
+
+        it("should reject kit.edu itself when it is not allowed by the regex", () => {
             expect(() => validateBaseUrl("https://kit.edu")).toThrow(
-                "connections to kit.edu resources are not allowed"
+                "Not permitted on this deployment"
             )
         })
 
-        it("should reject a subdomain of kit.edu", () => {
+        it("should reject a subdomain of kit.edu when it is not allowed by the regex", () => {
             expect(() => validateBaseUrl("https://internal.kit.edu/api")).toThrow(
-                "connections to kit.edu resources are not allowed"
+                "Not permitted on this deployment"
             )
         })
 
-        it("should reject deeply nested kit.edu subdomains", () => {
+        it("should reject deeply nested kit.edu subdomains when they are not allowed", () => {
             expect(() =>
                 validateBaseUrl("https://some.deep.subdomain.kit.edu/api")
-            ).toThrow("connections to kit.edu resources are not allowed")
+            ).toThrow("Not permitted on this deployment")
         })
 
-        it("should reject scc.kit.edu (sibling of allowed host)", () => {
+        it("should reject scc.kit.edu when it is not allowed by the regex", () => {
             expect(() => validateBaseUrl("https://scc.kit.edu")).toThrow(
-                "connections to kit.edu resources are not allowed"
+                "Not permitted on this deployment"
             )
         })
 
-        it("should reject other-service.scc.kit.edu", () => {
-            expect(() =>
-                validateBaseUrl("https://other-service.scc.kit.edu/v1")
-            ).toThrow("connections to kit.edu resources are not allowed")
+        it("should reject other-service.scc.kit.edu when it is not allowed", () => {
+            expect(() => validateBaseUrl("https://other-service.scc.kit.edu/v1")).toThrow(
+                "Not permitted on this deployment"
+            )
         })
 
-        it("should reject kit.edu with mixed casing", () => {
+        it("should reject kit.edu with mixed casing when it is not allowed", () => {
             expect(() => validateBaseUrl("https://Internal.KIT.EDU/api")).toThrow(
-                "connections to kit.edu resources are not allowed"
+                "Not permitted on this deployment"
             )
         })
 
         it("should allow ki-toolbox.scc.kit.edu", () => {
-            expect(() =>
-                validateBaseUrl("https://ki-toolbox.scc.kit.edu")
-            ).not.toThrow()
+            expect(() => validateBaseUrl("https://ki-toolbox.scc.kit.edu")).not.toThrow()
         })
 
         it("should allow ki-toolbox.scc.kit.edu with a path", () => {
@@ -162,8 +227,10 @@ describe("validateBaseUrl", () => {
             ).not.toThrow()
         })
 
-        it("should not block domains that merely contain 'kit.edu' as a substring", () => {
-            expect(() => validateBaseUrl("https://toolkit.education")).not.toThrow()
+        it("should reject domains that merely contain kit.edu when not allowed by the regex", () => {
+            expect(() => validateBaseUrl("https://toolkit.education")).toThrow(
+                "Not permitted on this deployment"
+            )
         })
     })
 })
