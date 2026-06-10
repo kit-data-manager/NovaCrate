@@ -50,6 +50,7 @@ import { SettingsPages } from "@/components/modals/settings/settings-modal"
 import { useValidation } from "@/lib/validation/hooks"
 import { useCore } from "@/components/providers/core-provider"
 import { importOrganizationFromRor, importPersonFromOrcid } from "@/lib/entity-import"
+import { addBasePath } from "next/dist/client/add-base-path"
 
 function withoutModels(
     config: ProviderConfiguration | undefined
@@ -87,7 +88,7 @@ export default function AIAssistantChat() {
         setMessages
     } = useChat({
         transport: new DefaultChatTransport<UIMessage<never, never, InferUITools<typeof tools>>>({
-            api: "/api/ai/chat",
+            api: addBasePath("/api/ai/chat"),
             body: () => {
                 return {
                     config: withoutModels(settings.getActiveProvider())

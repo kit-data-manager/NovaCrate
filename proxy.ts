@@ -35,7 +35,7 @@ function getAllowedOrigin(req: NextRequest): string {
     return `${proto}://${host}`
 }
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
     // --- 1. Origin check ---
     const origin = req.headers.get("origin")
     const allowed = getAllowedOrigin(req)

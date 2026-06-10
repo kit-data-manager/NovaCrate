@@ -5,6 +5,9 @@ import { ProviderFactory } from "@/lib/ai/providers/ProviderFactory"
 import { z } from "zod/mini"
 
 export async function POST(req: Request) {
+    if (process.env.AI_ASSISTANT_ENABLED !== "true")
+        return new Response("AI Assistant is disabled", { status: 404 })
+
     const body: {
         messages: UIMessage[]
         config: unknown
@@ -24,13 +27,15 @@ export async function POST(req: Request) {
 
     if (!config.apiKey) return Response.json({ error: "No API key provided" }, { status: 400 })
 
-    const provider = new ProviderFactory().makeAdapter(config)
-    const model = await provider.getLanguageModel(config.selectedModel)
+    let agent
+    try {
+        const provider = new ProviderFactory().makeAdapter(config)
+        const model = await provider.getLanguageModel(config.selectedModel)
 
-    const agent = new ToolLoopAgent({
-        model,
-        tools,
-        instructions: `
+        agent = new ToolLoopAgent({
+            model,
+            tools,
+            instructions: `
             # Goal
             You are an AI Agent named 'AI Assistant' embedded in the RO-Crate Editor 'NovaCrate'. Your goal is to help the user edit an RO-Crate (Research Object Crate).
             
@@ -84,7 +89,17 @@ export async function POST(req: Request) {
             
             ## Validation
             NovaCrate has built-in validation. You can read validation results using a tool.`
-    })
+        })
+    } catch (error) {
+        return Response.json(
+            {
+                error:
+                    "Failed to create agent. " +
+                    (error instanceof Error ? error.message : JSON.stringify(error))
+            },
+            { status: 500 }
+        )
+    }
 
     return createAgentUIStreamResponse<never, typeof tools, never>({
         agent,

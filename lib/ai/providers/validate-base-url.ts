@@ -42,14 +42,15 @@ export function validateBaseUrl(url: string | undefined): void {
 
     // 3. Block *.kit.edu except ki-toolbox.scc.kit.edu
     const lower = hostname.toLowerCase()
-    if (
-        (lower === "kit.edu" || lower.endsWith(".kit.edu")) &&
-        lower !== "ki-toolbox.scc.kit.edu"
-    ) {
-        throw new Error(
-            "Invalid base URL: connections to kit.edu resources are not allowed, " +
-                "except for ki-toolbox.scc.kit.edu"
-        )
+
+    if (!process.env.AI_ASSISTANT_BASE_URL_REGEX) {
+        throw new Error("Invalid base URL: Custom base URLs are not allowed on this deployment")
+    }
+
+    const allowed = new RegExp(process.env.AI_ASSISTANT_BASE_URL_REGEX, "i").test(lower)
+
+    if (!allowed) {
+        throw new Error("Invalid base URL: Not permitted on this deployment")
     }
 }
 

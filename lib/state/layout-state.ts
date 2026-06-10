@@ -19,7 +19,7 @@ export const useLayoutState = create<LayoutState>()(
                     set({ showValidationDrawer: show })
                 },
 
-                showAIAssistant: true,
+                showAIAssistant: process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED === "true",
                 setShowAIAssistant(show: boolean) {
                     set({ showAIAssistant: show })
                 }

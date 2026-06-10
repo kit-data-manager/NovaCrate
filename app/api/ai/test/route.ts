@@ -2,6 +2,9 @@ import { ProviderConfigurationWithoutModelsSchema } from "@/lib/state/ai-assista
 import { ProviderFactory } from "@/lib/ai/providers/ProviderFactory"
 
 export async function POST(req: Request) {
+    if (process.env.AI_ASSISTANT_ENABLED !== "true")
+        return new Response("AI Assistant is disabled", { status: 404 })
+
     const body: { config: unknown } = await req.json()
 
     let config
@@ -14,8 +17,8 @@ export async function POST(req: Request) {
 
     if (!config.apiKey) return Response.json({ error: "No API key provided" }, { status: 400 })
 
-    const provider = new ProviderFactory().makeAdapter(config)
     try {
+        const provider = new ProviderFactory().makeAdapter(config)
         await provider.testConnection()
         return Response.json({ success: true })
     } catch (error) {

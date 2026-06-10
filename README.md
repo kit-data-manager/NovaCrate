@@ -24,7 +24,7 @@ For more information, see our  [privacy policy](https://www.kit.edu/privacypolic
 ## 🚀 Features
 
 - ✅ **Create, read, and edit RO-Crates**
-- ✨ **New: Integrated AI Assistant** to help you create, maintain, and understand RO-Crates
+- ✨ **New: Integrated AI Assistant (Optional)** to help you create, maintain, and understand RO-Crates
   - ➡️ Use your own subscription from OpenAI, Anthropic, or OpenRouter
   - ➡️ You can also use a custom OpenAI-compatible LLM provider (e.g. Open WebUI)
   - ➡️ The AI Assistant can create, read, update and delete metadata, and it can read plain files in your RO-Crate
@@ -62,6 +62,23 @@ NovaCrate is modular and can be used with any backend solution. See the [lib per
 
 NovaCrate currently does not include mechanisms for authentication, access control or concurrent access.
 
+## 🚀 Deploying
+
+NovaCrate can be deployed using Docker. An official image is provided through the [GitHub Container Registry](https://github.com/kit-data-manager/NovaCrate/pkgs/container/novacrate). You can also build your own image from the source code.
+
+### Environment Variables
+
+| Variable Name               | Default Value | Description                                                                                                                                        |
+|-----------------------------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| BASE_PATH                   | *empty*       | Base path of the application                                                                                                                       |
+| IFRAME_TARGET_ORIGIN        | *empty*       | Required for using NovaCrate in IFrame embedded mode. Refer to the [IFrame Documentation](docs/iframe-interface.md)                                |
+| AI_ASSISTANT_ENABLED        | *empty*       | Set this to `true` to enable the AI Assistant in your deployment.                                                                                  |
+| AI_ASSISTANT_BASE_URL_REGEX | *empty*       | Regex that matches allowed custom base URLs configured by the user for an LLM provider. Custom base URLs are disables if this variable is not set. |
+
+### Attention: AI Assistant security considerations
+
+Chat requests from the AI Assistant are routed through NovaCrate API routes to the LLM provider. If the user has configured a custom base URL for the LLM provider, NovaCrate will attempt to send requests there (only if permitted by AI_ASSISTANT_BASE_URL_REGEX).
+If you allow custom base URLs, make sure that users do not gain unintended access to private resources within your network.
 
 ## 👨‍💻 Development
 

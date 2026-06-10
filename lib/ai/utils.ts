@@ -3,6 +3,7 @@ import {
     ProviderConfiguration,
     TextModel
 } from "@/lib/state/ai-assistant-settings"
+import { addBasePath } from "next/dist/client/add-base-path"
 
 export function providerDisplayName(provider: LanguageModelProvider) {
     switch (provider) {
@@ -20,7 +21,7 @@ export function providerDisplayName(provider: LanguageModelProvider) {
 }
 
 export async function testProvider(config: ProviderConfiguration) {
-    const res = await fetch("/api/ai/test", {
+    const res = await fetch(addBasePath("/api/ai/test"), {
         body: JSON.stringify({ config }),
         headers: {
             "Content-Type": "application/json"
@@ -43,7 +44,7 @@ export async function testProvider(config: ProviderConfiguration) {
 }
 
 export async function fetchModels(config: ProviderConfiguration) {
-    const res = await fetch("/api/ai/models", {
+    const res = await fetch(addBasePath("/api/ai/models"), {
         body: JSON.stringify({ config }),
         headers: {
             "Content-Type": "application/json"

@@ -32,6 +32,8 @@ COPY . .
 ENV OUTPUT=standalone
 ARG IFRAME_TARGET_ORIGIN
 ARG BASE_PATH
+ARG AI_ASSISTANT_ENABLED
+ARG AI_ASSISTANT_BASE_URL_REGEX
 
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \

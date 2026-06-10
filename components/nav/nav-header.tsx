@@ -373,16 +373,18 @@ export function NavHeader() {
                     actionId={"editor.settings"}
                     iconOnly
                 />
-                <div className="border-l border-border pl-2">
-                    <Button
-                        size="icon"
-                        variant="outline"
-                        className={showAIAssistant ? "bg-accent!" : ""}
-                        onClick={toggleShowAIAssistant}
-                    >
-                        <SparklesIcon />
-                    </Button>
-                </div>
+                {process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED === "true" && (
+                    <div className="border-l border-border pl-2">
+                        <Button
+                            size="icon"
+                            variant="outline"
+                            className={showAIAssistant ? "bg-accent!" : ""}
+                            onClick={toggleShowAIAssistant}
+                        >
+                            <SparklesIcon />
+                        </Button>
+                    </div>
+                )}
             </div>
         </div>
     )
