@@ -569,6 +569,29 @@ export default function AIAssistantChat() {
                                                 ),
                                                 thead: (props: PropsWithChildren) => (
                                                     <TableHeader>{props.children}</TableHeader>
+                                                ),
+                                                h1: (props: PropsWithChildren) => (
+                                                    <h1 className="text-2xl font-bold">
+                                                        {props.children}
+                                                    </h1>
+                                                ),
+                                                h2: (props: PropsWithChildren) => (
+                                                    <h2 className="text-xl font-bold">
+                                                        {props.children}
+                                                    </h2>
+                                                ),
+                                                h3: (props: PropsWithChildren) => (
+                                                    <h3 className="text-lg font-bold">
+                                                        {props.children}
+                                                    </h3>
+                                                ),
+                                                h4: (props: PropsWithChildren) => (
+                                                    <h4 className="font-bold">{props.children}</h4>
+                                                ),
+                                                pre: (props: PropsWithChildren) => (
+                                                    <pre className="border rounded-lg p-2 text-sm">
+                                                        {props.children}
+                                                    </pre>
                                                 )
                                             }}
                                         >
