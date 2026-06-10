@@ -84,7 +84,6 @@ export default function AIAssistantChat() {
         error,
         clearError,
         addToolOutput,
-        addToolApprovalResponse,
         setMessages
     } = useChat({
         transport: new DefaultChatTransport<UIMessage<never, never, InferUITools<typeof tools>>>({
@@ -223,14 +222,43 @@ export default function AIAssistantChat() {
                     }
                     return
                 case "getValidationResults":
-                    // TODO force validation run
-                    setTimeout(() => {
-                        addToolOutput({
-                            tool: "getValidationResults",
-                            toolCallId: toolCall.toolCallId,
-                            output: validation.resultStore.getState().results
+                    const entities2 = editorState.getState().getEntities()
+                    const promises = [
+                        validation
+                            .validateCrate()
+                            .catch((e) => console.error("Crate validation failed: ", e)),
+                        Array.from(entities2.values()).map((entity) => {
+                            return Promise.allSettled([
+                                validation
+                                    .validateEntity(entity["@id"])
+                                    .catch((e) =>
+                                        console.error(
+                                            `Entity validation failed on ${entity["@id"]}: `,
+                                            e
+                                        )
+                                    ),
+                                Object.keys(entity).map((prop) => {
+                                    return validation
+                                        .validateProperty(entity["@id"], prop)
+                                        .catch((e) =>
+                                            console.error(
+                                                `Property validation failed on ${entity["@id"]} ${prop}: `,
+                                                e
+                                            )
+                                        )
+                                })
+                            ])
                         })
-                    }, 500)
+                    ]
+
+                    await Promise.allSettled(promises)
+
+                    addToolOutput({
+                        tool: "getValidationResults",
+                        toolCallId: toolCall.toolCallId,
+                        output: validation.resultStore.getState().results
+                    })
+
                     return
                 case "deleteEntity":
                     try {
