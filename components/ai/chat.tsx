@@ -571,22 +571,24 @@ export default function AIAssistantChat() {
                                                     <TableHeader>{props.children}</TableHeader>
                                                 ),
                                                 h1: (props: PropsWithChildren) => (
-                                                    <h1 className="text-2xl font-bold">
+                                                    <h1 className="text-2xl font-bold mt-4">
                                                         {props.children}
                                                     </h1>
                                                 ),
                                                 h2: (props: PropsWithChildren) => (
-                                                    <h2 className="text-xl font-bold">
+                                                    <h2 className="text-xl font-bold mt-3">
                                                         {props.children}
                                                     </h2>
                                                 ),
                                                 h3: (props: PropsWithChildren) => (
-                                                    <h3 className="text-lg font-bold">
+                                                    <h3 className="text-lg font-bold mt-2">
                                                         {props.children}
                                                     </h3>
                                                 ),
                                                 h4: (props: PropsWithChildren) => (
-                                                    <h4 className="font-bold">{props.children}</h4>
+                                                    <h4 className="font-bold mt-1">
+                                                        {props.children}
+                                                    </h4>
                                                 ),
                                                 pre: (props: PropsWithChildren) => (
                                                     <pre className="border rounded-lg p-2 text-sm">
