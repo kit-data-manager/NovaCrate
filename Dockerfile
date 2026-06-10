@@ -35,6 +35,9 @@ ARG BASE_PATH
 ARG AI_ASSISTANT_ENABLED
 ARG AI_ASSISTANT_BASE_URL_REGEX
 
+ENV AI_ASSISTANT_ENABLED = $AI_ASSISTANT_ENABLED
+ENV AI_ASSISTANT_BASE_URL_REGEX = $AI_ASSISTANT_BASE_URL_REGEX
+
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \
   elif [ -f package-lock.json ]; then npm run build; \
