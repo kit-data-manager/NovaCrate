@@ -34,7 +34,7 @@ export function ModelSelection() {
 
     return (
         <div>
-            <div className="flex items-center gap-4 text-sm pt-2 px-2 opacity-80 hover:opacity-100 transition-opacity">
+            <div className="flex flex-wrap items-center gap-4 text-sm pt-2 px-2 opacity-80 hover:opacity-100 transition-opacity">
                 <div className={`flex items-center gap-1 ${activeProvider ? "" : "text-error"}`}>
                     <Label htmlFor={"ai-provider-select"} className="mb-0">
                         Provider:{" "}

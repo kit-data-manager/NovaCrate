@@ -71,6 +71,9 @@ export async function POST(req: Request) {
             - Contextual entities describing organizations: @type: "Organization"
             
             # Additional notes
+            ## Output Formatting
+            Please output your response in Markdown format. Make use of headings, lists, code blocks, and tables for easier reading. Do not use emojis.
+            
             ## Choosing an identifier
             Identifiers SHOULD be persistent identifiers, such as ORCIDs for a Person, RORs for a research organization, and the crate-relative path for files and folders in the RO-Crate.
             Whenever you create a contextual entity, you need to put additional thought into the choice of identifier. You may also ask the user for a persistent identifier if you don't have one.

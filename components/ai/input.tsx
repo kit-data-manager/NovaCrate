@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { SendIcon, SquareStopIcon } from "lucide-react"
+import { SendIcon, SquareIcon } from "lucide-react"
 import { ChatStatus } from "ai"
 
 export function ChatInput({
@@ -45,7 +45,7 @@ export function ChatInput({
             )}
             {(status === "submitted" || status === "streaming") && (
                 <Button onClick={stop}>
-                    <SquareStopIcon className="size-4" />
+                    <SquareIcon className="size-4 fill-background" />
                 </Button>
             )}
         </div>

@@ -25,7 +25,7 @@ const selectTriggerVariants = cva(
         variants: {
             variant: {
                 default: "data-[size=default]:h-9 data-[size=sm]:h-8",
-                inline: "border-none p-0 m-0"
+                inline: "border-none p-0 m-0 bg-transparent dark:bg-transparent shadow-none"
             },
             size: {
                 default: ""

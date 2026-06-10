@@ -448,10 +448,10 @@ export default function AIAssistantChat() {
             <div className="grow overflow-y-auto" ref={chatContainer}>
                 <div className="flex flex-col min-h-full grow justify-end" ref={chatContent}>
                     {messages.length === 0 && (
-                        <div className="p-4">
+                        <div className="p-4 text-muted-foreground font-light">
                             What can I help you with today? To get started, here are some prompt
                             ideas:
-                            <ul className="list-disc pl-4">
+                            <ul className="list-disc pl-4 mb-4">
                                 <li>Explain this RO-Crate to me</li>
                                 <li>Create a new Person entity describing me as an author</li>
                                 <li>
@@ -460,6 +460,17 @@ export default function AIAssistantChat() {
                                 </li>
                                 <li>Find all unused contextual entities in this RO-Crate</li>
                                 <li>Please check if every Data Entity has an author</li>
+                            </ul>
+                            Furthermore, I can do the following things:
+                            <ul className="list-disc pl-4">
+                                <li>Edit metadata (Create, Read, Update, Delete)</li>
+                                <li>Read plain files (like TXT or CSV)</li>
+                                <li>Rename entities and move files</li>
+                                <li>
+                                    Search through entities and files and explain their
+                                    relationships
+                                </li>
+                                <li>Answer questions about your RO-Crate or RO-Crate in general</li>
                             </ul>
                         </div>
                     )}
@@ -580,18 +591,7 @@ export default function AIAssistantChat() {
 
                                 if (part.type === "tool-deleteEntity") {
                                     return (
-                                        <ToolCall
-                                            key={i}
-                                            part={part}
-                                            icon={TrashIcon}
-                                            addToolApproval={addToolApprovalResponse}
-                                            approvalRequestContent={
-                                                <div>
-                                                    AI Assistant wants to delete the entity{" "}
-                                                    {part.input?.entityId ?? "..."}
-                                                </div>
-                                            }
-                                        >
+                                        <ToolCall key={i} part={part} icon={TrashIcon}>
                                             Delete Entity {part.input?.entityId ?? "..."}
                                         </ToolCall>
                                     )
@@ -675,6 +675,10 @@ export default function AIAssistantChat() {
                     stop={stop}
                 />
                 <ModelSelection />
+                <div className="text-xs font-light text-center text-muted-foreground p-2 pb-0">
+                    AI Assistant can make mistakes. Use it responsibly and review your RO-Crate
+                    before publishing.
+                </div>
             </div>
         </div>
     )
