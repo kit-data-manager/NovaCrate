@@ -11,8 +11,8 @@ const generalLimiter = new RateLimiter(10, 60_000) // 10 req / min
 
 /**
  * Extract a client identifier for rate limiting.
- * Prefers the standard `x-forwarded-for` header (set by most reverse
- * proxies), then falls back to `NextRequest.ip`, and finally to a
+ * Uses the standard `x-forwarded-for` header (set by most reverse
+ * proxies)
  * constant so rate limiting still works (shared across all unknown IPs).
  */
 function getClientIp(req: NextRequest): string {

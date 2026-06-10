@@ -14,7 +14,7 @@ const readEntity = tool({
 
 const editEntity = tool({
     description:
-        "Edit a specific metadata entity. Read the metadata entity first before editign it. All fields that should stay on the entity must be repeated in the edit tool. Omitting fields removes them from the entity. The @id fields must match the target entity. To change the identifier of an entity, use the moveEntity tool.",
+        "Edit a specific metadata entity. Read the metadata entity first before editing it. All fields that should stay on the entity must be repeated in the edit tool. Omitting fields removes them from the entity. The @id fields must match the target entity. To change the identifier of an entity, use the moveEntity tool.",
     inputSchema: z.object({
         content: EntitySchema
     }),

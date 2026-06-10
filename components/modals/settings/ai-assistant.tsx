@@ -1,3 +1,5 @@
+"use client"
+
 import { ProviderConfiguration, useAIAssistantSettings } from "@/lib/state/ai-assistant-settings"
 import { Badge } from "@/components/ui/badge"
 import { providerDisplayName } from "@/lib/ai/utils"
@@ -5,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ConfigureProvider } from "@/components/ai/configure-provider"
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 export function AiAssistantSettings() {
     const settings = useAIAssistantSettings()
@@ -17,15 +19,17 @@ export function AiAssistantSettings() {
         showConfigureProviderModal
     )
 
-    if (showConfigureProviderModal !== mountConfigureProviderModal) {
-        if (showConfigureProviderModal) {
-            setMountConfigureProviderModal(showConfigureProviderModal)
-        } else {
-            setTimeout(() => {
+    useEffect(() => {
+        if (showConfigureProviderModal !== mountConfigureProviderModal) {
+            if (showConfigureProviderModal) {
                 setMountConfigureProviderModal(showConfigureProviderModal)
-            }, 200)
+            } else {
+                setTimeout(() => {
+                    setMountConfigureProviderModal(showConfigureProviderModal)
+                }, 200)
+            }
         }
-    }
+    }, [mountConfigureProviderModal, showConfigureProviderModal])
 
     const editProvider = useCallback((provider: ProviderConfiguration) => {
         setEditExistingProvider(provider)

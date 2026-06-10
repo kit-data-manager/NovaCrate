@@ -50,7 +50,7 @@ function SelectTrigger({
         <SelectPrimitive.Trigger
             data-slot="select-trigger"
             data-size={size}
-            className={cn(selectTriggerVariants({ className, size, variant }), className)}
+            className={cn(selectTriggerVariants({ size, variant }), className)}
             {...props}
         >
             {children}

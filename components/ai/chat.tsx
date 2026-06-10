@@ -101,7 +101,7 @@ export default function AIAssistantChat() {
             if (toolCall.dynamic) return
 
             switch (toolCall.toolName) {
-                case "editEntity":
+                case "editEntity": {
                     const result = editorState.getState().editEntity(toolCall.input.content)
                     if (result) {
                         addToolOutput({
@@ -119,7 +119,8 @@ export default function AIAssistantChat() {
                     }
 
                     return
-                case "readEntity":
+                }
+                case "readEntity": {
                     const found = findEntity(
                         editorState.getState().entities,
                         toolCall.input.entityId
@@ -140,7 +141,8 @@ export default function AIAssistantChat() {
                     }
 
                     return
-                case "createEntity":
+                }
+                case "createEntity": {
                     const created = editorState
                         .getState()
                         .addEntity(
@@ -163,7 +165,8 @@ export default function AIAssistantChat() {
                         })
                     }
                     return
-                case "getFilesList":
+                }
+                case "getFilesList": {
                     if (!fileService) {
                         addToolOutput({
                             tool: "getFilesList",
@@ -181,7 +184,8 @@ export default function AIAssistantChat() {
                         })
                     }
                     return
-                case "getMetadataSummary":
+                }
+                case "getMetadataSummary": {
                     const entities = Array.from(editorState.getState().entities.values())
                     addToolOutput({
                         tool: "getMetadataSummary",
@@ -189,7 +193,8 @@ export default function AIAssistantChat() {
                         output: Object.fromEntries(entities.map((e) => [e["@id"], e["@type"]]))
                     })
                     return
-                case "readFilePlainText":
+                }
+                case "readFilePlainText": {
                     if (!fileService) {
                         addToolOutput({
                             tool: "readFilePlainText",
@@ -221,13 +226,14 @@ export default function AIAssistantChat() {
                         }
                     }
                     return
-                case "getValidationResults":
-                    const entities2 = editorState.getState().getEntities()
+                }
+                case "getValidationResults": {
+                    const entities = editorState.getState().getEntities()
                     const promises = [
                         validation
                             .validateCrate()
                             .catch((e) => console.error("Crate validation failed: ", e)),
-                        Array.from(entities2.values()).map((entity) => {
+                        Array.from(entities.values()).map((entity) => {
                             return Promise.allSettled([
                                 validation
                                     .validateEntity(entity["@id"])
@@ -260,7 +266,8 @@ export default function AIAssistantChat() {
                     })
 
                     return
-                case "deleteEntity":
+                }
+                case "deleteEntity": {
                     try {
                         await core.deleteEntity(toolCall.input.entityId, toolCall.input.deleteData)
                         addToolOutput({
@@ -277,7 +284,8 @@ export default function AIAssistantChat() {
                         })
                     }
                     return
-                case "moveEntity":
+                }
+                case "moveEntity": {
                     try {
                         await core.moveEntity(
                             toolCall.input.currentEntityId,
@@ -297,7 +305,8 @@ export default function AIAssistantChat() {
                         })
                     }
                     return
-                case "importPersonFromORCID":
+                }
+                case "importPersonFromORCID": {
                     try {
                         const entity = await importPersonFromOrcid(toolCall.input.identifier)
                         const created = editorState
@@ -326,7 +335,8 @@ export default function AIAssistantChat() {
                         })
                     }
                     return
-                case "importOrganizationFromROR":
+                }
+                case "importOrganizationFromROR": {
                     try {
                         const entity = await importOrganizationFromRor(toolCall.input.identifier)
                         const created = editorState
@@ -355,6 +365,7 @@ export default function AIAssistantChat() {
                         })
                     }
                     return
+                }
             }
         }
     })
@@ -388,9 +399,8 @@ export default function AIAssistantChat() {
                 text: msg
             }).catch((err) => {
                 toast.error(
-                    "Failed to send message: " + (err instanceof Error)
-                        ? err.message
-                        : JSON.stringify(err)
+                    "Failed to send message: " +
+                        (err instanceof Error ? err.message : JSON.stringify(err))
                 )
             })
         },

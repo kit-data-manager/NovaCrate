@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     try {
         config = ProviderConfigurationWithoutModelsSchema.parse(body.config)
     } catch (e) {
-        console.error("Bad request to /ai/models/", e)
+        console.error("Bad request to /ai/test/", e)
         return Response.json({ error: "Bad Request" }, { status: 400 })
     }
 

@@ -6,6 +6,7 @@ import { validateBaseUrl } from "@/lib/ai/providers/validate-base-url"
 
 export class OpenRouterAdapter implements IProviderAdapter {
     constructor(private config: ProviderConfigurationWithoutModels) {
+        this.config = structuredClone(config)
         this.config.headers = sanitizeHeaders(this.config.headers)
         validateBaseUrl(this.config.baseUrl)
     }

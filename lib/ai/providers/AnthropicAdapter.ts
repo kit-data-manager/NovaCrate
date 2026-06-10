@@ -6,6 +6,7 @@ import { validateBaseUrl } from "@/lib/ai/providers/validate-base-url"
 
 export class AnthropicAdapter implements IProviderAdapter {
     constructor(private config: ProviderConfigurationWithoutModels) {
+        this.config = structuredClone(config)
         this.config.headers = sanitizeHeaders(this.config.headers)
         validateBaseUrl(this.config.baseUrl)
 
@@ -36,7 +37,6 @@ export class AnthropicAdapter implements IProviderAdapter {
                 displayName: m.display_name
             }))
         } else {
-            console.log(await req.text())
             throw new Error(`Failed to fetch models (${req.status}: ${req.statusText})`, {
                 cause: req
             })

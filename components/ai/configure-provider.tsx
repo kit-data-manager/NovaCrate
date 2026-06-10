@@ -100,8 +100,6 @@ export function ConfigureProvider({
         settings.configureProvider(config)
         settings.activateProvider(config.id)
         onOpenChange(false)
-        setConfigureProvider("")
-        setConfigureAPIKey("")
     }, [configureModels, configureProvider, makeProviderConfig, onOpenChange, settings])
 
     const _testProvider = useCallback(async () => {

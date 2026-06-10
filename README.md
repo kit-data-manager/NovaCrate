@@ -26,7 +26,7 @@ For more information, see our  [privacy policy](https://www.kit.edu/privacypolic
 - ✅ **Create, read, and edit RO-Crates**
 - ✨ **New: Integrated AI Assistant** to help you create, maintain, and understand RO-Crates
   - ➡️ Use your own subscription from OpenAI, Anthropic, or OpenRouter
-  - ➡️ You can also use a custom OpenAI-compatible LLM provider (e.g. OpenWeb UI)
+  - ➡️ You can also use a custom OpenAI-compatible LLM provider (e.g. Open WebUI)
   - ➡️ The AI Assistant can create, read, update and delete metadata, and it can read plain files in your RO-Crate
 - ✅ Live **validation** of RO-Crates
 - ✅ Visualize RO-Crates with a graph
