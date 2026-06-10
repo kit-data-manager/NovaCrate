@@ -35,9 +35,6 @@ ARG BASE_PATH
 ARG AI_ASSISTANT_ENABLED
 ARG AI_ASSISTANT_BASE_URL_REGEX
 
-ENV AI_ASSISTANT_ENABLED = $AI_ASSISTANT_ENABLED
-ENV AI_ASSISTANT_BASE_URL_REGEX = $AI_ASSISTANT_BASE_URL_REGEX
-
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \
   elif [ -f package-lock.json ]; then npm run build; \
@@ -50,6 +47,8 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV AI_ASSISTANT_ENABLED = $AI_ASSISTANT_ENABLED
+ENV AI_ASSISTANT_BASE_URL_REGEX = $AI_ASSISTANT_BASE_URL_REGEX
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED=1
 
