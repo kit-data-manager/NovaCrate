@@ -127,11 +127,10 @@ export interface EditorState {
 
     /**
      * Edit an entity. This only succeeds if the entity exists in the local state.
-     * @param entityId ID of the entity to edit.
-     * @param value New metadata of the entity
+     * @param value New metadata of the entity.
      * @returns The edited entity if the edit succeeds
      */
-    editEntity(entityId: string, value: IEntity): IEntity | void
+    editEntity(value: IEntity): IEntity | void
 
     /**
      * Add a property of the given name to the given entity. The type or value of the property can optionally be specified.
@@ -259,10 +258,9 @@ export const editorState = createWithEqualityFn<EditorState>()(
                 return getState().entities
             },
 
-            editEntity(id, value) {
-                if (getState().entities.has(id)) {
+            editEntity(value) {
+                if (getState().entities.has(value["@id"])) {
                     setState((state) => {
-                        state.entities.delete(id)
                         state.entities.set(value["@id"], value)
                     })
                     return value

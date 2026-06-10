@@ -24,6 +24,7 @@ import {
     DefaultChatTransport,
     InferUITools,
     lastAssistantMessageIsCompleteWithToolCalls,
+    lastAssistantMessageIsCompleteWithApprovalResponses,
     UIMessage
 } from "ai"
 import type { tools } from "@/lib/ai/tools"
@@ -47,6 +48,8 @@ import { toast } from "sonner"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { SettingsPages } from "@/components/modals/settings/settings-modal"
 import { useValidation } from "@/lib/validation/hooks"
+import { useCore } from "@/components/providers/core-provider"
+import { importOrganizationFromRor, importPersonFromOrcid } from "@/lib/entity-import"
 
 function withoutModels(
     config: ProviderConfiguration | undefined
@@ -59,6 +62,7 @@ function withoutModels(
 
 export default function AIAssistantChat() {
     const fileService = useFileService()
+    const core = useCore()
     const setShowAIAssistant = useLayoutState((s) => s.setShowAIAssistant)
     const { showSettingsModal } = useContext(GlobalModalContext)
     const validation = useValidation()
@@ -80,6 +84,7 @@ export default function AIAssistantChat() {
         error,
         clearError,
         addToolOutput,
+        addToolApprovalResponse,
         setMessages
     } = useChat({
         transport: new DefaultChatTransport<UIMessage<never, never, InferUITools<typeof tools>>>({
@@ -90,15 +95,15 @@ export default function AIAssistantChat() {
                 }
             }
         }),
-        sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+        sendAutomaticallyWhen: (p) =>
+            lastAssistantMessageIsCompleteWithApprovalResponses(p) ||
+            lastAssistantMessageIsCompleteWithToolCalls(p),
         onToolCall: async ({ toolCall }) => {
             if (toolCall.dynamic) return
 
             switch (toolCall.toolName) {
                 case "editEntity":
-                    const result = editorState
-                        .getState()
-                        .editEntity(toolCall.input.entityId, toolCall.input.content)
+                    const result = editorState.getState().editEntity(toolCall.input.content)
                     if (result) {
                         addToolOutput({
                             tool: "editEntity",
@@ -110,7 +115,7 @@ export default function AIAssistantChat() {
                             tool: "editEntity",
                             toolCallId: toolCall.toolCallId,
                             state: "output-error",
-                            errorText: `Could not edit the entity with id ${toolCall.input.entityId}. Does the entity even exist? If you tried to change the entity, does an entity with the target id already exist?`
+                            errorText: `Could not edit the entity with id ${toolCall.input.content["@id"]}. Does the entity even exist? If you tried to change the entity, does an entity with the target id already exist?`
                         })
                     }
 
@@ -218,6 +223,7 @@ export default function AIAssistantChat() {
                     }
                     return
                 case "getValidationResults":
+                    // TODO force validation run
                     setTimeout(() => {
                         addToolOutput({
                             tool: "getValidationResults",
@@ -225,6 +231,101 @@ export default function AIAssistantChat() {
                             output: validation.resultStore.getState().results
                         })
                     }, 500)
+                    return
+                case "deleteEntity":
+                    try {
+                        await core.deleteEntity(toolCall.input.entityId, toolCall.input.deleteData)
+                        addToolOutput({
+                            tool: "deleteEntity",
+                            toolCallId: toolCall.toolCallId,
+                            output: {}
+                        })
+                    } catch (e) {
+                        addToolOutput({
+                            tool: "deleteEntity",
+                            toolCallId: toolCall.toolCallId,
+                            state: "output-error",
+                            errorText: `Failed to delete entity. ${e instanceof Error ? e.message : JSON.stringify(e)}`
+                        })
+                    }
+                    return
+                case "moveEntity":
+                    try {
+                        await core.moveEntity(
+                            toolCall.input.currentEntityId,
+                            toolCall.input.newEntityId
+                        )
+                        addToolOutput({
+                            tool: "moveEntity",
+                            toolCallId: toolCall.toolCallId,
+                            output: {}
+                        })
+                    } catch (e) {
+                        addToolOutput({
+                            tool: "moveEntity",
+                            toolCallId: toolCall.toolCallId,
+                            state: "output-error",
+                            errorText: `Failed to move entity. ${e instanceof Error ? e.message : JSON.stringify(e)}`
+                        })
+                    }
+                    return
+                case "importPersonFromORCID":
+                    try {
+                        const entity = await importPersonFromOrcid(toolCall.input.identifier)
+                        const created = editorState
+                            .getState()
+                            .addEntity(entity["@id"], toArray(entity["@type"]), entity)
+                        if (created) {
+                            addToolOutput({
+                                tool: "importPersonFromORCID",
+                                toolCallId: toolCall.toolCallId,
+                                output: created
+                            })
+                        } else {
+                            addToolOutput({
+                                tool: "importPersonFromORCID",
+                                toolCallId: toolCall.toolCallId,
+                                state: "output-error",
+                                errorText: `Failed to write imported entity. Does an entity with the same identifier already exist? (identifier: ${entity["@id"]})`
+                            })
+                        }
+                    } catch (e) {
+                        addToolOutput({
+                            tool: "importPersonFromORCID",
+                            toolCallId: toolCall.toolCallId,
+                            state: "output-error",
+                            errorText: `Failed to import Person entity from ORCID. ${e instanceof Error ? e.message : JSON.stringify(e)}`
+                        })
+                    }
+                    return
+                case "importOrganizationFromROR":
+                    try {
+                        const entity = await importOrganizationFromRor(toolCall.input.identifier)
+                        const created = editorState
+                            .getState()
+                            .addEntity(entity["@id"], toArray(entity["@type"]), entity)
+                        if (created) {
+                            addToolOutput({
+                                tool: "importOrganizationFromROR",
+                                toolCallId: toolCall.toolCallId,
+                                output: created
+                            })
+                        } else {
+                            addToolOutput({
+                                tool: "importOrganizationFromROR",
+                                toolCallId: toolCall.toolCallId,
+                                state: "output-error",
+                                errorText: `Failed to write imported entity. Does an entity with the same identifier already exist? (identifier: ${entity["@id"]})`
+                            })
+                        }
+                    } catch (e) {
+                        addToolOutput({
+                            tool: "importOrganizationFromROR",
+                            toolCallId: toolCall.toolCallId,
+                            state: "output-error",
+                            errorText: `Failed to import Organization entity from ROR. ${e instanceof Error ? e.message : JSON.stringify(e)}`
+                        })
+                    }
                     return
             }
         }
@@ -423,7 +524,7 @@ export default function AIAssistantChat() {
                                 if (part.type === "tool-editEntity") {
                                     return (
                                         <ToolCall key={i} part={part} icon={PencilIcon}>
-                                            Editing Entity {part.input?.entityId ?? "..."}
+                                            Editing Entity {part.input?.content?.["@id"] ?? "..."}
                                         </ToolCall>
                                     )
                                 }
@@ -464,6 +565,52 @@ export default function AIAssistantChat() {
                                     return (
                                         <ToolCall key={i} part={part} icon={BugIcon}>
                                             Validating RO-Crate
+                                        </ToolCall>
+                                    )
+                                }
+
+                                if (part.type === "tool-moveEntity") {
+                                    return (
+                                        <ToolCall key={i} part={part} icon={PencilIcon}>
+                                            Rename Entity {part.input?.currentEntityId ?? "..."} to{" "}
+                                            {part.input?.newEntityId ?? "..."}
+                                        </ToolCall>
+                                    )
+                                }
+
+                                if (part.type === "tool-deleteEntity") {
+                                    return (
+                                        <ToolCall
+                                            key={i}
+                                            part={part}
+                                            icon={TrashIcon}
+                                            addToolApproval={addToolApprovalResponse}
+                                            approvalRequestContent={
+                                                <div>
+                                                    AI Assistant wants to delete the entity{" "}
+                                                    {part.input?.entityId ?? "..."}
+                                                </div>
+                                            }
+                                        >
+                                            Delete Entity {part.input?.entityId ?? "..."}
+                                        </ToolCall>
+                                    )
+                                }
+
+                                if (part.type === "tool-importPersonFromORCID") {
+                                    return (
+                                        <ToolCall key={i} part={part} icon={PlusIcon}>
+                                            Import Person from ORCID:{" "}
+                                            {part.output?.["@id"] ?? "..."}
+                                        </ToolCall>
+                                    )
+                                }
+
+                                if (part.type === "tool-importOrganizationFromROR") {
+                                    return (
+                                        <ToolCall key={i} part={part} icon={PlusIcon}>
+                                            Import Organization from ROR:{" "}
+                                            {part.output?.["@id"] ?? "..."}
                                         </ToolCall>
                                     )
                                 }

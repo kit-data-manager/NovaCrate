@@ -136,7 +136,7 @@ export function ConfigureProvider({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
+            <DialogContent className="max-h-screen overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Configure AI Assistant</DialogTitle>
                     <DialogDescription>
