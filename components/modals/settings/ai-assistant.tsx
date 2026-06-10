@@ -8,6 +8,7 @@ import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ConfigureProvider } from "@/components/ai/configure-provider"
 import { useCallback, useEffect, useState } from "react"
+import Link from "next/link"
 
 export function AiAssistantSettings() {
     const settings = useAIAssistantSettings()
@@ -62,6 +63,19 @@ export function AiAssistantSettings() {
             )}
 
             <h3 className="font-semibold text-2xl leading-none p-2 pl-0 pt-0 mb-2">AI Assistant</h3>
+            <div className="text-xs text-muted-foreground font-light">
+                Need help? View the{" "}
+                <Link
+                    className="underline"
+                    target={"_blank"}
+                    href={
+                        "https://github.com/kit-data-manager/NovaCrate/blob/main/docs/ai-assistant-setup.md"
+                    }
+                >
+                    Documentation
+                </Link>
+                .
+            </div>
 
             <div className="flex justify-between items-end pb-2">
                 <h4 className="text-lg font-medium">Providers</h4>

@@ -51,6 +51,7 @@ import { useValidation } from "@/lib/validation/hooks"
 import { useCore } from "@/components/providers/core-provider"
 import { importOrganizationFromRor, importPersonFromOrcid } from "@/lib/entity-import"
 import { addBasePath } from "next/dist/client/add-base-path"
+import Link from "next/link"
 
 function withoutModels(
     config: ProviderConfiguration | undefined
@@ -457,6 +458,19 @@ export default function AIAssistantChat() {
                 <Button variant="secondary" onClick={() => setShowAIAssistant(false)}>
                     Close AI Assistant
                 </Button>
+                <div className="text-xs text-muted-foreground font-light mt-4">
+                    Need help? View the{" "}
+                    <Link
+                        className="underline"
+                        target="_blank"
+                        href={
+                            "https://github.com/kit-data-manager/NovaCrate/blob/main/docs/ai-assistant-setup.md"
+                        }
+                    >
+                        Documentation
+                    </Link>
+                    .
+                </div>
             </div>
         )
 
