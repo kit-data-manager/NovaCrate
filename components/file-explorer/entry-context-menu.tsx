@@ -19,15 +19,15 @@ import {
 } from "lucide-react"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import HelpTooltip from "@/components/help-tooltip"
-import { useCallback, useContext, useMemo } from "react"
+import { ComponentType, JSX, useCallback, useContext, useMemo } from "react"
 import { useCopyToClipboard } from "usehooks-ts"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { downloadBlob } from "@/lib/core/util"
-import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { encodeFilePath, getFolderPath } from "@/lib/utils"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
-import { useGoToPage } from "@/lib/hooks/hooks"
+import { useGoToPage, useOpenPreviewTab } from "@/lib/hooks/hooks"
+import { toast } from "sonner"
 
 export function EntryContextMenu({
     entity,
@@ -36,7 +36,8 @@ export function EntryContextMenu({
     folder,
     goToEntity,
     blankSpace,
-    rename
+    rename,
+    as
 }: {
     entity?: IEntity
     filePath?: string
@@ -45,10 +46,9 @@ export function EntryContextMenu({
     goToEntity?: () => void
     blankSpace?: boolean
     rename?: () => void
+    as?: ComponentType<{ className?: string }> | keyof JSX.IntrinsicElements
 }) {
     const persistence = usePersistence()
-    const setDownloadError = useFileExplorerState((store) => store.setDownloadError)
-    const setPreviewingFilePath = useFileExplorerState((s) => s.setPreviewingFilePath)
 
     const { showCreateEntityModal, showDeleteEntityModal } = useContext(GlobalModalContext)
     const [, copy] = useCopyToClipboard()
@@ -66,9 +66,16 @@ export function EntryContextMenu({
             fileService
                 .getFile(filePath)
                 .then((blob) => downloadBlob(blob, filePath.split("/").pop() || filePath))
-                .catch(setDownloadError)
+                .catch((e) => {
+                    toast.error(
+                        "Failed to download file: " +
+                            (e instanceof Error ? e.message : JSON.stringify(e))
+                    )
+                })
         }
-    }, [filePath, persistence, setDownloadError])
+    }, [filePath, persistence])
+
+    const openPreviewTab = useOpenPreviewTab()
 
     const createEntityForExistingFile = useCallback(() => {
         if (!filePath) return null
@@ -117,10 +124,12 @@ export function EntryContextMenu({
 
     const goToJsonEditor = useGoToPage("json-editor")
 
-    if (blankSpace) return <ContextMenuContent>{NewButtons}</ContextMenuContent>
+    const As = as ?? ContextMenuContent
+
+    if (blankSpace) return <As>{NewButtons}</As>
 
     return (
-        <ContextMenuContent className="min-w-52">
+        <As className="min-w-52">
             {entity ? (
                 <ContextMenuItem onClick={() => (goToEntity ? goToEntity() : "")}>
                     <EntityIcon entity={entity} size="sm" /> Go to Entity
@@ -136,7 +145,7 @@ export function EntryContextMenu({
                 </ContextMenuItem>
             )}
             {filePath && !filePath.endsWith("/") && (
-                <ContextMenuItem onClick={() => setPreviewingFilePath(filePath)}>
+                <ContextMenuItem onClick={() => openPreviewTab(filePath)}>
                     <EyeIcon className="size-4 mr-2" /> Preview File
                 </ContextMenuItem>
             )}
@@ -193,6 +202,6 @@ export function EntryContextMenu({
 
             <ContextMenuSeparator />
             {NewButtons}
-        </ContextMenuContent>
+        </As>
     )
 }

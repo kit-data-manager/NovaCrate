@@ -1,148 +1,36 @@
 "use client"
 
-import { Download, Eye, FileIcon, XIcon } from "lucide-react"
-import HelpTooltip from "@/components/help-tooltip"
-import { Button } from "@/components/ui/button"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { usePersistence } from "@/components/providers/persistence-provider"
-import { getFileAsURL, downloadBlob } from "@/lib/core/util"
-import { Error } from "@/components/error"
+import { useMemo } from "react"
 import { BaseViewer } from "@/components/file-explorer/viewers/base"
-import useSWR from "swr"
+import { useFileExplorerState } from "@/lib/state/file-explorer-state"
+import { FilePreviewTabs } from "@/components/file-explorer/file-preview-tabs"
+import { FileIcon } from "lucide-react"
 
-export function FilePreview({
-    doubleHeight = false,
-    closeable = true,
-    previewingFilePath,
-    setPreviewingFilePath,
-    setDownloadError
-}: {
-    doubleHeight?: boolean
-    closeable?: boolean
-    previewingFilePath: string
-    setPreviewingFilePath(path: string): void
-    setDownloadError(e: unknown): void
-}) {
-    const persistence = usePersistence()
-    const [previewNotSupported, setPreviewNotSupported] = useState(false)
-    const [previewError, setPreviewError] = useState<unknown>()
+export function FilePreview() {
+    const filePreviewTabs = useFileExplorerState((s) => s.filePreviewTabs)
+    const activeFilePreviewTabPath = useFileExplorerState((s) => s.activeFilePreviewTabPath)
+    const openTab = useFileExplorerState((s) => s.openTab)
 
-    const downloadFile = useCallback(() => {
-        const fileService = persistence.getCrateService()?.getFileService()
-        if (fileService && previewingFilePath) {
-            fileService
-                .getFile(previewingFilePath)
-                .then((blob) =>
-                    downloadBlob(blob, previewingFilePath.split("/").pop() || previewingFilePath)
-                )
-                .catch(setDownloadError)
-        }
-    }, [persistence, previewingFilePath, setDownloadError])
+    const activeTab = useMemo(() => {
+        return filePreviewTabs.find((tab) => tab.filePath === activeFilePreviewTabPath)
+    }, [activeFilePreviewTabPath, filePreviewTabs])
 
-    const resourceUrl = useMemo(() => {
-        const fileService = persistence.getCrateService()?.getFileService()
-        if (fileService && previewingFilePath) {
-            return getFileAsURL(fileService, previewingFilePath)
-        } else return undefined
-    }, [persistence, previewingFilePath])
-
-    const fileFetcher = useCallback(async (url: Promise<string>) => {
-        const resolvedUrl = await url
-        const req = await fetch(resolvedUrl)
-        if (req.ok) {
-            return await req.blob()
-        } else {
-            return new Blob([], { type: "text/x-unsupported" })
-        }
-    }, [])
-
-    const { data, error, isLoading } = useSWR(resourceUrl, fileFetcher)
-
-    useEffect(() => {
-        setPreviewError("")
-    }, [data])
-
-    useEffect(() => {
-        if (error) {
-            setPreviewError(error)
-        }
-    }, [error])
+    if (filePreviewTabs.length === 0)
+        return (
+            <div className="flex flex-col items-center justify-center h-full bg-background rounded-lg overflow-hidden border">
+                <FileIcon className="w-52 h-52 mb-20 text-muted" />
+                <div className="text-muted-foreground">
+                    Select a file on the left to preview it here
+                </div>
+            </div>
+        )
 
     return (
         <div className="flex flex-col h-full bg-background rounded-lg overflow-hidden border">
-            <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center shrink-0 bg-accent">
-                <Eye className="size-4 shrink-0 mr-2" />{" "}
-                <span className="shrink-0">File Preview</span>
-                <HelpTooltip className="ml-2">
-                    <div>
-                        Click on a file in the File Explorer to preview it here. Only supported for
-                        some file types.
-                    </div>
-                </HelpTooltip>
-                {doubleHeight ? null : (
-                    <div className="self-center text-sm pl-2 flex items-center truncate text-muted-foreground">
-                        <span className="truncate">{previewingFilePath}</span>
-                    </div>
-                )}
-                <div className="grow" />
-                {doubleHeight ? null : (
-                    <>
-                        {previewingFilePath ? (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="mr-2"
-                                onClick={downloadFile}
-                            >
-                                <Download className="size-4 mr-2" /> Download
-                            </Button>
-                        ) : null}
-                        {closeable ? (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPreviewingFilePath("")}
-                            >
-                                <XIcon className="size-4" />
-                            </Button>
-                        ) : null}
-                    </>
-                )}
+            <FilePreviewTabs />
+            <div className="flex flex-col grow max-w-full overflow-none">
+                {activeTab && <BaseViewer tab={activeTab} updateTab={openTab} />}
             </div>
-            {doubleHeight ? (
-                <div className="flex p-2 gap-2 bg-accent">
-                    <div className="self-center text-sm pl-2 flex items-center truncate">
-                        <FileIcon className="size-4 mr-2 shrink-0" /> {previewingFilePath}
-                    </div>
-                    <div className="grow" />
-                    {previewingFilePath ? (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs"
-                            onClick={downloadFile}
-                        >
-                            <Download className="size-4 mr-2" /> Download
-                        </Button>
-                    ) : null}
-                    {closeable ? (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setPreviewingFilePath("")}
-                        >
-                            <XIcon className="size-4" />
-                        </Button>
-                    ) : null}
-                </div>
-            ) : null}
-            <Error title="Could not load file for preview" error={previewError} />
-            <BaseViewer
-                setPreviewNotSupported={setPreviewNotSupported}
-                previewNotSupported={previewNotSupported}
-                loading={isLoading}
-                data={data}
-            />
         </div>
     )
 }

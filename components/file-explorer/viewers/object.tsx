@@ -1,14 +1,18 @@
-import { createRef, useCallback, useEffect } from "react"
-import { ViewerProps } from "@/components/file-explorer/viewers/base"
-import { PreviewNotSupported } from "@/components/file-explorer/viewers/not-supported"
+import { createRef, useCallback, useEffect, useState } from "react"
+import { LargeViewSelect } from "@/components/file-explorer/viewers/large-view-select"
+import { ViewerProps, ViewerType } from "@/lib/file-preview"
 
-export function ObjectViewer({
-    data,
-    setPreviewNotSupported,
-    previewNotSupported,
-    loading
-}: ViewerProps) {
+export function ObjectViewer({ data, tab, updateTab }: ViewerProps) {
     const previewObject = createRef<HTMLObjectElement>()
+    const [previewNotSupported, setPreviewNotSupported] = useState(false)
+    const [url, setUrl] = useState<string>()
+
+    useEffect(() => {
+        const newUrl = URL.createObjectURL(data || new Blob([]))
+        setUrl(newUrl)
+
+        return () => URL.revokeObjectURL(newUrl)
+    }, [data])
 
     const handlePreviewObjectError = useCallback(() => {
         setPreviewNotSupported(true)
@@ -31,13 +35,25 @@ export function ObjectViewer({
         }
     }, [handlePreviewObjectError, handlePreviewObjectLoad, previewObject])
 
+    const updateType = useCallback(
+        (type: ViewerType) => {
+            updateTab({
+                ...tab,
+                viewerType: type
+            })
+        },
+        [tab, updateTab]
+    )
+
     return (
         <>
-            {previewNotSupported ? <PreviewNotSupported /> : null}
+            {previewNotSupported ? (
+                <LargeViewSelect exclude={[ViewerType.OBJECT]} setType={updateType} />
+            ) : null}
             <object
                 ref={previewObject}
-                className={"grow " + (previewNotSupported || loading ? "hidden" : "")}
-                data={URL.createObjectURL(data || new Blob([]))}
+                className={"grow w-full h-full " + (previewNotSupported || !data ? "hidden" : "")}
+                data={url}
             />
         </>
     )

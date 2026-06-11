@@ -195,3 +195,43 @@ test("uploading with tree picker works", async ({ page }) => {
     await page.getByRole("button", { name: "Preview File" }).click()
     await expect(page.locator("img")).toBeVisible()
 })
+
+test("opening multiple files works", async ({ page }) => {
+    await page.goto("http://localhost:3000/editor")
+    await page.getByRole("button", { name: "Import RO-Crate" }).click()
+    await page.getByTestId("create-upload-input").setInputFiles("tests/data/elabFtw.eln")
+    await page.getByRole("link", { name: "File Explorer" }).getByRole("button").click()
+    await page
+        .locator("div")
+        .filter({ hasText: /^Select a file on the left to preview it here$/ })
+        .nth(1)
+        .click()
+    await page
+        .locator("div")
+        .filter({ hasText: /^autesse\.json$/ })
+        .nth(1)
+        .click()
+    await page
+        .locator("div")
+        .filter({ hasText: /^autesse\.json$/ })
+        .nth(1)
+        .dblclick()
+    await expect(page.getByRole("button", { name: "autesse.json" })).toBeVisible()
+    await expect(page.locator(".filePreviewTabs")).toMatchAriaSnapshot(`- button "autesse.json"`)
+    await page
+        .locator("div")
+        .filter({ hasText: /^example\.jpg$/ })
+        .nth(1)
+        .click()
+    await page
+        .locator("div")
+        .filter({ hasText: /^example\.jpg$/ })
+        .nth(1)
+        .dblclick()
+    await expect(page.getByRole("button", { name: "example.jpg" })).toBeVisible()
+    await expect(page.locator("img")).toBeVisible()
+    await expect(page.locator(".filePreviewTabs")).toMatchAriaSnapshot(`
+    - button "autesse.json"
+    - button "example.jpg"
+    `)
+})

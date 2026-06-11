@@ -10,6 +10,9 @@ import { useCrateIdPersistence } from "@/lib/hooks/use-crate-id-persistence"
 import { LoadingHero } from "@/components/loading-hero"
 import { toast } from "sonner"
 import { useGoToMainMenu } from "@/lib/hooks/hooks"
+import { useFileExplorerState } from "@/lib/state/file-explorer-state"
+import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
+import { useGraphState } from "@/lib/state/graph-state"
 
 const CoreContext = createContext<ICoreService | null>(null)
 
@@ -97,6 +100,16 @@ export function CoreProvider({ children }: PropsWithChildren) {
     }, [goToMainMenu, persistence])
 
     useCoreSync(core)
+
+    useEffect(() => {
+        // This must be done in a useEffect so it doesn't run on the server
+        if (!core) {
+            // Reset some editor states for clean crate switching
+            useFileExplorerState.setState(useFileExplorerState.getInitialState())
+            useEntityEditorTabs.setState(useEntityEditorTabs.getInitialState())
+            useGraphState.setState(useGraphState.getInitialState())
+        }
+    }, [core])
 
     if (!core) return <LoadingHero />
 

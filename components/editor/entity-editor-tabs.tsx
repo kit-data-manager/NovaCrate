@@ -2,7 +2,7 @@
 
 import { useCallback, useContext, useEffect, useMemo, useRef } from "react"
 import { IEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
-import { Diff, getEntityDisplayName } from "@/lib/utils"
+import { Diff, findEntity, getEntityDisplayName } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Package, PanelLeftClose, XIcon } from "lucide-react"
 import { EntityIcon } from "@/components/entity/entity-icon"
@@ -29,7 +29,7 @@ function Tab({
     active: boolean
     entitiesChangelist: Map<string, Diff>
 }) {
-    const entity = useEditorState((store) => store.entities.get(tab.entityId))
+    const entity = useEditorState((store) => findEntity(store.entities, tab.entityId))
     const entitiesSize = useEditorState((store) => store.entities.size)
     const focusTab = useEntityEditorTabs((store) => store.focusTab)
     const closeTab = useEntityEditorTabs((store) => store.closeTab)

@@ -1,16 +1,5 @@
 import fileDownload from "js-file-download"
-import { IFileService } from "@/lib/core/persistence/IFileService"
 import { IRepositoryService } from "@/lib/core/persistence/IRepositoryService"
-
-/**
- * Get a temporary object URL for a file in the crate.
- * The caller is responsible for revoking the URL with
- * {@link URL.revokeObjectURL} when it is no longer needed.
- */
-export async function getFileAsURL(fileService: IFileService, path: string): Promise<string> {
-    const blob = await fileService.getFile(path)
-    return URL.createObjectURL(blob)
-}
 
 /**
  * Trigger a browser download for the given blob.
