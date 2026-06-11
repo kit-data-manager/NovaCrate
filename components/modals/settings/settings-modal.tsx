@@ -103,13 +103,15 @@ export function SettingsModal({
                         >
                             <BugIcon className="size-4 mr-2" /> Validation
                         </SettingsPageButton>
-                        <SettingsPageButton
-                            page={SettingsPages.AI_ASSISTANT}
-                            currentPage={page}
-                            setPage={setPage}
-                        >
-                            <SparklesIcon className="size-4 mr-2" /> AI Assistant
-                        </SettingsPageButton>
+                        {process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED === "true" && (
+                            <SettingsPageButton
+                                page={SettingsPages.AI_ASSISTANT}
+                                currentPage={page}
+                                setPage={setPage}
+                            >
+                                <SparklesIcon className="size-4 mr-2" /> AI Assistant
+                            </SettingsPageButton>
+                        )}
                         <SettingsPageButton
                             page={SettingsPages.WORKERS}
                             currentPage={page}

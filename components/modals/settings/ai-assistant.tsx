@@ -52,6 +52,9 @@ export function AiAssistantSettings() {
         [settings]
     )
 
+    if (process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED !== "true")
+        return <div>AI Assistant is disabled</div>
+
     return (
         <div className={"flex flex-col max-h-full overflow-y-auto"}>
             {mountConfigureProviderModal && (

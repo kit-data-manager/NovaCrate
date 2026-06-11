@@ -65,6 +65,7 @@ function withoutModels(
 export default function AIAssistantChat() {
     const fileService = useFileService()
     const core = useCore()
+    const showAIAssistant = useLayoutState((s) => s.showAIAssistant)
     const setShowAIAssistant = useLayoutState((s) => s.setShowAIAssistant)
     const { showSettingsModal } = useContext(GlobalModalContext)
     const validation = useValidation()
@@ -75,6 +76,14 @@ export default function AIAssistantChat() {
     useEffect(() => {
         setShow(true)
     }, [])
+
+    // Auto-close if AI Assistant is disabled
+    useEffect(() => {
+        if (showAIAssistant && process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED !== "true") {
+            console.warn("Closing AI Assistant because it is disabled in the environment")
+            setShowAIAssistant(false)
+        }
+    }, [setShowAIAssistant, showAIAssistant])
 
     const settings = useAIAssistantSettings()
 

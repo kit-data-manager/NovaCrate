@@ -375,14 +375,12 @@ export function NavHeader() {
                 />
                 {process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED === "true" && (
                     <div className="border-l border-border pl-2">
-                        <Button
-                            size="icon"
+                        <ActionButton
                             variant="outline"
-                            className={showAIAssistant ? "bg-accent!" : ""}
-                            onClick={toggleShowAIAssistant}
-                        >
-                            <SparklesIcon />
-                        </Button>
+                            name={"ai-assistant"}
+                            actionId={"editor.toggle-ai-assistant"}
+                            iconOnly
+                        />
                     </div>
                 )}
             </div>
