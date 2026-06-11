@@ -126,6 +126,13 @@ export interface EditorState {
     ): IEntity | undefined
 
     /**
+     * Edit an entity. This only succeeds if the entity exists in the local state.
+     * @param value New metadata of the entity.
+     * @returns The edited entity if the edit succeeds
+     */
+    editEntity(value: IEntity): IEntity | void
+
+    /**
      * Add a property of the given name to the given entity. The type or value of the property can optionally be specified.
      * @param entityId Id of the entity where the property should be added.
      * @param propertyName Name of the property to add.
@@ -181,9 +188,6 @@ export interface EditorState {
      * Revert all entities back to the backend state.
      */
     revertAllEntities(): void
-
-    showValidationDrawer: boolean
-    setShowValidationDrawer(show: boolean): void
 
     /**
      * Used to set focus on a specific validation result. Allows the validation drawer to scroll to the result.
@@ -252,6 +256,15 @@ export const editorState = createWithEqualityFn<EditorState>()(
 
             getEntities(): Map<string, IEntity> {
                 return getState().entities
+            },
+
+            editEntity(value) {
+                if (getState().entities.has(value["@id"])) {
+                    setState((state) => {
+                        state.entities.set(value["@id"], value)
+                    })
+                    return value
+                } else return undefined
             },
 
             setEntities(data: Map<string, IEntity>) {
@@ -445,13 +458,6 @@ export const editorState = createWithEqualityFn<EditorState>()(
             revertAllEntities() {
                 setState((state) => {
                     state.entities = new Map(state.initialEntities)
-                })
-            },
-
-            showValidationDrawer: false,
-            setShowValidationDrawer(show: boolean) {
-                setState((state) => {
-                    state.showValidationDrawer = show
                 })
             },
             focusedValidationResultId: undefined,

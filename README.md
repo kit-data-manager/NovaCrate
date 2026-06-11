@@ -23,11 +23,12 @@ For more information, see our  [privacy policy](https://www.kit.edu/privacypolic
 
 ## 🚀 Features
 
-- ✅ Create, read, and edit RO-Crates
-- ✅ Live validation of RO-Crates
-  - ⚙️ Supports validation of the RO-Crate Specification v1.1 and v1.2
-  - 🏗️ WIP: Validate profiles or specific RO-Crate types (e.g., Workflow crates)
-  - 🚀 Autofix actions available for some issues
+- ✅ **Create, read, and edit RO-Crates**
+- ✨ **New: Integrated AI Assistant (Optional)** to help you create, maintain, and understand RO-Crates
+  - ➡️ Use your own subscription from OpenAI, Anthropic, or OpenRouter
+  - ➡️ You can also use a custom OpenAI-compatible LLM provider (e.g. Open WebUI)
+  - ➡️ The AI Assistant can create, read, update and delete metadata, and it can read plain files in your RO-Crate
+- ✅ Live **validation** of RO-Crates
 - ✅ Visualize RO-Crates with a graph
 - ✅ RO-Crate context information and property descriptions
 - ✅ Automatic recommendation of fitting entity types and properties
@@ -37,10 +38,11 @@ For more information, see our  [privacy policy](https://www.kit.edu/privacypolic
 
 ## 🎨 Editions
 
-NovaCrate can be used and deployed in multiple different ways. Currently, only the web version is in active development.
-You can access it directly [here](https://novacrate.datamanager.kit.edu/).
+NovaCrate can be used and deployed in multiple different ways. Currently, two editions are available:
+- Standalone Web App [(Open)](https://novacrate.datamanager.kit.edu/)
+- Embedded Mode [(Docs)](docs/iframe-interface.md)
 
-> 💡 If you have a special interest in the Desktop App or the Cloud Frontend, please get in contact.
+> 💡 If you have a special interest in NovaCrate as a Desktop App or the Cloud Frontend, please get in contact.
 
 <details>
 <summary>Details on NovaCrate Editions</summary>
@@ -48,16 +50,38 @@ You can access it directly [here](https://novacrate.datamanager.kit.edu/).
 | Name               | Status  | Description                                                                                                                                                                                                             | Notes                                                                                                                                                                                                                                                        |
 |--------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Standalone Web App | Active  | Standalone Web App without a backend. Stores Crates in the local origin-private file system of the browser                                                                                                              | [Access here](https://novacrate.datamanager.kit.edu/)                                                                                                                                                                                                        |
+| Embedded Mode      | Active  | NovaCrate can be embedded as an IFrame and controlled by its parent page. This allows you to integrate NovaCrate as a RO-Crate inspector and editor in your own applications.                                           | [Access the IFrame documentation here](docs/iframe-interface.md)                                                                                                                                                                                             |
 | Desktop App        | Concept | Tauri App with a local backend. Has full access to file system and can make use of arbitrary backend software.                                                                                                          | Successful demonstration has been developed in the past, but is no longer maintained. See the lib persistence overview in the row below for details.                                                                                                         |
 | Cloud Frontend     | Concept | NovaCrate is a frontend that can be used with any compatible backend solution, for example a cloud based service that hosts RO-Crates. This approach has not been explored yet due to lack of viable backend solutions. | See the [lib persistence overview image](./docs/figures/lib/lib-persistence.png) or `lib/core/persistence` for interfaces that have to be implemented by the backend. Only IPersistenceService and ICrateService are required for a minimal working backend. |
 
+</details>
+
 ### ℹ️ How To: Custom Backend
 
-NovaCrate is a frontend that can be used for any backend that hosts RO-Crates (an appropriate backend adapter must be implemented). This could be anything in the range from a simple file storage to a full REST Service for manipulating crates.
-See `src/lib/backend/CrateService.d.ts` for a list of methods that a backend adapter should implement. All of these methods can make use of backend resources or be supplemented locally.
+NovaCrate is modular and can be used with any backend solution. See the [lib persistence overview image](./docs/figures/lib/lib-persistence.png) or `lib/core/persistence` for interfaces that have to be implemented by the backend. To use NovaCrate with your own backend implementation, fork this repository and swap out the backend implementation in the [persistence provider](components/providers/persistence-provider.tsx).
 
 NovaCrate currently does not include mechanisms for authentication, access control or concurrent access.
-</details>
+
+## 🚀 Deploying
+
+NovaCrate can be deployed using Docker. An official image is provided through the [GitHub Container Registry](https://github.com/kit-data-manager/NovaCrate/pkgs/container/novacrate). You can also build your own image from the source code.
+If you want to change some of the environment variables below then you need to build the image yourself.
+
+### Environment Variables
+
+Note that when you configure any of these variables you need to build NovaCrate from source. Changing these environment variables on the docker image at runtime is not possible.
+
+| Variable Name               | Default Value | Description                                                                                                                                        |
+|-----------------------------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| BASE_PATH                   | *empty*       | Base path of the application                                                                                                                       |
+| IFRAME_TARGET_ORIGIN        | *empty*       | Required for using NovaCrate in IFrame embedded mode. Refer to the [IFrame Documentation](docs/iframe-interface.md)                                |
+| AI_ASSISTANT_ENABLED        | *empty*       | Set this to `true` to enable the AI Assistant in your deployment.                                                                                  |
+| AI_ASSISTANT_BASE_URL_REGEX | *empty*       | Regex that matches allowed custom base URLs configured by the user for an LLM provider. Custom base URLs are disables if this variable is not set. |
+
+### Attention: AI Assistant security considerations
+
+Chat requests from the AI Assistant are routed through NovaCrate API routes to the LLM provider. If the user has configured a custom base URL for the LLM provider, NovaCrate will attempt to send requests there (only if permitted by AI_ASSISTANT_BASE_URL_REGEX).
+If you allow custom base URLs, make sure that users do not gain unintended access to private resources within your network.
 
 ## 👨‍💻 Development
 

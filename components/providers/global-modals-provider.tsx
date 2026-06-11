@@ -9,7 +9,7 @@ import { GlobalSearch } from "@/components/modals/global-search"
 import { AddPropertyModal } from "@/components/modals/add-property/add-property-modal"
 import { FindReferencesModal } from "@/components/modals/find-references-modal"
 import { SaveAsModal } from "@/components/modals/save-as-modal"
-import { SettingsModal } from "@/components/modals/settings/settings-modal"
+import { SettingsModal, SettingsPages } from "@/components/modals/settings/settings-modal"
 import { DocumentationModal } from "@/components/modals/documentation-modal"
 import { AutoReference } from "@/lib/utils"
 import { AboutModal } from "@/components/modals/about-modal"
@@ -34,7 +34,7 @@ export interface IGlobalModalContext {
     ): void
     showFindReferencesModal(entityId: string): void
     showSaveAsModal(entityId: string): void
-    showSettingsModal(): void
+    showSettingsModal(page?: SettingsPages): void
     showDocumentationModal(): void
     showAboutModal(): void
     showCrateExportedModal(): void
@@ -104,7 +104,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         open: false,
         entityId: ""
     })
-    const [settingsModalState, setSettingsModalState] = useState({ open: false })
+    const [settingsModalState, setSettingsModalState] = useState<{
+        open: boolean
+        page?: SettingsPages
+    }>({ open: false })
     const [documentationModalState, setDocumentationModalState] = useState({ open: false })
     const [aboutModalState, setAboutModalState] = useState({ open: false })
     const [crateExportedModalState, setCrateExportedModalState] = useState({ open: false })
@@ -180,8 +183,8 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         })
     }, [])
 
-    const showSettingsModal = useCallback(() => {
-        setSettingsModalState({ open: true })
+    const showSettingsModal = useCallback((page?: SettingsPages) => {
+        setSettingsModalState({ open: true, page })
     }, [])
 
     const showDocumentationModal = useCallback(() => {
@@ -243,7 +246,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     }, [])
 
     const onSettingsModalOpenChange = useCallback((open: boolean) => {
-        setSettingsModalState({ open })
+        setSettingsModalState((prev) => ({ ...prev, open }))
     }, [])
 
     const onDocumentationModalOpenChange = useCallback((open: boolean) => {
@@ -337,6 +340,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
             <SettingsModal
                 open={settingsModalState.open}
                 onOpenChange={onSettingsModalOpenChange}
+                defaultPage={settingsModalState.page}
             />
             <DocumentationModal
                 open={documentationModalState.open}

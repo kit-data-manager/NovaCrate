@@ -6,10 +6,10 @@ import { useStore } from "zustand"
 import { useShallow } from "zustand/react/shallow"
 import { ValidationResultLine } from "@/components/editor/validation/validation-result-line"
 import { sortValidationResultByName } from "@/lib/utils"
-import { useEditorState } from "@/lib/state/editor-state"
 import { useValidationStore } from "@/lib/validation/hooks"
 import { ValidationResultSeverity } from "@/lib/validation/validation-result"
 import { validationSettings } from "@/lib/state/validation-settings"
+import { useLayoutState } from "@/lib/state/layout-state"
 
 export const ValidationOverview = memo(function ValidationOverview({
     entityId,
@@ -31,7 +31,7 @@ export const ValidationOverview = memo(function ValidationOverview({
                 .sort((a, b) => b.resultSeverity - a.resultSeverity)
         )
     )
-    const setShowValidationDrawer = useEditorState((s) => s.setShowValidationDrawer)
+    const setShowValidationDrawer = useLayoutState((s) => s.setShowValidationDrawer)
     const validationEnabled = useStore(validationSettings, (s) => s.enabled)
 
     useEffect(() => {
@@ -129,11 +129,11 @@ export const ValidationOverview = memo(function ValidationOverview({
                         {icon}
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="p-2 pb-0 pr-0 w-[600px]">
+                <PopoverContent className="p-2 pb-0 pr-0 w-150">
                     <div className="text-xs font-medium p-1 mb-1 flex justify-between">
                         {validationResults.length} {entityId ? "Entity" : "Crate"} Issues
                     </div>
-                    <div className="overflow-y-auto max-h-[400px] pr-2 pb-2">
+                    <div className="overflow-y-auto max-h-100 pr-2 pb-2">
                         {validationResults.length === 0 && (
                             <div className="flex justify-center text-muted-foreground text-xs p-2">
                                 No issues found.

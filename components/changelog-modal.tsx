@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import Markdown from "react-markdown"
 import { Error as ErrorDisplay } from "@/components/error"
 import { FileClock, LoaderCircle } from "lucide-react"
+import { addBasePath } from "next/dist/client/add-base-path"
 
 /**
  * Used by the ChangelogModal component to store and persist the last seen changelog version
@@ -94,10 +95,14 @@ export function ChangelogModal() {
         }
     }, [changelogStore])
 
-    const { data, error, isLoading } = useSWR(loadChangelog ? "/api/changelog" : null, fetcher, {
-        revalidateOnFocus: false,
-        revalidateOnReconnect: false
-    })
+    const { data, error, isLoading } = useSWR(
+        loadChangelog ? addBasePath("/api/changelog") : null,
+        fetcher,
+        {
+            revalidateOnFocus: false,
+            revalidateOnReconnect: false
+        }
+    )
     const latestVersion = packageJson.version
 
     if (

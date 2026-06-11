@@ -7,10 +7,10 @@ import { ValidationResultIcon } from "@/components/editor/validation/validation-
 import { ValidationResultLine } from "@/components/editor/validation/validation-result-line"
 import { sortValidationResultByName } from "@/lib/utils"
 import { PanelBottomOpen } from "lucide-react"
-import { useEditorState } from "@/lib/state/editor-state"
 import { useValidationStore } from "@/lib/validation/hooks"
 import { ValidationResultSeverity } from "@/lib/validation/validation-result"
 import { validationSettings } from "@/lib/state/validation-settings"
+import { useLayoutState } from "@/lib/state/layout-state"
 
 export function SinglePropertyValidation({
     propertyName,
@@ -37,7 +37,7 @@ export function SinglePropertyValidation({
                 .sort((a, b) => b.resultSeverity - a.resultSeverity)
         )
     )
-    const setShowValidationDrawer = useEditorState((s) => s.setShowValidationDrawer)
+    const setShowValidationDrawer = useLayoutState((s) => s.setShowValidationDrawer)
     const validationEnabled = useStore(validationSettings, (s) => s.enabled)
 
     const highestResultType = useMemo(() => {
@@ -67,7 +67,7 @@ export function SinglePropertyValidation({
                         <ValidationResultIcon result={highestResultType} />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="p-2 w-[600px] max-w-[600px]">
+                <PopoverContent className="p-2 w-150 max-w-150">
                     <div className="text-xs font-medium p-1 mb-1 flex justify-between">
                         Property Issues
                     </div>
