@@ -5,13 +5,7 @@ import {
     PropertyRule,
     RuleBuilder
 } from "@/lib/validation/validators/rule-based-validator"
-import {
-    canHavePreview,
-    isDataEntity,
-    isFileDataEntity,
-    isFolderDataEntity,
-    isValidUrl
-} from "@/lib/utils"
+import { isDataEntity, isFileDataEntity, isFolderDataEntity, isValidUrl } from "@/lib/utils"
 import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { DateTime } from "luxon"
 import { ValidationResultBuilder } from "@/lib/validation/validation-result-builder"
@@ -215,7 +209,11 @@ export const RoCrateV1_2 = {
             const results: EntityValidationResult[] = []
             if (!ctx.fileService) return results
 
-            if (isDataEntity(entity) && canHavePreview(entity)) {
+            if (
+                isDataEntity(entity) &&
+                !entity["@id"].startsWith("#") &&
+                !isValidUrl(entity["@id"])
+            ) {
                 try {
                     const result = await ctx.fileService.getInfo(entity["@id"])
 

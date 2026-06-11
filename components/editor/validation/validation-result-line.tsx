@@ -7,6 +7,7 @@ import { ValidationResult } from "@/lib/validation/validation-result"
 import Markdown from "react-markdown"
 import { CircleQuestionMark } from "lucide-react"
 import { useEditorState } from "@/lib/state/editor-state"
+import { useLayoutState } from "@/lib/state/layout-state"
 
 export const ValidationResultLine = memo(function ValidationResultLine({
     result,
@@ -32,7 +33,7 @@ export const ValidationResultLine = memo(function ValidationResultLine({
         focusable ? store.focusedValidationResultId : undefined
     )
     const focusValidationResult = useEditorState((store) => store.setFocusedValidationResultId)
-    const setShowValidationDrawer = useEditorState((store) => store.setShowValidationDrawer)
+    const setShowValidationDrawer = useLayoutState((store) => store.setShowValidationDrawer)
 
     const openTarget = useCallback(() => {
         if (result.entityId) {

@@ -4,10 +4,21 @@ import { useGoToMainMenu, useRegisterAction, useSaveAllEntities } from "@/lib/ho
 import { useEditorState } from "@/lib/state/editor-state"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
-import { ArrowLeft, Cog, Plus, SaveAll, Search, Undo2, FileIcon, Info } from "lucide-react"
+import {
+    ArrowLeft,
+    Cog,
+    Plus,
+    SaveAll,
+    Search,
+    Undo2,
+    FileIcon,
+    Info,
+    SparklesIcon
+} from "lucide-react"
 import { generateCratePreview } from "@/lib/ro-crate-preview"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { toast } from "sonner"
+import { useLayoutState } from "@/lib/state/layout-state"
 
 export default function DefaultActions() {
     const { showCreateEntityModal, showGlobalSearchModal, showSettingsModal, showAboutModal } =
@@ -77,6 +88,19 @@ export default function DefaultActions() {
 
     useRegisterAction("editor.about", "About", showAboutModal, {
         icon: Info
+    })
+
+    const toggleAIAssistant = useCallback(() => {
+        if (process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED === "true") {
+            const layoutState = useLayoutState.getState()
+            layoutState.setShowAIAssistant(!layoutState.showAIAssistant)
+        } else {
+            toast.error("AI Assistant is not enabled")
+        }
+    }, [])
+
+    useRegisterAction("editor.toggle-ai-assistant", "Toggle AI Assistant", toggleAIAssistant, {
+        icon: SparklesIcon
     })
 
     return null

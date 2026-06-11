@@ -1,0 +1,8 @@
+services:
+  novacrate:
+    build:
+      context: .
+#      args:
+#        IFRAME_TARGET_ORIGIN: https://novacrate.datamanager.kit.edu
+#        AI_ASSISTANT_ENABLED: true
+#        AI_ASSISTANT_BASE_URL_REGEX: "^(?:ki-toolbox\\.scc\\.kit\\.edu|(?!(?:[a-z0-9-]+\\.)*kit\\.edu$)(?:[a-z0-9-]+\\.)*[a-z0-9-]+)$"

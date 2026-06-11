@@ -1,0 +1,6 @@
+services:
+  novacrate:
+    image: "ghcr.io/kit-data-manager/novacrate:1"
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
