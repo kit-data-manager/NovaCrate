@@ -5,6 +5,14 @@ import { ViewerProps, ViewerType } from "@/lib/file-preview"
 export function ObjectViewer({ data, tab, updateTab }: ViewerProps) {
     const previewObject = createRef<HTMLObjectElement>()
     const [previewNotSupported, setPreviewNotSupported] = useState(false)
+    const [url, setUrl] = useState<string>()
+
+    useEffect(() => {
+        const newUrl = URL.createObjectURL(data || new Blob([]))
+        setUrl(newUrl)
+
+        return () => URL.revokeObjectURL(newUrl)
+    }, [data])
 
     const handlePreviewObjectError = useCallback(() => {
         setPreviewNotSupported(true)
@@ -45,7 +53,7 @@ export function ObjectViewer({ data, tab, updateTab }: ViewerProps) {
             <object
                 ref={previewObject}
                 className={"grow w-full h-full " + (previewNotSupported || !data ? "hidden" : "")}
-                data={URL.createObjectURL(data || new Blob([]))}
+                data={url}
             />
         </>
     )
