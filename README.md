@@ -65,8 +65,11 @@ NovaCrate currently does not include mechanisms for authentication, access contr
 ## 🚀 Deploying
 
 NovaCrate can be deployed using Docker. An official image is provided through the [GitHub Container Registry](https://github.com/kit-data-manager/NovaCrate/pkgs/container/novacrate). You can also build your own image from the source code.
+If you want to change some of the environment variables below then you need to build the image yourself.
 
 ### Environment Variables
+
+Note that when you configure any of these variables you need to build NovaCrate from source. Changing these environment variables on the docker image at runtime is not possible.
 
 | Variable Name               | Default Value | Description                                                                                                                                        |
 |-----------------------------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
