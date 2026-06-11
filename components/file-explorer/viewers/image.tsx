@@ -7,11 +7,17 @@ export function ImageViewer(props: ViewerProps) {
     const [url, setUrl] = useState<string>()
 
     useEffect(() => {
-        if (!props.data) return
+        if (!props.data) {
+            setUrl(undefined)
+            return
+        }
         const newUrl = URL.createObjectURL(props.data)
         setUrl(newUrl)
 
-        return () => URL.revokeObjectURL(newUrl)
+        return () => {
+            const current = newUrl
+            URL.revokeObjectURL(current)
+        }
     }, [props.data])
 
     return (
