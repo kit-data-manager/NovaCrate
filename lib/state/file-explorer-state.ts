@@ -61,22 +61,25 @@ export const useFileExplorerState = create<FileExplorerState>()(
 
             closeTab(path: string) {
                 set((store) => {
-                    const indexBefore = store.filePreviewTabs.findIndex(
-                        (tab) => normalizeIdentifier(tab.filePath) === normalizeIdentifier(path)
-                    )
-                    if (indexBefore >= 0) {
-                        if (indexBefore > 0) {
-                            // Switch to tab left of the one being closed
-                            store.activeFilePreviewTabPath =
-                                store.filePreviewTabs[indexBefore - 1].filePath
-                        } else if (store.filePreviewTabs.length > 1) {
-                            // Index is already 0, and there are other tabs open. Choose the one on the right as the next open tab.
-                            store.activeFilePreviewTabPath = store.filePreviewTabs[1].filePath
-                        } else {
-                            // There are no other tabs open
-                            store.activeFilePreviewTabPath = undefined
+                    if (store.activeFilePreviewTabPath === path) {
+                        const indexBefore = store.filePreviewTabs.findIndex(
+                            (tab) => normalizeIdentifier(tab.filePath) === normalizeIdentifier(path)
+                        )
+                        if (indexBefore >= 0) {
+                            if (indexBefore > 0) {
+                                // Switch to tab left of the one being closed
+                                store.activeFilePreviewTabPath =
+                                    store.filePreviewTabs[indexBefore - 1].filePath
+                            } else if (store.filePreviewTabs.length > 1) {
+                                // Index is already 0, and there are other tabs open. Choose the one on the right as the next open tab.
+                                store.activeFilePreviewTabPath = store.filePreviewTabs[1].filePath
+                            } else {
+                                // There are no other tabs open
+                                store.activeFilePreviewTabPath = undefined
+                            }
                         }
                     }
+
                     store.filePreviewTabs = store.filePreviewTabs.filter(
                         (tab) => normalizeIdentifier(tab.filePath) !== normalizeIdentifier(path)
                     )

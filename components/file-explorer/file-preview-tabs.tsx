@@ -44,7 +44,7 @@ function FilePreviewTab({ tab, active }: { tab: IFilePreviewTab; active: boolean
         if (button.current && active) {
             button.current.scrollIntoView()
         }
-    })
+    }, [active])
 
     return (
         <ContextMenu>
@@ -105,7 +105,7 @@ function FilePreviewTabsList({
     return (
         <div
             ref={container}
-            className="flex overflow-x-auto shrink-0 no-scrollbar h-10 p-1 gap-2 bg-accent"
+            className="filePreviewTabs flex overflow-x-auto shrink-0 no-scrollbar h-10 p-1 gap-2 bg-accent"
             onWheel={(s) => {
                 if (s.deltaY !== 0 && container.current) {
                     // noinspection JSSuspiciousNameCombination

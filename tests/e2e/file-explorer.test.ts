@@ -217,7 +217,7 @@ test("opening multiple files works", async ({ page }) => {
         .nth(1)
         .dblclick()
     await expect(page.getByRole("button", { name: "autesse.json" })).toBeVisible()
-    await expect(page.locator('[id="_r_17_"]')).toMatchAriaSnapshot(`- button "autesse.json"`)
+    await expect(page.locator(".filePreviewTabs")).toMatchAriaSnapshot(`- button "autesse.json"`)
     await page
         .locator("div")
         .filter({ hasText: /^example\.jpg$/ })
@@ -230,7 +230,7 @@ test("opening multiple files works", async ({ page }) => {
         .dblclick()
     await expect(page.getByRole("button", { name: "example.jpg" })).toBeVisible()
     await expect(page.locator("img")).toBeVisible()
-    await expect(page.locator('[id="_r_17_"]')).toMatchAriaSnapshot(`
+    await expect(page.locator(".filePreviewTabs")).toMatchAriaSnapshot(`
     - button "autesse.json"
     - button "example.jpg"
     `)

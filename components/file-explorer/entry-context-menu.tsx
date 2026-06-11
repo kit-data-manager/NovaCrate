@@ -46,7 +46,7 @@ export function EntryContextMenu({
     goToEntity?: () => void
     blankSpace?: boolean
     rename?: () => void
-    as?: ComponentType | keyof JSX.IntrinsicElements
+    as?: ComponentType<{ className?: string }> | keyof JSX.IntrinsicElements
 }) {
     const persistence = usePersistence()
 

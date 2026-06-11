@@ -130,14 +130,14 @@ describe("useFileExplorerState", () => {
 
         it("should focus the tab to the left when closing a middle tab", () => {
             useFileExplorerState.getState().openTab(TAB_HTML)
-            useFileExplorerState.getState().openTab(TAB_JS)
+            useFileExplorerState.getState().openTab(TAB_JS, true)
             useFileExplorerState.getState().openTab(TAB_CSS)
             useFileExplorerState.getState().closeTab(TAB_JS.filePath)
             expect(useFileExplorerState.getState().activeFilePreviewTabPath).toBe(TAB_HTML.filePath)
         })
 
         it("should focus the tab to the right when closing the leftmost tab", () => {
-            useFileExplorerState.getState().openTab(TAB_HTML)
+            useFileExplorerState.getState().openTab(TAB_HTML, true)
             useFileExplorerState.getState().openTab(TAB_JS)
             useFileExplorerState.getState().openTab(TAB_CSS)
             useFileExplorerState.getState().closeTab(TAB_HTML.filePath)

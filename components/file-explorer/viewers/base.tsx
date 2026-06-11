@@ -82,9 +82,10 @@ export function BaseViewer({
                 )
             case ViewerType.UNKNOWN:
                 return <LargeViewSelect setType={setType} />
-            default:
+            default: {
                 const Viewer = VIEWERS.find((v) => v.type === tab.viewerType)!.component
                 return <Viewer data={data} tab={tab} updateTab={updateTab} />
+            }
         }
     }, [data, setType, tab, updateTab])
 

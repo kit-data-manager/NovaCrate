@@ -1,27 +1,29 @@
 import { ViewerProps } from "@/lib/file-preview"
-import { useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { Error } from "@/components/error"
 
 export function ImageViewer(props: ViewerProps) {
     const [error, setError] = useState<unknown>()
+    const [url, setUrl] = useState<string>()
 
-    const Img = useMemo(() => {
-        if (!props.data) return null
-        return (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-                src={URL.createObjectURL(props.data)}
-                alt=""
-                onError={(e) => setError(e.type)}
-                onLoad={() => setError(undefined)}
-            />
-        )
+    useEffect(() => {
+        if (!props.data) return
+        const newUrl = URL.createObjectURL(props.data)
+        setUrl(newUrl)
+
+        return () => URL.revokeObjectURL(newUrl)
     }, [props.data])
 
     return (
         <div className="flex flex-col justify-center items-center h-full overflow-auto">
             <Error title={"Failed to load image"} error={error} />
-            {Img}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+                src={url}
+                alt=""
+                onError={(e) => setError(e.type)}
+                onLoad={() => setError(undefined)}
+            />
         </div>
     )
 }
