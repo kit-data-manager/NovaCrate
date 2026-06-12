@@ -209,7 +209,7 @@ export function FileExplorer() {
                     </div>
                 </HelpTooltip>
                 <div className="grow" />
-                <Tooltip>
+                <Tooltip delayDuration={300}>
                     <TooltipTrigger asChild>
                         <Button
                             id="toggle-show-entities"
@@ -224,7 +224,7 @@ export function FileExplorer() {
                             />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Show entities next to file names</TooltipContent>
+                    <TooltipContent>Show matching entities</TooltipContent>
                 </Tooltip>
                 <ActionButton
                     variant="outline"

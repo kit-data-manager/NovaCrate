@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed security vulnerabilities and installed countermeasures against npm supply chain attacks
 - Fixed a validation issue where Dataset entities were not being validated correctly
 - Fixed the search button in entity explorer
+- Fixed the tooltip of a button in the file explorer
 
 ## [1.11.1] - 2026-05-18
 
