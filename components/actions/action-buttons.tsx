@@ -120,8 +120,10 @@ function cleanProps<T extends object>(props: T) {
     if ("iconOnly" in newData) delete newData.iconOnly
     if ("hideName" in newData) delete newData.hideName
 
-    if ("ignoreOnClickFromProps" in newData && newData.ignoreOnClickFromProps)
-        if ("onClick" in newData) delete newData.onClick
+    if ("ignoreOnClickFromProps" in newData) {
+        if (newData.ignoreOnClickFromProps && "onClick" in newData) delete newData.onClick
+        delete newData.ignoreOnClickFromProps
+    }
 
     return newData
 }
