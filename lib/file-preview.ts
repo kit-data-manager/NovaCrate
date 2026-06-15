@@ -1,7 +1,6 @@
 import { ComponentType } from "react"
 import { ImageViewer } from "@/components/file-explorer/viewers/image"
 import { TextViewer } from "@/components/file-explorer/viewers/text"
-import { ObjectViewer } from "@/components/file-explorer/viewers/object"
 import { IFrameViewer } from "@/components/file-explorer/viewers/iframe"
 import { IFilePreviewTab } from "@/lib/state/file-explorer-state"
 
@@ -49,17 +48,10 @@ export const VIEWERS: IViewer[] = [
         component: TextViewer
     },
     {
-        type: ViewerType.OBJECT,
-        displayName: "Object Viewer",
-        subtitle: "(e.g. for PDFs)",
-        mimeTypes: ["application/pdf"],
-        component: ObjectViewer
-    },
-    {
         type: ViewerType.IFRAME,
         displayName: "IFrame Viewer",
         subtitle: "(e.g. for HTML)",
-        mimeTypes: ["text/html"],
+        mimeTypes: ["text/html", "application/pdf"],
         component: IFrameViewer
     }
 ]

@@ -25,7 +25,7 @@ export function IFrameViewer(props: ViewerProps) {
                 Some links and downloads might not work in this built-in HTML preview. Try opening
                 the file directly after exporting the crate.
             </div>
-            <iframe className="grow" src={url}></iframe>
+            <iframe className="grow" src={url} sandbox={"allow-downloads allow-scripts"}></iframe>
         </div>
     )
 }

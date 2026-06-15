@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed the search button in entity explorer
 - Fixed the tooltip of a button in the file explorer
 
+### Removed
+
+- Removed the object viewer from the file explorer for security reasons. To display PDFs, the iframe viewer is used instead.
+
 ## [1.11.1] - 2026-05-18
 
 ### Fixed
