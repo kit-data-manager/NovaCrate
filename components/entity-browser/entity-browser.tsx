@@ -87,6 +87,7 @@ export function EntityBrowser() {
                                 size={"sm"}
                                 noShortcut
                                 iconOnly
+                                ignoreOnClickFromProps
                             />
                         </TooltipTrigger>
                         <TooltipContent>Global Search</TooltipContent>

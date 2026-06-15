@@ -13,6 +13,7 @@ export interface GenericActionContentProps {
     noShortcut?: boolean
     iconOnly?: boolean
     hideName?: boolean
+    ignoreOnClickFromProps?: boolean
 }
 
 function GenericActionContent(props: GenericActionContentProps) {
@@ -118,6 +119,11 @@ function cleanProps<T extends object>(props: T) {
     if ("closeAnd" in newData) delete newData.closeAnd
     if ("iconOnly" in newData) delete newData.iconOnly
     if ("hideName" in newData) delete newData.hideName
+
+    if ("ignoreOnClickFromProps" in newData) {
+        if (newData.ignoreOnClickFromProps && "onClick" in newData) delete newData.onClick
+        delete newData.ignoreOnClickFromProps
+    }
 
     return newData
 }
