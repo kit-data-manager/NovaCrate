@@ -8,7 +8,6 @@ export enum ViewerType {
     UNKNOWN,
     IMAGE,
     TEXT,
-    OBJECT,
     IFRAME,
     NOT_IDENTIFIED_YET = 999
 }
