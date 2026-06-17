@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Supported LLM providers are: OpenAI, Anthropic, OpenRouter, OpenAI-Compatible (such as Open WebUI)
     - The AI Assistant supports a number of tools, such as entity listing, entity editing, and file reading.
 - Added a tabbed interface to the file explorer, resembling that of the entity explorer. You can now open multiple files and switch between them effortlessly.
-- Added the ability to change the type of the viewer in the file explorer. You can choose between the preexisting integrated viewers: Text view, Image view, Object view, Iframe view. This should be especially useful for file types that are not correctly recognized automatically. This also sets the groundwork for extending NovaCrate with other viewers (e.g. CSV) in the future
+- Added the ability to change the type of the viewer in the file explorer. You can choose between the preexisting integrated viewers: Text view, Image view, Iframe view. This should be especially useful for file types that are not correctly recognized automatically. This also sets the groundwork for extending NovaCrate with other viewers (e.g. CSV) in the future
 
 ### Fixed
 
@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a validation issue where Dataset entities were not being validated correctly
 - Fixed the search button in entity explorer
 - Fixed the tooltip of a button in the file explorer
+
+### Removed
+
+- Removed the object viewer from the file explorer for security reasons. To display PDFs, the iframe viewer is used instead.
 
 ## [1.11.1] - 2026-05-18
 
