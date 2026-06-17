@@ -23,6 +23,8 @@ import Link from "next/link"
 import { Message } from "@/components/ai/message"
 import { useFrontendToolHandler } from "@/lib/ai/use-frontend-tool-handler"
 import type { NC_UIMessage } from "@/lib/ai/types"
+import { useAIAssistantChats } from "@/lib/state/ai-assistant-chats"
+import { usePersistence } from "@/components/providers/persistence-provider"
 
 function withoutModels(
     config: ProviderConfiguration | undefined
@@ -37,6 +39,10 @@ export default function AIAssistantChat() {
     const showAIAssistant = useLayoutState((s) => s.showAIAssistant)
     const setShowAIAssistant = useLayoutState((s) => s.setShowAIAssistant)
     const { showSettingsModal } = useContext(GlobalModalContext)
+    const updateChat = useAIAssistantChats((s) => s.updateChat)
+    const getChat = useAIAssistantChats((s) => s.getChat)
+    const persistence = usePersistence()
+    const crateId = persistence.getCrateId()
 
     // Hidden at the start to prevent hydration issues
     const [show, setShow] = useState(false)
@@ -85,8 +91,16 @@ export default function AIAssistantChat() {
                     addToolOutput
                 },
                 ...args
-            )
+            ),
+        messages: crateId ? getChat(crateId)?.messages : undefined
     })
+
+    useEffect(() => {
+        if (!crateId) return
+        if (status === "ready") {
+            updateChat(crateId, messages)
+        }
+    }, [crateId, messages, status, updateChat])
 
     const resetChat = useCallback(() => {
         setMessages([])
