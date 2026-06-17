@@ -52,6 +52,7 @@ import { useCore } from "@/components/providers/core-provider"
 import { importOrganizationFromRor, importPersonFromOrcid } from "@/lib/entity-import"
 import { addBasePath } from "next/dist/client/add-base-path"
 import Link from "next/link"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 function withoutModels(
     config: ProviderConfiguration | undefined
@@ -488,11 +489,16 @@ export default function AIAssistantChat() {
             <div className="pl-4 pr-2 border-b text-sm h-10 flex items-center gap-2 truncate shrink-0 bg-accent">
                 <SparklesIcon className="size-4" /> AI Assistant <div className="grow" />
                 <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="outline" size="sm">
-                            <TrashIcon />
-                        </Button>
-                    </PopoverTrigger>
+                    <Tooltip delayDuration={500}>
+                        <PopoverTrigger asChild>
+                            <TooltipTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <TrashIcon />
+                                </Button>
+                            </TooltipTrigger>
+                        </PopoverTrigger>
+                        <TooltipContent>Delete Chat</TooltipContent>
+                    </Tooltip>
                     <PopoverContent>
                         <div>
                             Do you want to reset the chat? This will delete all messages and start a
@@ -503,9 +509,18 @@ export default function AIAssistantChat() {
                         </Button>
                     </PopoverContent>
                 </Popover>
-                <Button variant="outline" size="sm" onClick={() => setShowAIAssistant(false)}>
-                    <XIcon />
-                </Button>
+                <Tooltip delayDuration={500}>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowAIAssistant(false)}
+                        >
+                            <XIcon />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Close AI Assistant</TooltipContent>
+                </Tooltip>
             </div>
             <div className="grow overflow-y-auto" ref={chatContainer}>
                 <div className="flex flex-col min-h-full grow justify-end" ref={chatContent}>

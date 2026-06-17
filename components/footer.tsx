@@ -14,7 +14,7 @@ export function Footer() {
                     NovaCrate v{packageJson.version}
                 </div>
                 <div className="flex justify-center items-center text-sm text-muted-foreground gap-3">
-                    <Tooltip delayDuration={300}>
+                    <Tooltip delayDuration={500}>
                         <TooltipTrigger asChild>
                             <Link
                                 href={GITHUB_REPO}
@@ -34,7 +34,7 @@ export function Footer() {
                         <TooltipContent>GitHub Repository</TooltipContent>
                     </Tooltip>
 
-                    <Tooltip delayDuration={300}>
+                    <Tooltip delayDuration={500}>
                         <TooltipTrigger asChild>
                             <Link
                                 href={PRIVACY_POLICY}
@@ -47,7 +47,7 @@ export function Footer() {
                         </TooltipTrigger>
                         <TooltipContent>Privacy Policy</TooltipContent>
                     </Tooltip>
-                    <Tooltip delayDuration={300}>
+                    <Tooltip delayDuration={500}>
                         <TooltipTrigger asChild>
                             <Link
                                 href={LEGALS}

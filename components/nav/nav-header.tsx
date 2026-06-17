@@ -10,8 +10,7 @@ import {
     FolderUp,
     Notebook,
     Package,
-    Palette,
-    SparklesIcon
+    Palette
 } from "lucide-react"
 import {
     Menubar,
@@ -47,7 +46,6 @@ import { ValidationOverview } from "@/components/editor/validation/validation-ov
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { useStore } from "zustand"
 import { toast } from "sonner"
-import { useLayoutState } from "@/lib/state/layout-state"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -93,13 +91,6 @@ export function NavHeader() {
     const crateContext = useStore(editorState, (s) => s.crateContext)
     const [schemaIssues, setSchemaIssues] = useState<Map<string, unknown>>(new Map())
     const isEmbedded = useIsEmbedded()
-
-    const showAIAssistant = useLayoutState((state) => state.showAIAssistant)
-    const setShowAIAssistant = useLayoutState((state) => state.setShowAIAssistant)
-
-    const toggleShowAIAssistant = useCallback(() => {
-        setShowAIAssistant(!showAIAssistant)
-    }, [setShowAIAssistant, showAIAssistant])
 
     const schemaWorker = useContext(SchemaWorker)
 
@@ -372,6 +363,7 @@ export function NavHeader() {
                     name={"settings"}
                     actionId={"editor.settings"}
                     iconOnly
+                    showTooltip
                 />
                 {process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED === "true" && (
                     <div className="border-l border-border pl-2">
@@ -379,6 +371,7 @@ export function NavHeader() {
                             variant="outline"
                             name={"ai-assistant"}
                             actionId={"editor.toggle-ai-assistant"}
+                            showTooltip
                             iconOnly
                         />
                     </div>

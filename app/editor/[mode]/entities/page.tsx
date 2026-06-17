@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { useGoToFileExplorer } from "@/lib/hooks/hooks"
 import { useEditorState } from "@/lib/state/editor-state"
 import { findEntity } from "@/lib/utils"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 function EntityEditorFilePreview(props: PropsWithChildren) {
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
@@ -50,19 +51,38 @@ function EntityEditorFilePreview(props: PropsWithChildren) {
                         <FileIcon className="size-4" />
                         <div className="truncate">{previewTab.fileName}</div>
                         <div className="grow" />
-                        <Button variant="outline" size="sm" onClick={() => focusEntity()}>
-                            <CrosshairIcon className="size-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => goToFileExplorer()}>
-                            <FileIcon className="size-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setPreviewingFilePath("")}
-                        >
-                            <XIcon className="size-4" />
-                        </Button>
+                        <Tooltip delayDuration={500}>
+                            <TooltipTrigger asChild>
+                                <Button variant="outline" size="sm" onClick={() => focusEntity()}>
+                                    <CrosshairIcon className="size-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Focus Entity</TooltipContent>
+                        </Tooltip>
+                        <Tooltip delayDuration={500}>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => goToFileExplorer()}
+                                >
+                                    <FileIcon className="size-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Open in File Explorer</TooltipContent>
+                        </Tooltip>
+                        <Tooltip delayDuration={500}>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setPreviewingFilePath("")}
+                                >
+                                    <XIcon className="size-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Close File Preview</TooltipContent>
+                        </Tooltip>
                     </div>
                     <BaseViewer tab={previewTab} updateTab={setPreviewTab} />
                 </div>

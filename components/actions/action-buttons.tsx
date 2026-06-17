@@ -1,12 +1,14 @@
 import { MenubarItem } from "@/components/ui/menubar"
 import { useAction, useActionsReady } from "@/lib/hooks/hooks"
-import { ComponentProps, memo, useMemo } from "react"
+import { ComponentProps, memo, PropsWithChildren, useMemo } from "react"
 import { KeyboardShortcut } from "@/components/actions/action-keyboard-shortcuts"
 import { Button } from "@/components/ui/button"
 import { ContextMenuItem } from "@/components/ui/context-menu"
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { CommandItem } from "@/components/ui/command"
 import { Loader2 } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Action } from "@/lib/state/actions"
 
 export interface GenericActionContentProps {
     actionId: string
@@ -14,6 +16,9 @@ export interface GenericActionContentProps {
     iconOnly?: boolean
     hideName?: boolean
     ignoreOnClickFromProps?: boolean
+
+    // This only affects action buttons
+    showTooltip?: boolean
 }
 
 function GenericActionContent(props: GenericActionContentProps) {
@@ -51,20 +56,44 @@ export const ActionMenubarItem = memo(function ActionMenubarItem(
     )
 })
 
+function TooltipContainer(
+    props: PropsWithChildren &
+        ComponentProps<typeof Button> &
+        GenericActionContentProps & { action: Action }
+) {
+    if (props.showTooltip) {
+        return (
+            <Tooltip delayDuration={500}>
+                <TooltipTrigger>{props.children}</TooltipTrigger>
+                <TooltipContent className="flex items-center gap-2">
+                    {props.action.name}{" "}
+                    {props.action.keyboardShortcut && (
+                        <span className="flex ml-auto text-xs tracking-widest text-muted-foreground">
+                            <KeyboardShortcut action={props.action} />
+                        </span>
+                    )}
+                </TooltipContent>
+            </Tooltip>
+        )
+    } else return <>{props.children}</>
+}
+
 export const ActionButton = memo(function ActionButton(
     props: ComponentProps<typeof Button> & GenericActionContentProps
 ) {
     const action = useAction(props.actionId)
 
     return (
-        <Button
-            onClick={() => action.execute()}
-            size={props.iconOnly ? "icon" : "default"}
-            {...cleanProps(props)}
-        >
-            <GenericActionContent {...props} />
-            {props.children}
-        </Button>
+        <TooltipContainer {...props} action={action}>
+            <Button
+                onClick={() => action.execute()}
+                size={props.iconOnly ? "icon" : "default"}
+                {...cleanProps(props)}
+            >
+                <GenericActionContent {...props} />
+                {props.children}
+            </Button>
+        </TooltipContainer>
     )
 })
 
@@ -119,6 +148,7 @@ function cleanProps<T extends object>(props: T) {
     if ("closeAnd" in newData) delete newData.closeAnd
     if ("iconOnly" in newData) delete newData.iconOnly
     if ("hideName" in newData) delete newData.hideName
+    if ("showTooltip" in newData) delete newData.showTooltip
 
     if ("ignoreOnClickFromProps" in newData) {
         if (newData.ignoreOnClickFromProps && "onClick" in newData) delete newData.onClick

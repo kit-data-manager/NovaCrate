@@ -45,7 +45,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
 
     return (
         <div className="flex gap-2 p-2 border-b border-t overflow-x-auto shrink-0 bg-accent no-scrollbar">
-            <Tooltip>
+            <Tooltip delayDuration={500}>
                 <TooltipTrigger asChild>
                     <Button
                         size="sm"

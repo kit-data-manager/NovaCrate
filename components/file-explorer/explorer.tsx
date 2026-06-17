@@ -209,7 +209,7 @@ export function FileExplorer() {
                     </div>
                 </HelpTooltip>
                 <div className="grow" />
-                <Tooltip delayDuration={300}>
+                <Tooltip delayDuration={500}>
                     <TooltipTrigger asChild>
                         <Button
                             id="toggle-show-entities"

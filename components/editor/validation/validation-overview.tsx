@@ -10,6 +10,7 @@ import { useValidationStore } from "@/lib/validation/hooks"
 import { ValidationResultSeverity } from "@/lib/validation/validation-result"
 import { validationSettings } from "@/lib/state/validation-settings"
 import { useLayoutState } from "@/lib/state/layout-state"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export const ValidationOverview = memo(function ValidationOverview({
     entityId,
@@ -124,11 +125,17 @@ export const ValidationOverview = memo(function ValidationOverview({
             className={`p-1 ${validationRunning && validationResults.length > 0 ? "opacity-50" : ""} ${initiallyHidden ? "opacity-0" : ""} transition-opacity`}
         >
             <Popover>
-                <PopoverTrigger asChild>
-                    <Button variant={"outline"} className={"validation-overview"}>
-                        {icon}
-                    </Button>
-                </PopoverTrigger>
+                <Tooltip delayDuration={500}>
+                    <PopoverTrigger asChild>
+                        <TooltipTrigger asChild>
+                            <Button variant={"outline"} className={"validation-overview"}>
+                                {icon}
+                            </Button>
+                        </TooltipTrigger>
+                    </PopoverTrigger>
+                    <TooltipContent>Validation Overview</TooltipContent>
+                </Tooltip>
+
                 <PopoverContent className="p-2 pb-0 pr-0 w-150">
                     <div className="text-xs font-medium p-1 mb-1 flex justify-between">
                         {validationResults.length} {entityId ? "Entity" : "Crate"} Issues
