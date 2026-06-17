@@ -29,7 +29,7 @@ import {
 } from "ai"
 import type { tools } from "@/lib/ai/tools"
 import { editorState } from "@/lib/state/editor-state"
-import { findEntity, toArray } from "@/lib/utils"
+import { deepEqual, findEntity, toArray } from "@/lib/utils"
 import remarkGfm from "remark-gfm"
 import { useFileService } from "@/lib/hooks/use-persistence"
 import { ToolCall } from "@/components/ai/tool-call"
@@ -61,6 +61,8 @@ function withoutModels(
     delete copy.models
     return copy
 }
+
+const readEntities: Map<string, IEntity> = new Map()
 
 export default function AIAssistantChat() {
     const fileService = useFileService()
@@ -113,19 +115,85 @@ export default function AIAssistantChat() {
 
             switch (toolCall.toolName) {
                 case "editEntity": {
-                    const result = editorState.getState().editEntity(toolCall.input.content)
+                    const initial = editorState
+                        .getState()
+                        .getEntities()
+                        .get(toolCall.input.entityId)
+                    if (!initial) {
+                        addToolOutput({
+                            tool: "editEntity",
+                            toolCallId: toolCall.toolCallId,
+                            state: "output-error",
+                            errorText: `Could not edit the entity with id ${toolCall.input.entityId} because it does not exist.`
+                        })
+                        return
+                    }
+                    const read = readEntities.get(toolCall.input.entityId)
+                    if (!read) {
+                        addToolOutput({
+                            tool: "editEntity",
+                            toolCallId: toolCall.toolCallId,
+                            state: "output-error",
+                            errorText: `You must read an entity before editing it. Use the readEntity tool first. This aims to prevent unintended data loss.`
+                        })
+                        return
+                    }
+                    if (!deepEqual(initial, read)) {
+                        addToolOutput({
+                            tool: "editEntity",
+                            toolCallId: toolCall.toolCallId,
+                            state: "output-error",
+                            errorText: `The entity has changed since you last read it. Read it again using the readEntity tool. This aims to prevent unintended data loss.`
+                        })
+                        return
+                    }
+
+                    if (toolCall.input.$set) {
+                        editorState.getState().editEntity({
+                            ...initial,
+                            ...toolCall.input.$set
+                        })
+                    }
+
+                    if (toolCall.input.$push) {
+                        for (const [property, value] of Object.entries(toolCall.input.$push)) {
+                            if (Array.isArray(value)) {
+                                for (const v of value) {
+                                    editorState
+                                        .getState()
+                                        .addPropertyEntry(toolCall.input.entityId, property, v)
+                                }
+                            } else {
+                                editorState
+                                    .getState()
+                                    .addPropertyEntry(toolCall.input.entityId, property, value)
+                            }
+                        }
+                    }
+
+                    if (toolCall.input.$delete) {
+                        for (const property of toolCall.input.$delete) {
+                            if (property === "@id" || property === "@type") continue // not allowed to be removed
+                            editorState.getState().removeProperty(toolCall.input.entityId, property)
+                        }
+                    }
+
+                    const result = editorState.getState().getEntities().get(toolCall.input.entityId)
+
                     if (result) {
                         addToolOutput({
                             tool: "editEntity",
                             toolCallId: toolCall.toolCallId,
                             output: result
                         })
+                        readEntities.set(result["@id"], result)
                     } else {
                         addToolOutput({
                             tool: "editEntity",
                             toolCallId: toolCall.toolCallId,
                             state: "output-error",
-                            errorText: `Could not edit the entity with id ${toolCall.input.content["@id"]}. Does the entity even exist? If you tried to change the entity, does an entity with the target id already exist?`
+                            errorText:
+                                "The entity could not be found after the edit. Was it deleted in the meantime?"
                         })
                     }
 
@@ -142,6 +210,7 @@ export default function AIAssistantChat() {
                             toolCallId: toolCall.toolCallId,
                             output: found
                         })
+                        readEntities.set(found["@id"], found)
                     } else {
                         addToolOutput({
                             tool: "readEntity",
@@ -167,6 +236,7 @@ export default function AIAssistantChat() {
                             toolCallId: toolCall.toolCallId,
                             output: created
                         })
+                        readEntities.set(created["@id"], created)
                     } else {
                         addToolOutput({
                             tool: "createEntity",
@@ -286,6 +356,7 @@ export default function AIAssistantChat() {
                             toolCallId: toolCall.toolCallId,
                             output: {}
                         })
+                        readEntities.delete(toolCall.input.entityId)
                     } catch (e) {
                         addToolOutput({
                             tool: "deleteEntity",
@@ -307,6 +378,8 @@ export default function AIAssistantChat() {
                             toolCallId: toolCall.toolCallId,
                             output: {}
                         })
+                        readEntities.delete(toolCall.input.newEntityId)
+                        readEntities.delete(toolCall.input.currentEntityId)
                     } catch (e) {
                         addToolOutput({
                             tool: "moveEntity",
@@ -329,6 +402,7 @@ export default function AIAssistantChat() {
                                 toolCallId: toolCall.toolCallId,
                                 output: created
                             })
+                            readEntities.set(created["@id"], created)
                         } else {
                             addToolOutput({
                                 tool: "importPersonFromORCID",
@@ -359,6 +433,7 @@ export default function AIAssistantChat() {
                                 toolCallId: toolCall.toolCallId,
                                 output: created
                             })
+                            readEntities.set(created["@id"], created)
                         } else {
                             addToolOutput({
                                 tool: "importOrganizationFromROR",
@@ -622,7 +697,7 @@ export default function AIAssistantChat() {
                                 if (part.type === "tool-editEntity") {
                                     return (
                                         <ToolCall key={i} part={part} icon={PencilIcon}>
-                                            Editing Entity {part.input?.content?.["@id"] ?? "..."}
+                                            Editing Entity {part.input?.entityId ?? "..."}
                                         </ToolCall>
                                     )
                                 }

@@ -179,6 +179,13 @@ export interface EditorState {
     ): void
 
     /**
+     * Removes a property.
+     * @param entityId Id of the entity where the property should be removed.
+     * @param propertyName Name of the affected property.
+     */
+    removeProperty(entityId: string, propertyName: string): void
+
+    /**
      * Revert an entity back to the backend state. Will result in the change status of this entity to become None.
      * @param entityId Id of the entity to revert.
      */
@@ -438,6 +445,18 @@ export const editorState = createWithEqualityFn<EditorState>()(
                         } else {
                             delete target[propertyName]
                         }
+                    })
+                }
+            },
+
+            removeProperty(entityId: string, propertyName: string) {
+                if (
+                    getState().entities.has(entityId) &&
+                    propertyName in getState().entities.get(entityId)!
+                ) {
+                    setState((state) => {
+                        const target = state.entities.get(entityId)!
+                        delete target[propertyName]
                     })
                 }
             },

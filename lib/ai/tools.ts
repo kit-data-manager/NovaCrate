@@ -1,7 +1,22 @@
 import { tool } from "ai"
 import { z } from "zod"
-import { EntitySchema } from "@/lib/utils"
+import { EntityPropertySchema, EntitySchema } from "@/lib/utils"
 import { ValidationResultSchema } from "@/lib/validation/validation-result"
+
+const parseJsonPreprocessor = (value: any, ctx: z.RefinementCtx) => {
+    if (typeof value === "string") {
+        try {
+            return JSON.parse(value)
+        } catch (e) {
+            ctx.addIssue({
+                code: "custom",
+                message: (e as Error).message
+            })
+        }
+    }
+
+    return value
+}
 
 const readEntity = tool({
     description:
@@ -14,10 +29,51 @@ const readEntity = tool({
 
 const editEntity = tool({
     description:
-        "Edit a specific metadata entity. Read the metadata entity first before editing it. All fields that should stay on the entity must be repeated in the edit tool. Omitting fields removes them from the entity. The @id fields must match the target entity. To change the identifier of an entity, use the moveEntity tool.",
-    inputSchema: z.object({
-        content: EntitySchema
-    }),
+        "Edit a specific metadata entity. Read the metadata entity first before editing it. You can set properties to specific values, you can push values to a property, and you can remove an entire property. To change the identifier of an entity, use the moveEntity tool.",
+    inputSchema: z.preprocess(
+        parseJsonPreprocessor,
+        z.object({
+            entityId: z.string(),
+            $set: z
+                .record(z.string(), EntityPropertySchema)
+                .optional()
+                .describe(
+                    "key-value record of properties to set to specific values. Will either create a new property or overwrite an existing property"
+                ),
+            $push: z
+                .record(z.string(), EntityPropertySchema)
+                .optional()
+                .describe(
+                    "key-value record of properties where the specified values should be added"
+                ),
+            $delete: z
+                .array(z.string())
+                .optional()
+                .describe("The property names to remove completely")
+        })
+    ),
+    inputExamples: [
+        {
+            input: {
+                entityId: "myFile.json",
+                $set: {
+                    license: "https://creativecommons.org/licenses/by/4.0/"
+                },
+                $push: {
+                    author: { "@id": "https://orcid.org/0009-0003-2196-9187" }
+                },
+                $delete: ["description"]
+            }
+        },
+        {
+            input: {
+                entityId: "myFile.json",
+                $push: {
+                    url: ["https://kit.edu/", "https://www.kit.edu/"]
+                }
+            }
+        }
+    ],
     outputSchema: EntitySchema
 })
 
@@ -67,7 +123,7 @@ const createEntity = tool({
     description:
         "Create a new metadata entity. You need to provide the full metadata for this entity, with mandatory @id and @type attributes. An entity with the same @id must not exist yet. If the creation succeeded, returns the new entity. If this entity is created to describe a specific file in the RO-Crate, make sure to set the @id to the file path.",
     inputSchema: z.object({
-        content: EntitySchema
+        content: z.preprocess(parseJsonPreprocessor, EntitySchema)
     }),
     outputSchema: EntitySchema
 })
