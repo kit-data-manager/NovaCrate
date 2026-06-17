@@ -21,15 +21,25 @@ import {
 } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import type { NC_UIMessage } from "@/lib/ai/types"
+import { UserMessage } from "@/components/ai/user-message"
 
-export const Message = memo(function Message({ message: m }: { message: NC_UIMessage }) {
+export const Message = memo(function Message({
+    message: m,
+    editMessage
+}: {
+    message: NC_UIMessage
+    editMessage: (text: string) => void
+}) {
+    if (m.role === "user") {
+        return <UserMessage message={m} editMessage={editMessage} />
+    }
+
     return (
         <div
-            className={`space-y-1 m-2 p-2 rounded-xl ${m.role === "user" ? "w-[70%] bg-accent self-end p-4 py-3" : ""} overflow-x-auto overflow-y-hidden shrink-0`}
-            key={m.id}
+            className={`space-y-1 m-2 mt-0 p-2 rounded-xl overflow-x-auto overflow-y-hidden shrink-0`}
         >
             {m.parts.map((part, i) => {
-                if (part.type === "text") {
+                if (part.type === "text" && m.role !== "user") {
                     return (
                         <Markdown
                             key={i}

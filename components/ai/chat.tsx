@@ -65,7 +65,8 @@ export default function AIAssistantChat() {
         error,
         clearError,
         addToolOutput,
-        setMessages
+        setMessages,
+        regenerate
     } = useChat({
         transport: new DefaultChatTransport<NC_UIMessage>({
             api: addBasePath("/api/ai/chat"),
@@ -122,6 +123,27 @@ export default function AIAssistantChat() {
             })
         },
         [_sendMessage, scrollChatToBottom, settings]
+    )
+
+    const editMessage = useCallback(
+        (message: NC_UIMessage, newContent: string) => {
+            const stopIndex = messages.findIndex((m) => m.id === message.id)
+            if (stopIndex === -1) return
+            const targetMessage = messages[stopIndex]
+            const newMessages = messages.slice(0, stopIndex)
+            newMessages.push({
+                ...targetMessage,
+                parts: [
+                    {
+                        type: "text",
+                        text: newContent
+                    }
+                ]
+            })
+            setMessages(newMessages)
+            regenerate().then()
+        },
+        [messages, regenerate, setMessages]
     )
 
     useEffect(() => {
@@ -249,19 +271,23 @@ export default function AIAssistantChat() {
                         </div>
                     )}
                     {messages.map((message) => (
-                        <Message message={message} key={message.id} />
+                        <Message
+                            message={message}
+                            key={message.id}
+                            editMessage={(newContent) => editMessage(message, newContent)}
+                        />
                     ))}
                 </div>
             </div>
 
             {status === "submitted" && (
-                <div className="flex items-center gap-1 p-2 py-0 text-muted-foreground">
-                    <LoaderCircle className="size-4 animate-spin" /> Submitting your request...
+                <div className="flex items-center gap-1 p-2 py-0 text-muted-foreground animate-pulse">
+                    Submitting your request...
                 </div>
             )}
             {status === "streaming" && (
-                <div className="flex items-center gap-1 p-2 py-0 text-muted-foreground">
-                    <LoaderCircle className="size-4 animate-spin" /> Working...
+                <div className="flex items-center gap-1 p-2 py-0 text-muted-foreground animate-pulse">
+                    Working...
                 </div>
             )}
             {status === "error" && (
