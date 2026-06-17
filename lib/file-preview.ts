@@ -49,7 +49,7 @@ export const VIEWERS: IViewer[] = [
     {
         type: ViewerType.IFRAME,
         displayName: "IFrame Viewer",
-        subtitle: "(e.g. for HTML)",
+        subtitle: "(for PDFs and HTML)",
         mimeTypes: ["text/html", "application/pdf"],
         component: IFrameViewer
     }
