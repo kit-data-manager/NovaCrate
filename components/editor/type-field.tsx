@@ -64,9 +64,10 @@ export function TypeField({
                         <EllipsisVertical className="size-4" />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent onClick={onRemoveEntry}>
+                <DropdownMenuContent>
                     <DropdownMenuItem
                         variant="destructive"
+                        onClick={onRemoveEntry}
                         disabled={entity && toArray(entity["@type"]).length === 1}
                     >
                         <Trash className="size-4 mr-2" /> Remove Entry
