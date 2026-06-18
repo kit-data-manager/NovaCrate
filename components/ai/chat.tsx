@@ -492,7 +492,7 @@ export default function AIAssistantChat() {
                     <Tooltip delayDuration={500}>
                         <PopoverTrigger asChild>
                             <TooltipTrigger asChild>
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="sm" aria-label="Delete Chat">
                                     <TrashIcon />
                                 </Button>
                             </TooltipTrigger>
@@ -515,6 +515,7 @@ export default function AIAssistantChat() {
                             variant="outline"
                             size="sm"
                             onClick={() => setShowAIAssistant(false)}
+                            aria-label={"Close AI Assistant"}
                         >
                             <XIcon />
                         </Button>

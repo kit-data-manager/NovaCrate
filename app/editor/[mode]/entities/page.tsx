@@ -53,7 +53,12 @@ function EntityEditorFilePreview(props: PropsWithChildren) {
                         <div className="grow" />
                         <Tooltip delayDuration={500}>
                             <TooltipTrigger asChild>
-                                <Button variant="outline" size="sm" onClick={() => focusEntity()}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => focusEntity()}
+                                    aria-label={"Focus Entity"}
+                                >
                                     <CrosshairIcon className="size-4" />
                                 </Button>
                             </TooltipTrigger>
@@ -65,6 +70,7 @@ function EntityEditorFilePreview(props: PropsWithChildren) {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => goToFileExplorer()}
+                                    aria-label={"Open in File Explorer"}
                                 >
                                     <FileIcon className="size-4" />
                                 </Button>
@@ -77,6 +83,7 @@ function EntityEditorFilePreview(props: PropsWithChildren) {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => setPreviewingFilePath("")}
+                                    aria-label={"Close File Preview"}
                                 >
                                     <XIcon className="size-4" />
                                 </Button>

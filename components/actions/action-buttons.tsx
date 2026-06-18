@@ -89,6 +89,7 @@ export const ActionButton = memo(function ActionButton(
                 onClick={() => action.execute()}
                 size={props.iconOnly ? "icon" : "default"}
                 {...cleanProps(props)}
+                {...(props.hideName || props.iconOnly ? { "aria-label": action.name } : {})}
             >
                 <GenericActionContent {...props} />
                 {props.children}

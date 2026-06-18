@@ -128,7 +128,11 @@ export const ValidationOverview = memo(function ValidationOverview({
                 <Tooltip delayDuration={500}>
                     <PopoverTrigger asChild>
                         <TooltipTrigger asChild>
-                            <Button variant={"outline"} className={"validation-overview"}>
+                            <Button
+                                variant={"outline"}
+                                className={"validation-overview"}
+                                aria-label={"Validation Overview"}
+                            >
                                 {icon}
                             </Button>
                         </TooltipTrigger>
