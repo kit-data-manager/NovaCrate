@@ -5,7 +5,6 @@ import { AlertTriangleIcon, ArrowLeft, Loader2, Trash } from "lucide-react"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
 import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { usePersistence } from "@/components/providers/persistence-provider"
-import { useCore } from "@/components/providers/core-provider"
 import {
     getEntityDisplayName,
     isContextualEntity,
@@ -31,7 +30,6 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
     const entity = useEditorState((store) => store.entities.get(entityId))
     const { deleteEntity } = useCrateMutations()
     const persistence = usePersistence()
-    const core = useCore()
     const [isDeleting, setIsDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState<unknown>()
     const [deleteContent, setDeleteContent] = useState(false)
@@ -48,40 +46,22 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
     )
 
     const onDeleteEntityClick = useCallback(() => {
-        if (entity) {
-            setIsDeleting(true)
-            deleteEntity(entity, deleteContent)
-                .then((success: boolean) => {
-                    if (success) {
-                        setDeleteError(undefined)
-                        onOpenChange(false)
-                    } else setDeleteError("Unknown error while deleting")
-                })
-                .catch((e: unknown) => {
-                    console.error(e)
-                    setDeleteError(e)
-                })
-                .finally(() => {
-                    setIsDeleting(false)
-                })
-        } else {
-            // Attempt to delete anyway. The user was able to access the delete button, so there must be something here...
-            // Assumes the type to be a file, since files can exist without having an entity
-            setIsDeleting(true)
-            core.deleteEntity(entityId, deleteContent)
-                .then(() => {
+        setIsDeleting(true)
+        deleteEntity(entity ?? { "@id": entityId, "@type": "" }, deleteContent)
+            .then((success: boolean) => {
+                if (success) {
                     setDeleteError(undefined)
                     onOpenChange(false)
-                })
-                .catch((e: unknown) => {
-                    console.error(e)
-                    setDeleteError(e)
-                })
-                .finally(() => {
-                    setIsDeleting(false)
-                })
-        }
-    }, [entity, core, deleteEntity, onOpenChange, entityId, deleteContent])
+                } else setDeleteError("Unknown error while deleting")
+            })
+            .catch((e: unknown) => {
+                console.error(e)
+                setDeleteError(e)
+            })
+            .finally(() => {
+                setIsDeleting(false)
+            })
+    }, [entity, deleteEntity, onOpenChange, entityId, deleteContent])
 
     const couldHaveFile = useMemo(() => {
         return entity ? !isContextualEntity(entity) : true

@@ -10,25 +10,21 @@ import {
     TableRow
 } from "@/components/ui/table"
 import { ToolCall } from "@/components/ai/tool-call"
-import {
-    BugIcon,
-    ChevronRight,
-    EyeIcon,
-    LoaderCircle,
-    PencilIcon,
-    PlusIcon,
-    TrashIcon
-} from "lucide-react"
+import { BugIcon, ChevronRight, EyeIcon, LoaderCircle, PencilIcon, PlusIcon } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import type { NC_UIMessage } from "@/lib/ai/types"
 import { UserMessage } from "@/components/ai/user-message"
+import { ChatAddToolOutputFunction } from "ai"
+import { DeleteEntityTool } from "@/components/ai/delete-entity-tool"
 
 export const Message = memo(function Message({
     message: m,
-    editMessage
+    editMessage,
+    addToolOutput
 }: {
     message: NC_UIMessage
     editMessage: (text: string) => void
+    addToolOutput: ChatAddToolOutputFunction<NC_UIMessage>
 }) {
     if (m.role === "user") {
         return <UserMessage message={m} editMessage={editMessage} />
@@ -170,11 +166,7 @@ export const Message = memo(function Message({
                 }
 
                 if (part.type === "tool-deleteEntity") {
-                    return (
-                        <ToolCall key={i} part={part} icon={TrashIcon}>
-                            Delete Entity {part.input?.entityId ?? "..."}
-                        </ToolCall>
-                    )
+                    return <DeleteEntityTool key={i} part={part} addToolOutput={addToolOutput} />
                 }
 
                 if (part.type === "tool-importPersonFromORCID") {

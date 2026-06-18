@@ -107,6 +107,17 @@ export default function AIAssistantChat() {
         setMessages([])
     }, [setMessages])
 
+    const hasUnansweredToolCalls = useMemo(() => {
+        return messages.some((m) =>
+            m.parts.some(
+                (p) =>
+                    p.type.startsWith("tool-") && // Even though this is hard-typed for tool-deleteEntity, it works for all tool calls
+                    (p as NC_UIMessage["parts"][number] & { type: "tool-deleteEntity" }).state ===
+                        "input-available"
+            )
+        )
+    }, [messages])
+
     const chatContainer = useRef<HTMLDivElement>(null)
     const chatContent = useRef<HTMLDivElement>(null)
     const stickToBottom = useRef(true)
@@ -121,10 +132,12 @@ export default function AIAssistantChat() {
 
     const sendMessage = useCallback(
         (msg: string) => {
+            if (status === "streaming" || status === "submitted") return false
+
             const activeProvider = settings.getActiveProvider()
             if (!activeProvider || !activeProvider.selectedModel) {
                 toast.error("Please select a model first")
-                return
+                return false
             }
 
             scrollChatToBottom()
@@ -136,8 +149,10 @@ export default function AIAssistantChat() {
                         (err instanceof Error ? err.message : JSON.stringify(err))
                 )
             })
+
+            return true
         },
-        [_sendMessage, scrollChatToBottom, settings]
+        [_sendMessage, scrollChatToBottom, settings, status]
     )
 
     const editMessage = useCallback(
@@ -305,6 +320,7 @@ export default function AIAssistantChat() {
                             message={message}
                             key={message.id}
                             editMessage={(newContent) => editMessage(message, newContent)}
+                            addToolOutput={addToolOutput}
                         />
                     ))}
                 </div>
@@ -336,6 +352,7 @@ export default function AIAssistantChat() {
                         !settings.activeProvider || !settings.getActiveProvider()?.selectedModel
                     }
                     stop={stop}
+                    hide={hasUnansweredToolCalls}
                 />
                 <ModelSelection />
                 <div className="text-xs font-light text-center text-muted-foreground p-2 pb-0">

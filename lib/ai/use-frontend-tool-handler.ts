@@ -285,25 +285,6 @@ export function useFrontendToolHandler() {
 
                     return
                 }
-                case "deleteEntity": {
-                    try {
-                        await core.deleteEntity(toolCall.input.entityId, toolCall.input.deleteData)
-                        addToolOutput({
-                            tool: "deleteEntity",
-                            toolCallId: toolCall.toolCallId,
-                            output: {}
-                        })
-                        readEntities.delete(toolCall.input.entityId)
-                    } catch (e) {
-                        addToolOutput({
-                            tool: "deleteEntity",
-                            toolCallId: toolCall.toolCallId,
-                            state: "output-error",
-                            errorText: `Failed to delete entity. ${e instanceof Error ? e.message : JSON.stringify(e)}`
-                        })
-                    }
-                    return
-                }
                 case "moveEntity": {
                     try {
                         await core.moveEntity(
