@@ -417,15 +417,14 @@ export function formatJSON(json: string) {
     return JSON.stringify(JSON.parse(json), null, 2)
 }
 
+export const EntityPropertySchema = z.union([
+    z.object({ "@id": z.coerce.string() }),
+    z.array(z.union([z.object({ "@id": z.coerce.string() }), z.coerce.string()])),
+    z.coerce.string()
+])
+
 export const EntitySchema = z.intersection(
-    z.record(
-        z.string(),
-        z.union([
-            z.object({ "@id": z.coerce.string() }),
-            z.array(z.union([z.object({ "@id": z.coerce.string() }), z.coerce.string()])),
-            z.coerce.string()
-        ])
-    ),
+    z.record(z.string(), EntityPropertySchema),
     z.object({
         "@id": z.coerce.string(),
         "@type": z.union([z.array(z.coerce.string()), z.coerce.string()])

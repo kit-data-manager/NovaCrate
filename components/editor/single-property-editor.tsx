@@ -53,7 +53,12 @@ export const SinglePropertyEditor = memo(function SinglePropertyEditor({
 
     if (propertyName === "@type")
         return (
-            <TypeField value={value as string} onChange={onChange} onRemoveEntry={onRemoveEntry} />
+            <TypeField
+                value={value as string}
+                onChange={onChange}
+                onRemoveEntry={onRemoveEntry}
+                entityId={entityId}
+            />
         )
 
     if (propertyName === "@id") return <IDField value={value as string} />
