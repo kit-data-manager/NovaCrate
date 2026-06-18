@@ -64,7 +64,7 @@ function TooltipContainer(
     if (props.showTooltip) {
         return (
             <Tooltip delayDuration={500}>
-                <TooltipTrigger>{props.children}</TooltipTrigger>
+                <TooltipTrigger asChild>{props.children}</TooltipTrigger>
                 <TooltipContent className="flex items-center gap-2">
                     {props.action.name}{" "}
                     {props.action.keyboardShortcut && (
