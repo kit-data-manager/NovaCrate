@@ -6,13 +6,13 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select"
-import { useCallback, useContext } from "react"
+import { memo, useCallback, useContext } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { SettingsPages } from "@/components/modals/settings/settings-modal"
 
-export function ModelSelection() {
+export const ModelSelection = memo(function ModelSelection() {
     const settings = useAIAssistantSettings()
     const activeProvider = settings.getActiveProvider()
     const { showSettingsModal } = useContext(GlobalModalContext)
@@ -87,4 +87,4 @@ export function ModelSelection() {
             </div>
         </div>
     )
-}
+})

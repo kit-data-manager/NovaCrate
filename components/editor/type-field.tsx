@@ -9,18 +9,23 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { EllipsisVertical, Trash } from "lucide-react"
 import { TypeSelectModal } from "@/components/modals/type-select-modal"
-import { camelCaseReadable } from "@/lib/utils"
+import { camelCaseReadable, findEntity, toArray } from "@/lib/utils"
+import { useEditorState } from "@/lib/state/editor-state"
+import { useShallow } from "zustand/react/shallow"
 
 export function TypeField({
     value,
     onChange,
-    onRemoveEntry
+    onRemoveEntry,
+    entityId
 }: {
     value: string
     onChange: (value: string) => void
     onRemoveEntry: () => void
+    entityId: string
 }) {
     const [typeSelectModalOpen, setTypeSelectModalOpen] = useState(false)
+    const entity = useEditorState(useShallow((s) => findEntity(s.getEntities(), entityId)))
 
     const onTypeSelect = useCallback(
         (newType: string) => {
@@ -59,8 +64,12 @@ export function TypeField({
                         <EllipsisVertical className="size-4" />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent onClick={onRemoveEntry}>
-                    <DropdownMenuItem variant="destructive">
+                <DropdownMenuContent>
+                    <DropdownMenuItem
+                        variant="destructive"
+                        onClick={onRemoveEntry}
+                        disabled={entity && toArray(entity["@type"]).length === 1}
+                    >
                         <Trash className="size-4 mr-2" /> Remove Entry
                     </DropdownMenuItem>
                 </DropdownMenuContent>
