@@ -1,5 +1,5 @@
 import { deepEqual, findEntity, toArray } from "@/lib/utils"
-import { useCallback } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { editorState } from "@/lib/state/editor-state"
 import type { ChatAddToolOutputFunction, ChatOnToolCallCallback } from "ai"
 import { useFileService } from "@/lib/hooks/use-persistence"
@@ -7,8 +7,7 @@ import { useValidation } from "@/lib/validation/hooks"
 import { useCore } from "@/components/providers/core-provider"
 import { importOrganizationFromRor, importPersonFromOrcid } from "@/lib/entity-import"
 import type { NC_UIMessage } from "@/lib/ai/types"
-
-const readEntities: Map<string, IEntity> = new Map()
+import { usePersistence } from "@/components/providers/persistence-provider"
 
 type Callback = ChatOnToolCallCallback<NC_UIMessage>
 type CallbackParameters = Parameters<Callback>
@@ -17,6 +16,26 @@ export function useFrontendToolHandler() {
     const core = useCore()
     const fileService = useFileService()
     const validation = useValidation()
+    const persistence = usePersistence()
+
+    const readEntitiesRef = useRef<{
+        crateId: string | null
+        readEntities: Map<string, IEntity>
+    }>({
+        crateId: persistence.getCrateId(),
+        readEntities: new Map()
+    })
+
+    useEffect(() => {
+        if (persistence.getCrateId() !== readEntitiesRef.current.crateId) {
+            readEntitiesRef.current = {
+                crateId: persistence.getCrateId(),
+                readEntities: new Map()
+            }
+        }
+    }, [persistence])
+
+    const readEntities = readEntitiesRef.current.readEntities
 
     const handleToolCall: (
         passed: { addToolOutput: ChatAddToolOutputFunction<NC_UIMessage> },
@@ -61,6 +80,8 @@ export function useFrontendToolHandler() {
                     }
 
                     if (toolCall.input.$set) {
+                        if ("@id" in toolCall.input.$set) delete toolCall.input.$set["@id"] // Not allowed to be set. Must be changed using the rename tool to consistently rename references
+
                         editorState.getState().editEntity({
                             ...initial,
                             ...toolCall.input.$set
@@ -69,6 +90,8 @@ export function useFrontendToolHandler() {
 
                     if (toolCall.input.$push) {
                         for (const [property, value] of Object.entries(toolCall.input.$push)) {
+                            if (property === "@id") continue // not allowed to be pushed (can only have one value)
+
                             if (Array.isArray(value)) {
                                 for (const v of value) {
                                     editorState
@@ -226,28 +249,30 @@ export function useFrontendToolHandler() {
                         validation
                             .validateCrate()
                             .catch((e) => console.error("Crate validation failed: ", e)),
-                        Array.from(entities.values()).map((entity) => {
-                            return Promise.allSettled([
-                                validation
-                                    .validateEntity(entity["@id"])
-                                    .catch((e) =>
-                                        console.error(
-                                            `Entity validation failed on ${entity["@id"]}: `,
-                                            e
-                                        )
-                                    ),
-                                Object.keys(entity).map((prop) => {
-                                    return validation
-                                        .validateProperty(entity["@id"], prop)
+                        ...Array.from(entities.values())
+                            .map((entity) => {
+                                return [
+                                    validation
+                                        .validateEntity(entity["@id"])
                                         .catch((e) =>
                                             console.error(
-                                                `Property validation failed on ${entity["@id"]} ${prop}: `,
+                                                `Entity validation failed on ${entity["@id"]}: `,
                                                 e
                                             )
-                                        )
-                                })
-                            ])
-                        })
+                                        ),
+                                    ...Object.keys(entity).map((prop) => {
+                                        return validation
+                                            .validateProperty(entity["@id"], prop)
+                                            .catch((e) =>
+                                                console.error(
+                                                    `Property validation failed on ${entity["@id"]} ${prop}: `,
+                                                    e
+                                                )
+                                            )
+                                    })
+                                ]
+                            })
+                            .flat()
                     ]
 
                     await Promise.allSettled(promises)
@@ -366,7 +391,7 @@ export function useFrontendToolHandler() {
                 }
             }
         },
-        [core, fileService, validation]
+        [core, fileService, readEntities, validation]
     )
 
     return { handleToolCall }

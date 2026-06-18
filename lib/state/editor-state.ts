@@ -421,6 +421,8 @@ export const editorState = createWithEqualityFn<EditorState>()(
                 propertyName: string,
                 valueOrValueIdx: number | IReference
             ) {
+                if (propertyName === "@id") return // Ignore requests to delete the id
+
                 if (
                     getState().entities.get(entityId) &&
                     propertyName in getState().entities.get(entityId)!
@@ -430,6 +432,7 @@ export const editorState = createWithEqualityFn<EditorState>()(
                         const prop = target[propertyName]
                         if (Array.isArray(prop)) {
                             if (prop.length === 1) {
+                                if (propertyName === "@type") return // type cannot be fully removed
                                 delete target[propertyName]
                             } else {
                                 if (typeof valueOrValueIdx === "number") {
@@ -443,6 +446,7 @@ export const editorState = createWithEqualityFn<EditorState>()(
                                 }
                             }
                         } else {
+                            if (propertyName === "@type") return // type cannot be fully removed
                             delete target[propertyName]
                         }
                     })
@@ -450,6 +454,8 @@ export const editorState = createWithEqualityFn<EditorState>()(
             },
 
             removeProperty(entityId: string, propertyName: string) {
+                if (propertyName === "@id" || propertyName === "@type") return // Silently fail on these mandatory properties
+
                 if (
                     getState().entities.has(entityId) &&
                     propertyName in getState().entities.get(entityId)!

@@ -88,7 +88,12 @@ export const Message = memo(function Message({
                                     </pre>
                                 ),
                                 a: (props: PropsWithChildren<{ href?: string }>) => (
-                                    <a href={props.href} target={"_blank"} className="underline">
+                                    <a
+                                        href={props.href}
+                                        target={"_blank"}
+                                        className="underline"
+                                        rel={"noopener noreferrer"}
+                                    >
                                         {props.children}
                                     </a>
                                 )

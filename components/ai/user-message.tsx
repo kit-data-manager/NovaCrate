@@ -64,10 +64,20 @@ export function UserMessage({
             </div>
             {!editing && (
                 <div className="pt-1 flex gap-1 justify-end group-hover:opacity-100 delay-300 opacity-0 transition-opacity">
-                    <Button variant="ghost" size="sm" onClick={startEditing}>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={startEditing}
+                        aria-label="Edit message"
+                    >
                         <PencilIcon className="size-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={copyMessage}>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={copyMessage}
+                        aria-label="Copy message"
+                    >
                         {copied ? (
                             <CheckIcon className="size-4" />
                         ) : (
