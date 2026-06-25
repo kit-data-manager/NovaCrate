@@ -8,21 +8,26 @@ export function ChatInput({
     sendMessage: _sendMessage,
     stop,
     status,
-    disableSend
+    disableSend,
+    hide
 }: {
-    sendMessage: (msg: string) => void
+    sendMessage: (msg: string) => boolean
     stop: () => void
     status: ChatStatus
     disableSend?: boolean
+    hide?: boolean
 }) {
     const [message, setMessage] = useState("")
 
     const sendMessage = useCallback(() => {
         if (disableSend) return
         if (!message.trim()) return
-        setMessage("")
-        _sendMessage(message)
+
+        const result = _sendMessage(message)
+        if (result) setMessage("")
     }, [_sendMessage, disableSend, message])
+
+    if (hide) return null
 
     return (
         <div className="flex items-end gap-2">
