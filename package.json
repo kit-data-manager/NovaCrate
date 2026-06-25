@@ -12,10 +12,11 @@
         "build-next:test": "cross-env ENABLE_TESTS=yes OUTPUT=export IFRAME_TARGET_ORIGIN=http://localhost:3000 next build --webpack",
         "build-webworker": "webpack --config webpack.config.webworker.js --mode=production",
         "lint": "eslint .",
-        "test:dev-all": "npm run build:test && npm run test:unit && npm-run-all --parallel --race test:e2e serve",
+        "test:dev-all": "npm run build:test && npm run test:unit && npm-run-all --parallel --race test:e2e test:serve",
         "test:e2e": "playwright test",
         "test:unit": "jest",
-        "serve": "serve out -L -p 3000"
+        "serve": "next start",
+        "test:serve": "serve out -L -p 3000"
     },
     "dependencies": {
         "@ai-sdk/anthropic": "^3.0.79",
