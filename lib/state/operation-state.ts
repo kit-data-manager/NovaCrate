@@ -14,8 +14,6 @@ export type HealthStatus = "healthy" | "unhealthy" | "unknown"
  * `saveErrors`, `loadError`, and worker `healthStatus`/`healthError`.
  *
  * Accessed via {@link useOperationState} or directly via {@link operationState}.
- *
- * TODO Is this even displayed anywhere in the UI?
  */
 export interface OperationState {
     // ── Saving state ────────────────────────────────────────────────────

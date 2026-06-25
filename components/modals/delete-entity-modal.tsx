@@ -47,7 +47,7 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
 
     const onDeleteEntityClick = useCallback(() => {
         setIsDeleting(true)
-        deleteEntity(entity ?? { "@id": entityId, "@type": "" }, deleteContent)
+        deleteEntity(entity ?? { "@id": entityId, "@type": [] }, deleteContent)
             .then((success: boolean) => {
                 if (success) {
                     setDeleteError(undefined)

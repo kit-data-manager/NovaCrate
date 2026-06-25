@@ -80,17 +80,13 @@ export function DeleteEntityTool({
     const onDeleteDenyClick = useCallback(
         (part: NC_UIMessage["parts"][number] & { type: "tool-deleteEntity" }) => {
             if (!part.input) {
+                respondWithError("Tool call incomplete. The input is missing.")
                 return
             }
 
-            addToolOutput({
-                tool: "deleteEntity",
-                toolCallId: part.toolCallId,
-                state: "output-error",
-                errorText: "The user has denied the delete operation"
-            })
+            respondWithError("The user has denied the delete operation")
         },
-        [addToolOutput]
+        [respondWithError]
     )
 
     if (part.state === "input-available") {
