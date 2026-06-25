@@ -173,6 +173,7 @@ export function ConfigureProvider({
                             id="api-key"
                             placeholder="Enter your API Key"
                             value={configureAPIKey}
+                            type="password"
                             onChange={(e) => setConfigureAPIKey(e.target.value)}
                         />
                     </div>
