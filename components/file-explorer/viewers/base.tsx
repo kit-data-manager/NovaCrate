@@ -1,52 +1,128 @@
-import { ObjectViewer } from "@/components/file-explorer/viewers/object"
-import { ImageViewer } from "@/components/file-explorer/viewers/image"
-import { TextViewer } from "@/components/file-explorer/viewers/text"
-import { PreviewNotSupported } from "@/components/file-explorer/viewers/not-supported"
-import { Eye } from "lucide-react"
-import { IFrameViewer } from "@/components/file-explorer/viewers/iframe"
+import { IFilePreviewTab } from "@/lib/state/file-explorer-state"
+import { useCallback, useEffect, useMemo } from "react"
+import { usePersistence } from "@/components/providers/persistence-provider"
+import useSWR from "swr"
+import { Error as ErrorDisplay } from "@/components/error"
+import { determineViewerType } from "@/components/file-explorer/utils"
+import { ChevronDown, LoaderCircle } from "lucide-react"
+import { LargeViewSelect } from "@/components/file-explorer/viewers/large-view-select"
+import { Button } from "@/components/ui/button"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
+import { VIEWERS, ViewerType } from "@/lib/file-preview"
+import { useFileService } from "@/lib/hooks/use-persistence"
 
-export interface ViewerProps {
-    data?: Blob
-    setPreviewNotSupported(val: boolean): void
-    previewNotSupported: boolean
-    loading: boolean
-}
+export function BaseViewer({
+    tab,
+    updateTab
+}: {
+    tab: IFilePreviewTab
+    updateTab: (tab: IFilePreviewTab) => void
+}) {
+    const persistence = usePersistence()
 
-const UNSUPPORTED = ["application/octet-stream"]
+    const fileFetcher = useCallback(
+        async (filePath: string) => {
+            const fileService = persistence.getCrateService()?.getFileService()
+            if (fileService) {
+                return fileService.getFile(filePath)
+            } else throw new Error("No file service available")
+        },
+        [persistence]
+    )
 
-const IMAGE_TYPES = [
-    "image/png",
-    "image/jpeg",
-    "image/gif",
-    "image/x-icon",
-    "image/svg+xml",
-    "image/webp",
-    "image/apng"
-]
-const TEXT_TYPES = ["text/plain", "application/json"]
-const IFRAME_TYPES = ["text/html"]
+    const { data, error, isLoading, mutate } = useSWR(tab.filePath, fileFetcher)
 
-export function BaseViewer(props: ViewerProps) {
-    if (!props.data)
-        return (
-            <div className="grow flex justify-center items-center">
-                <div className="flex flex-col justify-center items-center p-10 text-center text-muted-foreground">
-                    <Eye className="w-20 h-20" />
-                    <div className="text-2xl py-4">File Preview</div>
-                    <div>Select a file on the left to preview it here</div>
+    useEffect(() => {
+        if (data && tab.viewerType === ViewerType.NOT_IDENTIFIED_YET) {
+            updateTab({
+                ...tab,
+                viewerType: determineViewerType(data)
+            })
+        }
+    }, [data, updateTab, tab])
+
+    const fileService = useFileService()
+
+    useEffect(() => {
+        if (fileService) {
+            const remove = fileService.events.addEventListener("file-updated", (path) => {
+                if (path === tab.filePath) {
+                    mutate().then()
+                }
+            })
+
+            return () => {
+                remove()
+            }
+        }
+    }, [fileService, mutate, tab.filePath])
+
+    const setType = useCallback(
+        (type: ViewerType) => {
+            updateTab({
+                ...tab,
+                viewerType: type
+            })
+        },
+        [tab, updateTab]
+    )
+
+    const Content = useMemo(() => {
+        switch (tab.viewerType) {
+            case ViewerType.NOT_IDENTIFIED_YET:
+                return (
+                    <div className="flex justify-center items-center h-full">
+                        <LoaderCircle className="size-4 animate-spin text-muted-foreground" />
+                    </div>
+                )
+            case ViewerType.UNKNOWN:
+                return <LargeViewSelect setType={setType} />
+            default: {
+                const Viewer = VIEWERS.find((v) => v.type === tab.viewerType)!.component
+                return <Viewer data={data} tab={tab} updateTab={updateTab} />
+            }
+        }
+    }, [data, setType, tab, updateTab])
+
+    return (
+        <>
+            <ErrorDisplay title={"Could not load file for preview"} error={error} />
+            {isLoading ? (
+                <div className="flex justify-center items-center h-full">
+                    <LoaderCircle className="size-4 animate-spin text-muted-foreground" />
                 </div>
+            ) : (
+                <div className="grow">{Content}</div>
+            )}
+            <div className="flex justify-between items-center bg-muted/50 text-sm text-muted-foreground px-2">
+                <div className="truncate">Path: {tab.filePath}</div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button size="sm" variant="ghost" className="text-sm font-normal">
+                            {VIEWERS.find((v) => v.type === tab.viewerType)?.displayName ??
+                                "Select Viewer"}
+                            <ChevronDown className="size-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        {VIEWERS.map((v) => (
+                            <DropdownMenuItem
+                                key={v.type}
+                                onClick={() => {
+                                    setType(v.type)
+                                }}
+                            >
+                                {v.displayName}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
-        )
-
-    if (UNSUPPORTED.includes(props.data.type)) {
-        return <PreviewNotSupported />
-    } else if (IFRAME_TYPES.includes(props.data.type)) {
-        return <IFrameViewer {...props} />
-    } else if (IMAGE_TYPES.includes(props.data.type)) {
-        return <ImageViewer {...props} />
-    } else if (TEXT_TYPES.includes(props.data.type)) {
-        return <TextViewer {...props} />
-    } else {
-        return <ObjectViewer {...props} />
-    }
+        </>
+    )
 }

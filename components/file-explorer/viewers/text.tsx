@@ -1,8 +1,8 @@
-import { ViewerProps } from "@/components/file-explorer/viewers/base"
 import { Editor } from "@monaco-editor/react"
 import { useTheme } from "next-themes"
 import { useHandleMonacoMount } from "@/lib/monaco"
 import { useEffect, useState } from "react"
+import { ViewerProps } from "@/lib/file-preview"
 
 async function blobAsText(blob: Blob) {
     return await blob.text()
@@ -25,7 +25,7 @@ export function TextViewer(props: ViewerProps) {
             <Editor
                 value={data}
                 options={{ readOnly: true }}
-                defaultLanguage={props.data.type}
+                path={props.tab.filePath}
                 onMount={handleMount}
                 theme={theme.resolvedTheme === "dark" ? "crate-dark" : "light"}
             />

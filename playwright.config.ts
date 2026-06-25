@@ -26,7 +26,7 @@ export default defineConfig({
     ],
     webServer: process.env.CI
         ? {
-              command: `npm run serve`,
+              command: `npm run test:serve`,
               url: "http://localhost:3000/",
               timeout: 120 * 1000
           }

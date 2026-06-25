@@ -144,7 +144,7 @@ export const ReferenceField = memo(function ReferenceField({
                 </>
             ) : (
                 <>
-                    <Tooltip delayDuration={1000}>
+                    <Tooltip delayDuration={500}>
                         <TooltipTrigger asChild>
                             <Button
                                 className="shrink grow rounded-r-none justify-start pl-2 truncate min-w-0"

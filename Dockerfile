@@ -1,6 +1,6 @@
 # syntax=docker.io/docker/dockerfile:1@sha256:b6afd42430b15f2d2a4c5a02b919e98a525b785b1aaff16747d2f623364e39b6
 
-FROM node:22-alpine@sha256:b2358485e3e33bc3a33114d2b1bdb18cdbe4df01bd2b257198eb51beb1f026c5 AS base
+FROM node:24-alpine@sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14 AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -32,6 +32,8 @@ COPY . .
 ENV OUTPUT=standalone
 ARG IFRAME_TARGET_ORIGIN
 ARG BASE_PATH
+ARG AI_ASSISTANT_ENABLED
+ARG AI_ASSISTANT_BASE_URL_REGEX
 
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \
@@ -45,6 +47,10 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ARG AI_ASSISTANT_ENABLED
+ARG AI_ASSISTANT_BASE_URL_REGEX
+ENV AI_ASSISTANT_ENABLED=$AI_ASSISTANT_ENABLED
+ENV AI_ASSISTANT_BASE_URL_REGEX=$AI_ASSISTANT_BASE_URL_REGEX
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED=1
 

@@ -396,7 +396,7 @@ export function EntityGraph() {
 
                     <ActionButton actionId="crate.add-entity" noShortcut variant="outline" />
 
-                    <Tooltip delayDuration={200}>
+                    <Tooltip delayDuration={500}>
                         <TooltipTrigger asChild>
                             <Button variant="outline" size="icon" onClick={() => centerView()}>
                                 <Fullscreen className="size-4" />
@@ -407,7 +407,7 @@ export function EntityGraph() {
                         </TooltipContent>
                     </Tooltip>
 
-                    <Tooltip delayDuration={200}>
+                    <Tooltip delayDuration={500}>
                         <TooltipTrigger asChild>
                             <Button variant="outline" size="icon" onClick={() => reformat(false)}>
                                 <GitCompare className="size-4" />

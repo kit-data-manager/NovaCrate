@@ -363,7 +363,19 @@ export function NavHeader() {
                     name={"settings"}
                     actionId={"editor.settings"}
                     iconOnly
+                    showTooltip
                 />
+                {process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED === "true" && (
+                    <div className="border-l border-border pl-2">
+                        <ActionButton
+                            variant="outline"
+                            name={"ai-assistant"}
+                            actionId={"editor.toggle-ai-assistant"}
+                            showTooltip
+                            iconOnly
+                        />
+                    </div>
+                )}
             </div>
         </div>
     )

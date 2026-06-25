@@ -3,8 +3,13 @@ import { loadTestCrate } from "@/tests/e2e/common"
 
 test("Basic validation functionality", async ({ page }) => {
     await loadTestCrate(page)
-    await expect(page.locator("#header-right-side")).toMatchAriaSnapshot(`- button "1 1"`)
-    await page.locator("#header-right-side").getByRole("button", { name: "1" }).click()
+    await expect(page.locator("#header-right-side")).toMatchAriaSnapshot(
+        `- button "Validation Overview": 1 1`
+    )
+    await page
+        .locator("#header-right-side")
+        .getByRole("button", { name: "Validation Overview" })
+        .click()
     await page.getByRole("button", { name: "Show Details" }).click()
     // Hide the validation overview popover by clicking somewhere else on the page
     await page.getByText("ValidationF").click()
@@ -32,12 +37,16 @@ test("Basic validation functionality", async ({ page }) => {
     await page.getByPlaceholder("Search...").press("ArrowDown")
     await page.getByPlaceholder("Search...").press("Enter")
     await page.getByRole("button", { name: "Save" }).click()
-    await expect(page.locator("#header-right-side")).toMatchAriaSnapshot(`- button "1"`)
+    await expect(page.locator("#header-right-side")).toMatchAriaSnapshot(
+        `- button "Validation Overview": 1`
+    )
 })
 
 test("Validation deactivation across page reloads", async ({ page }) => {
     await loadTestCrate(page)
-    await expect(page.locator("#header-right-side")).toMatchAriaSnapshot(`- button "1 1"`)
+    await expect(page.locator("#header-right-side")).toMatchAriaSnapshot(
+        `- button "Validation Overview": 1 1`
+    )
     await page.locator('button[name="settings"]').click()
     await page.getByRole("button", { name: "Validation" }).click()
     await page.getByRole("checkbox", { name: "Enable Validation" }).click()

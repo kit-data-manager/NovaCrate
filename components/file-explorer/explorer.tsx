@@ -5,7 +5,6 @@ import { usePersistence } from "@/components/providers/persistence-provider"
 import { ChevronsDownUp, ChevronsUpDown, EllipsisVertical, Folder, RefreshCw } from "lucide-react"
 import { Error } from "@/components/error"
 import HelpTooltip from "@/components/help-tooltip"
-import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { useEditorState } from "@/lib/state/editor-state"
 import {
     DropdownMenu,
@@ -37,7 +36,6 @@ export function FileExplorer() {
     const persistence = usePersistence()
     const crateId = persistence.getCrateId()
     const entities = useEditorState((store) => store.entities)
-    const downloadError = useFileExplorerState((store) => store.downloadError)
     const showEntities = useStore(fileExplorerSettings, (s) => s.showEntities)
     const toggleShowEntities = useStore(fileExplorerSettings, (s) => s.toggleShowEntities)
     const crateName = useCrateName()
@@ -211,7 +209,7 @@ export function FileExplorer() {
                     </div>
                 </HelpTooltip>
                 <div className="grow" />
-                <Tooltip>
+                <Tooltip delayDuration={500}>
                     <TooltipTrigger asChild>
                         <Button
                             id="toggle-show-entities"
@@ -226,7 +224,7 @@ export function FileExplorer() {
                             />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Show entities next to file names</TooltipContent>
+                    <TooltipContent>Show matching entities</TooltipContent>
                 </Tooltip>
                 <ActionButton
                     variant="outline"
@@ -260,7 +258,6 @@ export function FileExplorer() {
                 </DropdownMenu>
             </div>
             <Error error={error} title="Failed to fetch files list" />
-            <Error error={downloadError} title="Download failed" />
             <ContextMenu>
                 <ContextMenuTrigger asChild>
                     <div className="p-2 overflow-y-auto grow" ref={treeParent}>

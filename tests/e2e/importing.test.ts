@@ -191,7 +191,6 @@ test("Import Folder", async ({ page }) => {
         .filter({ hasText: /^candles-9247498_1280\.jpg$/ })
         .nth(1)
         .dblclick()
-    await expect(page.locator("body")).toMatchAriaSnapshot(`- text: img/candles-9247498_1280.jpg`)
     await expect(page.locator("img")).toBeVisible()
     await page
         .locator("div")

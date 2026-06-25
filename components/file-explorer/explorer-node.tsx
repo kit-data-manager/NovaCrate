@@ -3,11 +3,10 @@ import { NodeRendererProps } from "react-arborist"
 import { useCallback, useState } from "react"
 import { useStore } from "zustand"
 import { editorState } from "@/lib/state/editor-state"
-import { useGoToEntityEditor } from "@/lib/hooks/hooks"
+import { useGoToEntityEditor, useOpenPreviewTab } from "@/lib/hooks/hooks"
 import { fileExplorerSettings } from "@/lib/state/file-explorer-settings"
-import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu"
-import { ChevronRightIcon, EyeIcon, FileIcon, FolderIcon, PackageIcon } from "lucide-react"
+import { ChevronRightIcon, FileIcon, FolderIcon, PackageIcon } from "lucide-react"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { Input } from "@/components/ui/input"
 import { findEntity, getEntityDisplayName } from "@/lib/utils"
@@ -29,16 +28,7 @@ export function ExplorerNode({ node, style, dragHandle }: NodeRendererProps<File
         if (showEntities) toggleShowEntities()
     }, [showEntities, toggleShowEntities])
 
-    const previewingFilePath = useFileExplorerState((s) => s.previewingFilePath)
-    const _setPreviewingFilePath = useFileExplorerState((store) => store.setPreviewingFilePath)
-    const setPreviewingFilePath = useCallback(
-        (path: string) => {
-            if (path !== previewingFilePath) {
-                _setPreviewingFilePath(path)
-            }
-        },
-        [_setPreviewingFilePath, previewingFilePath]
-    )
+    const openPreviewTab = useOpenPreviewTab()
 
     return (
         <ContextMenu>
@@ -48,7 +38,7 @@ export function ExplorerNode({ node, style, dragHandle }: NodeRendererProps<File
                     style={style}
                     className={`flex items-center gap-1 ${node.state.isSelected && "bg-muted"} ${node.state.isSelectedEnd && "rounded-b-sm"} ${node.state.isSelectedStart && "rounded-t-sm"} p-1 outline-hidden`}
                     onDoubleClick={() => {
-                        if (node.data.type === "file") setPreviewingFilePath(node.data.id)
+                        if (node.data.type === "file") openPreviewTab(node.data.id)
                     }}
                 >
                     <ChevronRightIcon
@@ -80,9 +70,6 @@ export function ExplorerNode({ node, style, dragHandle }: NodeRendererProps<File
                         <span className="select-none line-clamp-1">
                             {showEntities && entity ? getEntityDisplayName(entity) : node.data.name}
                         </span>
-                    )}
-                    {previewingFilePath === node.data.id && (
-                        <EyeIcon className="size-4 shrink-0 ml-1" />
                     )}
                 </div>
             </ContextMenuTrigger>

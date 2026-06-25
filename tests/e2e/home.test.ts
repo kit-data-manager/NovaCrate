@@ -5,17 +5,19 @@ test("test", async ({ page }) => {
     await expect(page.locator("body")).toMatchAriaSnapshot(`
     - button
     - heading "NovaCrate" [level=1]
-    - heading "Web-based editor for editing Research Object Crates" [level=2]
+    - heading /Web-based editor for .+ Research Object Crates/ [level=2]
     - link "Open NovaCrate":
       - /url: /editor
       - button "Open NovaCrate"
-    - text: NovaCrate is free and open-source (Apache-2.0 license) NovaCrate is a web-based interactive editor for editing, visualizing and validating Research Object Crates directly in the browser. Easily create RO-Crates describing your research data and export to a variety of file-formats. Check out some key features of NovaCrate below. Feature Overview
+    - text: NovaCrate is free and open-source (Apache-2.0 license) NovaCrate is a web-based interactive editor for editing, visualizing and validating Research Object Crates directly in the browser. Easily create RO-Crates describing your research data and export to a variety of file-formats. The integrated AI Assistant makes it especially easy for beginners to get started. Check out some key features of NovaCrate below. Feature Overview
     - link "Entity Editor":
       - /url: "#entity-editor"
     - link "File Explorer":
       - /url: "#file-explorer"
     - link "Metadata Graph":
       - /url: "#metadata-graph"
+    - link "AI Assistant":
+      - /url: "#ai-assistant"
     - text: JSON Editor Context Editor ELN Support
     - link "Live Validation":
       - /url: "#validation"
@@ -43,6 +45,15 @@ test("test", async ({ page }) => {
     - link "Open NovaCrate":
       - /url: /editor
       - button "Open NovaCrate"
+    - img "NovaCrate AI Assistant capabilities showcase"
+    - heading "AI Assistant" [level=3]
+    - paragraph: NovaCrate now includes an AI Assistant to help you with many different tasks in and around your RO-Crate. The AI Assistant can read and edit your metadata, read plain files (like .txt or .csv), import Person and Organization entities from ORCID and ROR and even run the NovaCrate metadata validation itself. Simply ask it any question, and it will try its best to answer it.
+    - paragraph: "This feature does not require a subscription within NovaCrate. Instead, you need to bring your own API Key for one of the supported AI providers. You will likely need a subscription with them. The following providers are supported: OpenAI (for ChatGPT), Anthropic (for Claude), OpenRouter (for a limited selection of free models), and OpenAI-Compatible (if you have access to an OpenAI-Compatible LLM Provider, such as Open WebUI)"
+    - paragraph:
+      - text: To get started, take a look at the
+      - link "AI Assistant setup guide":
+        - /url: https://github.com/kit-data-manager/NovaCrate/blob/main/docs/ai-assistant-setup.md#setting-up-the-ai-assistant-within-novacrate
+    - paragraph: "Tip: Bring your own API Key - no subscription within NovaCrate required!"
     - heading "Validation" [level=3]
     - paragraph: NovaCrate implements numerous validation rules to make sure the Research Object Crate you work on is conformant to the current specification and follows best practices. Validation issues are reported in a granular manner directly where they occur - either on Crate-level, Entity-level or Property-level, removing the need for guessing where an issue has occurred.
     - paragraph: In addition to the best-practice-validation, NovaCrate also validates if the references between your metadata entities are valid, and if there are any properties present with invalid values.
@@ -67,6 +78,7 @@ test("test", async ({ page }) => {
       - /url: https://www.researchobject.org/ro-crate/specification/1.2/index.html
     - text: (Apache-2.0 license) Frequently Asked Questions
     - button "Where is my data stored?"
+    - button "How does the AI integration work?"
     - button "What has changed in the last update?"
     - button "How can I get in contact?"
     - button "Who is developing, maintaining, and hosting NovaCrate?"

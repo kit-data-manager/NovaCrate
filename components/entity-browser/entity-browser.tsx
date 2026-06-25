@@ -79,7 +79,7 @@ export function EntityBrowser() {
                     />
                     <div className="grow"></div>
 
-                    <Tooltip delayDuration={300}>
+                    <Tooltip delayDuration={500}>
                         <TooltipTrigger asChild>
                             <ActionButton
                                 actionId={"editor.global-search"}
@@ -87,12 +87,13 @@ export function EntityBrowser() {
                                 size={"sm"}
                                 noShortcut
                                 iconOnly
+                                ignoreOnClickFromProps
                             />
                         </TooltipTrigger>
                         <TooltipContent>Global Search</TooltipContent>
                     </Tooltip>
 
-                    <Tooltip delayDuration={300}>
+                    <Tooltip delayDuration={500}>
                         <TooltipTrigger asChild>
                             <Button
                                 variant="outline"

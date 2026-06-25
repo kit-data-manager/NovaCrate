@@ -1,12 +1,12 @@
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import React, { PropsWithChildren, useEffect, useRef } from "react"
-import { useEditorState } from "@/lib/state/editor-state"
 import { ValidationDrawer } from "@/components/validation-drawer"
 import { ImperativePanelHandle } from "react-resizable-panels"
+import { useLayoutState } from "@/lib/state/layout-state"
 
 export function NavDrawer({ children }: PropsWithChildren) {
-    const showDrawer = useEditorState((s) => s.showValidationDrawer)
-    const setShowDrawer = useEditorState((s) => s.setShowValidationDrawer)
+    const showDrawer = useLayoutState((s) => s.showValidationDrawer)
+    const setShowDrawer = useLayoutState((s) => s.setShowValidationDrawer)
     const ref = useRef<ImperativePanelHandle>(null)
 
     useEffect(() => {

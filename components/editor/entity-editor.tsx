@@ -7,7 +7,8 @@ import {
     getEntityDisplayName,
     isDataEntity as isDataEntityUtil,
     propertyHasChanged,
-    canHavePreview as canHavePreviewUtil
+    canHavePreview as canHavePreviewUtil,
+    findEntity
 } from "@/lib/utils"
 import { WebWorkerWarning } from "@/components/web-worker-warning"
 import { useOperationState } from "@/lib/state/operation-state"
@@ -36,8 +37,8 @@ export function EntityEditor({
     const isSaving = useOperationState((s) => s.isSaving)
     const saveErrors = useOperationState((s) => s.saveErrors)
     const clearSaveError = useOperationState((s) => s.clearSaveError)
-    const entity = useEditorState((store) => store.entities.get(entityId))
-    const originalEntity = useEditorState((store) => store.initialEntities.get(entityId))
+    const entity = useEditorState((store) => findEntity(store.entities, entityId))
+    const originalEntity = useEditorState((store) => findEntity(store.initialEntities, entityId))
     const entitiesChangelist = useEditorState(useShallow((store) => store.getEntitiesChangelist()))
     const addPropertyEntry = useEditorState((store) => store.addPropertyEntry)
     const modifyPropertyEntry = useEditorState((store) => store.modifyPropertyEntry)

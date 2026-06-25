@@ -1,37 +1,9 @@
-import { getFileAsURL, downloadBlob, downloadCrateAs } from "@/lib/core/util"
-import { IFileService } from "@/lib/core/persistence/IFileService"
+import { downloadBlob, downloadCrateAs } from "@/lib/core/util"
 import { IRepositoryService } from "@/lib/core/persistence/IRepositoryService"
 import { Observable } from "@/lib/core/impl/Observable"
 
 jest.mock("js-file-download", () => jest.fn())
 import fileDownload from "js-file-download"
-
-describe("getFileAsURL", () => {
-    it("should create an object URL from the file blob", async () => {
-        const blob = new Blob(["file content"], { type: "text/plain" })
-        const fileService: IFileService = {
-            events: new Observable(),
-            getContentList: jest.fn(),
-            getInfo: jest.fn(),
-            getFile: jest.fn().mockResolvedValue(blob),
-            addFile: jest.fn(),
-            addFolder: jest.fn(),
-            updateFile: jest.fn(),
-            move: jest.fn(),
-            delete: jest.fn(),
-            getStorageQuota: jest.fn()
-        }
-
-        const createObjectURL = jest.fn().mockReturnValue("blob:mock-url")
-        globalThis.URL.createObjectURL = createObjectURL
-
-        const url = await getFileAsURL(fileService, "test.txt")
-
-        expect(fileService.getFile).toHaveBeenCalledWith("test.txt")
-        expect(createObjectURL).toHaveBeenCalledWith(blob)
-        expect(url).toBe("blob:mock-url")
-    })
-})
 
 describe("downloadBlob", () => {
     it("should trigger a download using js-file-download", () => {

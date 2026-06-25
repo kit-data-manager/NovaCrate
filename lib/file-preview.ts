@@ -1,0 +1,56 @@
+import { ComponentType } from "react"
+import { ImageViewer } from "@/components/file-explorer/viewers/image"
+import { TextViewer } from "@/components/file-explorer/viewers/text"
+import { IFrameViewer } from "@/components/file-explorer/viewers/iframe"
+import { IFilePreviewTab } from "@/lib/state/file-explorer-state"
+
+export enum ViewerType {
+    UNKNOWN,
+    IMAGE,
+    TEXT,
+    IFRAME,
+    NOT_IDENTIFIED_YET = 999
+}
+
+export interface ViewerProps {
+    tab: IFilePreviewTab
+    updateTab: (tab: IFilePreviewTab) => void
+    data: Blob | undefined
+}
+
+export interface IViewer {
+    type: ViewerType
+    displayName: string
+    subtitle?: string
+    mimeTypes: string[]
+    component: ComponentType<ViewerProps>
+}
+
+export const VIEWERS: IViewer[] = [
+    {
+        type: ViewerType.IMAGE,
+        displayName: "Image Viewer",
+        mimeTypes: [
+            "image/png",
+            "image/jpeg",
+            "image/gif",
+            "image/x-icon",
+            "image/webp",
+            "image/apng"
+        ],
+        component: ImageViewer
+    },
+    {
+        type: ViewerType.TEXT,
+        displayName: "Text Viewer",
+        mimeTypes: ["text/plain", "application/json"],
+        component: TextViewer
+    },
+    {
+        type: ViewerType.IFRAME,
+        displayName: "IFrame Viewer",
+        subtitle: "(for PDFs and HTML)",
+        mimeTypes: ["text/html", "application/pdf"],
+        component: IFrameViewer
+    }
+]

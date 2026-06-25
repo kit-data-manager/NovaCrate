@@ -6,17 +6,14 @@ NovaCrate can be embedded into other frontends using the HTML-5 `<iframe>` tag. 
 
 To use NovaCrate in Iframe mode, you must host an instance of NovaCrate yourself. Iframe integration is disabled in the official instance for safety reasons. To enable Iframe integration
 in your own instance, set the environment variable `IFRAME_TARGET_ORIGIN`. Set this variable to the origin of the parent page as described in the [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage#targetorigin) documentation.
-Example with docker compose:
+Example with Docker:
 
-```yaml
-services:
-  novacrate:
-    image: ghcr.io/kit-data-manager/novacrate:1
-    environment:
-     - IFRAME_TARGET_ORIGIN=https://your-parent-page.org
-```
+1. Clone the NovaCrate repository
+2. In [docker-compose.build.yml](/docker-compose.build.yml): Remove the line comment and set the environment variable `IFRAME_TARGET_ORIGIN` to the origin of the parent page
+3. Build the image: `docker compose -f docker-compose.yml -f docker-compose.build.yml build`
+4. Run using your own docker compose or by adapting the default [docker-compose.yml](/docker-compose.yml).
 
-Then, add the following HTML snippet to your page:
+When your NovaCrate instance is running, add the following HTML snippet to the page where NovaCrate should be embedded:
 
 ```html
 <iframe src="https://your-novacrate-instance.org/editor/iframe/entities" width="1200" height="800" />
@@ -26,6 +23,9 @@ Then, add the following HTML snippet to your page:
 Note the additional `iframe` segment in the URL.
 
 Iframe integration is only enabled when both the `IFRAME_TARGET_ORIGIN` environment variable and the `iframe` URL segment are present as described.
+
+> [!NOTE]
+> Find more information on supported [Environment Variables](./deployment.md#environment-variables).
 
 ## Limitations
 
