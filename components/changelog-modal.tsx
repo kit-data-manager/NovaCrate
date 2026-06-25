@@ -159,6 +159,8 @@ export function ChangelogModal() {
                                 "a",
                                 "br",
                                 "b",
+                                "strong",
+                                "em",
                                 "i",
                                 "h3"
                             ]}

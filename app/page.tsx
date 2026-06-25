@@ -17,8 +17,9 @@ import {
     Notebook,
     PackageIcon,
     PackageSearch,
-    Sparkle,
-    Sun
+    SparklesIcon,
+    Sun,
+    WrenchIcon
 } from "lucide-react"
 import { Footer } from "@/components/footer"
 import { useTheme } from "next-themes"
@@ -50,6 +51,13 @@ export default function Home() {
                     )}
                 </Button>
                 <div className="col-start-2 h-[calc(100vh-300px)] min-h-75 flex flex-col justify-center items-center gap-4">
+                    <Link href={"#ai-assistant"}>
+                        <div className="flex items-center border border-root bg-root/30 p-1 px-3 rounded-full">
+                            <b className="mr-1">New:</b>Integrated AI Assistant{" "}
+                            <ArrowRight className="size-4 ml-2" />
+                        </div>
+                    </Link>
+
                     <h1 className="flex items-center gap-4 text-6xl font-extrabold">
                         <PackageIcon className="h-full w-auto aspect-square" /> NovaCrate
                     </h1>
@@ -76,7 +84,9 @@ export default function Home() {
                             NovaCrate is a web-based interactive editor for editing, visualizing and
                             validating Research Object Crates directly in the browser. Easily create
                             RO-Crates describing your research data and export to a variety of
-                            file-formats. Check out some key features of NovaCrate below.
+                            file-formats. The integrated AI Assistant makes is especially easy for
+                            beginners to get started. Check out some key features of NovaCrate
+                            below.
                         </div>
                         <ArrowDown className="size-8 animate-bounce" />
                     </div>
@@ -92,13 +102,16 @@ export default function Home() {
                             <IconBlock href="#metadata-graph" Icon={GitFork}>
                                 Metadata Graph
                             </IconBlock>
+                            <IconBlock href={"#ai-assistant"} Icon={SparklesIcon}>
+                                AI Assistant
+                            </IconBlock>
                             <IconBlock Icon={Braces}>JSON Editor</IconBlock>
                             <IconBlock Icon={Library}>Context Editor</IconBlock>
                             <IconBlock Icon={Notebook}>ELN Support</IconBlock>
                             <IconBlock href="#validation" Icon={Bug}>
                                 Live Validation
                             </IconBlock>
-                            <IconBlock href={"#configuration"} Icon={Sparkle}>
+                            <IconBlock href={"#configuration"} Icon={WrenchIcon}>
                                 Custom Schemas
                             </IconBlock>
                             <IconBlock
@@ -124,12 +137,11 @@ export default function Home() {
                                 }
                             >
                                 <p>
-                                    The main strength of NovaCrate is its usability-focused
-                                    entity editing approach. The entity browser and the global
-                                    search make it easy to find the entity you want to work on. The
-                                    entities you are currently working on are displayed in a tabbed
-                                    interface, so you can quickly switch between the entities you
-                                    are working on.
+                                    The main strength of NovaCrate is its usability-focused entity
+                                    editing approach. The entity browser and the global search make
+                                    it easy to find the entity you want to work on. The entities you
+                                    are currently working on are displayed in a tabbed interface, so
+                                    you can quickly switch between the entities you are working on.
                                 </p>
 
                                 <p>
@@ -212,6 +224,46 @@ export default function Home() {
                                     </Button>
                                 </Link>
                             </div>
+                            <ShowcaseBlock
+                                id={"ai-assistant"}
+                                imgLight={"/img/ai-assistant-light.png"}
+                                imgDark={"/img/ai-assistant-dark.png"}
+                                title={"AI Assistant"}
+                                alt={"NovaCrate AI Assistant capabilities showcase"}
+                                tip={
+                                    "Bring your own API Key - no subscription within NovaCrate required!"
+                                }
+                            >
+                                <p>
+                                    NovaCrate now includes an AI Assistant to help you with many
+                                    different tasks in and around your RO-Crate. The AI Assistant
+                                    can read and edit your metadata, read plain files (like .txt or
+                                    .csv), import Person and Organization entities from ORCID and
+                                    ROR and even run the NovaCrate metadata validation itself.
+                                    Simply ask it any question, and it will try its best to answer
+                                    it.
+                                </p>
+                                <p>
+                                    This feature does not required a subscription within NovaCrate.
+                                    Instead, you need to bring your own API Key for one of the
+                                    supported AI providers. You will likely need a subscription with
+                                    them. The following providers are supported: OpenAI (for
+                                    ChatGPT), Anthropic (for Claude), OpenRouter (for a limited
+                                    selection of free models), and OpenAI-Compatible (if you have
+                                    access to an OpenAI-Compatible LLM Provider, such as Open WebUI)
+                                </p>
+                                <p>
+                                    To get started, take a look at the{" "}
+                                    <Link
+                                        className={"underline"}
+                                        href={
+                                            "https://github.com/kit-data-manager/NovaCrate/blob/main/docs/ai-assistant-setup.md#setting-up-the-ai-assistant-within-novacrate"
+                                        }
+                                    >
+                                        AI Assistant setup guide
+                                    </Link>
+                                </p>
+                            </ShowcaseBlock>
                             <ShowcaseBlock
                                 id={"validation"}
                                 title={"Validation"}
@@ -305,6 +357,25 @@ export default function Home() {
                                 All data stays on your local device. Even though NovaCrate is served
                                 through the web browser, your data never leaves your device.
                             </FAQ>
+                            <FAQ question={"How does the AI integration work?"}>
+                                NovaCrate has an integrated AI assistant than can help you with many
+                                different tasks around your RO-Crate. However, NovaCrate does not
+                                host its own AI models and does not require a subscription for using
+                                the AI Assistant. Instead, you need to bring your own API Key for
+                                any of the supported AI providers. Those are OpenAI (for ChatGPT),
+                                Anthropic (for Claude), OpenRouter (for a limited selection of free
+                                models), and OpenAI-Compatible (if you have access to an
+                                OpenAI-Compatible LLM Provider, such as Open WebUI). See the{" "}
+                                <Link
+                                    className={"underline"}
+                                    href={
+                                        "https://github.com/kit-data-manager/NovaCrate/blob/main/docs/ai-assistant-setup.md#setting-up-the-ai-assistant-within-novacrate"
+                                    }
+                                >
+                                    AI Assistant setup guide
+                                </Link>{" "}
+                                for more information.
+                            </FAQ>
                             <FAQ question={"What has changed in the last update?"}>
                                 A changelog is available in the main menu of the editor, as well as
                                 through this button:
@@ -355,7 +426,16 @@ export default function Home() {
                                 >
                                     NovaCrate GitHub Repository
                                 </Link>
-                                , or build it from source.
+                                , or build it from source. For more information, take a look at the{" "}
+                                <Link
+                                    href={
+                                        "https://github.com/kit-data-manager/NovaCrate/blob/main/docs/deployment.md"
+                                    }
+                                    className={"underline"}
+                                >
+                                    Deployment Documentation
+                                </Link>
+                                .
                             </FAQ>
                             <FAQ question={"Is NovaCrate extensible?"}>
                                 You can integrate custom schemas (JSON-LD, TTL) to define your own
