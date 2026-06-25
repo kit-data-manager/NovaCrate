@@ -52,6 +52,7 @@ export function DeleteEntityTool({
     const [isDeleting, setIsDeleting] = useState(false)
     const onDeleteEntityClick = useCallback(
         (part: NC_UIMessage["parts"][number] & { type: "tool-deleteEntity" }) => {
+            if (isDeleting) return
             if (!part.input || !part.input.entityId) {
                 respondWithError(
                     "Tool call incomplete. Either the input is completely missing, or the entityId is missing."
@@ -74,7 +75,7 @@ export function DeleteEntityTool({
                     setIsDeleting(false)
                 })
         },
-        [core, respondWithError, respondWithSuccess]
+        [core, isDeleting, respondWithError, respondWithSuccess]
     )
 
     const onDeleteDenyClick = useCallback(
@@ -105,10 +106,18 @@ export function DeleteEntityTool({
                     {part.input.deleteData &&
                         "The referenced files/folders and any contained files/folders will also irreversibly be deleted."}
                     <div className="flex items-center gap-2 justify-end pt-2">
-                        <Button variant={"secondary"} onClick={() => onDeleteDenyClick(part)}>
+                        <Button
+                            variant={"secondary"}
+                            onClick={() => onDeleteDenyClick(part)}
+                            disabled={isDeleting}
+                        >
                             <XIcon /> Abort
                         </Button>
-                        <Button variant="destructive" onClick={() => onDeleteEntityClick(part)}>
+                        <Button
+                            variant="destructive"
+                            onClick={() => onDeleteEntityClick(part)}
+                            disabled={isDeleting}
+                        >
                             <TrashIcon /> Delete
                         </Button>
                     </div>

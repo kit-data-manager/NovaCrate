@@ -104,8 +104,9 @@ export default function AIAssistantChat() {
     }, [crateId, messages, status, updateChat])
 
     const resetChat = useCallback(() => {
+        stop().catch(console.log)
         setMessages([])
-    }, [setMessages])
+    }, [setMessages, stop])
 
     const hasUnansweredToolCalls = useMemo(() => {
         return messages.some((m) =>

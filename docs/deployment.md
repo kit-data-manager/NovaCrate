@@ -17,7 +17,7 @@ If you wish to change any of the environment variables, then you have to build N
 
 ## Deploying manually (without Docker)
 
-You can run NovaCrate without Docker on any modern operating system where Node.js 20+ is installed. Clone the NovaCrate repository and run the following commands. Note that you need to set [Environment Variables](#Environment-Variables) before the build step.
+You can run NovaCrate without Docker on any modern operating system where Node.js 20+ is installed. Clone the NovaCrate repository and run the following commands. Note that you need to set [Environment Variables](#environment-variables) before the build step.
 
 ```bash
 npm install
@@ -36,7 +36,7 @@ Note that when you configure any of these variables, you need to extend the Nova
 | BASE_PATH                   | *empty*       | Base path of the application                                                                                                                       |
 | IFRAME_TARGET_ORIGIN        | *empty*       | Required for using NovaCrate in IFrame embedded mode. Refer to the [IFrame Documentation](./iframe-interface.md)                                   |
 | AI_ASSISTANT_ENABLED        | *empty*       | Set this to `true` to enable the AI Assistant in your deployment.                                                                                  |
-| AI_ASSISTANT_BASE_URL_REGEX | *empty*       | Regex that matches allowed custom base URLs configured by the user for an LLM provider. Custom base URLs are disables if this variable is not set. |
+| AI_ASSISTANT_BASE_URL_REGEX | *empty*       | Regex that matches allowed custom base URLs configured by the user for an LLM provider. Custom base URLs are disabled if this variable is not set. |
 
 ### Attention: AI Assistant security considerations
 

@@ -84,7 +84,7 @@ export default function Home() {
                             NovaCrate is a web-based interactive editor for editing, visualizing and
                             validating Research Object Crates directly in the browser. Easily create
                             RO-Crates describing your research data and export to a variety of
-                            file-formats. The integrated AI Assistant makes is especially easy for
+                            file-formats. The integrated AI Assistant makes it especially easy for
                             beginners to get started. Check out some key features of NovaCrate
                             below.
                         </div>
@@ -244,7 +244,7 @@ export default function Home() {
                                     it.
                                 </p>
                                 <p>
-                                    This feature does not required a subscription within NovaCrate.
+                                    This feature does not require a subscription within NovaCrate.
                                     Instead, you need to bring your own API Key for one of the
                                     supported AI providers. You will likely need a subscription with
                                     them. The following providers are supported: OpenAI (for
@@ -358,7 +358,7 @@ export default function Home() {
                                 through the web browser, your data never leaves your device.
                             </FAQ>
                             <FAQ question={"How does the AI integration work?"}>
-                                NovaCrate has an integrated AI assistant than can help you with many
+                                NovaCrate has an integrated AI assistant that can help you with many
                                 different tasks around your RO-Crate. However, NovaCrate does not
                                 host its own AI models and does not require a subscription for using
                                 the AI Assistant. Instead, you need to bring your own API Key for

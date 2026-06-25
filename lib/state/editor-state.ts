@@ -268,7 +268,7 @@ export const editorState = createWithEqualityFn<EditorState>()(
             editEntity(value) {
                 if (getState().entities.has(value["@id"])) {
                     setState((state) => {
-                        state.entities.set(value["@id"], value)
+                        state.entities.set(value["@id"], structuredClone(value))
                     })
                     return value
                 } else return undefined

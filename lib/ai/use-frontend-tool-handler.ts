@@ -27,12 +27,22 @@ export function useFrontendToolHandler() {
     })
 
     useEffect(() => {
+        // Check once if the id matches before attaching the listener. It is possible that the crate id has changed since the last time the listener was attached.
         if (persistence.getCrateId() !== readEntitiesRef.current.crateId) {
             readEntitiesRef.current = {
                 crateId: persistence.getCrateId(),
                 readEntities: new Map()
             }
         }
+
+        return persistence.events.addEventListener("crate-id-changed", (newId) => {
+            if (newId !== readEntitiesRef.current.crateId) {
+                readEntitiesRef.current = {
+                    crateId: newId,
+                    readEntities: new Map()
+                }
+            }
+        })
     }, [persistence])
 
     const readEntities = readEntitiesRef.current.readEntities
@@ -46,10 +56,11 @@ export function useFrontendToolHandler() {
 
             switch (toolCall.toolName) {
                 case "editEntity": {
-                    const initial = editorState
-                        .getState()
-                        .getEntities()
-                        .get(toolCall.input.entityId)
+                    const initial = findEntity(
+                        editorState.getState().getEntities(),
+                        toolCall.input.entityId
+                    )
+
                     if (!initial) {
                         addToolOutput({
                             tool: "editEntity",
@@ -59,7 +70,8 @@ export function useFrontendToolHandler() {
                         })
                         return
                     }
-                    const read = readEntities.get(toolCall.input.entityId)
+
+                    const read = readEntities.get(initial["@id"])
                     if (!read) {
                         addToolOutput({
                             tool: "editEntity",
@@ -96,12 +108,12 @@ export function useFrontendToolHandler() {
                                 for (const v of value) {
                                     editorState
                                         .getState()
-                                        .addPropertyEntry(toolCall.input.entityId, property, v)
+                                        .addPropertyEntry(initial["@id"], property, v)
                                 }
                             } else {
                                 editorState
                                     .getState()
-                                    .addPropertyEntry(toolCall.input.entityId, property, value)
+                                    .addPropertyEntry(initial["@id"], property, value)
                             }
                         }
                     }
@@ -109,11 +121,11 @@ export function useFrontendToolHandler() {
                     if (toolCall.input.$delete) {
                         for (const property of toolCall.input.$delete) {
                             if (property === "@id" || property === "@type") continue // not allowed to be removed
-                            editorState.getState().removeProperty(toolCall.input.entityId, property)
+                            editorState.getState().removeProperty(initial["@id"], property)
                         }
                     }
 
-                    const result = editorState.getState().getEntities().get(toolCall.input.entityId)
+                    const result = editorState.getState().getEntities().get(initial["@id"])
 
                     if (result) {
                         addToolOutput({
@@ -192,12 +204,21 @@ export function useFrontendToolHandler() {
                                 "The file service is not available. The user is probably running the software in an environment that does not implement a file service."
                         })
                     } else {
-                        const filesList = await fileService.getContentList()
-                        addToolOutput({
-                            tool: "getFilesList",
-                            toolCallId: toolCall.toolCallId,
-                            output: filesList.map((f) => f.path)
-                        })
+                        try {
+                            const filesList = await fileService.getContentList()
+                            addToolOutput({
+                                tool: "getFilesList",
+                                toolCallId: toolCall.toolCallId,
+                                output: filesList.map((f) => f.path)
+                            })
+                        } catch (e) {
+                            addToolOutput({
+                                tool: "getFilesList",
+                                toolCallId: toolCall.toolCallId,
+                                state: "output-error",
+                                errorText: `The file service returned an error: ${e instanceof Error ? e.message : JSON.stringify(e)}`
+                            })
+                        }
                     }
                     return
                 }
