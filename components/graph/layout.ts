@@ -1,10 +1,10 @@
 import dagre from "dagre"
 import { Edge, Node, Position } from "reactflow"
 
-const dagreGraph = new dagre.graphlib.Graph()
-dagreGraph.setDefaultEdgeLabel(() => ({}))
-
 export const computeGraphLayout = (nodes: Node[], edges: Edge[]) => {
+    const dagreGraph = new dagre.graphlib.Graph()
+    dagreGraph.setDefaultEdgeLabel(() => ({}))
+
     dagreGraph.setGraph({ rankdir: "LR" })
 
     nodes.forEach((node) => {
