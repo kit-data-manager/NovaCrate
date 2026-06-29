@@ -342,7 +342,6 @@ export function EntityGraph() {
                       ...edge,
                       style: {
                           ...edge.style,
-                          stroke: "text-foreground",
                           strokeWidth: 2
                       },
                       animated: true
