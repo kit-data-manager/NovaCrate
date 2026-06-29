@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added help tooltips to the AI Assistant configuration modal
 - The graph view now remembers the last viewport position and node layout for the duration of the session
+- Added a highlight to all edges connected to the selected entity in the graph view
 
 ### Changed
 - Updated the documentation modal to add links to guides on GitHub and the YouTube tutorial series
