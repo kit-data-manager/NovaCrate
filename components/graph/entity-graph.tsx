@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createRef, useCallback, useEffect, useRef, useContext } from "react"
+import React, { createRef, useCallback, useEffect, useMemo, useRef, useContext } from "react"
 import ReactFlow, {
     Background,
     Connection,
@@ -155,7 +155,8 @@ export function EntityGraph() {
         handleNodesChange,
         autoLayout,
         handleEdgesChange,
-        setSelectedEntityID
+        setSelectedEntityID,
+        selectedEntityID
     } = useGraphState()
 
     const {
@@ -332,6 +333,24 @@ export function EntityGraph() {
         }
     }, [nodesInitialized, reformat])
 
+    const edgesWithHighlighting = useMemo(() => {
+        if (!selectedEntityID) return edges
+
+        return edges.map((edge) =>
+            edge.source === selectedEntityID || edge.target === selectedEntityID
+                ? {
+                      ...edge,
+                      style: {
+                          ...edge.style,
+                          stroke: "text-foreground",
+                          strokeWidth: 2
+                      },
+                      animated: true
+                  }
+                : edge
+        )
+    }, [edges, selectedEntityID])
+
     useOnSelectionChange({
         onChange: ({ nodes }) => {
             if (nodes.length === 1 && nodes[0].type === "entityNode") {
@@ -346,7 +365,7 @@ export function EntityGraph() {
         <>
             <ReactFlow
                 nodes={nodes}
-                edges={edges}
+                edges={edgesWithHighlighting}
                 onConnect={onConnect}
                 onNodesChange={beforeNodesChange}
                 onEdgesChange={beforeEdgesChange}
