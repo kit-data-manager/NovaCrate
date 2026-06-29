@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+- Added help tooltips to the AI Assistant configuration modal
+
 ## [1.12.0] - 2026-06-25
 
 ### Added
