@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createRef, useCallback, useEffect, useRef, useContext } from "react"
+import React, { createRef, useCallback, useEffect, useContext } from "react"
 import ReactFlow, {
     Background,
     Connection,
@@ -165,7 +165,12 @@ export function EntityGraph() {
         aggregateProperties
     } = useGraphSettings()
 
-    const { fitView } = useReactFlow()
+    const { fitView, getViewport } = useReactFlow()
+
+    const initialFormatDone = useGraphState((s) => s.initialFormatDone)
+    const setInitialFormatDone = useGraphState((s) => s.setInitialFormatDone)
+    const viewport = useGraphState((s) => s.viewport)
+    const setViewport = useGraphState((s) => s.setViewport)
 
     const contextMenuTriggerRef = createRef<HTMLDivElement>()
 
@@ -314,23 +319,18 @@ export function EntityGraph() {
     )
 
     useEffect(() => {
-        if (
-            nodes.length > 1 &&
-            !nodes.find(
-                (node) => node.position.x !== DEFAULT_POS.x || node.position.y !== DEFAULT_POS.y
-            )
-        ) {
+        if (nodesInitialized && !initialFormatDone) {
             reformat(true)
+            setInitialFormatDone()
         }
-    }, [nodes, reformat])
+    }, [initialFormatDone, nodesInitialized, reformat, setInitialFormatDone])
 
-    const initialReformatDone = useRef(false)
-    useEffect(() => {
-        if (nodesInitialized && !initialReformatDone.current) {
-            reformat(true)
-            initialReformatDone.current = true
+    const onMoveEnd = useCallback(() => {
+        const vp = getViewport()
+        if (vp) {
+            setViewport(vp)
         }
-    }, [nodesInitialized, reformat])
+    }, [getViewport, setViewport])
 
     useOnSelectionChange({
         onChange: ({ nodes }) => {
@@ -348,8 +348,10 @@ export function EntityGraph() {
                 nodes={nodes}
                 edges={edges}
                 onConnect={onConnect}
+                defaultViewport={viewport}
                 onNodesChange={beforeNodesChange}
                 onEdgesChange={beforeEdgesChange}
+                onMoveEnd={onMoveEnd}
                 connectionLineType={ConnectionLineType.Bezier}
                 nodeTypes={nodeTypes}
                 deleteKeyCode={["Delete", "Backspace"]}
