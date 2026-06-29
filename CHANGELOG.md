@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added help tooltips to the AI Assistant configuration modal
 
+### Changed
+- Updated the documentation modal to add links to guides on GitHub and the YouTube tutorial series
+
 ## [1.12.0] - 2026-06-25
 
 ### Added
