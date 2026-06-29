@@ -180,8 +180,7 @@ export function ConfigureProvider({
                                 >
                                     Anthropic
                                 </a>
-                                : Use this when you have a subscription with Anthropic (e.g. Claude
-                                Code)
+                                : For use with the official Anthropic API
                             </div>
                             <div>
                                 <a
@@ -192,8 +191,7 @@ export function ConfigureProvider({
                                 >
                                     OpenAI
                                 </a>
-                                : Use this when you have a subscription with OpenAI (e.g. ChatGPT
-                                Pro)
+                                : For use with the official OpenAI API
                             </div>
                             <div>
                                 <a
@@ -204,8 +202,7 @@ export function ConfigureProvider({
                                 >
                                     OpenAI Compatible
                                 </a>
-                                : Use this when you have access to an OpenAI-compatible LLM provider
-                                (e.g. Open WebUI)
+                                : For use with an OpenAI-compatible LLM provider (e.g. Open WebUI)
                             </div>
                             <div>
                                 <a
@@ -216,8 +213,7 @@ export function ConfigureProvider({
                                 >
                                     OpenRouter
                                 </a>
-                                : Use this when you have a subscription with OpenRouter (free models
-                                available)
+                                : For use with OpenRouter (free models available)
                             </div>
                         </HelpTooltip>
                     </Label>
