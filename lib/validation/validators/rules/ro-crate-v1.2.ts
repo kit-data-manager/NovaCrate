@@ -10,42 +10,8 @@ import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { DateTime } from "luxon"
 import { ValidationResultBuilder } from "@/lib/validation/validation-result-builder"
 
-const builder = new ValidationResultBuilder("spec-v1.2")
-
-export const RoCrateV1_2 = {
-    crateRules: ((ctx) => [
-        async (crate) => {
-            if (
-                !crate["@graph"].find(
-                    (e) =>
-                        e["@id"] === "ro-crate-metadata.jsonld" ||
-                        e["@id"] === "ro-crate-metadata.json"
-                )
-            ) {
-                return [
-                    builder.rule("missingMetadataEntity").error({
-                        resultTitle: "Missing metadata entity",
-                        resultDescription: "The crate must have a metadata entity",
-                        helpUrl:
-                            "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#ro-crate-metadata-descriptor"
-                    })
-                ]
-            } else return []
-        },
-        async (crate) => {
-            if (!crate["@graph"].find((e) => e["@id"] === ctx.editorState.getRootEntityId())) {
-                return [
-                    builder.rule("missingRootEntity").error({
-                        resultTitle: "Missing root entity",
-                        resultDescription: "The crate must have a root entity",
-                        helpUrl:
-                            "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity"
-                    })
-                ]
-            }
-            return []
-        }
-    ]) satisfies RuleBuilder<CrateRule>,
+export const buildRoCrateV1_2Rules = (builder: ValidationResultBuilder) => ({
+    crateRules: (() => []) satisfies RuleBuilder<CrateRule>,
 
     entityRules: ((ctx) => [
         async (entity) => {
@@ -357,4 +323,4 @@ export const RoCrateV1_2 = {
             return []
         }
     ]) satisfies RuleBuilder<PropertyRule>
-}
+})
