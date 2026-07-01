@@ -29,9 +29,19 @@ export function CrateValidationSupervisor() {
     const metadata = core.getMetadataService()
     const context = core.getContextService()
 
+    const validateCrate = useCallback(() => {
+        validation.validateCrate().catch((e) => console.error("Crate validation failed: ", e))
+    }, [validation])
+
+    // Validates the crate once upon editor mount
+    // The same happens for entities and properties in the EntitySupervisor and PropertySupervisor components
+    useEffect(() => {
+        if (runValidation) validateCrate()
+    }, [runValidation, validateCrate])
+
     const validateAll = useCallback(async () => {
         const entities = metadata.getEntities()
-        validation.validateCrate().catch((e) => console.error("Crate validation failed: ", e))
+        validateCrate()
         entities.forEach((entity) => {
             validation
                 .validateEntity(entity["@id"])
@@ -44,7 +54,7 @@ export function CrateValidationSupervisor() {
                     )
             })
         })
-    }, [metadata, validation])
+    }, [metadata, validateCrate, validation])
 
     const debouncedValidateAll = useDebounceCallback(validateAll, 200, { maxWait: 500 })
 
@@ -75,7 +85,7 @@ export function CrateValidationSupervisor() {
     // Clear the validation store results when the validation is turned off in the settings
     useEffect(() => {
         if (!validationEnabled) {
-            validation.resultStore.getState().clear()
+            validation.resultStore.getState().clearAll()
         }
     }, [validation.resultStore, validationEnabled])
 
@@ -98,7 +108,10 @@ export function CrateValidationSupervisor() {
 const EntitySupervisor = memo(function EntitySupervisor({ entity }: { entity: IEntity }) {
     const validation = useValidation()
     const validationStore = useValidationStore()
-    const clearResults = useStore(validationStore, (s) => s.clearResults)
+    const clearByEntityIdOrPropertyName = useStore(
+        validationStore,
+        (s) => s.clearByEntityIdOrPropertyName
+    )
 
     const entityId = useMemo(() => {
         return entity["@id"]
@@ -118,8 +131,8 @@ const EntitySupervisor = memo(function EntitySupervisor({ entity }: { entity: IE
 
     const unmount = useCallback(() => {
         debouncedRunValidation.cancel()
-        clearResults(entityId)
-    }, [clearResults, debouncedRunValidation, entityId])
+        clearByEntityIdOrPropertyName(entityId)
+    }, [clearByEntityIdOrPropertyName, debouncedRunValidation, entityId])
 
     useEffect(() => {
         // Entity was deleted, remove all validation results of this entity
@@ -155,7 +168,10 @@ const PropertySupervisor = memo(function PropertySupervisor({
 }) {
     const validation = useValidation()
     const validationStore = useValidationStore()
-    const clearResults = useStore(validationStore, (s) => s.clearResults)
+    const clearByEntityIdOrPropertyName = useStore(
+        validationStore,
+        (s) => s.clearByEntityIdOrPropertyName
+    )
 
     const runValidation = useCallback(() => {
         validation
@@ -172,8 +188,8 @@ const PropertySupervisor = memo(function PropertySupervisor({
     const unmount = useCallback(() => {
         // Property was deleted, remove all results
         debouncedRunValidation.cancel()
-        clearResults(entityId, name)
-    }, [clearResults, debouncedRunValidation, entityId, name])
+        clearByEntityIdOrPropertyName(entityId, name)
+    }, [clearByEntityIdOrPropertyName, debouncedRunValidation, entityId, name])
 
     const crateContext = useEditorState((store) => store.crateContext)
     useEffect(() => {

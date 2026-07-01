@@ -3,6 +3,7 @@ import { EditorState } from "@/lib/state/editor-state"
 import { ISchemaWorkerContext } from "@/components/providers/schema-worker-provider"
 import { IFileService } from "@/lib/core/persistence/IFileService"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
+import { IContextService } from "@/lib/core/IContextService"
 
 export type ValidatorContext = {
     editorState: EditorState
@@ -10,6 +11,8 @@ export type ValidatorContext = {
     schemaWorker: ISchemaWorkerContext
     /** Resolver for translating between short-form term names and full URIs. */
     resolver: IContextResolverService
+    /** Provides access to raw crate context */
+    context: IContextService
 }
 
 export abstract class Validator {

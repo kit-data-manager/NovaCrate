@@ -3,6 +3,7 @@ import {
     EntityRule,
     EntityValidationResult,
     PropertyRule,
+    PropertyValidationResult,
     RuleBuilder
 } from "@/lib/validation/validators/rule-based-validator"
 import { isDataEntity, isFileDataEntity, isFolderDataEntity, isValidUrl } from "@/lib/utils"
@@ -319,6 +320,34 @@ export const buildRoCrateV1_2Rules = (builder: ValidationResultBuilder) => ({
                         ]
                     }
                 }
+
+            return []
+        },
+        async (entity, propertyName) => {
+            if (
+                (entity["@id"] === "ro-crate-metadata.jsonld" ||
+                    entity["@id"] === "ro-crate-metadata.json") &&
+                propertyName === "conformsTo"
+            ) {
+                const results: PropertyValidationResult[] = []
+
+                propertyValue(entity.conformsTo).forEach((value, i) => {
+                    if (i > 0) {
+                        results.push(
+                            builder.rule("metadataEntityConformsTo-multipleValues").warning({
+                                resultTitle: "Too many values",
+                                resultDescription:
+                                    "As of RO-Crate v1.2, the conformsTo property of the metadata descriptor should have only one value",
+                                entityId: entity["@id"],
+                                propertyName,
+                                propertyIndex: i
+                            })
+                        )
+                    }
+                })
+
+                return results
+            }
 
             return []
         }

@@ -1,4 +1,5 @@
 import {
+    CrateRule,
     EntityRule,
     EntityValidationResult,
     PropertyRule,
@@ -10,8 +11,58 @@ import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { ValidationResultBuilder } from "@/lib/validation/validation-result-builder"
 
 const builder = new ValidationResultBuilder("spec-basics")
+const RO_CRATE_SPEC_VERSION_PATTERN = /https:\/\/w3id\.org\/ro\/crate\/(\d+\.\d+)(\/.*)?/
+
+function getRoCrateSpecVersion(value: unknown): string | undefined {
+    if (typeof value === "string") return value.match(RO_CRATE_SPEC_VERSION_PATTERN)?.[1]
+    if (Array.isArray(value)) {
+        return value.map(getRoCrateSpecVersion).find((version) => version !== undefined)
+    }
+    if (typeof value === "object" && value !== null && "@id" in value) {
+        const id = value["@id"]
+        if (typeof id === "string") return id.match(RO_CRATE_SPEC_VERSION_PATTERN)?.[1]
+    }
+    if (typeof value === "object" && value !== null) {
+        return Object.values(value)
+            .map(getRoCrateSpecVersion)
+            .find((version) => version !== undefined)
+    }
+    return undefined
+}
 
 export const RoCrateBase = {
+    crateRules: ((ctx) => [
+        async (crate) => {
+            const metadataDescriptor = crate["@graph"].find(
+                (e) =>
+                    e["@id"] === "ro-crate-metadata.jsonld" || e["@id"] === "ro-crate-metadata.json"
+            )
+
+            if (!metadataDescriptor) {
+                return [
+                    builder.rule("missingMetadataEntity").error({
+                        resultTitle: "Missing metadata entity",
+                        resultDescription: "The crate must have a metadata entity",
+                        helpUrl:
+                            "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
+                    })
+                ]
+            } else return []
+        },
+        async (crate) => {
+            if (!crate["@graph"].find((e) => e["@id"] === ctx.editorState.getRootEntityId())) {
+                const crateSpec = getRoCrateSpecVersion(crate["@context"])
+                return [
+                    builder.rule("missingRootEntity").error({
+                        resultTitle: "Missing root entity",
+                        resultDescription: "The crate must have a root entity",
+                        helpUrl: `https://www.researchobject.org/ro-crate/specification/${crateSpec || "1.1"}/root-data-entity`
+                    })
+                ]
+            }
+            return []
+        }
+    ]) satisfies RuleBuilder<CrateRule>,
     entityRules: (() => [
         async (entity) => {
             const results: EntityValidationResult[] = []
@@ -159,6 +210,53 @@ export const RoCrateBase = {
                 )
             }
             return results
+        },
+        async (entity, propertyName) => {
+            if (
+                (entity["@id"] === "ro-crate-metadata.jsonld" ||
+                    entity["@id"] === "ro-crate-metadata.json") &&
+                propertyName === "conformsTo"
+            ) {
+                const crateSpec = getRoCrateSpecVersion(ctx.context.getRaw())
+                if (!crateSpec || !("conformsTo" in entity)) return []
+
+                const results: PropertyValidationResult[] = []
+
+                propertyValue(entity.conformsTo).forEach((value, i) => {
+                    const conformsToSpec = getRoCrateSpecVersion(value)
+                    const mismatchingConformsTo =
+                        conformsToSpec !== undefined && conformsToSpec !== crateSpec
+
+                    if (mismatchingConformsTo) {
+                        results.push(
+                            builder.rule("metadataEntityConformsToContextMismatch").error({
+                                resultTitle: "Mismatching RO-Crate specification version",
+                                resultDescription: `The crate @context uses RO-Crate v${crateSpec}, but the metadata entity conformsTo references RO-Crate v${getRoCrateSpecVersion(mismatchingConformsTo)}. The crate @context is used as the source of truth, so update conformsTo to match it.`,
+                                helpUrl: `https://www.researchobject.org/ro-crate/specification/${crateSpec}/root-data-entity#ro-crate-metadata-descriptor`,
+                                entityId: entity["@id"],
+                                propertyName,
+                                propertyIndex: i,
+                                actions: [
+                                    {
+                                        name: "repair-metadataEntityConformsToContextMismatch",
+                                        displayName: "Repair",
+                                        dispatch: () => {
+                                            ctx.editorState.modifyPropertyEntry(
+                                                entity["@id"],
+                                                "conformsTo",
+                                                i,
+                                                "https://w3id.org/ro/crate/" + crateSpec
+                                            )
+                                        }
+                                    }
+                                ]
+                            })
+                        )
+                    }
+                })
+
+                return results
+            } else return []
         }
     ]) satisfies RuleBuilder<PropertyRule>
 }
