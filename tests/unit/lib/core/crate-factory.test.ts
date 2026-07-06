@@ -463,7 +463,9 @@ describe("CrateFactory", () => {
 
             const id = await factory.duplicateCrate("source-crate-id")
 
-            expect(repo.getCrateAs).toHaveBeenCalledWith("source-crate-id", "zip")
+            expect(repo.getCrateAs).toHaveBeenCalledWith("source-crate-id", "zip", {
+                compressed: false
+            })
             expect(repo.createCrateFromZip).toHaveBeenCalledTimes(1)
             expect(id).toBe("zip-crate-id")
 
