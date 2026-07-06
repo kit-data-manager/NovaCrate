@@ -97,7 +97,7 @@ export function BaseViewer({
                     <LoaderCircle className="size-4 animate-spin text-muted-foreground" />
                 </div>
             ) : (
-                <div className="grow">{Content}</div>
+                <div className="grow max-h-full max-w-full min-h-0 overflow-auto">{Content}</div>
             )}
             <div className="flex justify-between items-center bg-muted/50 text-sm text-muted-foreground px-2">
                 <div className="truncate">Path: {tab.filePath}</div>
