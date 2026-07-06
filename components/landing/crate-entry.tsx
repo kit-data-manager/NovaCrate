@@ -177,6 +177,30 @@ export function CrateEntry({
                                     }}
                                 >
                                     <FolderArchive className="size-4 mr-2" /> As .zip Archive
+                                    (Compressed)
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={async () => {
+                                        const repo = persistence.getRepositoryService()
+                                        if (repo) {
+                                            try {
+                                                await downloadCrateAs(
+                                                    repo,
+                                                    crateId,
+                                                    "zip",
+                                                    "crate.zip",
+                                                    { compressed: false }
+                                                )
+                                                showCrateExportedModal()
+                                            } catch (e) {
+                                                console.error("Failed to export crate as .zip", e)
+                                                toast.error("Failed to export crate as .zip")
+                                            }
+                                        }
+                                    }}
+                                >
+                                    <FolderArchive className="size-4 mr-2" /> As .zip Archive
+                                    (Uncompressed)
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={async () => {
@@ -197,7 +221,29 @@ export function CrateEntry({
                                         }
                                     }}
                                 >
-                                    <Notebook className="size-4 mr-2" /> As ELN
+                                    <Notebook className="size-4 mr-2" /> As ELN (Compressed)
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={async () => {
+                                        const repo = persistence.getRepositoryService()
+                                        if (repo) {
+                                            try {
+                                                await downloadCrateAs(
+                                                    repo,
+                                                    crateId,
+                                                    "eln",
+                                                    "crate.eln",
+                                                    { compressed: false }
+                                                )
+                                                showCrateExportedModal()
+                                            } catch (e) {
+                                                console.error("Failed to export crate as .eln", e)
+                                                toast.error("Failed to export crate as .eln")
+                                            }
+                                        }
+                                    }}
+                                >
+                                    <Notebook className="size-4 mr-2" /> As ELN (Uncompressed)
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={async () => {

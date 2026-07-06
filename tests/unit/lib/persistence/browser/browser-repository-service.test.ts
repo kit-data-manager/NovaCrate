@@ -219,7 +219,7 @@ describe("BrowserRepositoryService", () => {
 
             const result = await service.getCrateAs("crate-1", "zip")
 
-            expect(worker.execute).toHaveBeenCalledWith("createCrateZip", "crate-1")
+            expect(worker.execute).toHaveBeenCalledWith("createCrateZip", "crate-1", undefined)
             expect(result).toBe(zipBlob)
         })
 
@@ -229,7 +229,7 @@ describe("BrowserRepositoryService", () => {
 
             const result = await service.getCrateAs("crate-1", "eln")
 
-            expect(worker.execute).toHaveBeenCalledWith("createCrateEln", "crate-1")
+            expect(worker.execute).toHaveBeenCalledWith("createCrateEln", "crate-1", undefined)
             expect(result).toBe(elnBlob)
         })
 
@@ -253,6 +253,17 @@ describe("BrowserRepositoryService", () => {
             // Content should match the original metadata
             const text = await result.text()
             expect(text).toBe(metadataContent)
+        })
+
+        it("should respect compression options", async () => {
+            const zipBlob = new Blob(["zip data"], { type: "application/zip" })
+            worker.execute.mockResolvedValue(zipBlob)
+
+            await service.getCrateAs("crate-1", "zip", { compressed: true })
+            expect(worker.execute).toHaveBeenCalledWith("createCrateZip", "crate-1", true)
+
+            await service.getCrateAs("crate-1", "zip")
+            expect(worker.execute).toHaveBeenCalledWith("createCrateZip", "crate-1", undefined)
         })
     })
 

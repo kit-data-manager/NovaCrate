@@ -173,7 +173,7 @@ export class CrateFactory {
     async duplicateCrate(crateId: string, newName?: string): Promise<string> {
         const repo = this.getRepository()
 
-        const zipBlob = await repo.getCrateAs(crateId, "zip")
+        const zipBlob = await repo.getCrateAs(crateId, "zip", { compressed: false })
         const zip = await JSZip.loadAsync(await zipBlob.arrayBuffer())
 
         const metadataEntry = zip.file("ro-crate-metadata.json")

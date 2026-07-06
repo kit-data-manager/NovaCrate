@@ -15,8 +15,9 @@ export async function downloadCrateAs(
     repositoryService: IRepositoryService,
     crateId: string,
     format: Parameters<IRepositoryService["getCrateAs"]>[1],
-    fileName: string
+    fileName: string,
+    options?: Parameters<IRepositoryService["getCrateAs"]>[2]
 ): Promise<void> {
-    const blob = await repositoryService.getCrateAs(crateId, format)
+    const blob = await repositoryService.getCrateAs(crateId, format, options)
     downloadBlob(blob, fileName)
 }

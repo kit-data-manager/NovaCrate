@@ -159,8 +159,11 @@ export async function getCrates() {
     return crateIds
 }
 
-export async function createCrateZip(crateId: string) {
-    const result = await fs.zip(resolveCratePath(crateId), { preserveRoot: false })
+export async function createCrateZip(crateId: string, compressed = true) {
+    const result = await fs.zip(resolveCratePath(crateId), {
+        preserveRoot: false,
+        level: compressed ? 6 : 0
+    })
     if (result.isOk()) {
         const zip = result.unwrap()
         return new Blob([toArrayBuffer(zip)], { type: "application/zip" })
@@ -169,8 +172,11 @@ export async function createCrateZip(crateId: string) {
     }
 }
 
-export async function createCrateEln(crateId: string) {
-    const result = await fs.zip(resolveCratePath(crateId), { preserveRoot: true })
+export async function createCrateEln(crateId: string, compressed = true) {
+    const result = await fs.zip(resolveCratePath(crateId), {
+        preserveRoot: true,
+        level: compressed ? 6 : 0
+    })
     if (result.isOk()) {
         const zip = result.unwrap()
         return new Blob([toArrayBuffer(zip)], { type: "application/vnd.eln+zip" })
