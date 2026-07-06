@@ -1,0 +1,31 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+UI ->> "SchemaLib": getComment(term)
+"SchemaLib" ->> "SchemaStore": get(term)
+
+alt Store has term
+    return result
+else Term unknown
+    "SchemaStore" ->> SchemaResolver: resolve(term)
+    SchemaResolver -> SchemaResolverSettings: findKnown(term)
+    return schemaConfig
+
+    alt Known schema
+        SchemaResolver ->> WWW as "NovaCrate Schema Fetch API": Fetch by schema URL
+        return
+    else Unknown schema
+        SchemaResolver ->> WWW: Fetch term directly
+        return
+    end
+
+    SchemaResolver -->> "SchemaStore": result
+    "SchemaStore" -> "SchemaStore": store(result)
+    "SchemaStore" -->> SchemaLib: result
+end
+
+"SchemaLib" --> UI: result.comment
+
+@enduml

@@ -1,13 +1,16 @@
 import { SchemaFile, schemaFileSchema } from "./types"
-import type { SchemaResolverStore } from "../state/schema-resolver"
 import { parse as parseTtl } from "@frogcat/ttl2jsonld"
 import { RO_CRATE_VERSION } from "@/lib/constants"
-import { toArray } from "../../lib/utils"
+import { toArray } from "@/lib/utils"
+import { KnownSchema, SchemaResolverSettings } from "@/lib/state/schema-resolver-settings"
+import { addBasePath } from "next/dist/client/add-base-path"
+import { FetchFailure, SchemaFetchResult } from "@/lib/schema-fetch"
 
 export const DedupedSymbol = Symbol(
     "return value for fetch operations that are deduped and therefore aborted"
 )
 type DedupedSymbol = typeof DedupedSymbol
+type UnknownSchema = string
 
 export class SchemaResolver {
     // SchemaResolver becomes ready with the first {@link SchemaResolver.updateRegisteredSchemas} call
@@ -16,29 +19,49 @@ export class SchemaResolver {
     private runningFetches: Map<string, Promise<SchemaFile>> = new Map()
     private spec: RO_CRATE_VERSION | null = null
 
-    constructor(private registeredSchemas: SchemaResolverStore["registeredSchemas"]) {}
+    constructor(private settings: SchemaResolverSettings) {}
 
     async autoload(nodeId: string, exclude: string[]) {
+        // Map key is schema id
         const loadedSchemas: Map<string, { schema?: SchemaFile; error?: unknown }> = new Map()
+        // Map key is node id
+        const loadedUnknownSchemas: Map<string, { schema?: SchemaFile; error?: unknown }> =
+            new Map()
 
         // Wait until the SchemaResolver becomes ready. Crucial to prevent errors on initial render
         await this.waitForReady()
 
-        const matched = this.registeredSchemas.filter(
+        const matched = this.settings.knownSchemas.filter(
             (schema) =>
-                schema.matchesUrls.some((prefix) => nodeId.startsWith(prefix)) &&
-                (this.spec ? schema.activeOnSpec.includes(this.spec) : true)
+                nodeId.startsWith(schema.url) &&
+                (this.spec
+                    ? schema.restrictTo.includes(this.spec) || schema.restrictTo.length === 0
+                    : true)
         )
+
         for (const registeredSchema of matched) {
             if (exclude.includes(registeredSchema.id)) continue
 
             try {
-                const schema = await this.fetchSchema(registeredSchema.schemaUrl)
+                const schema = await this.fetchSchema(registeredSchema)
                 if (schema === DedupedSymbol) continue // schema is already being fetched elsewhere in parallel
                 loadedSchemas.set(registeredSchema.id, { schema })
             } catch (e) {
                 console.error(`Failed to get schema with key ${registeredSchema.id}:`, e)
                 loadedSchemas.set(registeredSchema.id, { error: e })
+            }
+        }
+
+        if (matched.length === 0) {
+            // No known schema exists. Can we load it anyway?
+            if (this.settings.allowUnknownSchemas) {
+                try {
+                    const schema = await this.fetchSchema(nodeId)
+                    if (schema !== DedupedSymbol) loadedUnknownSchemas.set(nodeId, { schema })
+                } catch (e) {
+                    console.error(`Failed to get unknown schema at ${nodeId}:`, e)
+                    loadedUnknownSchemas.set(nodeId, { error: e })
+                }
             }
         }
 
@@ -75,77 +98,97 @@ export class SchemaResolver {
         return Promise.resolve()
     }
 
-    updateRegisteredSchemas(
-        state: SchemaResolverStore["registeredSchemas"],
-        spec: RO_CRATE_VERSION
-    ) {
+    updateRegisteredSchemas(settings: SchemaResolverSettings, spec: RO_CRATE_VERSION) {
         this.ready = true
-        this.registeredSchemas = state
+        this.settings = settings
         this.spec = spec
     }
 
     async forceLoad(schemaId: string) {
-        const schema = this.registeredSchemas.find((schema) => schema.id === schemaId)
+        const schema = this.settings.knownSchemas.find((schema) => schema.id === schemaId)
         if (!schema) return
-        const fetched = await this.fetchSchema(schema.schemaUrl)
+        const fetched = await this.fetchSchema(schema)
         if (fetched === DedupedSymbol) return
         return fetched
     }
 
     loadAll(exclude: string[]) {
-        const schemas = this.registeredSchemas
+        const schemas = this.settings.knownSchemas
             .filter((schema) => !exclude.includes(schema.id))
-            .filter((schema) => (this.spec ? schema.activeOnSpec.includes(this.spec) : true))
+            .filter((schema) =>
+                this.spec
+                    ? schema.restrictTo.includes(this.spec) || schema.restrictTo.length === 0
+                    : true
+            )
         return schemas.map((schema) => ({
             schema: schema,
-            data: this.fetchSchema(schema.schemaUrl)
+            data: this.fetchSchema(schema)
         }))
     }
 
-    private async fetchSchema(url: string): Promise<SchemaFile | DedupedSymbol> {
+    private async fetchSchema(
+        schema: KnownSchema | UnknownSchema
+    ): Promise<SchemaFile | DedupedSymbol> {
+        if (typeof schema === "string" && !this.settings.allowUnknownSchemas) {
+            throw new Error(
+                `No schema known for ${schema}. If you want to allow unknown schemas, allow them in the settings.`
+            )
+        }
+
+        const url = typeof schema === "string" ? schema : schema.overrideUrl || schema.url
         const existing = this.runningFetches.get(url)
         if (existing) {
             return existing.then(() => DedupedSymbol) // After the existing fetch is done, return with DedupedSymbol
             // Because the existing fetch will actually fetch the schema and add it to the editor store, we do not need to fetch it again.
             // We simply wait until the existing fetch is done.
         } else {
-            const promise = fetch(url, {
-                headers: { Accept: "text/turtle" }
-            }).then(async (req) => {
-                if (
-                    req.headers.get("Content-Type") === "application/ld+json" ||
-                    req.headers.get("Content-Type")?.startsWith("text/plain") // GitHub raw files are served as text/plain, will try to use JSON anyway
-                ) {
-                    const data = await req.json()
-                    this.runningFetches.delete(url)
-                    return schemaFileSchema.parse(data)
-                } else if (req.headers.get("Content-Type")?.startsWith("text/turtle")) {
-                    const ttl = await req.text()
-                    const rawJson = parseTtl(ttl)
+            const executeFetch = async () => {
+                const res = await fetch(
+                    addBasePath("/api/schemas/fetch?url=" + encodeURIComponent(url))
+                )
+                const body = (await res.json()) as
+                    | SchemaFetchResult
+                    | { error: string; attempts?: FetchFailure[] }
 
-                    // Rewrite rdf:type style definitions to @type style definitions.
-                    // Remove owl references, use rdf and rdfs.
-                    rawJson["@graph"] = rawJson["@graph"].map((e) => {
-                        if ("rdf:type" in e) {
-                            e["@type"] = (e["rdf:type"] as IReference)["@id"]
-                        }
+                if ("error" in body) {
+                    throw new Error(
+                        body.error +
+                            ` (${body.attempts?.map((attempt) => `Tried ${attempt.accept} but got "${attempt.error}" (code: ${attempt.status})`).join("; ") ?? "No further information"})`
+                    )
+                } else {
+                    if (body.format === "jsonld") {
+                        const data = JSON.parse(body.content)
+                        this.runningFetches.delete(url)
+                        return schemaFileSchema.parse(data)
+                    } else if (body.format === "turtle") {
+                        const rawJson = parseTtl(body.content)
 
-                        if (e["@type"]) {
-                            e["@type"] = toArray(e["@type"]).map((type) => {
-                                if (type === "owl:Class") return "rdfs:Class"
-                                if (type === "owl:ObjectProperty") return "rdf:Property"
-                                return type
-                            })
-                        }
+                        // Rewrite rdf:type style definitions to @type style definitions.
+                        // Remove owl references, use rdf and rdfs.
+                        rawJson["@graph"] = rawJson["@graph"].map((e) => {
+                            if ("rdf:type" in e) {
+                                e["@type"] = (e["rdf:type"] as IReference)["@id"]
+                            }
 
-                        return e
-                    })
+                            if (e["@type"]) {
+                                e["@type"] = toArray(e["@type"]).map((type) => {
+                                    if (type === "owl:Class") return "rdfs:Class"
+                                    if (type === "owl:ObjectProperty") return "rdf:Property"
+                                    return type
+                                })
+                            }
 
-                    rawJson["@graph"] = rawJson["@graph"].filter((e) => "@type" in e)
-                    this.runningFetches.delete(url)
-                    return schemaFileSchema.parse(rawJson)
-                } else throw new Error(`Invalid content type ${req.headers.get("Content-Type")}`)
-            })
+                            return e
+                        })
+
+                        rawJson["@graph"] = rawJson["@graph"].filter((e) => "@type" in e)
+                        this.runningFetches.delete(url)
+                        return schemaFileSchema.parse(rawJson)
+                    } else throw new Error(`Unknown format ${body.format}`)
+                }
+            }
+
+            const promise = executeFetch()
             this.runningFetches.set(url, promise)
             return promise
         }

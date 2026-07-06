@@ -2,10 +2,17 @@ import { referenceCheck, toArray } from "../utils"
 import { SchemaNode } from "./SchemaNode"
 import { SchemaGraph } from "./SchemaGraph"
 import { SchemaResolver } from "./SchemaResolver"
-import type { SchemaResolverStore } from "@/lib/state/schema-resolver"
 import { RO_CRATE_VERSION } from "@/lib/constants"
+import type { SchemaResolverSettings } from "@/lib/state/schema-resolver-settings"
 
-const schemaResolver = new SchemaResolver([])
+const schemaResolver = new SchemaResolver({
+    knownSchemas: [],
+    preloadKnownSchemas: false,
+    allowUnknownSchemas: false,
+    setKnownSchemas() {},
+    setAllowUnknownSchemas() {},
+    setPreloadKnownSchemas() {}
+})
 const schemaGraph = new SchemaGraph(schemaResolver)
 
 /**
@@ -162,10 +169,7 @@ export function getWorkerStatus() {
     return { workerActive, schemaStatus: schemaGraph.getSchemaStatus() }
 }
 
-export function updateRegisteredSchemas(
-    state: SchemaResolverStore["registeredSchemas"],
-    spec: RO_CRATE_VERSION
-) {
+export function updateRegisteredSchemas(state: SchemaResolverSettings, spec: RO_CRATE_VERSION) {
     schemaResolver.updateRegisteredSchemas(state, spec)
 }
 

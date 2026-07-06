@@ -1,0 +1,30 @@
+@startuml
+start
+
+:Resolve Request (term: "Person");
+if (is term shortened?) then (yes)
+    :Resolve Prefix;
+    if (Does prefix resolve to URL?) then (yes)
+    else (no)
+        :Expand fully;
+    endif
+
+
+else (no)
+    :Resolve;
+endif
+
+:Check for URL overrides;
+:Check for matching substrings;
+:Try to fetch vocabulary;
+
+if (Vocabulary resolved) then (yes)
+    :Get term from vocabulary;
+else (no)
+    :Report error;
+endif
+
+stop
+
+
+@enduml

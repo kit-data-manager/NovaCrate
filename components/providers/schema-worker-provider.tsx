@@ -3,8 +3,8 @@ import { createContext, PropsWithChildren, useEffect } from "react"
 import { FunctionWorker } from "@/lib/function-worker"
 import { useFunctionWorker } from "@/lib/hooks/use-function-worker"
 import { addBasePath } from "next/dist/client/add-base-path"
-import { schemaResolverStore } from "@/lib/state/schema-resolver"
 import { useEditorState } from "@/lib/state/editor-state"
+import { useSchemaResolverSettings } from "@/lib/state/schema-resolver-settings"
 
 export interface ISchemaWorkerContext {
     isReady: boolean
@@ -33,19 +33,15 @@ export function SchemaWorkerProvider(props: PropsWithChildren) {
             worker
                 .executeUncached(
                     "updateRegisteredSchemas",
-                    schemaResolverStore.getState().registeredSchemas,
+                    useSchemaResolverSettings.getState(),
                     context.specification
                 )
                 .then()
 
-            return schemaResolverStore.subscribe((newState) => {
+            return useSchemaResolverSettings.subscribe((newState) => {
                 if (context.specification)
                     worker
-                        .executeUncached(
-                            "updateRegisteredSchemas",
-                            newState.registeredSchemas,
-                            context.specification
-                        )
+                        .executeUncached("updateRegisteredSchemas", newState, context.specification)
                         .then()
             })
         }
