@@ -6,8 +6,14 @@ import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 export interface ValidationResultStore {
     results: ValidationResult[]
     ranAtLeastOnce: boolean
-    clearResults(entityId?: string, propertyName?: string): void
-    clear(): void
+
+    /**
+     * Clear all entries that match exactly the provided entityId or propertyName. If no propertyName is provided, only entries with no propertyName are removed. If no entityId is provided, only entries with no entityId are removed.
+     * @param entityId EntityId of results to remove. Leave undefined to remove all entries that have no entityId.
+     * @param propertyName name of the property that was validated. Leave undefined to remove all entries that have no propertyName.
+     */
+    clearByEntityIdOrPropertyName(entityId?: string, propertyName?: string): void
+    clearAll(): void
     addResults(result: ValidationResult[]): void
 }
 
@@ -17,7 +23,7 @@ export const createValidationResultStore = () =>
             immer((set) => ({
                 results: [],
                 ranAtLeastOnce: false,
-                clearResults(entityId?: string, propertyName?: string) {
+                clearByEntityIdOrPropertyName(entityId?: string, propertyName?: string) {
                     set((store) => {
                         store.results = store.results.filter((result) =>
                             entityId
@@ -30,7 +36,7 @@ export const createValidationResultStore = () =>
                         )
                     })
                 },
-                clear() {
+                clearAll() {
                     set({ results: [] })
                 },
                 addResults(result: ValidationResult[]) {

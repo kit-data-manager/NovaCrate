@@ -86,7 +86,7 @@ function createMockPersistence(
 
 describe("CrateFactory", () => {
     describe("createEmptyCrate", () => {
-        it("should create a crate with a valid RO-Crate v1.2 template", async () => {
+        it("should create a crate with a valid RO-Crate v1.3 template", async () => {
             const repo = createMockRepositoryService()
             const persistence = createMockPersistence(repo)
             const factory = new CrateFactory(persistence)
@@ -97,7 +97,7 @@ describe("CrateFactory", () => {
             const json = (repo.createCrateFromMetadata as jest.Mock).mock.calls[0][0]
             const crate = JSON.parse(json) as ICrate
 
-            expect(crate["@context"]).toBe("https://w3id.org/ro/crate/1.2/context")
+            expect(crate["@context"]).toBe("https://w3id.org/ro/crate/1.3/context")
             expect(crate["@graph"]).toHaveLength(2)
 
             const root = crate["@graph"].find((e) => e["@id"] === "./")
@@ -111,7 +111,7 @@ describe("CrateFactory", () => {
             expect(descriptor!["@type"]).toBe("CreativeWork")
             expect((descriptor!.about as IReference)["@id"]).toBe("./")
             expect((descriptor!.conformsTo as IReference)["@id"]).toBe(
-                "https://w3id.org/ro/crate/1.2"
+                "https://w3id.org/ro/crate/1.3"
             )
         })
 

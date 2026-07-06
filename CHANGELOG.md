@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added support for the RO-Crate v1.3.0 specification
 - Added help tooltips to the AI Assistant configuration modal
 - The graph view now remembers the last viewport position and node layout for the duration of the session
 - Added a highlight to all edges connected to the selected entity in the graph view

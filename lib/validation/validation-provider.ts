@@ -26,19 +26,18 @@ export class ValidationProvider {
 
     async validateCrate() {
         const entities = this.editorState.getEntities()
-        const context = this.editorState.crateContext
         const promises: Promise<ValidationResult[]>[] = []
         for (const validator of this.validators) {
             promises.push(
                 validator.validateCrate({
                     "@graph": Array.from(entities.values()),
-                    "@context": context.context
+                    "@context": this.validatorContext.context.getRaw() ?? ""
                 })
             )
         }
 
         const results = await this.handlePromises(promises)
-        this.resultStore.getState().clearResults()
+        this.resultStore.getState().clearByEntityIdOrPropertyName()
         this.resultStore.getState().addResults(results)
     }
 
@@ -52,7 +51,7 @@ export class ValidationProvider {
         }
 
         const results = await this.handlePromises(promises)
-        this.resultStore.getState().clearResults(entity["@id"])
+        this.resultStore.getState().clearByEntityIdOrPropertyName(entity["@id"])
         this.resultStore.getState().addResults(results)
     }
 
@@ -65,7 +64,7 @@ export class ValidationProvider {
         }
 
         const results = await this.handlePromises(promises)
-        this.resultStore.getState().clearResults(entity["@id"], propertyName)
+        this.resultStore.getState().clearByEntityIdOrPropertyName(entity["@id"], propertyName)
         this.resultStore.getState().addResults(results)
     }
 

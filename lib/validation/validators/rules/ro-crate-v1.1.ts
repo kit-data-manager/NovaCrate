@@ -21,37 +21,7 @@ import { ValidationResultBuilder } from "@/lib/validation/validation-result-buil
 const builder = new ValidationResultBuilder("spec-v1.1")
 
 export const RoCrateV1_1 = {
-    crateRules: ((ctx) => [
-        async (crate) => {
-            if (
-                !crate["@graph"].find(
-                    (e) =>
-                        e["@id"] === "ro-crate-metadata.jsonld" ||
-                        e["@id"] === "ro-crate-metadata.json"
-                )
-            ) {
-                return [
-                    builder.rule("missingMetadataEntity").error({
-                        resultTitle: "Missing metadata entity",
-                        resultDescription: "The crate must have a metadata entity",
-                        helpUrl:
-                            "https://www.researchobject.org/ro-crate/specification/1.1/root-data-entity#ro-crate-metadata-file-descriptor"
-                    })
-                ]
-            } else return []
-        },
-        async (crate) => {
-            if (!crate["@graph"].find((e) => e["@id"] === ctx.editorState.getRootEntityId())) {
-                return [
-                    builder.rule("missingRootEntity").error({
-                        resultTitle: "Missing root entity",
-                        resultDescription: "The crate must have a root entity"
-                    })
-                ]
-            }
-            return []
-        }
-    ]) satisfies RuleBuilder<CrateRule>,
+    crateRules: (() => []) satisfies RuleBuilder<CrateRule>,
 
     entityRules: ((ctx) => [
         async (entity) => {
