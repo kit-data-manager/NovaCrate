@@ -111,8 +111,8 @@ export function TypeSelect({
         setIsLoadingAllSchemas(true)
         await worker.executeUncached("loadAllSchemas")
         await checkIfMatchingSchemaUnloaded()
-        await mutate()
         worker.clearExecuteCache()
+        await mutate()
         setIsLoadingAllSchemas(false)
     }, [checkIfMatchingSchemaUnloaded, mutate, worker])
 
