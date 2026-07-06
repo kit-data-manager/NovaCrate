@@ -172,7 +172,7 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
                             merged.push(defaultSchemas.find((d) => d.id === "pcdm")!)
                     }
 
-                    if (persistedVersion < 2) {
+                    if (persistedVersion < 3) {
                         for (const schema of merged) {
                             const defaults = defaultSchemas.find((d) => d.id === schema.id)
                             if (

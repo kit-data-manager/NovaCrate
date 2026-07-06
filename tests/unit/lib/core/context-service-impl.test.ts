@@ -130,9 +130,6 @@ describe("ContextServiceImpl", () => {
             expect(service.reverse("https://bioschemas.org/terms/ComputationalWorkflow")).toBe(
                 "ComputationalWorkflow"
             )
-            expect(service.reverse("https://bioschemas.org/terms/ComputationalWorkflow")).toBe(
-                "ComputationalWorkflow"
-            )
             expect(service.reverse("https://bioschemas.org/terms/input")).toBe("input")
             expect(service.reverse("https://bioschemas.org/terms/output")).toBe("output")
         })

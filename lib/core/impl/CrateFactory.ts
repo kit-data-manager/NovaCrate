@@ -7,8 +7,8 @@ import { CoreServiceImpl } from "@/lib/core/impl/CoreServiceImpl"
 import { PersistenceAdapterImpl } from "@/lib/core/impl/PersistenceAdapterImpl"
 import { IGNORED_FILES } from "@/lib/constants"
 
-const DEFAULT_CONTEXT = "https://w3id.org/ro/crate/1.2/context"
-const DEFAULT_CONFORMS_TO = "https://w3id.org/ro/crate/1.2"
+const DEFAULT_CONTEXT = "https://w3id.org/ro/crate/1.3/context"
+const DEFAULT_CONFORMS_TO = "https://w3id.org/ro/crate/1.3"
 
 function buildCrateTemplate(name: string, description: string): ICrate {
     return {

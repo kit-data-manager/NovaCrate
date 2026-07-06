@@ -14,25 +14,27 @@ function buildContext(): ValidatorContext {
         } as unknown as ValidatorContext["editorState"],
         schemaWorker: {} as ValidatorContext["schemaWorker"],
         resolver: {} as ValidatorContext["resolver"],
-        context: {} as ValidatorContext["context"]
+        context: {
+            getRaw() {
+                return "https://w3id.org/ro/crate/1.2/context"
+            }
+        } as ValidatorContext["context"]
     }
 }
 
 describe("RoCrateBase", () => {
     describe("crateRules", () => {
         it("warns when metadata conformsTo references a different RO-Crate version than @context", async () => {
-            const [rule] = RoCrateBase.crateRules(buildContext())
+            const rules = RoCrateBase.propertyRules(buildContext())
 
-            const results = await rule({
-                "@context": "https://w3id.org/ro/crate/1.2/context",
-                "@graph": [
-                    {
-                        "@id": "ro-crate-metadata.json",
-                        "@type": "CreativeWork",
-                        conformsTo: { "@id": "https://w3id.org/ro/crate/1.1" }
-                    }
-                ]
-            })
+            const results = await rules[2](
+                {
+                    "@id": "ro-crate-metadata.json",
+                    "@type": "CreativeWork",
+                    conformsTo: { "@id": "https://w3id.org/ro/crate/1.1" }
+                },
+                "conformsTo"
+            )
 
             expect(results).toHaveLength(1)
             expect(results[0]).toMatchObject({
