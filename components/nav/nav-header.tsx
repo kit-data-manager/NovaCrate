@@ -128,33 +128,39 @@ export function NavHeader() {
 
     const crateName = useCrateName()
 
-    const downloadCrateZip = useCallback(async () => {
-        const repo = persistence.getRepositoryService()
-        const crateId = persistence.getCrateId()
-        if (repo && crateId) {
-            try {
-                await downloadCrateAs(repo, crateId, "zip", crateName + ".zip")
-                showCrateExportedModal()
-            } catch (e) {
-                console.error("Failed to export crate as .zip", e)
-                toast.error("Failed to export crate as .zip")
+    const downloadCrateZip = useCallback(
+        async (compressed: boolean) => {
+            const repo = persistence.getRepositoryService()
+            const crateId = persistence.getCrateId()
+            if (repo && crateId) {
+                try {
+                    await downloadCrateAs(repo, crateId, "zip", crateName + ".zip", { compressed })
+                    showCrateExportedModal()
+                } catch (e) {
+                    console.error("Failed to export crate as .zip", e)
+                    toast.error("Failed to export crate as .zip")
+                }
             }
-        }
-    }, [crateName, persistence, showCrateExportedModal])
+        },
+        [crateName, persistence, showCrateExportedModal]
+    )
 
-    const downloadCrateEln = useCallback(async () => {
-        const repo = persistence.getRepositoryService()
-        const crateId = persistence.getCrateId()
-        if (repo && crateId) {
-            try {
-                await downloadCrateAs(repo, crateId, "eln", crateName + ".eln")
-                showCrateExportedModal()
-            } catch (e) {
-                console.error("Failed to export crate as .eln", e)
-                toast.error("Failed to export crate as .eln")
+    const downloadCrateEln = useCallback(
+        async (compressed: boolean) => {
+            const repo = persistence.getRepositoryService()
+            const crateId = persistence.getCrateId()
+            if (repo && crateId) {
+                try {
+                    await downloadCrateAs(repo, crateId, "eln", crateName + ".eln", { compressed })
+                    showCrateExportedModal()
+                } catch (e) {
+                    console.error("Failed to export crate as .eln", e)
+                    toast.error("Failed to export crate as .eln")
+                }
             }
-        }
-    }, [crateName, persistence, showCrateExportedModal])
+        },
+        [crateName, persistence, showCrateExportedModal]
+    )
 
     const downloadRoCrateMetadataFile = useCallback(async () => {
         const repo = persistence.getRepositoryService()
@@ -247,11 +253,19 @@ export function NavHeader() {
                                 <Download className="size-4" /> Export
                             </MenubarSubTrigger>
                             <MenubarSubContent>
-                                <MenubarItem onClick={downloadCrateZip}>
+                                <MenubarItem onClick={() => downloadCrateZip(true)}>
                                     <FolderArchive className="size-4" /> As .zip Archive
+                                    (Compressed)
                                 </MenubarItem>
-                                <MenubarItem onClick={downloadCrateEln}>
-                                    <Notebook className="size-4" /> As ELN
+                                <MenubarItem onClick={() => downloadCrateZip(false)}>
+                                    <FolderArchive className="size-4" /> As .zip Archive
+                                    (Uncompressed)
+                                </MenubarItem>
+                                <MenubarItem onClick={() => downloadCrateEln(true)}>
+                                    <Notebook className="size-4" /> As ELN (Compressed)
+                                </MenubarItem>
+                                <MenubarItem onClick={() => downloadCrateEln(false)}>
+                                    <Notebook className="size-4" /> As ELN (Uncompressed)
                                 </MenubarItem>
                                 <MenubarItem onClick={downloadRoCrateMetadataFile}>
                                     <File className="size-4" /> ro-crate-metadata.json

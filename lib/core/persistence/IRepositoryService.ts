@@ -62,9 +62,15 @@ export interface IRepositoryService {
      * @param crateId - The ID of the crate to export.
      * @param format - `"zip"` for a standard RO-Crate zip, `"eln"` for ELN
      *   format, or `"standalone-json"` for the single `ro-crate-metadata.json` file
+     * @param options - Optional options object.
+     *   - `compressed` (boolean): Whether to compress the archive (applies for eln and zip).
      * @returns A {@link Blob} containing the exported archive.
      */
-    getCrateAs(crateId: string, format: "zip" | "eln" | "standalone-json"): Promise<Blob>
+    getCrateAs(
+        crateId: string,
+        format: "zip" | "eln" | "standalone-json",
+        options?: { compressed?: boolean }
+    ): Promise<Blob>
 
     /** Return the current storage quota and usage for the whole repository. */
     getStorageQuota(): Promise<IStorageQuota>
