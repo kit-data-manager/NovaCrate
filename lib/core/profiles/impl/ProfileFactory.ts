@@ -1,27 +1,35 @@
-import { CrateSchema, getRootEntityID, pickFirst } from "@/lib/utils"
-import { propertyValue } from "@/lib/property-value-utils"
+import { CrateSchema, pickFirst } from "@/lib/utils"
 import { ContextServiceImpl } from "@/lib/core/impl/ContextServiceImpl"
 import { RO_CRATE_VERSION } from "@/lib/constants"
 import { ProfileDefinition } from "@/lib/core/profiles/ProfileDefinition"
+import { IProfileFactoryStrategy } from "@/lib/core/profiles/impl/IProfileFactoryStrategy"
+import { IProfile } from "@/lib/core/profiles/IProfile"
+import { MASPStrategy } from "@/lib/core/profiles/impl/MASPStrategy"
 
-const KNOWN_PROFILES: { uri: string; loadProfile: () => Promise<ICrate> }[] = [
+const KNOWN_PROFILES: {
+    uri: string
+    loadProfile: () => Promise<ICrate>
+    strategy?: IProfileFactoryStrategy
+}[] = [
     {
         uri: "https://w3id.org/workflowhub/workflow-ro-crate/",
         async loadProfile() {
             const crate = await import("./assets/workflow-1.0.json")
             return CrateSchema.parse(crate)
-        }
+        },
+        strategy: new MASPStrategy()
     },
     {
         uri: "https://w3id.org/workflowhub/workflow-ro-crate/1.0",
         async loadProfile() {
             const crate = await import("./assets/workflow-1.0.json")
             return CrateSchema.parse(crate)
-        }
+        },
+        strategy: new MASPStrategy()
     }
 ]
 
-const SCHEMA_RESOURCE = "http://www.w3.org/ns/dx/prof/role/schema"
+const STRATEGIES: IProfileFactoryStrategy[] = [new MASPStrategy()]
 
 export class ProfileFactory {
     async createProfileFromURI(profileURI: string) {
@@ -40,35 +48,28 @@ export class ProfileFactory {
             )
         }
 
-        const rootID = getRootEntityID(profileMetadata["@graph"])
-        if (!rootID) {
-            throw new Error("Could not determine root entity ID from profile metadata")
+        const strategies =
+            known && known.strategy
+                ? [known.strategy]
+                : STRATEGIES.filter((s) => s.isApplicable(profileMetadata))
+
+        let result: IProfile | undefined = undefined
+        for (const strategy of strategies) {
+            if (result) break
+            try {
+                result = await strategy.createProfileFromProfileCrate(profileMetadata)
+            } catch (e) {
+                console.warn(`Failed to create profile with strategy "${strategy.name}"`, e)
+            }
         }
 
-        const root = profileMetadata["@graph"].find((e) => e["@id"] === rootID)
-        if (!root) {
-            throw new Error(`Root entity with ID ${rootID} not found in profile metadata`)
-        }
-        if (!propertyValue(root["@type"]).contains("Profile")) {
-            throw new Error(`Root entity is not a Profile: ${rootID}`)
+        if (!result) {
+            throw new Error(
+                `Could not create profile from metadata, no strategy matched/successful`
+            )
         }
 
-        const resources = profileMetadata["@graph"].filter((entity) => {
-            return propertyValue(entity["@type"]).contains("ResourceDescriptor") && root.hasResource
-                ? propertyValue(root.hasResource).contains({ "@id": entity["@id"] })
-                : false
-        })
-
-        const schemas = resources.filter(
-            (entity) =>
-                entity.hasRole && propertyValue(entity.hasRole).contains({ "@id": SCHEMA_RESOURCE })
-        )
-
-        // We try to find a schema definition in MASP format by expecting an entity with hasPart
-        // TODO: Should also check whether the profile conforms to the MASP Profile (once it is officially released with a PID)
-        const maspSchema = schemas.find(
-            (entity) => entity.hasPart && !propertyValue(entity.hasPart).isEmpty()
-        )
+        return result
     }
 }
 
