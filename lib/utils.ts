@@ -43,6 +43,18 @@ export function toArray<T>(input: T | T[]): T[] {
 }
 
 /**
+ * Takes the first element in an array or simply returns the input when it is not an array
+ * @param input
+ */
+export function pickFirst<T>(input: T | T[]): T {
+    if (Array.isArray(input)) {
+        return input[0]
+    } else {
+        return input
+    }
+}
+
+/**
  * Compute the display name for the supplied entity. Will first try the name property, then the givenName and familyName properties. Lastly, it will return the @id if fallback is true. Will return an empty string otherwise.
  * @param entity Entity to retrieve the name for
  * @param fallback If true, will return the @id of the entity if no name could be found.

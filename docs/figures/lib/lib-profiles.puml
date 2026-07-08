@@ -1,0 +1,70 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+interface ICoreService {}
+
+interface IProfileService {
+    + events
+    getAllReady(): boolean
+    setProfileURIs(profileURIs: string[]): Promise<void>
+    getProfiles(): IProfile[]
+}
+
+interface IProfile {
+    + events
+    isReady(): boolean
+    getDefinition(): ProfileDefinition | null
+}
+
+class ProfileFactory {
+    createProfileFromURI(profileURI: string): Promise<IProfile>
+}
+
+class ExternalCrateResolver {
+    resolveCrate(url: string): Promise<ICrate>
+}
+
+ICoreService *-- "1" IProfileService: profileService
+IProfileService *-- "*" IProfile: profiles
+IProfile *-- "1" ProfileDefinition: definition
+
+ProfileFactory ..> IProfile: <<creates>>
+ProfileFactory ..> ExternalCrateResolver: <<uses>>
+IProfileService ..> ProfileFactory: <<uses>>
+
+class ProfileDefinition {
+    @id: String
+    name: String
+    description?: string
+    specification: RO_CRATE_SPEC
+    version?: string
+    classes: ProfileClass[]
+    properties: ProfileProperty[]
+}
+
+class ProfileClass {
+    @id: string
+    specializationOf?: string
+    name?: string
+    label?: string
+    description?: string
+    minCount?: number
+    maxCount?: number
+}
+
+class ProfileProperty {
+    @id: string
+    specializationOf?: string
+    name?: string
+    label: string
+    description?: string
+    minCount?: number
+    maxCount?: number
+    domainIncludes: IReference[]
+    rangeIncludes?: IReference[]
+}
+
+ProfileDefinition "1" *-- "*" ProfileClass
+ProfileDefinition "1" *-- "*" ProfileProperty
+
+@enduml
