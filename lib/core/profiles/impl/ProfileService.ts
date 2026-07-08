@@ -3,6 +3,8 @@ import { IObservable } from "@/lib/core/IObservable"
 import { IProfile } from "@/lib/core/profiles/IProfile"
 import { Observable } from "@/lib/core/impl/Observable"
 import { ProfileFactory } from "@/lib/core/profiles/impl/ProfileFactory"
+import { IMetadataService } from "@/lib/core/IMetadataService"
+import { getRootEntityID, toArray } from "@/lib/utils"
 
 export class ProfileService implements IProfileService {
     private _events = new Observable<IProfileServiceEvents>()
@@ -11,8 +13,24 @@ export class ProfileService implements IProfileService {
     private profiles: IProfile[] = []
     private profileConstructionErrors: string[] = []
 
-    constructor() {
+    constructor(metadata: IMetadataService) {
         this.probeAllReady = this.probeAllReady.bind(this)
+        metadata.events.addEventListener("graph-changed", (e) => {
+            this.parseProfileURIsFromEntities(e)
+        })
+        this.parseProfileURIsFromEntities(metadata.getEntities())
+    }
+
+    private parseProfileURIsFromEntities(entities: IEntity[]) {
+        const rootID = getRootEntityID(entities)
+        const root = entities.find((e) => e["@id"] === rootID)
+        if (root && root.conformsTo) {
+            this.setProfileURIs(
+                toArray(root.conformsTo)
+                    .filter((v) => typeof v === "object")
+                    .map((r) => r["@id"])
+            ).then() // The promise is intentionally ignored, this class manages itself automatically
+        }
     }
 
     getAllErrors(): string[] {
@@ -44,6 +62,14 @@ export class ProfileService implements IProfileService {
     setProfileURIsGuard = 0
     async setProfileURIs(profileURIs: string[]): Promise<void> {
         const guard = ++this.setProfileURIsGuard
+
+        if (
+            this.profileURIs.length === profileURIs.length &&
+            this.profileURIs.every((uri) => profileURIs.includes(uri)) &&
+            profileURIs.every((uri) => this.profileURIs.includes(uri))
+        ) {
+            return // No changes
+        }
 
         this.profileURIs = profileURIs
         this.profiles.forEach((p) =>

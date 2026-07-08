@@ -31,7 +31,17 @@ const KNOWN_PROFILES: {
 
 const STRATEGIES: IProfileFactoryStrategy[] = [new MASPStrategy()]
 
+/**
+ * Strategy-driven factory for creating profiles from profile URIs. To add more strategies, implement {@link IProfileFactoryStrategy}
+ * add the implementation to the `STRATEGIES` array.
+ */
 export class ProfileFactory {
+    /**
+     * Attempts to create a profile from the given profile URI. If the provided profileURI is known, the corresponding profile
+     * metadata is loaded and passed to the configured strategy. If the profileURI (or strategy) is not known, all applicable strategies are
+     * tried in order. If no strategy succeeds, an error is thrown.
+     * @param profileURI
+     */
     async createProfileFromURI(profileURI: string) {
         const known = KNOWN_PROFILES.find((p) => p.uri === profileURI)
 
@@ -43,6 +53,7 @@ export class ProfileFactory {
                 throw new Error(`Failed to load known profile ${profileURI}`, { cause: e })
             }
         } else {
+            // TODO Resolve external profile crate
             throw new Error(
                 `Unknown profile URI: ${profileURI}. Unknown profiles are not supported yet`
             )
@@ -73,6 +84,10 @@ export class ProfileFactory {
     }
 }
 
+/**
+ * Utility to build a {@link ProfileDefinition} from a root entity. Likely useful for all profile factory strategies. `classes` and `properties` are empty and must be filled by the strategy.
+ * @param rootEntity Root entity of the profile crate
+ */
 export function buildProfileDefinitionFromRootEntity(rootEntity: IEntity): ProfileDefinition {
     const name = pickFirst(rootEntity.name)
     const isProfileOf = pickFirst(rootEntity.isProfileOf)

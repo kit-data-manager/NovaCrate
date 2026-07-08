@@ -13,6 +13,9 @@ export type IProfileServiceEvents = {
     "profiles-changed": (profiles: string[]) => void
 }
 
+/**
+ * This service is responsible for creating {@link IProfile} instances from profile URIs and managing their lifecycle.
+ */
 export interface IProfileService {
     readonly events: IObservable<IProfileServiceEvents>
 

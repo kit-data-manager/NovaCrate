@@ -1,5 +1,6 @@
 import { IContextService } from "@/lib/core/IContextService"
 import { IMetadataService } from "@/lib/core/IMetadataService"
+import { IProfileService } from "@/lib/core/profiles/IProfileService"
 
 /**
  * Top-level orchestrator for all RO-Crate domain operations on the currently
@@ -62,4 +63,6 @@ export interface ICoreService {
     getContextService(): IContextService
     /** Returns the {@link IMetadataService} for the currently open crate. */
     getMetadataService(): IMetadataService
+    /** Returns the {@link IProfileService} for the currently open crate. */
+    getProfileService(): IProfileService
 }

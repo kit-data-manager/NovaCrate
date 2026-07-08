@@ -8,14 +8,18 @@ import { MetadataServiceImpl } from "@/lib/core/impl/MetadataServiceImpl"
 import { ContextServiceImpl } from "@/lib/core/impl/ContextServiceImpl"
 import { isDataEntity } from "@/lib/utils"
 import { DateTime } from "luxon"
+import { IProfileService } from "@/lib/core/profiles/IProfileService"
+import { ProfileService } from "@/lib/core/profiles/impl/ProfileService"
 
 /**
  * Orchestrates metadata and context operations, delegating entity mutations
  * to IMetadataService and file operations to IFileService.
+ * Also bundles the ProfileService.
  */
 export class CoreServiceImpl implements ICoreService {
     private readonly metadata: IMetadataService
     private readonly context: IContextService
+    private readonly profiles: IProfileService
 
     private fileService: IFileService | null
     private removeFileServiceChangedListener: (() => void) | null = null
@@ -23,10 +27,12 @@ export class CoreServiceImpl implements ICoreService {
     private constructor(
         metadata: IMetadataService,
         context: IContextService,
+        profiles: IProfileService,
         crateService: ICrateService
     ) {
         this.metadata = metadata
         this.context = context
+        this.profiles = profiles
         this.fileService = crateService.getFileService()
 
         this.onFileServiceChanged = this.onFileServiceChanged.bind(this)
@@ -120,6 +126,10 @@ export class CoreServiceImpl implements ICoreService {
         return this.metadata
     }
 
+    getProfileService(): IProfileService {
+        return this.profiles
+    }
+
     dispose() {
         if (this.removeFileServiceChangedListener) {
             this.removeFileServiceChangedListener()
@@ -133,6 +143,6 @@ export class CoreServiceImpl implements ICoreService {
     ): Promise<CoreServiceImpl> {
         const metadata = await MetadataServiceImpl.newInstance(persistenceAdapter)
         const context = await ContextServiceImpl.newInstance(persistenceAdapter)
-        return new CoreServiceImpl(metadata, context, crateService)
+        return new CoreServiceImpl(metadata, context, new ProfileService(metadata), crateService)
     }
 }
