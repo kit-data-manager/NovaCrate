@@ -34,6 +34,7 @@ package core {
     ICoreService --> ICrateService
     ICoreService *-- IContextService
     ICoreService *-- IMetadataService
+    ICoreService *-- IProfileService
 
     interface IContextService {
         - context
@@ -62,6 +63,17 @@ package core {
         changeEntityIdentifier()
         deleteEntity()
     }
+
+    interface IProfileService {
+        + events
+        getAllReady()
+        getAllErrors()
+        setProfileURIs()
+        getProfileURIs()
+        getProfiles()
+    }
+
+    IProfileService -> IMetadataService
 
     class CrateFactory {
         createEmptyCrate(name, description)

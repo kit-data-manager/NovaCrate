@@ -5,14 +5,17 @@ interface ICoreService {}
 
 interface IProfileService {
     + events
-    getAllReady(): boolean
-    setProfileURIs(profileURIs: string[]): Promise<void>
-    getProfiles(): IProfile[]
+    getAllReady()
+    getAllErrors()
+    setProfileURIs()
+    getProfileURIs()
+    getProfiles()
 }
 
 interface IProfile {
     + events
-    isReady(): boolean
+    getIsReady(): boolean
+    getErrors(): string[]
     getDefinition(): ProfileDefinition | null
 }
 
@@ -20,16 +23,20 @@ class ProfileFactory {
     createProfileFromURI(profileURI: string): Promise<IProfile>
 }
 
-class ExternalCrateResolver {
-    resolveCrate(url: string): Promise<ICrate>
+note top of ProfileFactory: Takes care of resolving the profileURIs to profile crates
+
+interface IProfileFactoryStrategy {
+    name
+    isApplicable()
+    createProfileFromProfileCrate()
 }
 
 ICoreService *-- "1" IProfileService: profileService
 IProfileService *-- "*" IProfile: profiles
 IProfile *-- "1" ProfileDefinition: definition
+ProfileFactory --> "*" IProfileFactoryStrategy: STRATEGIES
 
-ProfileFactory ..> IProfile: <<creates>>
-ProfileFactory ..> ExternalCrateResolver: <<uses>>
+IProfileFactoryStrategy ..> IProfile: <<creates>>
 IProfileService ..> ProfileFactory: <<uses>>
 
 class ProfileDefinition {
@@ -38,8 +45,6 @@ class ProfileDefinition {
     description?: string
     specification: RO_CRATE_SPEC
     version?: string
-    classes: ProfileClass[]
-    properties: ProfileProperty[]
 }
 
 class ProfileClass {
@@ -62,9 +67,11 @@ class ProfileProperty {
     maxCount?: number
     domainIncludes: IReference[]
     rangeIncludes?: IReference[]
+    value?: EntityPropertyTypes
+    options?: EntitySinglePropertyTypes[]
 }
 
-ProfileDefinition "1" *-- "*" ProfileClass
-ProfileDefinition "1" *-- "*" ProfileProperty
+ProfileDefinition "1" *-- "*" ProfileClass: classes
+ProfileDefinition "1" *-- "*" ProfileProperty: properties
 
 @enduml
