@@ -8,6 +8,10 @@ export type IProfileEvents = {
      * This event will not be called if the profile is ready immediately after construction.
      */
     "ready-changed": (ready: boolean) => void
+    /**
+     * This event is emitted whenever the profile implementation emits an error.
+     */
+    "error-emitted": () => void
 }
 
 /**
@@ -20,6 +24,16 @@ export type IProfileEvents = {
  */
 export interface IProfile {
     readonly events: IObservable<IProfileEvents>
+
+    /**
+     * The unique identifier of this profile instance. It must be unique in each instance of the class.
+     */
+    readonly id: string
+
+    /**
+     * The human-readable name of this profile mechanism
+     */
+    readonly name: string
 
     /**
      * Indicates whether the profile is ready to be used. If this method returns true,

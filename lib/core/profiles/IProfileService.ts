@@ -8,9 +8,17 @@ export type IProfileServiceEvents = {
      */
     "all-ready-changed": (ready: boolean) => void
     /**
-     * This event is emitted whenever the list of active profiles changes.
+     * This event is emitted whenever the list of profiles URIs changes.
      */
-    "profiles-changed": (profiles: string[]) => void
+    "profile-uris-changed": (profileURIs: string[]) => void
+    /**
+     * This event is emitted whenever the list of active profiles (IProfile instances) changes.
+     */
+    "profiles-changed": (profiles: IProfile[]) => void
+    /**
+     * This event is emitted whenever the service or any profiles emit an error.
+     */
+    "error-emitted": () => void
 }
 
 /**

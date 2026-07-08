@@ -7,10 +7,10 @@ import { useCallback, useState } from "react"
 import { SpecificationModal } from "@/components/context/specification-modal"
 import { CustomPairs } from "@/components/context/custom-pairs"
 import { Error } from "@/components/error"
-import HelpTooltip from "@/components/help-tooltip"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Metadata } from "@/components/Metadata"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Profiles } from "@/components/context/profiles"
 
 export function ContextPage() {
     const context = useEditorState((store) => store.crateContext)
@@ -24,7 +24,7 @@ export function ContextPage() {
 
     return (
         <div className="bg-background rounded-lg overflow-hidden border h-full">
-            <Metadata page={"Context"} />
+            <Metadata page={"Profiles & Context"} />
 
             <SpecificationModal
                 open={specificationModalOpen}
@@ -32,20 +32,13 @@ export function ContextPage() {
             />
 
             <div className="pl-4 text-sm h-10 flex items-center border-b bg-accent">
-                <Library className="size-4 shrink-0 mr-2" /> Context
+                <Library className="size-4 shrink-0 mr-2" /> Profiles & Context
             </div>
 
             <div className="p-4 pt-0">
                 <div className="my-4 space-y-4">
-                    <Label>
-                        Specification{" "}
-                        <HelpTooltip>
-                            Determines which RO-Crate Specification the current Crate should follow.
-                            Currently, only RO-Crate v1.1 (https://w3id.org/ro/crate/1.1/contex) is
-                            supported.
-                        </HelpTooltip>
-                    </Label>
-                    <div className="mt-2 ml-2">
+                    <Label className="font-bold text-md">Specification</Label>
+                    <div className="text-sm">
                         {!contextReady ? (
                             <Skeleton className="w-32 h-6" />
                         ) : (
@@ -75,6 +68,8 @@ export function ContextPage() {
                         </Alert>
                     ) : null}
                 </div>
+
+                <Profiles />
 
                 <CustomPairs />
             </div>

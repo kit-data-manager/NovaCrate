@@ -5,6 +5,7 @@ import { Observable } from "@/lib/core/impl/Observable"
 import { ProfileFactory } from "@/lib/core/profiles/impl/ProfileFactory"
 import { IMetadataService } from "@/lib/core/IMetadataService"
 import { getRootEntityID, toArray } from "@/lib/utils"
+import { stringifyError } from "@/components/error"
 
 export class ProfileService implements IProfileService {
     private _events = new Observable<IProfileServiceEvents>()
@@ -15,6 +16,8 @@ export class ProfileService implements IProfileService {
 
     constructor(metadata: IMetadataService) {
         this.probeAllReady = this.probeAllReady.bind(this)
+        this.forwardErrorEvent = this.forwardErrorEvent.bind(this)
+
         metadata.events.addEventListener("graph-changed", (e) => {
             this.parseProfileURIsFromEntities(e)
         })
@@ -59,6 +62,10 @@ export class ProfileService implements IProfileService {
         }
     }
 
+    private forwardErrorEvent() {
+        this._events.emit("error-emitted")
+    }
+
     setProfileURIsGuard = 0
     async setProfileURIs(profileURIs: string[]): Promise<void> {
         const guard = ++this.setProfileURIsGuard
@@ -72,13 +79,14 @@ export class ProfileService implements IProfileService {
         }
 
         this.profileURIs = profileURIs
-        this.profiles.forEach((p) =>
+        this.profiles.forEach((p) => {
             p.events.removeEventListener("ready-changed", this.probeAllReady)
-        )
+            p.events.removeEventListener("error-emitted", this.forwardErrorEvent)
+        })
         this.profiles = []
         this.profileConstructionErrors = []
         this._events.emit("all-ready-changed", false)
-        this._events.emit("profiles-changed", profileURIs)
+        this._events.emit("profile-uris-changed", this.getProfileURIs())
 
         const factory = new ProfileFactory()
 
@@ -87,12 +95,14 @@ export class ProfileService implements IProfileService {
                 const profile = await factory.createProfileFromURI(uri)
                 if (guard !== this.setProfileURIsGuard) break // This guard will stop the current method run if another method run has started in the meantime
                 this.profiles.push(profile)
+                this._events.emit("profiles-changed", this.getProfiles())
+                profile.events.addEventListener("error-emitted", this.forwardErrorEvent)
             } catch (e) {
                 console.error(`Failed to initialize profile ${uri}`, e)
                 this.profileConstructionErrors.push(
-                    `Failed to initialize profile "${uri}":` +
-                        (e instanceof Error ? e.message : String(e))
+                    `Failed to initialize profile "${uri}":` + stringifyError(e)
                 )
+                this.forwardErrorEvent()
             }
         }
 

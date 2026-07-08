@@ -17,9 +17,10 @@ function cnIcon(size?: "md" | "xl") {
     }
 }
 
-export function stringifyError(e: unknown) {
+export function stringifyError(e: unknown): string {
     if (typeof e === "string") return e
-    if (e instanceof globalThis.Error) return `${e.message} (type: ${e.name})`
+    if (e instanceof globalThis.Error)
+        return `${e.message} (type: ${e.name}${e.cause ? ", cause: " + stringifyError(e.cause) : ""})`
 
     if (e && typeof e === "object") {
         try {
