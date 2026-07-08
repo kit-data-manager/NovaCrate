@@ -1,10 +1,11 @@
 import { IObservable } from "@/lib/core/IObservable"
-import { ProfileDefinition } from "@/lib/core/profiles/ProfileDefinition"
+import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
 
 export type IProfileEvents = {
     /**
      * This event is emitted whenever the ready state of the profile changes.
-     * This event may be called redundantly (e.g. called with "true" twice )
+     * This event may be called redundantly (e.g. called with "true" twice ).
+     * This event will not be called if the profile is ready immediately after construction.
      */
     "ready-changed": (ready: boolean) => void
 }

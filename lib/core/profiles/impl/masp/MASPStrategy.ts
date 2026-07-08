@@ -1,8 +1,8 @@
-import { IProfileFactoryStrategy } from "@/lib/core/profiles/impl/IProfileFactoryStrategy"
+import { IProfileFactoryStrategy } from "@/lib/core/profiles/IProfileFactoryStrategy"
 import { IProfile } from "@/lib/core/profiles/IProfile"
 import { getRootEntityID } from "@/lib/utils"
 import { propertyValue } from "@/lib/property-value-utils"
-import { MASPProfile } from "@/lib/core/profiles/impl/MASPProfile"
+import { MASPProfile } from "@/lib/core/profiles/impl/masp/MASPProfile"
 import { PROFILE_CRATE_SCHEMA_RESOURCE } from "@/lib/constants"
 
 export class MASPStrategy implements IProfileFactoryStrategy {

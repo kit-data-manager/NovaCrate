@@ -1,10 +1,10 @@
 import { IProfile, IProfileEvents } from "@/lib/core/profiles/IProfile"
 import { Observable } from "@/lib/core/impl/Observable"
 import { IObservable } from "@/lib/core/IObservable"
-import { ProfileDefinition } from "@/lib/core/profiles/ProfileDefinition"
+import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
 import { propertyValue } from "@/lib/property-value-utils"
 import { z } from "zod/mini"
-import { ProfileProperty } from "@/lib/core/profiles/ProfileProperty"
+import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
 import { buildProfileDefinitionFromRootEntity } from "@/lib/core/profiles/impl/ProfileFactory"
 
 const MASPClass = z.object({

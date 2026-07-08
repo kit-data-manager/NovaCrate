@@ -1,6 +1,6 @@
 import { RO_CRATE_VERSION } from "@/lib/constants"
-import { ProfileClass } from "@/lib/core/profiles/ProfileClass"
-import { ProfileProperty } from "@/lib/core/profiles/ProfileProperty"
+import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
+import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
 
 /**
  * This type describes the shape of a profile definition within NovaCrate. All profiles

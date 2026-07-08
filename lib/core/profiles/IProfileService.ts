@@ -1,4 +1,5 @@
 import { IObservable } from "@/lib/core/IObservable"
+import { IProfile } from "@/lib/core/profiles/IProfile"
 
 export type IProfileServiceEvents = {
     /**
@@ -23,6 +24,11 @@ export interface IProfileService {
     getAllReady(): boolean
 
     /**
+     * Get a list of all errors that occurred during **parsing** of all profiles.
+     */
+    getAllErrors(): string[]
+
+    /**
      * Set the list of profile URIs that are currently active. This will trigger parsing of all
      * supplied profiles. Once this method returns, all profiles are constructed and available
      * through {@link getProfiles}. Profiles may not be in the ready state at this point. Use
@@ -42,5 +48,5 @@ export interface IProfileService {
      * the returned array may be incomplete as long as the Promise returned by {@link setProfileURIs}
      * is not yet settled.
      */
-    getProfiles(): string[]
+    getProfiles(): IProfile[]
 }

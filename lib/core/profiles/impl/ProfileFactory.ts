@@ -1,10 +1,10 @@
 import { CrateSchema, pickFirst } from "@/lib/utils"
 import { ContextServiceImpl } from "@/lib/core/impl/ContextServiceImpl"
 import { RO_CRATE_VERSION } from "@/lib/constants"
-import { ProfileDefinition } from "@/lib/core/profiles/ProfileDefinition"
-import { IProfileFactoryStrategy } from "@/lib/core/profiles/impl/IProfileFactoryStrategy"
+import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
+import { IProfileFactoryStrategy } from "@/lib/core/profiles/IProfileFactoryStrategy"
 import { IProfile } from "@/lib/core/profiles/IProfile"
-import { MASPStrategy } from "@/lib/core/profiles/impl/MASPStrategy"
+import { MASPStrategy } from "@/lib/core/profiles/impl/masp/MASPStrategy"
 
 const KNOWN_PROFILES: {
     uri: string
