@@ -15,18 +15,22 @@ export function CSVViewer(props: ViewerProps) {
     const [data, setData] = useState<string[][]>([])
     const [parseError, setParseError] = useState<unknown>()
 
-    if (parseError) console.error(parseError)
-
     const parseCSV = useCallback(
         (data: Blob) => {
             let abort = false
             setData([])
+            setParseError(undefined)
+            const localData: string[][] = []
             Papa.parse<string[]>(new File([data], props.tab.fileName, { type: "text/csv" }), {
                 step(step, parser) {
                     if (abort) return parser.abort()
 
                     if (step.errors.length > 0) setParseError(step.errors)
-                    if (step.data) setData((prev) => [...prev, step.data])
+                    if (step.data) localData.push(step.data)
+                },
+                complete() {
+                    if (abort) return
+                    setData(localData)
                 },
                 error(err) {
                     setParseError(err)
