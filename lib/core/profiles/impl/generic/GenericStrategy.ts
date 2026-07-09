@@ -1,5 +1,5 @@
 import { IProfileFactoryStrategy } from "@/lib/core/profiles/IProfileFactoryStrategy"
-import { IProfile } from "@/lib/core/profiles/IProfile"
+import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { getRootEntityID } from "@/lib/utils"
 import { propertyValue } from "@/lib/property-value-utils"
 import { GenericProfile } from "@/lib/core/profiles/impl/generic/GenericProfile"
@@ -14,7 +14,7 @@ export class GenericStrategy implements IProfileFactoryStrategy {
         return true
     }
 
-    async createProfileFromProfileCrate(profileCrate: ICrate): Promise<IProfile> {
+    async createProfileFromProfileCrate(profileCrate: ICrate): Promise<IProfileHandler> {
         const root = this.findRoot(profileCrate)
 
         return new GenericProfile(root)

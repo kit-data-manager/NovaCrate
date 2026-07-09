@@ -3,7 +3,7 @@ import { ContextServiceImpl } from "@/lib/core/impl/ContextServiceImpl"
 import { RO_CRATE_VERSION } from "@/lib/constants"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
 import { IProfileFactoryStrategy } from "@/lib/core/profiles/IProfileFactoryStrategy"
-import { IProfile } from "@/lib/core/profiles/IProfile"
+import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { MASPStrategy } from "@/lib/core/profiles/impl/masp/MASPStrategy"
 import { GenericStrategy } from "@/lib/core/profiles/impl/generic/GenericStrategy"
 
@@ -65,7 +65,7 @@ export class ProfileFactory {
                 ? [known.strategy]
                 : STRATEGIES.filter((s) => s.isApplicable(profileMetadata))
 
-        let result: IProfile | undefined = undefined
+        let result: IProfileHandler | undefined = undefined
         for (const strategy of strategies) {
             if (result) break
             try {

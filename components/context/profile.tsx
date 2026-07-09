@@ -1,4 +1,4 @@
-import { IProfile } from "@/lib/core/profiles/IProfile"
+import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { useEffect, useState } from "react"
 import { Error } from "@/components/error"
 import { Badge } from "@/components/ui/badge"
@@ -12,7 +12,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { ExternalLink } from "lucide-react"
 
-export function Profile({ profile }: { profile: IProfile }) {
+export function Profile({ profile }: { profile: IProfileHandler }) {
     const def = profile.getDefinition()
     const [ready, setReady] = useState(profile.getIsReady())
     const [errors, setErrors] = useState(profile.getErrors())

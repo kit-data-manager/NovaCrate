@@ -1,4 +1,4 @@
-import { IProfile } from "@/lib/core/profiles/IProfile"
+import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { propertyValue } from "@/lib/property-value-utils"
 import { z } from "zod/mini"
 import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
@@ -45,7 +45,7 @@ const MASPItemList = z.object({
     ])
 })
 
-export class MASPProfile extends GenericProfile implements IProfile {
+export class MASPProfile extends GenericProfile implements IProfileHandler {
     readonly name = "MASP"
 
     constructor(rootEntity: IEntity, maspEntities: IEntity[]) {

@@ -1,5 +1,5 @@
 import { IObservable } from "@/lib/core/IObservable"
-import { IProfile } from "@/lib/core/profiles/IProfile"
+import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 
 export type IProfileServiceEvents = {
     /**
@@ -14,7 +14,7 @@ export type IProfileServiceEvents = {
     /**
      * This event is emitted whenever the list of active profiles (IProfile instances) changes.
      */
-    "profiles-changed": (profiles: IProfile[]) => void
+    "profiles-changed": (profiles: IProfileHandler[]) => void
     /**
      * This event is emitted whenever the service or any profiles emit an error.
      */
@@ -22,7 +22,7 @@ export type IProfileServiceEvents = {
 }
 
 /**
- * This service is responsible for creating {@link IProfile} instances from profile URIs and managing their lifecycle.
+ * This service is responsible for creating {@link IProfileHandler} instances from profile URIs and managing their lifecycle.
  */
 export interface IProfileService {
     readonly events: IObservable<IProfileServiceEvents>
@@ -59,5 +59,5 @@ export interface IProfileService {
      * the returned array may be incomplete as long as the Promise returned by {@link setProfileURIs}
      * is not yet settled.
      */
-    getProfiles(): IProfile[]
+    getProfiles(): IProfileHandler[]
 }

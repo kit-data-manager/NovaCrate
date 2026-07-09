@@ -1,7 +1,7 @@
-import { IProfile } from "@/lib/core/profiles/IProfile"
+import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 
 /**
- * Defines a strategy for creating an {@link IProfile} from an {@link ICrate}
+ * Defines a strategy for creating an {@link IProfileHandler} from an {@link ICrate}
  */
 export interface IProfileFactoryStrategy {
     /**
@@ -21,5 +21,5 @@ export interface IProfileFactoryStrategy {
      * can't be parsed for any reason.
      * @param profileCrate
      */
-    createProfileFromProfileCrate(profileCrate: ICrate): Promise<IProfile>
+    createProfileFromProfileCrate(profileCrate: ICrate): Promise<IProfileHandler>
 }

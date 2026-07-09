@@ -1,7 +1,7 @@
 import { IObservable } from "@/lib/core/IObservable"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
 
-export type IProfileEvents = {
+export type IProfileHandlerEvents = {
     /**
      * This event is emitted whenever the ready state of the profile changes.
      * This event may be called redundantly (e.g. called with "true" twice ).
@@ -22,8 +22,8 @@ export type IProfileEvents = {
  * of the harmonized profile definition. In the future, profile implementations might be able to
  * inject their own plugins or widgets.
  */
-export interface IProfile {
-    readonly events: IObservable<IProfileEvents>
+export interface IProfileHandler {
+    readonly events: IObservable<IProfileHandlerEvents>
 
     /**
      * The unique identifier of this profile instance. It must be unique in each instance of the class.
@@ -31,7 +31,7 @@ export interface IProfile {
     readonly id: string
 
     /**
-     * The human-readable name of this profile mechanism
+     * The human-readable name of this profile handler
      */
     readonly name: string
 

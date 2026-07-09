@@ -1,6 +1,6 @@
 import { IProfileService, IProfileServiceEvents } from "@/lib/core/profiles/IProfileService"
 import { IObservable } from "@/lib/core/IObservable"
-import { IProfile } from "@/lib/core/profiles/IProfile"
+import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { Observable } from "@/lib/core/impl/Observable"
 import { ProfileFactory } from "@/lib/core/profiles/impl/ProfileFactory"
 import { IMetadataService } from "@/lib/core/IMetadataService"
@@ -11,7 +11,7 @@ export class ProfileService implements IProfileService {
     private _events = new Observable<IProfileServiceEvents>()
     readonly events: IObservable<IProfileServiceEvents> = this._events
     private profileURIs: string[] = []
-    private profiles: IProfile[] = []
+    private profiles: IProfileHandler[] = []
     private profileConstructionErrors: string[] = []
 
     constructor(metadata: IMetadataService) {
@@ -61,7 +61,7 @@ export class ProfileService implements IProfileService {
         return structuredClone(this.profileURIs)
     }
 
-    getProfiles(): IProfile[] {
+    getProfiles(): IProfileHandler[] {
         return [...this.profiles]
     }
 

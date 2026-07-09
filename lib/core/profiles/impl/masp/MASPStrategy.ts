@@ -1,5 +1,5 @@
 import { IProfileFactoryStrategy } from "@/lib/core/profiles/IProfileFactoryStrategy"
-import { IProfile } from "@/lib/core/profiles/IProfile"
+import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { propertyValue } from "@/lib/property-value-utils"
 import { MASPProfile } from "@/lib/core/profiles/impl/masp/MASPProfile"
 import { PROFILE_CRATE_SCHEMA_RESOURCE } from "@/lib/constants"
@@ -15,7 +15,7 @@ export class MASPStrategy extends GenericStrategy implements IProfileFactoryStra
         return !!(maspSchema && maspSchema.hasPart && !propertyValue(maspSchema.hasPart).isEmpty())
     }
 
-    async createProfileFromProfileCrate(profileCrate: ICrate): Promise<IProfile> {
+    async createProfileFromProfileCrate(profileCrate: ICrate): Promise<IProfileHandler> {
         const { root, maspSchema } = this.findRootAndMASPSchemaEntities(profileCrate)
 
         if (!maspSchema) {
