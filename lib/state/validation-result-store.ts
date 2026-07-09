@@ -8,7 +8,7 @@ export interface ValidationResultStore {
     ranAtLeastOnce: boolean
 
     /**
-     * Clear all entries that match exactly the provided entityId or propertyName. If no propertyName is provided, only entries with no propertyName are removed. If no entityId is provided, only entries with no entityId are removed.
+     * Clear all entries based on the trace of the validation result.
      * @param entityId EntityId of results to remove. Leave undefined to remove all entries that have no entityId.
      * @param propertyName name of the property that was validated. Leave undefined to remove all entries that have no propertyName.
      */
@@ -28,11 +28,11 @@ export const createValidationResultStore = () =>
                         store.results = store.results.filter((result) =>
                             entityId
                                 ? propertyName
-                                    ? result.entityId !== entityId ||
-                                      result.propertyName !== propertyName
-                                    : result.entityId !== entityId ||
-                                      result.propertyName !== undefined
-                                : result.entityId !== undefined
+                                    ? result.trace.entityId !== entityId ||
+                                      result.trace.propertyName !== propertyName
+                                    : result.trace.entityId !== entityId ||
+                                      result.trace.propertyName !== null
+                                : result.trace.entityId !== null
                         )
                     })
                 },

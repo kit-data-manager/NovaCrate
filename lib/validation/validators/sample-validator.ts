@@ -1,4 +1,4 @@
-import { ValidationResult, ValidationResultSeverity } from "../validation-result"
+import { ValidationResultSeverity, ValidationResultWithoutTrace } from "../validation-result"
 import { Validator } from "../validator"
 
 /**
@@ -7,9 +7,12 @@ import { Validator } from "../validator"
 export class SampleValidator extends Validator {
     name = "SampleValidator"
 
-    async validateProperty(entity: IEntity, propertyName: string): Promise<ValidationResult[]> {
+    async validateProperty(
+        entity: IEntity,
+        propertyName: string
+    ): Promise<ValidationResultWithoutTrace[]> {
         const values = entity[propertyName]
-        const results: ValidationResult[] = []
+        const results: ValidationResultWithoutTrace[] = []
 
         if (Array.isArray(values)) {
             for (let i = 0; i < values.length; i++) {
@@ -58,7 +61,7 @@ export class SampleValidator extends Validator {
         return results
     }
 
-    async validateEntity(entity: IEntity): Promise<ValidationResult[]> {
+    async validateEntity(entity: IEntity): Promise<ValidationResultWithoutTrace[]> {
         return [
             {
                 id: crypto.randomUUID(),
@@ -72,7 +75,7 @@ export class SampleValidator extends Validator {
         ]
     }
 
-    async validateCrate(): Promise<ValidationResult[]> {
+    async validateCrate(): Promise<ValidationResultWithoutTrace[]> {
         return [
             {
                 id: crypto.randomUUID(),

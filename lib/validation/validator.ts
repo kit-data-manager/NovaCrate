@@ -1,4 +1,4 @@
-import { ValidationResult } from "@/lib/validation/validation-result"
+import { ValidationResultWithoutTrace } from "@/lib/validation/validation-result"
 import { EditorState } from "@/lib/state/editor-state"
 import { ISchemaWorkerContext } from "@/components/providers/schema-worker-provider"
 import { IFileService } from "@/lib/core/persistence/IFileService"
@@ -28,7 +28,10 @@ export abstract class Validator {
         return this.context
     }
 
-    abstract validateCrate(crate: ICrate): Promise<ValidationResult[]>
-    abstract validateEntity(entity: IEntity): Promise<ValidationResult[]>
-    abstract validateProperty(entity: IEntity, propertyName: string): Promise<ValidationResult[]>
+    abstract validateCrate(crate: ICrate): Promise<ValidationResultWithoutTrace[]>
+    abstract validateEntity(entity: IEntity): Promise<ValidationResultWithoutTrace[]>
+    abstract validateProperty(
+        entity: IEntity,
+        propertyName: string
+    ): Promise<ValidationResultWithoutTrace[]>
 }

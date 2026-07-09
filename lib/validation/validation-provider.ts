@@ -1,7 +1,7 @@
 import { EditorState } from "@/lib/state/editor-state"
 import { createValidationResultStore } from "@/lib/state/validation-result-store"
 import { Validator, ValidatorContext } from "@/lib/validation/validator"
-import { ValidationResult } from "@/lib/validation/validation-result"
+import { ValidationResult, ValidationResultWithoutTrace } from "@/lib/validation/validation-result"
 
 export class ValidationProvider {
     validators: Validator[] = []
@@ -26,7 +26,7 @@ export class ValidationProvider {
 
     async validateCrate() {
         const entities = this.editorState.getEntities()
-        const promises: Promise<ValidationResult[]>[] = []
+        const promises: Promise<ValidationResultWithoutTrace[]>[] = []
         for (const validator of this.validators) {
             promises.push(
                 validator.validateCrate({
@@ -38,41 +38,53 @@ export class ValidationProvider {
 
         const results = await this.handlePromises(promises)
         this.resultStore.getState().clearByEntityIdOrPropertyName()
-        this.resultStore.getState().addResults(results)
+        this.resultStore.getState().addResults(this.addTrace(results))
     }
 
     async validateEntity(entityId: string) {
         const entity = this.editorState.getEntities().get(entityId)
         if (!entity) return console.warn("Entity not found during validation", entityId)
 
-        const promises: Promise<ValidationResult[]>[] = []
+        const promises: Promise<ValidationResultWithoutTrace[]>[] = []
         for (const validator of this.validators) {
             promises.push(validator.validateEntity(entity))
         }
 
         const results = await this.handlePromises(promises)
         this.resultStore.getState().clearByEntityIdOrPropertyName(entity["@id"])
-        this.resultStore.getState().addResults(results)
+        this.resultStore.getState().addResults(this.addTrace(results, entityId))
     }
 
     async validateProperty(entityId: string, propertyName: string) {
         const entity = this.editorState.getEntities().get(entityId)
         if (!entity) return console.warn("Entity not found during validation", entityId)
-        const promises: Promise<ValidationResult[]>[] = []
+        const promises: Promise<ValidationResultWithoutTrace[]>[] = []
         for (const validator of this.validators) {
             promises.push(validator.validateProperty(entity, propertyName))
         }
 
         const results = await this.handlePromises(promises)
         this.resultStore.getState().clearByEntityIdOrPropertyName(entity["@id"], propertyName)
-        this.resultStore.getState().addResults(results)
+        this.resultStore.getState().addResults(this.addTrace(results, entityId, propertyName))
     }
 
-    private async handlePromises(
-        promises: Promise<ValidationResult[]>[]
-    ): Promise<ValidationResult[]> {
+    private addTrace(
+        results: ValidationResultWithoutTrace[],
+        entityId?: string,
+        propertyName?: string
+    ): ValidationResult[] {
+        return results.map((r) => ({
+            ...r,
+            trace: {
+                entityId: entityId || null,
+                propertyName: propertyName || null
+            }
+        }))
+    }
+
+    private async handlePromises<T>(promises: Promise<T[]>[]): Promise<T[]> {
         const settledResults = await Promise.allSettled(promises)
-        const results: ValidationResult[] = []
+        const results: T[] = []
 
         settledResults.forEach((result, index) => {
             if (result.status === "fulfilled") {
