@@ -145,11 +145,12 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
      * reverse("https://myCustomUrl.org/v1/myProperty") -> "custom:myProperty" // when custom: "https://myCustomUrl.org/v1/" is defined in the context
      * @param URI
      */
-    reverse(URI: string) {
+    reverse(URI: string): string | null {
         if (this._contextReversed[URI]) return this._contextReversed[URI]
         for (const [key, value] of Object.entries(this._customPairs)) {
             if (URI.startsWith(value)) return key + ":" + URI.substring(value.length)
         }
+        if (URI.startsWith("http://")) return this.reverse("https://" + URI.substring(7))
         return null
     }
 
