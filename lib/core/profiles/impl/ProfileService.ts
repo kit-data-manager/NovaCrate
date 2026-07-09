@@ -38,7 +38,18 @@ export class ProfileService implements IProfileService {
 
     getAllErrors(): string[] {
         return structuredClone(
-            this.profileConstructionErrors.concat(this.profiles.map((p) => p.getErrors()).flat())
+            this.profileConstructionErrors.concat(
+                this.profiles
+                    .map((p) =>
+                        p
+                            .getErrors()
+                            .map(
+                                (e) =>
+                                    `In ${p.getDefinition()?.name ?? "Unnamed Profile"} (uri: ${p.getDefinition()?.["@id"]}, handler: ${p.name}): ${e}`
+                            )
+                    )
+                    .flat()
+            )
         )
     }
 
@@ -96,7 +107,13 @@ export class ProfileService implements IProfileService {
                 if (guard !== this.setProfileURIsGuard) break // This guard will stop the current method run if another method run has started in the meantime
                 this.profiles.push(profile)
                 this._events.emit("profiles-changed", this.getProfiles())
+
+                // Error handling
                 profile.events.addEventListener("error-emitted", this.forwardErrorEvent)
+                const existingErrors = profile.getErrors()
+                if (existingErrors.length > 0) {
+                    this.forwardErrorEvent()
+                }
             } catch (e) {
                 console.error(`Failed to initialize profile ${uri}`, e)
                 this.profileConstructionErrors.push(

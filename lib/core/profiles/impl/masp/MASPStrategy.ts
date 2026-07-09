@@ -1,11 +1,11 @@
 import { IProfileFactoryStrategy } from "@/lib/core/profiles/IProfileFactoryStrategy"
 import { IProfile } from "@/lib/core/profiles/IProfile"
-import { getRootEntityID } from "@/lib/utils"
 import { propertyValue } from "@/lib/property-value-utils"
 import { MASPProfile } from "@/lib/core/profiles/impl/masp/MASPProfile"
 import { PROFILE_CRATE_SCHEMA_RESOURCE } from "@/lib/constants"
+import { GenericStrategy } from "@/lib/core/profiles/impl/generic/GenericStrategy"
 
-export class MASPStrategy implements IProfileFactoryStrategy {
+export class MASPStrategy extends GenericStrategy implements IProfileFactoryStrategy {
     name = "MASP"
 
     isApplicable(profileCrate: ICrate): boolean {
@@ -30,18 +30,7 @@ export class MASPStrategy implements IProfileFactoryStrategy {
     }
 
     private findRootAndMASPSchemaEntities(profileCrate: ICrate) {
-        const rootID = getRootEntityID(profileCrate["@graph"])
-        if (!rootID) {
-            throw new Error("Could not determine root entity ID from profile metadata")
-        }
-
-        const root = profileCrate["@graph"].find((e) => e["@id"] === rootID)
-        if (!root) {
-            throw new Error(`Root entity with ID ${rootID} not found in profile metadata`)
-        }
-        if (!propertyValue(root["@type"]).contains("Profile")) {
-            throw new Error(`Root entity is not a Profile: ${rootID}`)
-        }
+        const root = this.findRoot(profileCrate)
 
         const resources = profileCrate["@graph"].filter((entity) => {
             return propertyValue(entity["@type"]).contains("ResourceDescriptor") && root.hasResource

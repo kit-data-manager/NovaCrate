@@ -10,6 +10,7 @@ import {
     DialogTrigger
 } from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { ExternalLink } from "lucide-react"
 
 export function Profile({ profile }: { profile: IProfile }) {
     const def = profile.getDefinition()
@@ -42,9 +43,17 @@ export function Profile({ profile }: { profile: IProfile }) {
 
     return (
         <div className="border rounded-lg p-2">
-            <div className={"mb-1"}>
+            <div className={"mb-1 flex gap-1 items-end"}>
                 {def.name} {def.version || ""}{" "}
-                <span className="text-sm text-muted-foreground">{def["@id"]}</span>
+                <a
+                    href={def["@id"]}
+                    target={"_blank"}
+                    rel={"noopener noreferrer"}
+                    className="text-sm text-muted-foreground underline pb-0.5"
+                >
+                    {def["@id"]}
+                </a>
+                <ExternalLink className="size-3 self-center" />
             </div>
             <div className="flex gap-1">
                 <Badge>{profile.name}</Badge>

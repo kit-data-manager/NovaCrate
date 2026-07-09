@@ -1,13 +1,10 @@
-import { IProfile, IProfileEvents } from "@/lib/core/profiles/IProfile"
-import { Observable } from "@/lib/core/impl/Observable"
-import { IObservable } from "@/lib/core/IObservable"
-import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
+import { IProfile } from "@/lib/core/profiles/IProfile"
 import { propertyValue } from "@/lib/property-value-utils"
 import { z } from "zod/mini"
 import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
-import { buildProfileDefinitionFromRootEntity } from "@/lib/core/profiles/impl/ProfileFactory"
 import { pickFirst, toArray } from "@/lib/utils"
 import { stringifyError } from "@/components/error"
+import { GenericProfile } from "@/lib/core/profiles/impl/generic/GenericProfile"
 
 const MASPClass = z.object({
     "@id": z.string(),
@@ -48,19 +45,11 @@ const MASPItemList = z.object({
     ])
 })
 
-export class MASPProfile implements IProfile {
-    private _events = new Observable<IProfileEvents>()
-    readonly events: IObservable<IProfileEvents> = this._events
+export class MASPProfile extends GenericProfile implements IProfile {
     readonly name = "MASP"
-    readonly id
-
-    private isReady = true
-    private readonly definition: ProfileDefinition
-    private errors: string[] = []
 
     constructor(rootEntity: IEntity, maspEntities: IEntity[]) {
-        this.definition = buildProfileDefinitionFromRootEntity(rootEntity)
-        this.id = crypto.randomUUID()
+        super(rootEntity)
 
         //
         // Parse Class Rules
@@ -134,18 +123,6 @@ export class MASPProfile implements IProfile {
                 )
             }
         }
-    }
-
-    getIsReady(): boolean {
-        return this.isReady
-    }
-
-    getErrors(): string[] {
-        return structuredClone(this.errors)
-    }
-
-    getDefinition(): ProfileDefinition {
-        return this.definition
     }
 }
 

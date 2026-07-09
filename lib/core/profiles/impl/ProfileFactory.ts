@@ -5,6 +5,7 @@ import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
 import { IProfileFactoryStrategy } from "@/lib/core/profiles/IProfileFactoryStrategy"
 import { IProfile } from "@/lib/core/profiles/IProfile"
 import { MASPStrategy } from "@/lib/core/profiles/impl/masp/MASPStrategy"
+import { GenericStrategy } from "@/lib/core/profiles/impl/generic/GenericStrategy"
 
 const KNOWN_PROFILES: {
     uri: string
@@ -29,7 +30,7 @@ const KNOWN_PROFILES: {
     }
 ]
 
-const STRATEGIES: IProfileFactoryStrategy[] = [new MASPStrategy()]
+const STRATEGIES: IProfileFactoryStrategy[] = [new MASPStrategy(), new GenericStrategy()]
 
 /**
  * Strategy-driven factory for creating profiles from profile URIs. To add more strategies, implement {@link IProfileFactoryStrategy}
