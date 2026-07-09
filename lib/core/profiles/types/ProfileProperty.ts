@@ -15,7 +15,7 @@ export type ProfileProperty = {
      * A property from base schema or other vocabulary that this profile property is a specialization of.
      * When specified, this property constrains the specified property. When not specified, this is a property term definition.
      */
-    specializationOf?: string
+    specializationOf?: IReference
 
     /**
      * Alternative of the label. Should be the same.
@@ -23,7 +23,7 @@ export type ProfileProperty = {
     name?: string
 
     /**
-     * Display name of the property. Must be set.
+     * Display name of the property. Must be set. Used as the term for this property.
      */
     label: string
 
@@ -43,24 +43,17 @@ export type ProfileProperty = {
     maxCount?: number
 
     /**
-     * List of classes that the property can be used on. Must be set.
-     * Overrides domainIncludes of the specialized property.
+     * List of classes that the property can (or must, depending on {@link minCount}) be used on. Must be set.
      */
     domainIncludes: IReference[]
 
     /**
-     * List of classes that values of this property can be instances of. Is preceded by {@link value} and {@link options}.
-     * Overrides rangeIncludes of the specialized property when set.
+     * List of classes that values of this property can be instances of. Is preceded by {@link options}.
      */
     rangeIncludes?: IReference[]
 
     /**
-     * When set, this must be the value of the property. Takes precedence over {@link options} and {@link rangeIncludes}.
-     */
-    value?: EntityPropertyTypes
-
-    /**
-     * When set, the value(s) of the property must (each) be one of the options. Is preceded by {@link value} and takes precedence over {@link rangeIncludes}.
+     * When set, the value(s) of the property must (each) be one of the options. Takes precedence over {@link rangeIncludes}.
      */
     options?: EntitySinglePropertyTypes[]
 }

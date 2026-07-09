@@ -50,7 +50,7 @@ class ProfileDefinition {
 
 class ProfileClass {
     @id: string
-    specializationOf?: string
+    specializationOf?: IReference[]
     name?: string
     label?: string
     description?: string
@@ -60,7 +60,7 @@ class ProfileClass {
 
 class ProfileProperty {
     @id: string
-    specializationOf?: string
+    specializationOf?: IReference
     name?: string
     label: string
     description?: string

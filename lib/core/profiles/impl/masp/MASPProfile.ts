@@ -69,8 +69,8 @@ export class MASPProfile extends GenericProfile implements IProfileHandler {
                     maxCount: d["sh:maxCount"],
                     minCount: d["sh:minCount"],
                     specializationOf: d["prov:specializationOf"]
-                        ? pickFirst(d["prov:specializationOf"])["@id"]
-                        : undefined // TODO FIX: Only the first entry is used, all others are dropped
+                        ? toArray(d["prov:specializationOf"])
+                        : undefined
                 })
             } else {
                 this.errors.push(
@@ -109,10 +109,9 @@ export class MASPProfile extends GenericProfile implements IProfileHandler {
                     maxCount: d["sh:maxCount"],
                     minCount: d["sh:minCount"],
                     specializationOf: d["prov:specializationOf"] // TODO FIX: Only the first entry is used, all others are dropped
-                        ? pickFirst(d["prov:specializationOf"])["@id"]
+                        ? pickFirst(d["prov:specializationOf"])
                         : undefined,
                     domainIncludes: toArray(d.domainIncludes),
-                    value: d.value,
                     rangeIncludes: d.rangeIncludes ? toArray(d.rangeIncludes) : undefined,
                     options
                 })
@@ -123,6 +122,8 @@ export class MASPProfile extends GenericProfile implements IProfileHandler {
                 )
             }
         }
+
+        console.log(`Done with parsing MASP profile ${this.definition.name}`, this.definition)
     }
 }
 
@@ -131,6 +132,10 @@ function determineMASPPropertyOptions(
     maspEntities: IEntity[]
 ) {
     let options: ProfileProperty["options"] | undefined = undefined
+
+    if (property.value) {
+        return [property.value]
+    }
 
     for (const rangeClass of property.rangeIncludes ? toArray(property.rangeIncludes) : []) {
         const localEntity = maspEntities.find((e) => e["@id"] === rangeClass["@id"])
