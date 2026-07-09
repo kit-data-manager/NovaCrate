@@ -28,6 +28,7 @@ export function CrateValidationSupervisor() {
     const core = useCore()
     const metadata = core.getMetadataService()
     const context = core.getContextService()
+    const profiles = core.getProfileService()
 
     const validateCrate = useCallback(() => {
         validation.validateCrate().catch((e) => console.error("Crate validation failed: ", e))
@@ -70,11 +71,22 @@ export function CrateValidationSupervisor() {
             "context-changed",
             debouncedValidateAll
         )
+        const removeListener3 = profiles.events.addEventListener("all-ready-changed", (r) => {
+            if (r) debouncedValidateAll()
+        })
         return () => {
             removeListener1()
             removeListener2()
+            removeListener3()
         }
-    }, [context.events, debouncedValidateAll, metadata.events, runValidation, validationEnabled])
+    }, [
+        context.events,
+        debouncedValidateAll,
+        metadata.events,
+        profiles.events,
+        runValidation,
+        validationEnabled
+    ])
 
     // Automatically turn runValidation on and off
     useEffect(() => {

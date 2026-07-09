@@ -1,3 +1,5 @@
+import { toArray } from "../lib/utils"
+
 export class PropertyValueUtils {
     constructor(private value: EntityPropertyTypes) {}
 
@@ -111,6 +113,14 @@ export class PropertyValueUtils {
             this.value.forEach(callback)
         } else {
             callback(this.value, 0)
+        }
+    }
+
+    every(callback: (value: EntitySinglePropertyTypes, index: number) => boolean) {
+        if (PropertyValueUtils.isArray(this.value)) {
+            return this.value.every(callback)
+        } else {
+            return toArray(this.value).every(callback)
         }
     }
 }

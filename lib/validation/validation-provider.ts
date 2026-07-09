@@ -13,7 +13,13 @@ export class ValidationProvider {
     }
 
     addValidator(validatorConstructor: (validatorContext: ValidatorContext) => Validator) {
-        this.validators.push(validatorConstructor(this.validatorContext))
+        const validator = validatorConstructor(this.validatorContext)
+        this.validators.push(validator)
+        return validator
+    }
+
+    removeValidator(validator: Validator) {
+        this.validators = this.validators.filter((v) => v !== validator)
     }
 
     updateContext(ctx: ValidatorContext) {
