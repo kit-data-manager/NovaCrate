@@ -18,7 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added options for exporting a crate without compression (especially useful for large crates)
 
 ### Changed
+- The main menu now allows creating new RO-Crates from (multiple) files
 - Updated the documentation modal to add links to guides on GitHub and the YouTube tutorial series
+
+### Fixed
+- Creating an RO-Crate from a file or folder with an existing ro-crate-metadata.json now works correctly
 
 ## [1.12.0] - 2026-06-25
 
