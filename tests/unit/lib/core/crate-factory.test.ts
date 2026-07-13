@@ -443,6 +443,64 @@ describe("CrateFactory", () => {
             // The file path should have the leading folder replaced
             expect(fileService.addFile).toHaveBeenCalledWith("sub/file.txt", expect.any(Blob))
         })
+
+        it("should respect preexisting metadata file", async () => {
+            const fileService = createMockFileService()
+            const crateService = createMockCrateService(fileService)
+            const repo = createMockRepositoryService()
+            const persistence = createMockPersistence(repo, crateService)
+
+            ;(crateService.getMetadata as jest.Mock).mockResolvedValue(JSON.stringify(validCrate()))
+
+            const factory = new CrateFactory(persistence)
+
+            await factory.createCrateFromFiles("Test", "", [
+                {
+                    relativePath: "myFolder/ro-crate-metadata.json",
+                    data: new File(
+                        [new Blob([JSON.stringify(validCrate())])],
+                        "ro-crate-metadata.json"
+                    )
+                },
+                {
+                    relativePath: "myFolder/someFile.txt",
+                    data: new File([new Blob(["x"])], "someFile.txt")
+                }
+            ])
+
+            // The file path should have the leading folder replaced
+            expect(repo.createCrateFromMetadata).toHaveBeenCalledTimes(1)
+            expect(fileService.addFile).toHaveBeenCalledTimes(1)
+        })
+
+        it("should work for single files (not via folder select)", async () => {
+            const fileService = createMockFileService()
+            const crateService = createMockCrateService(fileService)
+            const repo = createMockRepositoryService()
+            const persistence = createMockPersistence(repo, crateService)
+
+            ;(crateService.getMetadata as jest.Mock).mockResolvedValue(JSON.stringify(validCrate()))
+
+            const factory = new CrateFactory(persistence)
+
+            await factory.createCrateFromFiles("Test", "", [
+                {
+                    relativePath: "ro-crate-metadata.json",
+                    data: new File(
+                        [new Blob([JSON.stringify(validCrate())])],
+                        "ro-crate-metadata.json"
+                    )
+                },
+                {
+                    relativePath: "someFile.txt",
+                    data: new File([new Blob(["x"])], "someFile.txt")
+                }
+            ])
+
+            // The file path should have the leading folder replaced
+            expect(repo.createCrateFromMetadata).toHaveBeenCalledTimes(1)
+            expect(fileService.addFile).toHaveBeenCalledTimes(1)
+        })
     })
 
     describe("duplicateCrate", () => {
