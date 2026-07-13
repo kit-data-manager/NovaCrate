@@ -43,12 +43,6 @@ export const VIEWERS: IViewer[] = [
         component: ImageViewer
     },
     {
-        type: ViewerType.TEXT,
-        displayName: "Text Viewer",
-        mimeTypes: ["text/plain", "application/json"],
-        component: TextViewer
-    },
-    {
         type: ViewerType.IFRAME,
         displayName: "IFrame Viewer",
         subtitle: "(for PDFs and HTML)",
@@ -60,5 +54,11 @@ export const VIEWERS: IViewer[] = [
         displayName: "CSV Viewer",
         mimeTypes: ["text/csv"],
         component: CSVViewer
+    },
+    {
+        type: ViewerType.TEXT,
+        displayName: "Text Viewer",
+        mimeTypes: ["text/*", "application/json"],
+        component: TextViewer
     }
 ]
