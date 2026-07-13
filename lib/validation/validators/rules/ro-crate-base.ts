@@ -231,25 +231,11 @@ export const RoCrateBase = {
                         results.push(
                             builder.rule("metadataEntityConformsToContextMismatch").error({
                                 resultTitle: "Mismatching RO-Crate specification version",
-                                resultDescription: `The crate @context uses RO-Crate v${crateSpec}, but the metadata entity conformsTo references RO-Crate v${conformsToSpec}. The crate @context is used as the source of truth, so update conformsTo to match it.`,
+                                resultDescription: `The RO-Crate version is v${conformsToSpec}, but the RO-Crate context references v${crateSpec}. Both should be aligned to the same version.`,
                                 helpUrl: `https://www.researchobject.org/ro-crate/specification/${crateSpec}/root-data-entity#ro-crate-metadata-descriptor`,
                                 entityId: entity["@id"],
                                 propertyName,
-                                propertyIndex: i,
-                                actions: [
-                                    {
-                                        name: "repair-metadataEntityConformsToContextMismatch",
-                                        displayName: "Repair",
-                                        dispatch: () => {
-                                            ctx.editorState.modifyPropertyEntry(
-                                                entity["@id"],
-                                                "conformsTo",
-                                                i,
-                                                "https://w3id.org/ro/crate/" + crateSpec
-                                            )
-                                        }
-                                    }
-                                ]
+                                propertyIndex: i
                             })
                         )
                     }

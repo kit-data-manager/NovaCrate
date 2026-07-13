@@ -146,12 +146,20 @@ export class CrateFactory {
         const sorted = [...files].sort((a, b) => a.data.name.localeCompare(b.data.name))
 
         for (const file of sorted) {
-            if (file.relativePath === metadataFile?.relativePath) continue
+            if (file.relativePath === metadataFile?.relativePath) {
+                progress++
+                progressCallback?.(progress, sorted.length, errors)
+                continue
+            }
 
             const filePath = normalizeRelativePath(file.relativePath)
             const fileName = file.data.name
 
-            if (IGNORED_FILES.includes(fileName)) continue
+            if (IGNORED_FILES.includes(fileName)) {
+                progress++
+                progressCallback?.(progress, sorted.length, errors)
+                continue
+            }
 
             try {
                 if (metadataFile && fileService) {

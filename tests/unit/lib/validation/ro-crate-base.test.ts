@@ -24,6 +24,25 @@ function buildContext(): ValidatorContext {
 
 describe("RoCrateBase", () => {
     describe("crateRules", () => {
+        it("accepts matching RO-Crate versions in metadata conformsTo and @context", async () => {
+            const [rule] = RoCrateBase.crateRules(buildContext())
+
+            const results = await rule({
+                "@context": "https://w3id.org/ro/crate/1.2/context",
+                "@graph": [
+                    {
+                        "@id": "ro-crate-metadata.json",
+                        "@type": "CreativeWork",
+                        conformsTo: [{ "@id": "https://w3id.org/ro/crate/1.2" }]
+                    }
+                ]
+            })
+
+            expect(results).toHaveLength(0)
+        })
+    })
+
+    describe("propertyRules", () => {
         it("warns when metadata conformsTo references a different RO-Crate version than @context", async () => {
             const rules = RoCrateBase.propertyRules(buildContext())
 
@@ -41,23 +60,6 @@ describe("RoCrateBase", () => {
                 ruleName: "metadataEntityConformsToContextMismatch",
                 resultTitle: "Mismatching RO-Crate specification version"
             })
-        })
-
-        it("accepts matching RO-Crate versions in metadata conformsTo and @context", async () => {
-            const [rule] = RoCrateBase.crateRules(buildContext())
-
-            const results = await rule({
-                "@context": "https://w3id.org/ro/crate/1.2/context",
-                "@graph": [
-                    {
-                        "@id": "ro-crate-metadata.json",
-                        "@type": "CreativeWork",
-                        conformsTo: [{ "@id": "https://w3id.org/ro/crate/1.2" }]
-                    }
-                ]
-            })
-
-            expect(results).toHaveLength(0)
         })
     })
 })

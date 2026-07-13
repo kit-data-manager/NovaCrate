@@ -76,28 +76,9 @@ The project uses Prettier with these settings:
 ### TypeScript
 
 - **Strict mode** is enabled
-- Use explicit types for function parameters and return values
 - Prefer interfaces (`IEntity`, `IReference`) for data structures
 - Use `type` for unions, intersections, and utility types
 - Global types are defined in `lib/data-types.d.ts`
-
-### Import Organization
-
-Order imports as follows:
-
-1. React imports (`import { useCallback, useEffect } from "react"`)
-2. External libraries (`import useSWR from "swr"`)
-3. Internal absolute imports using `@/` alias (`import { cn } from "@/lib/utils"`)
-4. Relative imports (avoid when possible, prefer `@/` alias)
-
-```typescript
-// Example
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useStore } from "zustand"
-import { useCore } from "@/components/providers/core-provider"
-import { useEditorState } from "@/lib/state/editor-state"
-import { cn, getEntityDisplayName } from "@/lib/utils"
-```
 
 ### Naming Conventions
 
