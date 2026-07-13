@@ -207,3 +207,56 @@ test("Import Folder", async ({ page }) => {
         .dblclick()
     await expect(page.locator(".monaco-editor")).toContainText("This is the Test Folder Crate")
 })
+
+test("Import Files", async ({ page }) => {
+    await page.goto("http://localhost:3000/editor")
+    await page.getByRole("button", { name: "New RO-Crate" }).click()
+    await page.getByRole("button", { name: "Select Folder" }).click()
+    await page
+        .getByTestId("create-file-upload-input")
+        .setInputFiles(["tests/data/TestFolder/example.json", "tests/data/TestFolder/empty-file"])
+    await page.getByRole("textbox", { name: "Description" }).click()
+    await page.getByRole("textbox", { name: "Description" }).fill("Custom Description Text")
+    await page.getByRole("textbox", { name: "Name" }).click()
+    await page.getByRole("textbox", { name: "Name" }).fill("Uploaded from Folder")
+    await page.getByRole("button", { name: "Create" }).click()
+    await expect(page.locator("#entity-browser-content")).toMatchAriaSnapshot(`
+    - button "R Uploaded from FolderDataset"
+    - button "Contextual Entities (1)":
+      - img
+      - text: ""
+    - button "C ro-crate-metadata.jsonCreativeWork"
+    - button "Data Entities (2)":
+      - img
+      - text: ""
+    - button "F empty-fileFile"
+    - button "F example.jsonFile"
+    `)
+    await expect(page.getByRole("textbox").first()).toHaveValue("Uploaded from Folder")
+    await expect(page.getByRole("textbox").nth(1)).toHaveValue("Custom Description Text")
+    await expect(page.locator("body")).toMatchAriaSnapshot(`
+    - button "F empty-file"
+    - button
+    - button
+    - button "F example.json"
+    - button
+    - button
+    - button "Add another entry"
+    `)
+    await page.getByRole("link", { name: "File Explorer" }).getByRole("button").click()
+    await expect(page.getByRole("tree")).toMatchAriaSnapshot(`
+    - tree:
+      - treeitem "Uploaded from Folder" [expanded] [level=1]
+      - treeitem "empty-file" [expanded] [level=2]
+      - treeitem "example.json" [expanded] [level=2]
+      - treeitem "ro-crate-metadata.json" [expanded] [level=2]
+    `)
+    await page
+        .locator("div")
+        .filter({ hasText: /^example\.json$/ })
+        .nth(1)
+        .dblclick()
+    await expect(page.locator(".monaco-editor")).toContainText(
+        '{ "file": "example.json", "contains": "nothing"}'
+    )
+})

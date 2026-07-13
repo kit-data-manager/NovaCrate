@@ -30,7 +30,25 @@ describe("downloadCrateAs", () => {
 
         await downloadCrateAs(repo, "crate-1", "zip", "my-crate.zip")
 
-        expect(repo.getCrateAs).toHaveBeenCalledWith("crate-1", "zip")
+        expect(repo.getCrateAs).toHaveBeenCalledWith("crate-1", "zip", undefined)
+        expect(fileDownload).toHaveBeenCalledWith(blob, "my-crate.zip")
+    })
+
+    it("should respect the compression options", async () => {
+        const blob = new Blob(["zip data"], { type: "application/zip" })
+        const repo: IRepositoryService = {
+            events: new Observable(),
+            getCratesList: jest.fn(),
+            createCrateFromZip: jest.fn(),
+            createCrateFromMetadata: jest.fn(),
+            deleteCrate: jest.fn(),
+            getCrateAs: jest.fn().mockResolvedValue(blob),
+            getStorageQuota: jest.fn()
+        }
+
+        await downloadCrateAs(repo, "crate-1", "zip", "my-crate.zip", { compressed: true })
+
+        expect(repo.getCrateAs).toHaveBeenCalledWith("crate-1", "zip", { compressed: true })
         expect(fileDownload).toHaveBeenCalledWith(blob, "my-crate.zip")
     })
 })

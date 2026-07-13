@@ -38,19 +38,19 @@ export function DocumentationModalInner({
                 <DialogHeader>
                     <DialogTitle>Documentation</DialogTitle>
                     <DialogDescription>
-                        While there is no in-depth documentation for NovaCrate available yet, here
-                        are some other very useful resources
+                        While there is no in-depth documentation for NovaCrate available yet, you
+                        can find links to other useful resources here
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="flex gap-1">
                     <a
                         className="hover:underline underline-offset-4"
-                        href="https://w3id.org/ro/crate/1.2"
+                        href="https://youtube.com/playlist?list=PLG-7rvAIY3THSHKXr3bNUdoA2jRpa76t_"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        RO-Crate Specification v1.2
+                        Tutorial Playlist on YouTube
                     </a>
                     <ExternalLinkIcon className="size-4" />
                 </div>
@@ -63,6 +63,30 @@ export function DocumentationModalInner({
                         rel="noopener noreferrer"
                     >
                         NovaCrate Repository
+                    </a>
+                    <ExternalLinkIcon className="size-4" />
+                </div>
+
+                <div className="flex gap-1">
+                    <a
+                        className="hover:underline underline-offset-4"
+                        href="https://github.com/kit-data-manager/NovaCrate/tree/main/docs"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        NovaCrate Guides
+                    </a>
+                    <ExternalLinkIcon className="size-4" />
+                </div>
+
+                <div className="flex gap-1">
+                    <a
+                        className="hover:underline underline-offset-4"
+                        href="https://w3id.org/ro/crate/1.2"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        RO-Crate Specification v1.2
                     </a>
                     <ExternalLinkIcon className="size-4" />
                 </div>

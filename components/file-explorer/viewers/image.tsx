@@ -21,12 +21,13 @@ export function ImageViewer(props: ViewerProps) {
     }, [props.data])
 
     return (
-        <div className="flex flex-col justify-center items-center h-full overflow-auto">
+        <div className="flex flex-col justify-start items-center h-full overflow-auto">
             <Error title={"Failed to load image"} error={error} />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
                 src={url}
                 alt=""
+                className="p-2"
                 onError={(e) => setError(e.type)}
                 onLoad={() => setError(undefined)}
             />

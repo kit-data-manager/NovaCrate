@@ -43,7 +43,11 @@ export function SchemaSettingsPage() {
             displayName: newSchemaDisplayName.trim(),
             schemaUrl: "",
             matchesUrls: [""],
-            activeOnSpec: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_1_3]
+            activeOnSpec: [
+                RO_CRATE_VERSION.V1_3_0,
+                RO_CRATE_VERSION.V1_2_0,
+                RO_CRATE_VERSION.V1_1_3
+            ]
         })
         setNewSchemaID("")
         setNewSchemaDisplayName("")
@@ -130,6 +134,9 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
 
     const [matchesPrefixes, setMatchesPrefixes] = useState(schema.matchesUrls)
     const [downloadURL, setDownloadURL] = useState(schema.schemaUrl)
+    const [activeOnROCrateV1_3_0, setActiveOnROCrateV1_3_0] = useState(
+        schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_3_0)
+    )
     const [activeOnROCrateV1_2_0, setActiveOnROCrateV1_2_0] = useState(
         schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_2_0)
     )
@@ -201,10 +208,11 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
 
     const changedActiveOn = useMemo(() => {
         const activeOn: RO_CRATE_VERSION[] = []
+        if (activeOnROCrateV1_3_0) activeOn.push(RO_CRATE_VERSION.V1_3_0)
         if (activeOnROCrateV1_2_0) activeOn.push(RO_CRATE_VERSION.V1_2_0)
         if (activeOnROCrateV1_1_3) activeOn.push(RO_CRATE_VERSION.V1_1_3)
         return activeOn
-    }, [activeOnROCrateV1_1_3, activeOnROCrateV1_2_0])
+    }, [activeOnROCrateV1_1_3, activeOnROCrateV1_2_0, activeOnROCrateV1_3_0])
 
     const saveSelf = useCallback(() => {
         updateSchema(schema.id, {
@@ -221,6 +229,7 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
         setMatchesPrefixes(schema.matchesUrls)
         setActiveOnROCrateV1_1_3(schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_1_3))
         setActiveOnROCrateV1_2_0(schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_2_0))
+        setActiveOnROCrateV1_3_0(schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_3_0))
     }, [schema.activeOnSpec, schema.matchesUrls, schema.schemaUrl])
 
     const changeName = useCallback(() => {
@@ -366,6 +375,18 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
                     </HelpTooltip>
                 </div>
                 <div className="grid grid-cols-4 gap-4">
+                    <div className="flex items-center gap-2">
+                        <Checkbox
+                            checked={activeOnROCrateV1_3_0}
+                            onCheckedChange={(s) =>
+                                setActiveOnROCrateV1_3_0(s === "indeterminate" ? true : s)
+                            }
+                            id={`ro-crate-v1.3.0-${schema.id}`}
+                        />
+                        <Label className="mb-0 pb-0" htmlFor={`ro-crate-v1.3.0-${schema.id}`}>
+                            RO-Crate v1.3.0
+                        </Label>
+                    </div>
                     <div className="flex items-center gap-2">
                         <Checkbox
                             checked={activeOnROCrateV1_2_0}

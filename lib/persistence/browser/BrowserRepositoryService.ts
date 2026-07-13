@@ -44,12 +44,16 @@ export class BrowserRepositoryService implements IRepositoryService {
         this._events.emit("crates-list-changed")
     }
 
-    async getCrateAs(crateId: string, format: "zip" | "eln" | "standalone-json"): Promise<Blob> {
+    async getCrateAs(
+        crateId: string,
+        format: "zip" | "eln" | "standalone-json",
+        options?: { compressed?: boolean }
+    ): Promise<Blob> {
         switch (format) {
             case "zip":
-                return await this.worker.execute("createCrateZip", crateId)
+                return await this.worker.execute("createCrateZip", crateId, options?.compressed)
             case "eln":
-                return await this.worker.execute("createCrateEln", crateId)
+                return await this.worker.execute("createCrateEln", crateId, options?.compressed)
             case "standalone-json": {
                 const blob = await this.worker.execute(
                     "readFile",

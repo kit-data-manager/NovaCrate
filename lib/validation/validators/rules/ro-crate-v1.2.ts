@@ -3,6 +3,7 @@ import {
     EntityRule,
     EntityValidationResult,
     PropertyRule,
+    PropertyValidationResult,
     RuleBuilder
 } from "@/lib/validation/validators/rule-based-validator"
 import { isDataEntity, isFileDataEntity, isFolderDataEntity, isValidUrl } from "@/lib/utils"
@@ -10,42 +11,8 @@ import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { DateTime } from "luxon"
 import { ValidationResultBuilder } from "@/lib/validation/validation-result-builder"
 
-const builder = new ValidationResultBuilder("spec-v1.2")
-
-export const RoCrateV1_2 = {
-    crateRules: ((ctx) => [
-        async (crate) => {
-            if (
-                !crate["@graph"].find(
-                    (e) =>
-                        e["@id"] === "ro-crate-metadata.jsonld" ||
-                        e["@id"] === "ro-crate-metadata.json"
-                )
-            ) {
-                return [
-                    builder.rule("missingMetadataEntity").error({
-                        resultTitle: "Missing metadata entity",
-                        resultDescription: "The crate must have a metadata entity",
-                        helpUrl:
-                            "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity#ro-crate-metadata-descriptor"
-                    })
-                ]
-            } else return []
-        },
-        async (crate) => {
-            if (!crate["@graph"].find((e) => e["@id"] === ctx.editorState.getRootEntityId())) {
-                return [
-                    builder.rule("missingRootEntity").error({
-                        resultTitle: "Missing root entity",
-                        resultDescription: "The crate must have a root entity",
-                        helpUrl:
-                            "https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity"
-                    })
-                ]
-            }
-            return []
-        }
-    ]) satisfies RuleBuilder<CrateRule>,
+export const buildRoCrateV1_2Rules = (builder: ValidationResultBuilder) => ({
+    crateRules: (() => []) satisfies RuleBuilder<CrateRule>,
 
     entityRules: ((ctx) => [
         async (entity) => {
@@ -355,6 +322,34 @@ export const RoCrateV1_2 = {
                 }
 
             return []
+        },
+        async (entity, propertyName) => {
+            if (
+                (entity["@id"] === "ro-crate-metadata.jsonld" ||
+                    entity["@id"] === "ro-crate-metadata.json") &&
+                propertyName === "conformsTo"
+            ) {
+                const results: PropertyValidationResult[] = []
+
+                propertyValue(entity.conformsTo).forEach((value, i) => {
+                    if (i > 0) {
+                        results.push(
+                            builder.rule("metadataEntityConformsTo-multipleValues").warning({
+                                resultTitle: "Too many values",
+                                resultDescription:
+                                    "As of RO-Crate v1.2, the conformsTo property of the metadata descriptor should have only one value",
+                                entityId: entity["@id"],
+                                propertyName,
+                                propertyIndex: i
+                            })
+                        )
+                    }
+                })
+
+                return results
+            }
+
+            return []
         }
     ]) satisfies RuleBuilder<PropertyRule>
-}
+})

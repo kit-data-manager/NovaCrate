@@ -3,16 +3,26 @@ import { computeGraphLayout } from "@/components/graph/layout"
 import { create } from "zustand"
 import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 
+export interface GraphViewport {
+    x: number
+    y: number
+    zoom: number
+}
+
 export interface GraphState {
     nodes: Node[]
     edges: Edge[]
     selectedEntityID: string | undefined
+    viewport: GraphViewport | undefined
+    initialFormatDone: boolean
     setSelectedEntityID(id: string): void
     updateNodes(nodes: Node[]): void
     autoLayout(): void
     handleNodesChange(changes: NodeChange[]): void
     updateEdges(edges: Edge[]): void
     handleEdgesChange(changes: EdgeChange[]): void
+    setViewport(viewport: GraphViewport): void
+    setInitialFormatDone(): void
 }
 
 export const useGraphState = create<GraphState>()(
@@ -20,6 +30,8 @@ export const useGraphState = create<GraphState>()(
         edges: [],
         nodes: [],
         selectedEntityID: undefined,
+        viewport: undefined,
+        initialFormatDone: false,
         setSelectedEntityID(id: string) {
             set({ selectedEntityID: id })
         },
@@ -49,6 +61,12 @@ export const useGraphState = create<GraphState>()(
         },
         handleEdgesChange(changes: EdgeChange[]) {
             set({ edges: applyEdgeChanges(changes, get().edges) })
+        },
+        setViewport(viewport: GraphViewport) {
+            set({ viewport })
+        },
+        setInitialFormatDone() {
+            set({ initialFormatDone: true })
         }
     }))
 )

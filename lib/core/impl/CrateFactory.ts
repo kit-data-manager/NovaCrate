@@ -7,8 +7,8 @@ import { CoreServiceImpl } from "@/lib/core/impl/CoreServiceImpl"
 import { PersistenceAdapterImpl } from "@/lib/core/impl/PersistenceAdapterImpl"
 import { IGNORED_FILES } from "@/lib/constants"
 
-const DEFAULT_CONTEXT = "https://w3id.org/ro/crate/1.2/context"
-const DEFAULT_CONFORMS_TO = "https://w3id.org/ro/crate/1.2"
+const DEFAULT_CONTEXT = "https://w3id.org/ro/crate/1.3/context"
+const DEFAULT_CONFORMS_TO = "https://w3id.org/ro/crate/1.3"
 
 function buildCrateTemplate(name: string, description: string): ICrate {
     return {
@@ -123,12 +123,18 @@ export class CrateFactory {
         files: { relativePath: string; data: File }[],
         progressCallback?: (current: number, total: number, errors: string[]) => void
     ): Promise<string> {
-        const crateId = await this.createEmptyCrate(name, description)
+        const metadataFile = files.find(
+            (f) => normalizeRelativePath(f.relativePath) === "ro-crate-metadata.json"
+        )
+        const crateId = await (metadataFile
+            ? this.createCrateFromFile(metadataFile.data)
+            : this.createEmptyCrate(name, description))
 
         const crateService = await this.persistence.createCrateServiceFor(crateId)
         if (!crateService) {
             throw new Error("Crate services not available, cannot create crate from files")
         }
+        const fileService = crateService.getFileService()
 
         const persistenceAdapter = new PersistenceAdapterImpl(crateService)
         const coreService = await CoreServiceImpl.newInstance(persistenceAdapter, crateService)
@@ -137,18 +143,34 @@ export class CrateFactory {
         let progress = 0
 
         // Stable sort for deterministic ordering
-        const sorted = [...files].sort((a, b) =>
-            extractFileName(a.relativePath).localeCompare(extractFileName(b.relativePath))
-        )
+        const sorted = [...files].sort((a, b) => a.data.name.localeCompare(b.data.name))
 
         for (const file of sorted) {
-            const filePath = normalizeRelativePath(file.relativePath)
-            const fileName = extractFileName(filePath)
+            if (file.relativePath === metadataFile?.relativePath) {
+                progress++
+                progressCallback?.(progress, sorted.length, errors)
+                continue
+            }
 
-            if (IGNORED_FILES.includes(fileName)) continue
+            const filePath = normalizeRelativePath(file.relativePath)
+            const fileName = file.data.name
+
+            if (IGNORED_FILES.includes(fileName)) {
+                progress++
+                progressCallback?.(progress, sorted.length, errors)
+                continue
+            }
 
             try {
-                await coreService.addFileEntity(fileName, filePath, file.data)
+                if (metadataFile && fileService) {
+                    // If ro-crate-metadata.json is already present, then all files should be described already
+                    // If a file is not present in the metadata, then the user can still add it manually
+                    await fileService.addFile(filePath, file.data)
+                } else {
+                    // When there is no metadata file, we automatically infer a file entity for each file
+                    // through the same mechanism as the in-crate file upload
+                    await coreService.addFileEntity(fileName, filePath, file.data)
+                }
             } catch (e) {
                 const msg = e instanceof Error ? e.message : String(e)
                 errors.push(`Failed to upload ${filePath}: ${msg}`)
@@ -173,7 +195,7 @@ export class CrateFactory {
     async duplicateCrate(crateId: string, newName?: string): Promise<string> {
         const repo = this.getRepository()
 
-        const zipBlob = await repo.getCrateAs(crateId, "zip")
+        const zipBlob = await repo.getCrateAs(crateId, "zip", { compressed: false })
         const zip = await JSZip.loadAsync(await zipBlob.arrayBuffer())
 
         const metadataEntry = zip.file("ro-crate-metadata.json")
@@ -201,9 +223,4 @@ function normalizeRelativePath(relativePath: string): string {
     // Strip leading directory (webkitRelativePath starts with folder name)
     if (parts.length > 1) parts[0] = "."
     return parts.join("/").replace(/^\.\//, "")
-}
-
-function extractFileName(path: string): string {
-    const parts = path.split("/").filter((p) => p !== "")
-    return parts[parts.length - 1]
 }

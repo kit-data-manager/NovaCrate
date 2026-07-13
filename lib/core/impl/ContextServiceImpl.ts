@@ -10,13 +10,19 @@ const KNOWN_CONTEXTS = [
         "@id": "https://w3id.org/ro/crate/1.1/context",
         name: "RO-Crate JSON-LD Context",
         version: RO_CRATE_VERSION.V1_1_3,
-        load: () => import("../../schema-worker/assets/context-1.1.json")
+        load: () => import("@/lib/core/impl/assets/context-1.1.json")
     },
     {
         "@id": "https://w3id.org/ro/crate/1.2/context",
         name: "RO-Crate JSON-LD Context",
         version: RO_CRATE_VERSION.V1_2_0,
-        load: () => import("../../schema-worker/assets/context-1.2.json")
+        load: () => import("@/lib/core/impl/assets/context-1.2.json")
+    },
+    {
+        "@id": "https://w3id.org/ro/crate/1.3/context",
+        name: "RO-Crate JSON-LD Context",
+        version: RO_CRATE_VERSION.V1_3_0,
+        load: () => import("@/lib/core/impl/assets/context-1.3.json")
     }
 ]
 

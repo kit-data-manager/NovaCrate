@@ -28,7 +28,7 @@ export function FilePreview() {
     return (
         <div className="flex flex-col h-full bg-background rounded-lg overflow-hidden border">
             <FilePreviewTabs />
-            <div className="flex flex-col grow max-w-full overflow-none">
+            <div className="flex flex-col grow max-w-full overflow-none min-h-0">
                 {activeTab && <BaseViewer tab={activeTab} updateTab={openTab} />}
             </div>
         </div>

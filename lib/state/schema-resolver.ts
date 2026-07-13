@@ -45,7 +45,7 @@ const defaultSchemas = [
         displayName: "Schema.org",
         matchesUrls: ["https://schema.org/"],
         schemaUrl: "https://schema.org/version/latest/schemaorg-current-https.jsonld",
-        activeOnSpec: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
+        activeOnSpec: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
     },
     {
         id: "bioschemas_types",
@@ -60,7 +60,7 @@ const defaultSchemas = [
         matchesUrls: ["http://purl.org/dc/terms/"],
         schemaUrl:
             "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
-        activeOnSpec: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
+        activeOnSpec: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
     },
     /* Added in store version 2 */
     {
@@ -68,28 +68,36 @@ const defaultSchemas = [
         displayName: "Profile Vocabulary",
         matchesUrls: ["http://www.w3.org/ns/dx/prof"],
         schemaUrl: "https://www.w3.org/TR/dx-prof/rdf/prof.ttl",
-        activeOnSpec: [RO_CRATE_VERSION.V1_2_0]
+        activeOnSpec: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
     },
     {
         id: "geosparql",
         displayName: "GeoSPARQL",
         matchesUrls: ["http://www.opengis.net/ont/geosparql"],
         schemaUrl: "https://opengeospatial.github.io/ogc-geosparql/geosparql11/geo.ttl",
-        activeOnSpec: [RO_CRATE_VERSION.V1_2_0]
+        activeOnSpec: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
     },
     {
         id: "codemeta3",
         displayName: "CodeMeta 3.0",
         matchesUrls: ["https://codemeta.github.io/terms/"],
         schemaUrl: addBasePath("schema/codemeta-3.0-terms.jsonld"),
-        activeOnSpec: [RO_CRATE_VERSION.V1_2_0]
+        activeOnSpec: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
     },
     {
         id: "pcdm",
         displayName: "Portland Common Data Model",
         matchesUrls: ["http://pcdm.org/models#"],
         schemaUrl: addBasePath("schema/pcdm-selected.jsonld"),
-        activeOnSpec: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_1_3]
+        activeOnSpec: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_3_0]
+    },
+    /* Added in store version 3 */
+    {
+        id: "bioschemas_types_1.3.0",
+        displayName: "Bioschemas.org Types (RO-Crate v1.3.0)",
+        matchesUrls: ["https://bioschemas.org/terms/"],
+        schemaUrl: "https://bioschemas.org/types/bioschemas_types.jsonld",
+        activeOnSpec: [RO_CRATE_VERSION.V1_3_0]
     }
 ]
 
@@ -127,7 +135,7 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
             })),
             {
                 name: "schema-resolver",
-                version: 2,
+                version: 3,
                 migrate: (_persisted: unknown, persistedVersion) => {
                     if (!_persisted) return { registeredSchemas: [...defaultSchemas] }
                     const persisted = _persisted as Partial<SchemaResolverStore>
@@ -162,6 +170,24 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
 
                         if (!merged.find((s) => s.id === "pcdm"))
                             merged.push(defaultSchemas.find((d) => d.id === "pcdm")!)
+                    }
+
+                    if (persistedVersion < 3) {
+                        for (const schema of merged) {
+                            const defaults = defaultSchemas.find((d) => d.id === schema.id)
+                            if (
+                                !defaults ||
+                                defaults.activeOnSpec.includes(RO_CRATE_VERSION.V1_3_0)
+                            ) {
+                                // Eagerly add v1.3.0 to all schemas where we don't know the usage since v1.3.0 only has minor changes
+                                schema.activeOnSpec.push(RO_CRATE_VERSION.V1_3_0)
+                            }
+                        }
+
+                        if (!merged.find((s) => s.id === "bioschemas_types_1.3.0"))
+                            merged.push(
+                                defaultSchemas.find((d) => d.id === "bioschemas_types_1.3.0")!
+                            )
                     }
 
                     return { registeredSchemas: merged }

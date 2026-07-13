@@ -328,7 +328,7 @@ export default function EditorLandingPage() {
                                     onClick={() => createCrateFromExample("ro-crate-spec")}
                                 >
                                     <CirclePlay className="size-4 mr-2" />
-                                    RO-Crate Specification Crate
+                                    RO-Crate Specification Crate (v1.2)
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
                             <DropdownMenuGroup>

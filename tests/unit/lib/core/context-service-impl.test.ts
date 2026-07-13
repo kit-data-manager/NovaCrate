@@ -97,6 +97,47 @@ describe("ContextServiceImpl", () => {
             expect(service.resolve("Organization")).toBe("https://schema.org/Organization")
         })
     })
+    describe("newInstance with v1.3 string context", () => {
+        let service: ContextServiceImpl
+
+        beforeEach(async () => {
+            const mockAdapter = createMockPersistenceAdapter(
+                "https://w3id.org/ro/crate/1.3/context"
+            )
+            service = await ContextServiceImpl.newInstance(mockAdapter)
+        })
+
+        it("should load the v1.3 specification", () => {
+            expect(service.specification).toBe(RO_CRATE_VERSION.V1_3_0)
+        })
+
+        it("should not use fallback", () => {
+            expect(service.usingFallback).toBe(false)
+        })
+
+        it("should resolve correctly resolve terms changed in v1.3", () => {
+            expect(service.resolve("ComputationalWorkflow")).toBe(
+                "https://bioschemas.org/terms/ComputationalWorkflow"
+            )
+            expect(service.resolve("FormalParameter")).toBe(
+                "https://bioschemas.org/terms/FormalParameter"
+            )
+            expect(service.resolve("input")).toBe("https://bioschemas.org/terms/input")
+            expect(service.resolve("output")).toBe("https://bioschemas.org/terms/output")
+        })
+
+        it("should reverse v1.3-specific URIs", () => {
+            expect(service.reverse("https://bioschemas.org/terms/ComputationalWorkflow")).toBe(
+                "ComputationalWorkflow"
+            )
+            expect(service.reverse("https://bioschemas.org/terms/input")).toBe("input")
+            expect(service.reverse("https://bioschemas.org/terms/output")).toBe("output")
+        })
+
+        it("should still resolve common schema.org types", () => {
+            expect(service.resolve("Organization")).toBe("https://schema.org/Organization")
+        })
+    })
 
     describe("newInstance with @vocab object context", () => {
         it("should work with object-style context using @vocab only", async () => {
@@ -369,6 +410,14 @@ describe("ContextServiceImpl", () => {
             )
             expect(known).toBeDefined()
             expect(known!.version).toBe(RO_CRATE_VERSION.V1_2_0)
+        })
+
+        it("should return the v1.3 context entry", () => {
+            const known = ContextServiceImpl.getKnownContext(
+                "https://w3id.org/ro/crate/1.3/context"
+            )
+            expect(known).toBeDefined()
+            expect(known!.version).toBe(RO_CRATE_VERSION.V1_3_0)
         })
 
         it("should return undefined for an unknown context ID", () => {

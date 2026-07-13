@@ -5,7 +5,7 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select"
-import { useCallback, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import {
     LanguageModelProvider,
     ProviderConfiguration,
@@ -26,6 +26,7 @@ import { RecordInput } from "@/components/ui/record"
 import { Button } from "@/components/ui/button"
 import { CheckIcon, CloudDownload, LoaderCircle } from "lucide-react"
 import { Error as ErrorDisplay } from "@/components/error"
+import HelpTooltip from "@/components/help-tooltip"
 
 export function ConfigureProvider({
     existingConfig,
@@ -54,6 +55,9 @@ export function ConfigureProvider({
     const [testingNewProvider, setTestingNewProvider] = useState(false)
     const [providerTestedSuccessfully, setProviderTestedSuccessfully] = useState(false)
     const [fetchingModels, setFetchingModels] = useState(false)
+
+    // Used for on open focussing
+    const firstInputRef = useRef<HTMLButtonElement>(null!)
 
     const makeProviderConfig = useCallback(
         (models: TextModel[] = []) => {
@@ -103,6 +107,11 @@ export function ConfigureProvider({
     }, [configureModels, configureProvider, makeProviderConfig, onOpenChange, settings])
 
     const _testProvider = useCallback(async () => {
+        if (!configureProvider) {
+            setConfigureError("Please select a provider")
+            return
+        }
+
         setTestingNewProvider(true)
         setProviderTestedSuccessfully(false)
         try {
@@ -115,9 +124,14 @@ export function ConfigureProvider({
         } finally {
             setTestingNewProvider(false)
         }
-    }, [makeProviderConfig])
+    }, [configureProvider, makeProviderConfig])
 
     const _fetchModels = useCallback(async () => {
+        if (!configureProvider) {
+            setConfigureError("Please select a provider")
+            return
+        }
+
         try {
             setFetchingModels(true)
             const models = await fetchModels(makeProviderConfig())
@@ -130,11 +144,19 @@ export function ConfigureProvider({
         } finally {
             setFetchingModels(false)
         }
-    }, [makeProviderConfig])
+    }, [configureProvider, makeProviderConfig])
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-h-screen overflow-y-auto">
+            <DialogContent
+                className="max-h-screen overflow-y-auto"
+                onOpenAutoFocus={(e) => {
+                    e.preventDefault()
+                    if (firstInputRef.current) {
+                        firstInputRef.current.focus()
+                    }
+                }}
+            >
                 <DialogHeader>
                     <DialogTitle>Configure AI Assistant</DialogTitle>
                     <DialogDescription>
@@ -145,17 +167,68 @@ export function ConfigureProvider({
                 </DialogHeader>
 
                 <div className="space-y-4">
-                    <Label htmlFor="provider">Provider</Label>
+                    <Label htmlFor="provider">
+                        Provider{" "}
+                        <HelpTooltip>
+                            <div>Select the type of provider for the AI Assistant.</div>
+                            <div>
+                                <a
+                                    href="https://anthropic.com"
+                                    target={"_blank"}
+                                    rel={"noopener noreferrer"}
+                                    className="underline"
+                                >
+                                    Anthropic
+                                </a>
+                                : For use with the official Anthropic API
+                            </div>
+                            <div>
+                                <a
+                                    href="https://openai.com"
+                                    target={"_blank"}
+                                    rel={"noopener noreferrer"}
+                                    className="underline"
+                                >
+                                    OpenAI
+                                </a>
+                                : For use with the official OpenAI API
+                            </div>
+                            <div>
+                                <a
+                                    href="https://openwebui.com/"
+                                    target={"_blank"}
+                                    rel={"noopener noreferrer"}
+                                    className="underline"
+                                >
+                                    OpenAI Compatible
+                                </a>
+                                : For use with an OpenAI-compatible LLM provider (e.g. Open WebUI)
+                            </div>
+                            <div>
+                                <a
+                                    href="https://openrouter.com"
+                                    target={"_blank"}
+                                    rel={"noopener noreferrer"}
+                                    className="underline"
+                                >
+                                    OpenRouter
+                                </a>
+                                : For use with OpenRouter (free models available)
+                            </div>
+                        </HelpTooltip>
+                    </Label>
                     <Select value={configureProvider} onValueChange={setConfigureProvider}>
-                        <SelectTrigger id={"provider"}>
+                        <SelectTrigger id={"provider"} ref={firstInputRef}>
                             <SelectValue placeholder="Select a provider" />
                         </SelectTrigger>
                         <SelectContent>
-                            {Object.values(LanguageModelProvider).map((provider) => (
-                                <SelectItem value={provider} key={provider}>
-                                    {providerDisplayName(provider)}
-                                </SelectItem>
-                            ))}
+                            {Object.values(LanguageModelProvider)
+                                .sort()
+                                .map((provider) => (
+                                    <SelectItem value={provider} key={provider}>
+                                        {providerDisplayName(provider)}
+                                    </SelectItem>
+                                ))}
                         </SelectContent>
                     </Select>
                     <div>
@@ -168,7 +241,13 @@ export function ConfigureProvider({
                         />
                     </div>
                     <div>
-                        <Label htmlFor="api-key">API Key</Label>
+                        <Label htmlFor="api-key">
+                            API Key{" "}
+                            <HelpTooltip>
+                                Obtain an API Key from the selected provider. Providing an API Key
+                                is required to use the AI Assistant.
+                            </HelpTooltip>
+                        </Label>
                         <Input
                             id="api-key"
                             placeholder="Enter your API Key"
@@ -179,7 +258,23 @@ export function ConfigureProvider({
                     </div>
 
                     <div>
-                        <Label htmlFor="base-url">Base URL</Label>
+                        <Label htmlFor="base-url">
+                            Base URL{" "}
+                            {configureProvider !== "openai-compatible" && (
+                                <span className="font-normal text-muted-foreground">Optional</span>
+                            )}
+                            {configureProvider === "openai-compatible" ? (
+                                <HelpTooltip>
+                                    Specify the full URL to the OpenAI Compatible provider API.
+                                    Example: https://llm.example.org/api/v1
+                                </HelpTooltip>
+                            ) : (
+                                <HelpTooltip>
+                                    This field is optional. You can use it to specify a proxy to
+                                    route your requests through.
+                                </HelpTooltip>
+                            )}
+                        </Label>
                         <Input
                             id="base-url"
                             placeholder="Leave empty for default"
@@ -188,7 +283,14 @@ export function ConfigureProvider({
                         />
                     </div>
                     <div>
-                        <Label>Headers</Label>
+                        <Label>
+                            Headers{" "}
+                            <span className="font-normal text-muted-foreground">Optional</span>
+                            <HelpTooltip>
+                                Here you can specify request headers that will be included in every
+                                request to the provider
+                            </HelpTooltip>
+                        </Label>
                         <RecordInput
                             value={configureHeaders}
                             onValueChange={setConfigureHeaders}
@@ -199,7 +301,16 @@ export function ConfigureProvider({
                     </div>
                     <div className="space-y-2">
                         <div className="flex justify-between items-end">
-                            <Label>Models</Label>
+                            <Label>
+                                Models{" "}
+                                <HelpTooltip>
+                                    This is a list of language models your provider supports. You
+                                    can fill this list automatically by using the &#34;Fetch Models
+                                    automatically&#34; button. You can also edit the list
+                                    afterwards. Note that the list may incorrectly include non-text
+                                    models, which you should remove using the delete button.
+                                </HelpTooltip>
+                            </Label>
                             <Button
                                 variant="outline"
                                 onClick={_fetchModels}

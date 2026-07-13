@@ -86,7 +86,7 @@ function createMockPersistence(
 
 describe("CrateFactory", () => {
     describe("createEmptyCrate", () => {
-        it("should create a crate with a valid RO-Crate v1.2 template", async () => {
+        it("should create a crate with a valid RO-Crate v1.3 template", async () => {
             const repo = createMockRepositoryService()
             const persistence = createMockPersistence(repo)
             const factory = new CrateFactory(persistence)
@@ -97,7 +97,7 @@ describe("CrateFactory", () => {
             const json = (repo.createCrateFromMetadata as jest.Mock).mock.calls[0][0]
             const crate = JSON.parse(json) as ICrate
 
-            expect(crate["@context"]).toBe("https://w3id.org/ro/crate/1.2/context")
+            expect(crate["@context"]).toBe("https://w3id.org/ro/crate/1.3/context")
             expect(crate["@graph"]).toHaveLength(2)
 
             const root = crate["@graph"].find((e) => e["@id"] === "./")
@@ -111,7 +111,7 @@ describe("CrateFactory", () => {
             expect(descriptor!["@type"]).toBe("CreativeWork")
             expect((descriptor!.about as IReference)["@id"]).toBe("./")
             expect((descriptor!.conformsTo as IReference)["@id"]).toBe(
-                "https://w3id.org/ro/crate/1.2"
+                "https://w3id.org/ro/crate/1.3"
             )
         })
 
@@ -443,6 +443,64 @@ describe("CrateFactory", () => {
             // The file path should have the leading folder replaced
             expect(fileService.addFile).toHaveBeenCalledWith("sub/file.txt", expect.any(Blob))
         })
+
+        it("should respect preexisting metadata file", async () => {
+            const fileService = createMockFileService()
+            const crateService = createMockCrateService(fileService)
+            const repo = createMockRepositoryService()
+            const persistence = createMockPersistence(repo, crateService)
+
+            ;(crateService.getMetadata as jest.Mock).mockResolvedValue(JSON.stringify(validCrate()))
+
+            const factory = new CrateFactory(persistence)
+
+            await factory.createCrateFromFiles("Test", "", [
+                {
+                    relativePath: "myFolder/ro-crate-metadata.json",
+                    data: new File(
+                        [new Blob([JSON.stringify(validCrate())])],
+                        "ro-crate-metadata.json"
+                    )
+                },
+                {
+                    relativePath: "myFolder/someFile.txt",
+                    data: new File([new Blob(["x"])], "someFile.txt")
+                }
+            ])
+
+            // The file path should have the leading folder replaced
+            expect(repo.createCrateFromMetadata).toHaveBeenCalledTimes(1)
+            expect(fileService.addFile).toHaveBeenCalledTimes(1)
+        })
+
+        it("should work for single files (not via folder select)", async () => {
+            const fileService = createMockFileService()
+            const crateService = createMockCrateService(fileService)
+            const repo = createMockRepositoryService()
+            const persistence = createMockPersistence(repo, crateService)
+
+            ;(crateService.getMetadata as jest.Mock).mockResolvedValue(JSON.stringify(validCrate()))
+
+            const factory = new CrateFactory(persistence)
+
+            await factory.createCrateFromFiles("Test", "", [
+                {
+                    relativePath: "ro-crate-metadata.json",
+                    data: new File(
+                        [new Blob([JSON.stringify(validCrate())])],
+                        "ro-crate-metadata.json"
+                    )
+                },
+                {
+                    relativePath: "someFile.txt",
+                    data: new File([new Blob(["x"])], "someFile.txt")
+                }
+            ])
+
+            // The file path should have the leading folder replaced
+            expect(repo.createCrateFromMetadata).toHaveBeenCalledTimes(1)
+            expect(fileService.addFile).toHaveBeenCalledTimes(1)
+        })
     })
 
     describe("duplicateCrate", () => {
@@ -463,7 +521,9 @@ describe("CrateFactory", () => {
 
             const id = await factory.duplicateCrate("source-crate-id")
 
-            expect(repo.getCrateAs).toHaveBeenCalledWith("source-crate-id", "zip")
+            expect(repo.getCrateAs).toHaveBeenCalledWith("source-crate-id", "zip", {
+                compressed: false
+            })
             expect(repo.createCrateFromZip).toHaveBeenCalledTimes(1)
             expect(id).toBe("zip-crate-id")
 

@@ -24,8 +24,9 @@ export function determineViewerType(blob: Blob): ViewerType {
     if (UNSUPPORTED.includes(blob.type)) {
         return ViewerType.UNKNOWN
     } else {
+        const prefix = blob.type.split("/")[0]
         for (const v of VIEWERS) {
-            if (v.mimeTypes.includes(blob.type)) {
+            if (v.mimeTypes.includes(blob.type) || v.mimeTypes.includes(prefix + "/*")) {
                 return v.type
             }
         }

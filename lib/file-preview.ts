@@ -3,12 +3,14 @@ import { ImageViewer } from "@/components/file-explorer/viewers/image"
 import { TextViewer } from "@/components/file-explorer/viewers/text"
 import { IFrameViewer } from "@/components/file-explorer/viewers/iframe"
 import { IFilePreviewTab } from "@/lib/state/file-explorer-state"
+import { CSVViewer } from "@/components/file-explorer/viewers/csv"
 
 export enum ViewerType {
     UNKNOWN,
     IMAGE,
     TEXT,
     IFRAME,
+    CSV,
     NOT_IDENTIFIED_YET = 999
 }
 
@@ -41,16 +43,22 @@ export const VIEWERS: IViewer[] = [
         component: ImageViewer
     },
     {
-        type: ViewerType.TEXT,
-        displayName: "Text Viewer",
-        mimeTypes: ["text/plain", "application/json"],
-        component: TextViewer
-    },
-    {
         type: ViewerType.IFRAME,
         displayName: "IFrame Viewer",
         subtitle: "(for PDFs and HTML)",
         mimeTypes: ["text/html", "application/pdf"],
         component: IFrameViewer
+    },
+    {
+        type: ViewerType.CSV,
+        displayName: "CSV Viewer",
+        mimeTypes: ["text/csv"],
+        component: CSVViewer
+    },
+    {
+        type: ViewerType.TEXT,
+        displayName: "Text Viewer",
+        mimeTypes: ["text/*", "application/json"],
+        component: TextViewer
     }
 ]

@@ -1,6 +1,7 @@
 export enum RO_CRATE_VERSION {
     V1_1_3 = "v1.1.3",
-    V1_2_0 = "v1.2.0"
+    V1_2_0 = "v1.2.0",
+    V1_3_0 = "v1.3.0"
 }
 
 // Used to ignore some OS-specific files on folder or zip import

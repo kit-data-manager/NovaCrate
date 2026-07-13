@@ -40,16 +40,17 @@ export function ValidationContextProvider({ children }: PropsWithChildren) {
         return () => remove?.()
     }, [crateService?.events])
 
-    const resolver = core.getContextService().getResolver()
+    const contextService = core.getContextService()
 
     const ctx = useMemo(() => {
         return {
             editorState,
             schemaWorker,
             fileService: fileService ?? undefined,
-            resolver
+            resolver: contextService.getResolver(),
+            context: contextService
         }
-    }, [editorState, fileService, resolver, schemaWorker])
+    }, [contextService, editorState, fileService, schemaWorker])
 
     const [validation] = useState(() => {
         const validation = new ValidationProvider(ctx)
