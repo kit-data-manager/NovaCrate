@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added options for exporting a crate without compression (especially useful for large crates)
 
 ### Changed
+- The text viewer is now shown for any file with type text/* (if there is no other default)
 - Updated the documentation modal to add links to guides on GitHub and the YouTube tutorial series
 
 ## [1.12.0] - 2026-06-25

@@ -84,10 +84,10 @@ export function BaseViewer({
                 return <LargeViewSelect setType={setType} />
             default: {
                 const Viewer = VIEWERS.find((v) => v.type === tab.viewerType)!.component
-                return <Viewer data={data} tab={tab} updateTab={updateTab} />
+                return <Viewer data={error ? undefined : data} tab={tab} updateTab={updateTab} />
             }
         }
-    }, [data, setType, tab, updateTab])
+    }, [data, error, setType, tab, updateTab])
 
     return (
         <>
