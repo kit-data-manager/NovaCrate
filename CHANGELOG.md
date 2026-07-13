@@ -19,7 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - The text viewer is now shown for any file with type text/* (if there is no other default)
+- The main menu now allows creating new RO-Crates from (multiple) files
 - Updated the documentation modal to add links to guides on GitHub and the YouTube tutorial series
+
+### Fixed
+- Creating an RO-Crate from a file or folder with an existing ro-crate-metadata.json now works correctly
 
 ## [1.12.0] - 2026-06-25
 
