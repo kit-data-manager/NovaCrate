@@ -1,7 +1,8 @@
 import { makeStaticMetadata } from "@/lib/makeStaticMetadata"
 import { ContextPage } from "@/components/context/context"
+import { Metadata } from "next"
 
-export const metadata = makeStaticMetadata("Context")
+export const metadata: Metadata = makeStaticMetadata("Context")
 
 export default function Context() {
     return <ContextPage />

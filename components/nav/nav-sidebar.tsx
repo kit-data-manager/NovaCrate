@@ -17,8 +17,7 @@ import {
     useCallback,
     useContext,
     useEffect,
-    useMemo,
-    useRef
+    useMemo
 } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -28,7 +27,7 @@ import { usePersistence } from "@/components/providers/persistence-provider"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import AIAssistantChat from "@/components/ai/chat"
 import { useLayoutState } from "@/lib/state/layout-state"
-import { ImperativePanelHandle } from "react-resizable-panels"
+import { usePanelRef } from "react-resizable-panels"
 
 function NavSidebarButton({
     children,
@@ -92,20 +91,20 @@ export function NavSidebar({ children }: PropsWithChildren) {
         setShowValidationDrawer(!showValidationDrawer)
     }, [setShowValidationDrawer, showValidationDrawer])
 
-    const ref = useRef<ImperativePanelHandle>(null)
+    const ref = usePanelRef()
 
     useEffect(() => {
         if (!ref.current) return
         if (showAIAssistant) {
-            ref.current.expand(30)
+            ref.current.expand()
         } else {
             ref.current.collapse()
         }
-    }, [showAIAssistant])
+    }, [ref, showAIAssistant])
 
     return (
-        <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel minSize={50} defaultSize={70}>
+        <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel minSize={"50%"}>
                 <div className="grid grid-cols-[58px_auto] h-full">
                     <div className="relative h-full flex flex-col">
                         <div className="flex flex-col gap-2 p-2 pb-4 pt-0 grow">
@@ -180,11 +179,16 @@ export function NavSidebar({ children }: PropsWithChildren) {
             <ResizableHandle />
             <ResizablePanel
                 collapsible
-                minSize={10}
-                defaultSize={30}
-                ref={ref}
-                onCollapse={() => setShowAIAssistant(false)}
-                onExpand={() => setShowAIAssistant(true)}
+                minSize={"300px"}
+                defaultSize={"300px"}
+                panelRef={ref}
+                onResize={(size) => {
+                    if (size.asPercentage === 0) {
+                        setShowAIAssistant(false)
+                    } else {
+                        setShowAIAssistant(true)
+                    }
+                }}
             >
                 <div className="h-full pr-3 pb-3">
                     <div className="h-full border border-border rounded-lg overflow-hidden">

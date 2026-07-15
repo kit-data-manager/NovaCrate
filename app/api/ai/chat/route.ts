@@ -85,7 +85,7 @@ export async function POST(req: Request) {
             If you have an ORCID or ROR identifier, use the specialised tools to import Person or Organization entities directly from the respective registry.
             
             ## Data Protection
-            To prevent data loss, you should ALWAYS READ AN ENTITY BEFORE EDITING IT. It is very well possible that the user has edited an entity since you last read it!
+            To prevent data loss, you are forced to read an entity before editing it. If the user has edited the entity in the meantime, you must read it again. This is taken care of automatically.
             
             ## Validation
             NovaCrate has built-in validation. You can read validation results using a tool.`
@@ -101,7 +101,7 @@ export async function POST(req: Request) {
         )
     }
 
-    return createAgentUIStreamResponse<never, typeof tools, never>({
+    return createAgentUIStreamResponse<never, typeof tools>({
         agent,
         uiMessages: body.messages,
         onError: (error) => {

@@ -3,8 +3,7 @@
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { EntityBrowser } from "@/components/entity-browser/entity-browser"
 import { EntityEditorTabs } from "@/components/editor/entity-editor-tabs"
-import { createRef, PropsWithChildren, useCallback, useState } from "react"
-import { ImperativePanelHandle } from "react-resizable-panels"
+import { PropsWithChildren, useCallback, useState } from "react"
 import { Metadata } from "@/components/Metadata"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { BaseViewer } from "@/components/file-explorer/viewers/base"
@@ -16,6 +15,7 @@ import { useGoToFileExplorer } from "@/lib/hooks/hooks"
 import { useEditorState } from "@/lib/state/editor-state"
 import { findEntity } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { usePanelRef } from "react-resizable-panels"
 
 function EntityEditorFilePreview(props: PropsWithChildren) {
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
@@ -40,12 +40,12 @@ function EntityEditorFilePreview(props: PropsWithChildren) {
     }
 
     return (
-        <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel defaultSize={66} minSize={20}>
+        <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel defaultSize={"66%"} minSize={"400px"}>
                 <div className="h-full w-full overflow-auto">{props.children}</div>
             </ResizablePanel>
             <ResizableHandle className="m-0.5" />
-            <ResizablePanel defaultSize={34} minSize={20}>
+            <ResizablePanel minSize={"200px"}>
                 <div className="flex flex-col h-full w-full overflow-auto border rounded-lg">
                     <div className="flex gap-2 p-2 items-center border-b border-t overflow-x-auto shrink-0 bg-accent no-scrollbar h-10">
                         <FileIcon className="size-4" />
@@ -99,12 +99,12 @@ function EntityEditorFilePreview(props: PropsWithChildren) {
 }
 
 export default function Entities() {
-    const entityBrowserPanel = createRef<ImperativePanelHandle>()
+    const entityBrowserPanel = usePanelRef()
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
 
     const toggleEntityBrowserPanel = useCallback(() => {
         if (entityBrowserPanel.current) {
-            if (entityBrowserPanel.current.isExpanded()) {
+            if (!entityBrowserPanel.current.isCollapsed()) {
                 entityBrowserPanel.current.collapse()
             } else {
                 entityBrowserPanel.current.expand()
@@ -115,20 +115,19 @@ export default function Entities() {
     return (
         <>
             <Metadata page={"Entities"} />
-            <ResizablePanelGroup direction={"horizontal"}>
+            <ResizablePanelGroup orientation={"horizontal"}>
                 <ResizablePanel
-                    defaultSize={30}
-                    minSize={10}
-                    ref={entityBrowserPanel}
+                    defaultSize={"400px"}
+                    minSize={"200px"}
+                    panelRef={entityBrowserPanel}
                     collapsible
-                    collapsedSize={0}
                 >
                     <div className="h-full w-full overflow-auto">
                         <EntityBrowser />
                     </div>
                 </ResizablePanel>
                 <ResizableHandle className="m-0.5" />
-                <ResizablePanel defaultSize={70} minSize={30}>
+                <ResizablePanel minSize={"50%"}>
                     {previewingFilePath ? (
                         <EntityEditorFilePreview>
                             <EntityEditorTabs toggleEntityBrowserPanel={toggleEntityBrowserPanel} />
