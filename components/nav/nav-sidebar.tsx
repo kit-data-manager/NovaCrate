@@ -180,7 +180,7 @@ export function NavSidebar({ children }: PropsWithChildren) {
             <ResizablePanel
                 collapsible
                 minSize={"300px"}
-                defaultSize={"500px"}
+                defaultSize={"300px"}
                 panelRef={ref}
                 onResize={(size) => {
                     if (size.asPercentage === 0) {
