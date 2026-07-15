@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
     ArrowDownNarrowWide,
@@ -25,8 +25,8 @@ import { PropertyOverview } from "@/components/editor/property-overview"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { DefaultSectionOpen } from "@/components/entity-browser/entity-browser-section"
 import { EntityBrowserContent } from "@/components/entity-browser/entity-browser-content"
-import { ImperativePanelHandle } from "react-resizable-panels"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { usePanelRef } from "react-resizable-panels"
 
 export function EntityBrowser() {
     const state = useEntityBrowserSettings()
@@ -35,7 +35,7 @@ export function EntityBrowser() {
     const setShowPropertyOverview = useEntityBrowserSettings(
         (store) => store.setShowPropertyOverview
     )
-    const propertyOverviewPanel = useRef<ImperativePanelHandle>(null)
+    const propertyOverviewPanel = usePanelRef()
     const sortBy = useEntityBrowserSettings((store) => store.sortBy)
     const structureBy = useEntityBrowserSettings((store) => store.structureBy)
     const setSortBy = useEntityBrowserSettings((store) => store.setSortBy)
@@ -56,12 +56,12 @@ export function EntityBrowser() {
     useEffect(() => {
         if (propertyOverviewPanel.current) {
             if (showPropertyOverview) {
-                propertyOverviewPanel.current.expand(50)
+                propertyOverviewPanel.current.expand()
             } else {
                 propertyOverviewPanel.current.collapse()
             }
         }
-    }, [showPropertyOverview])
+    }, [propertyOverviewPanel, showPropertyOverview])
 
     const entityBrowserPanel = useMemo(() => {
         return (
@@ -208,18 +208,23 @@ export function EntityBrowser() {
     ])
 
     return (
-        <ResizablePanelGroup direction={"vertical"}>
-            <ResizablePanel defaultSize={100} minSize={10}>
+        <ResizablePanelGroup orientation={"vertical"}>
+            <ResizablePanel defaultSize={"100%"} minSize={"200px"}>
                 {entityBrowserPanel}
             </ResizablePanel>
-            {showPropertyOverview && <ResizableHandle className="m-0.5" />}
+            <ResizableHandle className="m-0.5" />
             <ResizablePanel
-                defaultSize={0}
-                minSize={10}
-                ref={propertyOverviewPanel}
+                defaultSize={"0%"}
+                minSize={"200px"}
+                panelRef={propertyOverviewPanel}
                 collapsible
-                onExpand={() => setShowPropertyOverview(true)}
-                onCollapse={() => setShowPropertyOverview(false)}
+                onResize={(size) => {
+                    if (size.asPercentage === 0) {
+                        setShowPropertyOverview(false)
+                    } else {
+                        setShowPropertyOverview(true)
+                    }
+                }}
             >
                 <PropertyOverview />
             </ResizablePanel>

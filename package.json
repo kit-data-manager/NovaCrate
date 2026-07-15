@@ -76,7 +76,7 @@
     "react-arborist": "^3.4.3",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
-    "react-resizable-panels": "^3.0.1",
+    "react-resizable-panels": "^4.12.1",
     "reactflow": "^11.11.3",
     "remark-gfm": "^4.0.1",
     "ro-crate": "^3.4.6",
