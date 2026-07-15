@@ -212,7 +212,7 @@ export function EntityBrowser() {
             <ResizablePanel defaultSize={"100%"} minSize={"200px"}>
                 {entityBrowserPanel}
             </ResizablePanel>
-            <ResizableHandle className="m-0.5" />
+            <ResizableHandle className={`${showPropertyOverview ? "" : "hidden"} m-0.5`} />
             <ResizablePanel
                 defaultSize={"0%"}
                 minSize={"200px"}
