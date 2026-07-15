@@ -51,13 +51,6 @@ export default function Home() {
                     )}
                 </Button>
                 <div className="col-start-2 h-[calc(100vh-300px)] min-h-75 flex flex-col justify-center items-center gap-4">
-                    <Link href={"#ai-assistant"}>
-                        <div className="flex items-center border border-root bg-root/30 p-1 px-3 rounded-full">
-                            <b className="mr-1">New:</b>Integrated AI Assistant{" "}
-                            <ArrowRight className="size-4 ml-2" />
-                        </div>
-                    </Link>
-
                     <h1 className="flex items-center gap-4 text-6xl font-extrabold">
                         <PackageIcon className="h-full w-auto aspect-square" /> NovaCrate
                     </h1>
