@@ -23,16 +23,16 @@ For more information, see our  [privacy policy](https://www.kit.edu/privacypolic
 
 ## 🚀 Features
 
-- ✅ **Create, read, and edit RO-Crates**
-- ✨ **New: Integrated AI Assistant (Optional)** to help you create, maintain, and understand RO-Crates
+- 🛠️ **Create, read, and edit RO-Crates**
+- ✨ **Integrated AI Assistant (Optional)** to help you create, maintain, and understand RO-Crates
   - ➡️ Use your own subscription from OpenAI, Anthropic, or OpenRouter
   - ➡️ You can also use a custom OpenAI-compatible LLM provider (e.g. Open WebUI)
   - ➡️ The AI Assistant can create, read, update and delete metadata, and it can read plain files in your RO-Crate
-- ✅ Live **validation** of RO-Crates
-- ✅ Visualize RO-Crates with a graph
+- 🐞 Live **validation** of RO-Crates
+- 🔬 Visualize RO-Crates with a graph
+- 🗒️ Support for importing and exporting the ELN format
 - ✅ RO-Crate context information and property descriptions
 - ✅ Automatic recommendation of fitting entity types and properties
-- ✅ Support for importing and exporting the ELN format
 - ✅ Extensible with custom schemas at runtime
 - ✅ Generate and view an HTML preview file
 
