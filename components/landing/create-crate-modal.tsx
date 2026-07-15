@@ -10,7 +10,7 @@ import { Error } from "../error"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
 import { Button } from "../ui/button"
-import { ArrowLeft, Folder, PackagePlus } from "lucide-react"
+import { ArrowLeft, File, Folder, PackagePlus, XIcon } from "lucide-react"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { CrateFactory } from "@/lib/core/impl/CrateFactory"
 import { sum } from "@/lib/utils"
@@ -40,7 +40,9 @@ export function CreateCrateModal({
     const [maxProgress, setMaxProgress] = useState(0)
     const [uploadErrors, setUploadErrors] = useState<string[]>([])
     const createFolderUploadInputRef = useRef<HTMLInputElement>(null)
+    const createFileUploadInputRef = useRef<HTMLInputElement>(null)
     const [files, setFiles] = useState<File[]>([])
+    const [filesSource, setFilesSource] = useState<"folderUpload" | "fileUpload" | undefined>()
 
     const localOnOpenChange = useCallback(
         (isOpen: boolean) => {
@@ -54,6 +56,17 @@ export function CreateCrateModal({
 
     const onCreateFolderUploadInputChange = useCallback(() => {
         setFiles([...(createFolderUploadInputRef.current?.files ?? [])])
+        setFilesSource("folderUpload")
+    }, [])
+
+    const onCreateFileUploadInputChange = useCallback(() => {
+        setFiles([...(createFileUploadInputRef.current?.files ?? [])])
+        setFilesSource("fileUpload")
+    }, [])
+
+    const clearFiles = useCallback(() => {
+        setFiles([])
+        setFilesSource(undefined)
     }, [])
 
     const createCrateFromCrateFiles = useCallback(() => {
@@ -65,13 +78,14 @@ export function CreateCrateModal({
                     name,
                     description,
                     [...files].map((file) => ({
-                        relativePath: file.webkitRelativePath,
+                        relativePath: file.webkitRelativePath || file.name,
                         data: file
                     })),
                     (current: number, max: number, errors: string[]) => {
                         setCurrentProgress(current)
                         setMaxProgress(max)
                         setUploadErrors(errors)
+                        if (errors.length > 0) console.error(errors)
                     }
                 )
                 .then((id: string) => {
@@ -135,10 +149,11 @@ export function CreateCrateModal({
 
     useEffect(() => {
         setName((old) => {
-            if (old === "" && files.length > 0) return files[0].webkitRelativePath.split("/")[0]
+            if (old === "" && files.length > 0 && filesSource === "folderUpload")
+                return files[0].webkitRelativePath.split("/")[0]
             else return old
         })
-    }, [files])
+    }, [files, filesSource])
 
     const onCreateClick = useCallback(() => {
         if (files.length > 0) {
@@ -152,6 +167,12 @@ export function CreateCrateModal({
         if (createFolderUploadInputRef.current) {
             createFolderUploadInputRef.current.setAttribute("webkitdirectory", "true")
             createFolderUploadInputRef.current.click()
+        }
+    }, [])
+
+    const openFilePicker = useCallback(() => {
+        if (createFileUploadInputRef.current) {
+            createFileUploadInputRef.current.click()
         }
     }, [])
 
@@ -177,22 +198,42 @@ export function CreateCrateModal({
 
                         <div>
                             <Label>
-                                Upload a Folder
+                                Upload Data
                                 <span className="text-muted-foreground text-xs">(optional)</span>
                             </Label>
-                            <div>
-                                <Button variant="outline" onClick={openFolderPicker}>
-                                    <Folder className="size-4 mr-2" />{" "}
-                                    {files.length == 0
-                                        ? "Select Folder"
-                                        : files[0].webkitRelativePath.split("/")[0]}
-                                </Button>
-                                <span className="ml-2 text-muted-foreground">
-                                    {files.length > 0
-                                        ? `${files.length} file${files.length === 1 ? "" : "s"} selected (${prettyBytes([...files].map((f) => f.size).reduce(sum))} total)`
-                                        : "No files selected"}
-                                </span>
+                            <div className="flex items-center gap-2">
+                                {filesSource !== "fileUpload" && (
+                                    <Button variant="outline" onClick={openFolderPicker}>
+                                        <Folder className="size-4 mr-2" />{" "}
+                                        {files.length == 0
+                                            ? "Select Folder"
+                                            : files[0].webkitRelativePath.split("/")[0]}
+                                    </Button>
+                                )}
+                                {filesSource == undefined && <span>or</span>}
+                                {filesSource !== "folderUpload" && (
+                                    <Button variant="outline" onClick={openFilePicker}>
+                                        <File className="size-4 mr-2" />{" "}
+                                        {files.length == 0
+                                            ? "Select File"
+                                            : files.length + " Files"}
+                                    </Button>
+                                )}
+                                {filesSource != undefined && (
+                                    <Button
+                                        variant="ghost"
+                                        onClick={clearFiles}
+                                        disabled={uploading}
+                                    >
+                                        <XIcon />
+                                    </Button>
+                                )}
                             </div>
+                            {files.length > 0 && (
+                                <div className="pt-1 text-muted-foreground text-sm">
+                                    {`${files.length} file${files.length === 1 ? "" : "s"} selected (${prettyBytes([...files].map((f) => f.size).reduce(sum))} total)`}
+                                </div>
+                            )}
                         </div>
 
                         <div>
@@ -231,6 +272,14 @@ export function CreateCrateModal({
                     data-testid="create-folder-upload-input"
                     ref={createFolderUploadInputRef}
                     onChange={onCreateFolderUploadInputChange}
+                />
+                <input
+                    type="file"
+                    className="hidden"
+                    multiple={true}
+                    data-testid="create-file-upload-input"
+                    ref={createFileUploadInputRef}
+                    onChange={onCreateFileUploadInputChange}
                 />
             </DialogContent>
         </Dialog>

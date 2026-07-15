@@ -244,8 +244,8 @@ export function ConfigureProvider({
                         <Label htmlFor="api-key">
                             API Key{" "}
                             <HelpTooltip>
-                                Obtain an API Key from the your selected provider. Providing an API
-                                Key is required to use the AI Assistant.
+                                Obtain an API Key from the selected provider. Providing an API Key
+                                is required to use the AI Assistant.
                             </HelpTooltip>
                         </Label>
                         <Input

@@ -7,12 +7,12 @@ import { Metadata } from "@/components/Metadata"
 
 function Content() {
     return (
-        <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel defaultSize={34} minSize={15}>
+        <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel defaultSize={"34%"} minSize={"400px"}>
                 <FileExplorer />
             </ResizablePanel>
             <ResizableHandle className="m-0.5" />
-            <ResizablePanel defaultSize={66} minSize={15}>
+            <ResizablePanel defaultSize={"66%"} minSize={"400px"}>
                 <FilePreview />
             </ResizablePanel>
         </ResizablePanelGroup>

@@ -20,11 +20,13 @@ export function IFrameViewer(props: ViewerProps) {
 
     return (
         <div className="flex flex-col h-full bg-background">
-            <div className="text-xs p-3 flex items-center text-muted-foreground">
-                <InfoIcon className="size-3 mr-2 shrink-0" />
-                Some links and downloads might not work in this built-in HTML preview. Try opening
-                the file directly after exporting the crate.
-            </div>
+            {props.tab.fileName.endsWith(".html") && (
+                <div className="text-xs p-3 flex items-center text-muted-foreground">
+                    <InfoIcon className="size-3 mr-2 shrink-0" />
+                    Some links and downloads might not work in this built-in HTML preview. Try
+                    opening the file directly after exporting the crate.
+                </div>
+            )}
             <iframe className="grow" src={url} sandbox={"allow-downloads allow-scripts"}></iframe>
         </div>
     )
