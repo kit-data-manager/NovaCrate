@@ -219,7 +219,7 @@ export function propertyHasChanged(_value: EntityPropertyTypes, _oldValue: Entit
 }
 
 /**
- * Turns a camel-case string into a human-readable one. Also correctly handles shortened URIs
+ * Turns a camel-case string into a human-readable one. Also correctly handles shortened URIs and unshortened URLs
  * @param str Camel-case string
  * @example
  * someExample
@@ -228,10 +228,13 @@ export function propertyHasChanged(_value: EntityPropertyTypes, _oldValue: Entit
  * -> [purl] Another Example
  * purl:Software/anotherExample
  * -> [purl] Software/Another Example
+ * https://schema.org/Person
+ * -> https://schema.org/Person
  */
 export function camelCaseReadable(str: string) {
     if (str === "@id") return "Identifier"
     if (str === "@type") return "Type"
+    if (isValidUrl(str)) return str
     const [prefix, ...suffix] = str.includes(":") ? str.split(":") : ["", str]
     // If the string contains more than one :, we just use the first one as suffix and join everything else back together
     let split = suffix.join(":").replaceAll(/([a-z:])([A-Z])/g, "$1 $2")
