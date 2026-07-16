@@ -1,6 +1,6 @@
 import { ExternalLink } from "lucide-react"
 import Markdown from "react-markdown"
-import React, { memo, useMemo } from "react"
+import React, { memo, PropsWithChildren, useMemo } from "react"
 
 type CommentType = string | { "@language": string; "@value": string }
 
@@ -21,7 +21,20 @@ export const MarkdownComment = memo(function MarkdownComment({
 
     return (
         <Markdown
-            allowedElements={["a", "p", "br", "b", "i"]}
+            allowedElements={[
+                "a",
+                "p",
+                "br",
+                "b",
+                "i",
+                "em",
+                "strong",
+                "code",
+                "pre",
+                "ul",
+                "ol",
+                "li"
+            ]}
             components={{
                 a: (props) =>
                     allowLinks ? (
@@ -33,7 +46,13 @@ export const MarkdownComment = memo(function MarkdownComment({
                         </span>
                     ) : (
                         <span>{props.children}</span>
-                    )
+                    ),
+                ul: (props: PropsWithChildren) => (
+                    <ul className="list-disc pl-4">{props.children}</ul>
+                ),
+                ol: (props: PropsWithChildren) => (
+                    <ol className="list-decimal pl-4">{props.children}</ol>
+                )
             }}
         >
             {parsedComment}

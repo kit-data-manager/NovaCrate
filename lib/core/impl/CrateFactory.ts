@@ -169,7 +169,7 @@ export class CrateFactory {
                 } else {
                     // When there is no metadata file, we automatically infer a file entity for each file
                     // through the same mechanism as the in-crate file upload
-                    await coreService.addFileEntity(fileName, filePath, file.data)
+                    await coreService.addFileEntity(fileName, "File", filePath, file.data)
                 }
             } catch (e) {
                 const msg = e instanceof Error ? e.message : String(e)

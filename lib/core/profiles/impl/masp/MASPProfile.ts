@@ -2,7 +2,7 @@ import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { propertyValue } from "@/lib/property-value-utils"
 import { z } from "zod/mini"
 import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
-import { pickFirst, toArray } from "@/lib/utils"
+import { isValidUrl, pickFirst, toArray } from "@/lib/utils"
 import { stringifyError } from "@/components/error"
 import { GenericProfile } from "@/lib/core/profiles/impl/generic/GenericProfile"
 
@@ -62,14 +62,14 @@ export class MASPProfile extends GenericProfile implements IProfileHandler {
             if (parsedClassRule.success) {
                 const d = parsedClassRule.data
                 this.definition.classes.push({
-                    "@id": d["@id"],
+                    "@id": httpsifyUrl(d["@id"]),
                     name: d.name,
                     description: d.description,
                     label: d["rdfs:label"],
                     maxCount: d["sh:maxCount"],
                     minCount: d["sh:minCount"],
                     specializationOf: d["prov:specializationOf"]
-                        ? toArray(d["prov:specializationOf"])
+                        ? toArray(d["prov:specializationOf"]).map(httpsifyUrlRef)
                         : undefined
                 })
             } else {
@@ -102,17 +102,19 @@ export class MASPProfile extends GenericProfile implements IProfileHandler {
                 }
 
                 this.definition.properties.push({
-                    "@id": d["@id"],
+                    "@id": httpsifyUrl(d["@id"]),
                     name: d.name,
                     description: d.description,
                     label: d["rdfs:label"],
                     maxCount: d["sh:maxCount"],
                     minCount: d["sh:minCount"],
                     specializationOf: d["prov:specializationOf"] // TODO FIX: Only the first entry is used, all others are dropped
-                        ? pickFirst(d["prov:specializationOf"])
+                        ? httpsifyUrlRef(pickFirst(d["prov:specializationOf"]))
                         : undefined,
                     domainIncludes: toArray(d.domainIncludes),
-                    rangeIncludes: d.rangeIncludes ? toArray(d.rangeIncludes) : undefined,
+                    rangeIncludes: d.rangeIncludes
+                        ? toArray(d.rangeIncludes).map(httpsifyUrlRef)
+                        : undefined,
                     options
                 })
             } else {
@@ -152,4 +154,20 @@ function determineMASPPropertyOptions(
     }
 
     return options
+}
+
+function httpsifyUrlRef(ref: IReference): IReference {
+    return {
+        "@id": httpsifyUrl(ref["@id"])
+    }
+}
+
+function httpsifyUrl(url: string) {
+    if (isValidUrl(url)) {
+        if (url.startsWith("http://")) {
+            return url.replace("http://", "https://")
+        }
+    }
+
+    return url
 }

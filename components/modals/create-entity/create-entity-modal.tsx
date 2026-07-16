@@ -10,8 +10,9 @@ import { SimpleTypeSelect } from "@/components/modals/create-entity/simple-type-
 import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { UploadProgress } from "@/components/modals/create-entity/upload-progress"
 import { RO_CRATE_FILE } from "@/lib/constants"
-import { asValidPath, AutoReference } from "@/lib/utils"
+import { asValidPath, AutoReference, toArray } from "@/lib/utils"
 import { CreateProviders } from "@/components/modals/create-entity/create-providers"
+import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
 
 export function CreateEntityModal({
     open,
@@ -35,7 +36,14 @@ export function CreateEntityModal({
     const resolver = useContextResolver()
 
     const [fullTypeBrowser, setFullTypeBrowser] = useState(false)
-    const [selectedType, setSelectedType] = useState("")
+    /**
+     * Expected to be a shortened type when possible.
+     */
+    const [selectedType, setSelectedType] = useState<string | string[]>("")
+    /**
+     * Set when the entity to be created comes from a profile
+     */
+    const [selectedProfileClass, setSelectedProfileClass] = useState<ProfileClass | undefined>()
 
     const [uploading, setUploading] = useState(false)
     const [currentUploadProgress, setCurrentUploadProgress] = useState(0)
@@ -53,14 +61,17 @@ export function CreateEntityModal({
         if (!open) {
             setTimeout(() => {
                 setSelectedType("")
+                setSelectedProfileClass(undefined)
                 setFullTypeBrowser(false)
                 resetUploadState()
             }, 200)
         }
     }, [forceId, open, resetUploadState, restrictToClasses])
 
-    const onTypeSelect = useCallback((value: string) => {
+    const onTypeSelect = useCallback((value: string | string[], profileClass?: ProfileClass) => {
+        console.log("selected", value)
         setSelectedType(value)
+        setSelectedProfileClass(profileClass)
     }, [])
 
     const onEntityCreated = useCallback(() => {
@@ -71,13 +82,14 @@ export function CreateEntityModal({
         (id: string, name: string) => {
             const newEntity = addEntity(
                 id,
-                [selectedType],
+                toArray(selectedType),
                 {
                     name
                 },
                 autoReference
             )
             if (newEntity) {
+                // TODO add mandatory properties to make the validator pick the entity up correctly when it was created from a profile
                 onEntityCreated()
                 focusTab(id)
             }
@@ -102,6 +114,7 @@ export function CreateEntityModal({
             setUploading(true)
             setMaxUploadProgress(1)
             try {
+                console.log("creatign with", selectedType)
                 const result = await createFileEntity(
                     {
                         "@id": id,
@@ -168,6 +181,7 @@ export function CreateEntityModal({
 
     const backToTypeSelect = useCallback(() => {
         setSelectedType("")
+        setSelectedProfileClass(undefined)
     }, [])
 
     return (
@@ -214,6 +228,7 @@ export function CreateEntityModal({
                                 basePath={basePath}
                                 onUploadFile={onUploadFile}
                                 onUploadFolder={onUploadFolder}
+                                profileClass={selectedProfileClass}
                             />
                         }
                     />

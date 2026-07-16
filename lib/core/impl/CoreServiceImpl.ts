@@ -48,6 +48,7 @@ export class CoreServiceImpl implements ICoreService {
 
     async addFileEntity(
         name: string,
+        types: string | string[],
         path: string,
         file: File,
         overwrite?: boolean
@@ -58,7 +59,7 @@ export class CoreServiceImpl implements ICoreService {
 
         const entity: IEntity = {
             "@id": path,
-            "@type": "File",
+            "@type": types,
             name: name,
             contentSize: file.size.toString(),
             encodingFormat: file.type,
@@ -74,7 +75,12 @@ export class CoreServiceImpl implements ICoreService {
             )
     }
 
-    async addFolderEntity(name: string, path: string, overwrite?: boolean): Promise<void> {
+    async addFolderEntity(
+        name: string,
+        types: string | string[],
+        path: string,
+        overwrite?: boolean
+    ): Promise<void> {
         if (this.fileService) {
             await this.fileService.addFolder(path)
         }
@@ -83,7 +89,7 @@ export class CoreServiceImpl implements ICoreService {
 
         const entity: IEntity = {
             "@id": normalizedPath,
-            "@type": "Dataset",
+            "@type": types,
             name: name
         }
 

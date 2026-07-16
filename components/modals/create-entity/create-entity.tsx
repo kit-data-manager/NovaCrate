@@ -12,7 +12,7 @@ import {
     Plus,
     TriangleAlert
 } from "lucide-react"
-import { camelCaseReadable, isValidUrl } from "@/lib/utils"
+import { camelCaseReadable, isValidUrl, pickFirst, toArray } from "@/lib/utils"
 import { Error } from "@/components/error"
 import prettyBytes from "pretty-bytes"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -25,6 +25,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { PathPicker } from "@/components/file-explorer/path-picker"
 import { useFileService } from "@/lib/hooks/use-persistence"
+import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
+import { MarkdownComment } from "@/components/markdown-comment"
 
 export function CreateEntity({
     selectedType,
@@ -33,15 +35,20 @@ export function CreateEntity({
     forceId,
     basePath,
     onUploadFile,
-    onUploadFolder
+    onUploadFolder,
+    profileClass
 }: {
-    selectedType: string
+    selectedType: string | string[]
     onBackClick: () => void
     onCreateClick: (id: string, name: string) => void
     forceId?: string
     basePath?: string
     onUploadFile(id: string, name: string, file: File): void
     onUploadFolder(id: string, name: string, files: File[]): void
+    /**
+     * When an entity is created based on a profile class
+     */
+    profileClass?: ProfileClass
 }) {
     const resolver = useContextResolver()
     const fileService = useFileService()
@@ -49,11 +56,11 @@ export function CreateEntity({
     const [externalResource, setExternalResource] = useState(false)
     const [path, setPath] = useState("")
     const fileUpload = useMemo(() => {
-        return resolver.resolve(selectedType) === RO_CRATE_FILE
+        return toArray(selectedType).some((type) => resolver.resolve(type) === RO_CRATE_FILE)
     }, [resolver, selectedType])
 
     const folderUpload = useMemo(() => {
-        return resolver.resolve(selectedType) === RO_CRATE_DATASET
+        return toArray(selectedType).some((type) => resolver.resolve(type) === RO_CRATE_DATASET)
     }, [resolver, selectedType])
 
     const defaultName = useMemo(() => {
@@ -203,9 +210,21 @@ export function CreateEntity({
     return (
         <div className="flex flex-col gap-4 min-w-0">
             <DialogHeader>
-                <DialogTitle>Create a new {camelCaseReadable(selectedType)} Entity</DialogTitle>
+                <DialogTitle>
+                    Create a new{" "}
+                    {profileClass && profileClass.name
+                        ? profileClass.name
+                        : camelCaseReadable(pickFirst(selectedType))}{" "}
+                    Entity
+                </DialogTitle>
 
                 <DialogDescription>
+                    {profileClass && profileClass.description && (
+                        <div className="mb-2 max-h-52 overflow-auto">
+                            <MarkdownComment comment={profileClass.description} allowLinks />
+                        </div>
+                    )}
+
                     {!hasFileUpload && !hasFolderUpload ? (
                         <>
                             Enter a name for the entity.{" "}
@@ -235,7 +254,7 @@ export function CreateEntity({
                 </DialogDescription>
             </DialogHeader>
 
-            <CreateEntityHint selectedType={selectedType} />
+            <CreateEntityHint selectedType={pickFirst(selectedType)} />
 
             {hasFileUpload ? (
                 <div>

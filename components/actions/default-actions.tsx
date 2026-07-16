@@ -55,7 +55,7 @@ export default function DefaultActions() {
         const result = await generateCratePreview(crateData)
         if (!result) return
 
-        const entity: IEntity = {
+        const entity = {
             "@id": "./ro-crate-preview.html",
             "@type": "File",
             name: "RO-Crate HTML Preview",

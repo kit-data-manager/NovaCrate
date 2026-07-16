@@ -3,7 +3,7 @@ import React, { useMemo, useState } from "react"
 import { useContextResolver } from "@/lib/hooks/hooks"
 import { SCHEMA_ORG_ORGANIZATION, SCHEMA_ORG_PERSON } from "@/lib/constants"
 import { OrganizationImport } from "@/components/modals/create-entity/organization-import"
-import { AutoReference } from "@/lib/utils"
+import { AutoReference, toArray } from "@/lib/utils"
 
 export function CreateProviders({
     selectedType,
@@ -12,7 +12,7 @@ export function CreateProviders({
     autoReference,
     fallback
 }: {
-    selectedType: string
+    selectedType: string | string[]
     backToTypeSelect: () => void
     onProviderCreate: (entity: IEntity | string) => void
     autoReference?: AutoReference
@@ -22,11 +22,13 @@ export function CreateProviders({
     const [manualCreation, setManualCreation] = useState(true)
 
     const canUsePersonProvider = useMemo(() => {
-        return resolver.resolve(selectedType) === SCHEMA_ORG_PERSON
+        return toArray(selectedType).some((type) => resolver.resolve(type) === SCHEMA_ORG_PERSON)
     }, [resolver, selectedType])
 
     const canUseOrganizationProvider = useMemo(() => {
-        return resolver.resolve(selectedType) === SCHEMA_ORG_ORGANIZATION
+        return toArray(selectedType).some(
+            (type) => resolver.resolve(type) === SCHEMA_ORG_ORGANIZATION
+        )
     }, [resolver, selectedType])
 
     const provider = useMemo(() => {

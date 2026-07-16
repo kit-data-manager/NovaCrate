@@ -5,42 +5,56 @@ import { Button } from "@/components/ui/button"
 import { TypeIcon } from "@/components/type-icon"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useContextResolver } from "@/lib/hooks/hooks"
+import { useCore } from "@/components/providers/core-provider"
+import { isValidUrl, pickFirst, toArray } from "@/lib/utils"
+import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
 
 function TypeBadge({
     description,
     type,
     name,
     onTypeSelect,
-    restrictToClasses
+    restrictToClasses,
+    profileClass
 }: {
-    type: string
+    type: string | string[]
     name?: string
     description: string
-    onTypeSelect(value: string): void
+    onTypeSelect(value: string | string[], profileClass?: ProfileClass): void
     restrictToClasses?: SlimClass[]
+    /**
+     * Only used for reporting the selected profile class to the subsequent UI; type, name and description are used for the badge
+     */
+    profileClass?: ProfileClass
 }) {
     const resolver = useContextResolver()
 
-    const resolvedType = useMemo(() => {
-        return resolver.resolve(type)
+    const resolvedTypes = useMemo(() => {
+        return toArray(type).map((t) => (isValidUrl(t) ? t : resolver.resolve(t)))
+    }, [resolver, type])
+
+    const revertedTypes = useMemo(() => {
+        return toArray(type).map((t) => (isValidUrl(t) ? (resolver.reverse(t) ?? t) : t))
     }, [resolver, type])
 
     const disabled = useMemo(() => {
         return (
-            resolvedType &&
+            resolvedTypes.filter((t) => t !== null).length > 0 &&
             restrictToClasses &&
-            !restrictToClasses.find((c) => c["@id"] === resolvedType)
+            !restrictToClasses.find((c) => resolvedTypes.some((t) => t !== null && t === c["@id"]))
         )
-    }, [resolvedType, restrictToClasses])
+    }, [resolvedTypes, restrictToClasses])
+
+    console.log(revertedTypes)
 
     return (
         <div
             className={`p-4 border rounded-lg flex gap-4 hover:bg-secondary cursor-pointer transition ${disabled ? "opacity-30 cursor-not-allowed pointer-events-none" : ""}`}
-            onClick={() => (disabled ? "" : onTypeSelect(type))}
+            onClick={() => (disabled ? "" : onTypeSelect(revertedTypes, profileClass))}
         >
-            <TypeIcon type={type} className="mt-1 w-5 h-5 shrink-0" />
+            <TypeIcon type={pickFirst(revertedTypes)} className="mt-1 w-5 h-5 shrink-0" />
             <div>
-                <div className="font-bold">{name || type}</div>
+                <div className="font-bold">{name || revertedTypes.join(", ")}</div>
                 <div className="text-sm">{description}</div>
             </div>
         </div>
@@ -53,11 +67,27 @@ export function SimpleTypeSelect({
     onOpenChange,
     restrictToClasses
 }: {
-    onTypeSelect(value: string): void
+    onTypeSelect(value: string | string[], profileClass: ProfileClass): void
     setFullTypeBrowser(open: boolean): void
     onOpenChange(open: boolean): void
     restrictToClasses?: SlimClass[]
 }) {
+    const profile = useCore().getProfileService()
+
+    const profileClassRules = useMemo(() => {
+        return profile
+            .getProfiles()
+            .map((p) => {
+                const def = p.getDefinition()
+                return {
+                    id: p.id,
+                    profileName: p.name,
+                    classes: def ? def.classes : []
+                }
+            })
+            .flat()
+    }, [profile])
+
     return (
         <>
             <DialogHeader>
@@ -70,6 +100,25 @@ export function SimpleTypeSelect({
                     entity or open the full type browser at the bottom.
                 </DialogDescription>
             </DialogHeader>
+
+            {profileClassRules.map((profile) => (
+                <div key={profile.id}>
+                    <div className="text-lg font-bold">{profile.profileName}</div>
+                    <div className="grid grid-cols-3 gap-4">
+                        {profile.classes.map((c) => (
+                            <TypeBadge
+                                key={c["@id"]}
+                                type={c.specializationOf?.map((s) => s["@id"]) || "Thing"} // TODO is Thing the right fallback?
+                                name={c.name || c["@id"]}
+                                description={c.description || "No description provided"}
+                                onTypeSelect={onTypeSelect}
+                                restrictToClasses={restrictToClasses}
+                                profileClass={c}
+                            />
+                        ))}
+                    </div>
+                </div>
+            ))}
 
             <div className="text-lg font-bold">Data Entities</div>
             <div className="grid grid-cols-3 gap-4">

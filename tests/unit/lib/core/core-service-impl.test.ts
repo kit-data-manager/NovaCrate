@@ -101,7 +101,7 @@ describe("CoreServiceImpl", () => {
             const core = await CoreServiceImpl.newInstance(adapter, crateService)
 
             const file = new File(["content"], "test.txt", { type: "text/plain" })
-            await core.addFileEntity("Test File", "test.txt", file)
+            await core.addFileEntity("Test File", "File", "test.txt", file)
 
             const entities = core.getMetadataService().getEntities()
             const entity = entities.find((e) => e["@id"] === "test.txt")
@@ -117,7 +117,7 @@ describe("CoreServiceImpl", () => {
             const core = await CoreServiceImpl.newInstance(adapter, crateService)
 
             const file = new File(["content"], "test.txt", { type: "text/plain" })
-            await core.addFileEntity("Test File", "test.txt", file)
+            await core.addFileEntity("Test File", ["File"], "test.txt", file)
 
             expect(fileService.addFile).toHaveBeenCalledWith("test.txt", file)
         })
@@ -128,7 +128,9 @@ describe("CoreServiceImpl", () => {
             const core = await CoreServiceImpl.newInstance(adapter, crateService)
 
             const file = new File(["content"], "test.txt", { type: "text/plain" })
-            await expect(core.addFileEntity("Test File", "test.txt", file)).resolves.not.toThrow()
+            await expect(
+                core.addFileEntity("Test File", ["File"], "test.txt", file)
+            ).resolves.not.toThrow()
         })
 
         it("should add the file entity to the root hasPart", async () => {
@@ -137,7 +139,7 @@ describe("CoreServiceImpl", () => {
             const core = await CoreServiceImpl.newInstance(adapter, crateService)
 
             const file = new File(["content"], "new-file.txt", { type: "text/plain" })
-            await core.addFileEntity("New File", "new-file.txt", file)
+            await core.addFileEntity("New File", ["File"], "new-file.txt", file)
 
             const entities = core.getMetadataService().getEntities()
             const root = entities.find((e) => e["@id"] === "./")
@@ -152,7 +154,7 @@ describe("CoreServiceImpl", () => {
             const crateService = createMockCrateService()
             const core = await CoreServiceImpl.newInstance(adapter, crateService)
 
-            await core.addFolderEntity("My Folder", "my-folder")
+            await core.addFolderEntity("My Folder", "Dataset", "my-folder")
 
             const entities = core.getMetadataService().getEntities()
             const entity = entities.find((e) => e["@id"] === "my-folder/")
@@ -166,7 +168,7 @@ describe("CoreServiceImpl", () => {
             const crateService = createMockCrateService()
             const core = await CoreServiceImpl.newInstance(adapter, crateService)
 
-            await core.addFolderEntity("My Folder", "my-folder/")
+            await core.addFolderEntity("My Folder", "Dataset", "my-folder/")
 
             const entities = core.getMetadataService().getEntities()
             expect(entities.find((e) => e["@id"] === "my-folder/")).toBeDefined()
@@ -179,7 +181,7 @@ describe("CoreServiceImpl", () => {
             const crateService = createMockCrateService(fileService)
             const core = await CoreServiceImpl.newInstance(adapter, crateService)
 
-            await core.addFolderEntity("My Folder", "my-folder")
+            await core.addFolderEntity("My Folder", "Dataset", "my-folder")
 
             expect(fileService.addFolder).toHaveBeenCalledWith("my-folder")
         })
@@ -189,7 +191,7 @@ describe("CoreServiceImpl", () => {
             const crateService = createMockCrateService()
             const core = await CoreServiceImpl.newInstance(adapter, crateService)
 
-            await core.addFolderEntity("Data", "data")
+            await core.addFolderEntity("Data", "Dataset", "data")
 
             const entities = core.getMetadataService().getEntities()
             const root = entities.find((e) => e["@id"] === "./")
@@ -364,7 +366,7 @@ describe("CoreServiceImpl", () => {
 
             // Verify initial file service is used
             const file1 = new File(["content"], "test1.txt")
-            await core.addFileEntity("Test 1", "test1.txt", file1)
+            await core.addFileEntity("Test 1", ["File"], "test1.txt", file1)
             expect(fileService1.addFile).toHaveBeenCalledWith("test1.txt", file1)
 
             // Emit file-service-changed with a new file service
@@ -373,7 +375,7 @@ describe("CoreServiceImpl", () => {
 
             // Now the new file service should be used
             const file2 = new File(["content2"], "test2.txt")
-            await core.addFileEntity("Test 2", "test2.txt", file2)
+            await core.addFileEntity("Test 2", ["File"], "test2.txt", file2)
             expect(fileService2.addFile).toHaveBeenCalledWith("test2.txt", file2)
             // Old file service should not have been called again
             expect(fileService1.addFile).toHaveBeenCalledTimes(1)
@@ -390,7 +392,9 @@ describe("CoreServiceImpl", () => {
 
             // Should not fail — file operations are just skipped
             const file = new File(["content"], "test.txt")
-            await expect(core.addFileEntity("Test", "test.txt", file)).resolves.not.toThrow()
+            await expect(
+                core.addFileEntity("Test", ["File"], "test.txt", file)
+            ).resolves.not.toThrow()
 
             // Original file service should not be called
             expect(fileService.addFile).not.toHaveBeenCalled()
@@ -412,7 +416,7 @@ describe("CoreServiceImpl", () => {
 
             // The original file service should still be used (listener was removed)
             const file = new File(["content"], "test.txt")
-            await core.addFileEntity("Test", "test.txt", file)
+            await core.addFileEntity("Test", ["File"], "test.txt", file)
             expect(fileService1.addFile).toHaveBeenCalledWith("test.txt", file)
             expect(fileService2.addFile).not.toHaveBeenCalled()
         })
