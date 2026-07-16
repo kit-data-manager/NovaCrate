@@ -157,7 +157,7 @@ export class ProfileValidator extends Validator {
             const typeResults = this.validateEntityType(entity, classRule)
             validationOutput.push(...typeResults)
 
-            const propertyRuleResults = this.validateEntityPropertyRules(entity, classRule, def)
+            const propertyRuleResults = this.validateEntityPropertyRules(entity, classRule, def, crate, classRuleMapping)
             validationOutput.push(...propertyRuleResults)
 
             const propertyRulesForClass = this.getPropertyRulesForClass(def, classRuleId)
@@ -220,11 +220,11 @@ export class ProfileValidator extends Validator {
         return def.classes.find((classRule) => {
             return def.properties.some((propRule) => {
                 if (propRule.label !== "@id") return false
-                const domainIncludes = toArray(propRule.domainIncludes)
-                if (!domainIncludes.some((d) => d["@id"] === classRule["@id"])) return false
+                if (!propRule.domainIncludes.some((d) => d["@id"] === classRule["@id"])) return false
                 if (!propRule.options) return false
-                const opts = toArray(propRule.options)
-                return opts.length === 1 && opts[0] === "ro-crate-metadata.json"
+                return (
+                    propRule.options.length === 1 && propRule.options[0] === "ro-crate-metadata.json"
+                )
             })
         })
     }
@@ -236,8 +236,7 @@ export class ProfileValidator extends Validator {
     ): ProfileProperty | undefined {
         return def.properties.find((propRule) => {
             if (propRule.label !== label) return false
-            const domainIncludes = toArray(propRule.domainIncludes)
-            return domainIncludes.some((d) => d["@id"] === classRuleId)
+            return propRule.domainIncludes.some((d) => d["@id"] === classRuleId)
         })
     }
 
@@ -253,10 +252,9 @@ export class ProfileValidator extends Validator {
         def: { properties: ProfileProperty[] },
         classRuleId: string
     ): ProfileProperty[] {
-        return def.properties.filter((propRule) => {
-            const domainIncludes = toArray(propRule.domainIncludes)
-            return domainIncludes.some((d) => d["@id"] === classRuleId)
-        })
+        return def.properties.filter((propRule) =>
+            propRule.domainIncludes.some((d) => d["@id"] === classRuleId)
+        )
     }
 
     private validateEntityType(
@@ -295,7 +293,9 @@ export class ProfileValidator extends Validator {
     private validateEntityPropertyRules(
         entity: IEntity,
         classRule: ProfileClass,
-        def: { properties: ProfileProperty[] }
+        def: { classes: ProfileClass[]; properties: ProfileProperty[] },
+        crate: ICrate,
+        classRuleMapping: Map<string, string>
     ): ValidationResultWithoutTrace[] {
         const results: ValidationResultWithoutTrace[] = []
         const propertyRules = this.getPropertyRulesForClass(def, classRule["@id"])
@@ -362,6 +362,47 @@ export class ProfileValidator extends Validator {
                     }
                     index++
                 })
+            }
+
+            if (propRule.rangeIncludes && propExists) {
+                const rangeIncludesClassRuleIds = propRule.rangeIncludes
+                    .map((ref) => ref["@id"])
+
+                if (rangeIncludesClassRuleIds.length > 0 && rangeIncludesClassRuleIds.every((id) => def.classes.some((c) => c["@id"] === id))) {
+                    let index = 0
+                    propertyValue(entity[propRule.label]).forEach((value) => {
+                        if (propertyValue(value).isEmpty()) {
+                            results.push({
+                                id: crypto.randomUUID(),
+                                entityId: entity["@id"],
+                                propertyName: propRule.label,
+                                propertyIndex: index,
+                                validatorName: this.name,
+                                resultTitle: `Property ${propRule.label} has empty reference`,
+                                resultDescription: `Property ${propRule.label} must have a valid reference`,
+                                resultSeverity: ValidationResultSeverity.error,
+                                ruleName: "rangeIncludesEmptyRef"
+                            })
+                        } else if (PropertyValueUtils.isRef(value)) {
+                            const refId = (value as IReference)["@id"]
+                            const assignedClassRuleId = classRuleMapping.get(refId)
+                            if (assignedClassRuleId && !rangeIncludesClassRuleIds.includes(assignedClassRuleId)) {
+                                results.push({
+                                    id: crypto.randomUUID(),
+                                    entityId: entity["@id"],
+                                    propertyName: propRule.label,
+                                    propertyIndex: index,
+                                    validatorName: this.name,
+                                    resultTitle: `Property ${propRule.label} references entity with mismatched class rule`,
+                                    resultDescription: `Property ${propRule.label} references "${refId}" which is assigned to class rule "${assignedClassRuleId}", but this class rule is not in the allowed range for this property`,
+                                    resultSeverity: ValidationResultSeverity.error,
+                                    ruleName: "rangeIncludesMismatch"
+                                })
+                            }
+                        }
+                        index++
+                    })
+                }
             }
         }
 
