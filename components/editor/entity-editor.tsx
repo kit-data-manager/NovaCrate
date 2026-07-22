@@ -26,6 +26,7 @@ import { TypeSelectModal } from "@/components/modals/type-select-modal"
 import { ValidationOverview } from "@/components/editor/validation/validation-overview"
 import { EntityEditorProperty, mapEntityToProperties, PropertyType } from "@/lib/property"
 import { useFileService } from "@/lib/hooks/use-persistence"
+import { ProfileInsights } from "@/components/editor/profile-insights"
 
 export function EntityEditor({
     entityId,
@@ -215,6 +216,8 @@ export function EntityEditor({
                         <ValidationOverview entityId={entityId} />
                     </div>
                 </div>
+
+                <ProfileInsights entity={entity} />
 
                 <WebWorkerWarning />
                 <InternalEntityHint entity={entity} />
