@@ -73,6 +73,7 @@ function createMockCoreService(
     return {
         getMetadataService: () => metadataService,
         getContextService: () => contextService,
+        getProfileService: jest.fn(),
         addFileEntity: jest.fn(),
         addFolderEntity: jest.fn(),
         moveEntity: jest.fn(),

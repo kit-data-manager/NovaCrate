@@ -1,4 +1,5 @@
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
+import { IMetadataService } from "@/lib/core/IMetadataService"
 
 /**
  * Defines a strategy for creating an {@link IProfileHandler} from an {@link ICrate}
@@ -20,6 +21,7 @@ export interface IProfileFactoryStrategy {
      * Create a profile from the given profile crate. This method should throw an Error when the profile crate
      * can't be parsed for any reason.
      * @param profileCrate
+     * @param metadataService
      */
-    createProfileFromProfileCrate(profileCrate: ICrate): Promise<IProfileHandler>
+    createProfileFromProfileCrate(profileCrate: ICrate, metadataService: IMetadataService): Promise<IProfileHandler>
 }

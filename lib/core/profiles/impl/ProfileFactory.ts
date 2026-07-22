@@ -6,6 +6,7 @@ import { IProfileFactoryStrategy } from "@/lib/core/profiles/IProfileFactoryStra
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { MASPStrategy } from "@/lib/core/profiles/impl/masp/MASPStrategy"
 import { GenericStrategy } from "@/lib/core/profiles/impl/generic/GenericStrategy"
+import { IMetadataService } from "@/lib/core/IMetadataService"
 
 const KNOWN_PROFILES: {
     uri: string
@@ -42,8 +43,9 @@ export class ProfileFactory {
      * metadata is loaded and passed to the configured strategy. If the profileURI (or strategy) is not known, all applicable strategies are
      * tried in order. If no strategy succeeds, an error is thrown.
      * @param profileURI
+     * @param metadataService
      */
-    async createProfileFromURI(profileURI: string) {
+    async createProfileFromURI(profileURI: string, metadataService: IMetadataService) {
         const known = KNOWN_PROFILES.find((p) => p.uri === profileURI)
 
         let profileMetadata: ICrate
@@ -69,7 +71,10 @@ export class ProfileFactory {
         for (const strategy of strategies) {
             if (result) break
             try {
-                result = await strategy.createProfileFromProfileCrate(profileMetadata)
+                result = await strategy.createProfileFromProfileCrate(
+                    profileMetadata,
+                    metadataService
+                )
             } catch (e) {
                 console.warn(`Failed to create profile with strategy "${strategy.name}"`, e)
             }

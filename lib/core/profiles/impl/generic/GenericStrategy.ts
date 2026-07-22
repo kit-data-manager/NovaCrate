@@ -3,6 +3,7 @@ import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { getRootEntityID } from "@/lib/utils"
 import { propertyValue } from "@/lib/property-value-utils"
 import { GenericProfile } from "@/lib/core/profiles/impl/generic/GenericProfile"
+import { IMetadataService } from "@/lib/core/IMetadataService"
 
 /**
  * Fallback strategy for profiles that don't have a dedicated strategy.
@@ -14,10 +15,13 @@ export class GenericStrategy implements IProfileFactoryStrategy {
         return true
     }
 
-    async createProfileFromProfileCrate(profileCrate: ICrate): Promise<IProfileHandler> {
+    async createProfileFromProfileCrate(
+        profileCrate: ICrate,
+        metadataService: IMetadataService
+    ): Promise<IProfileHandler> {
         const root = this.findRoot(profileCrate)
 
-        return new GenericProfile(root)
+        return new GenericProfile(root, metadataService)
     }
 
     protected findRoot(profileCrate: ICrate) {

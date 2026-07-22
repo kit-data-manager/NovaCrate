@@ -1,36 +1,19 @@
-import { IProfileHandler, IProfileHandlerEvents } from "@/lib/core/profiles/IProfileHandler"
-import { Observable } from "@/lib/core/impl/Observable"
-import { IObservable } from "@/lib/core/IObservable"
-import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
-import { buildProfileDefinitionFromRootEntity } from "@/lib/core/profiles/impl/ProfileFactory"
+import { IMetadataService } from "@/lib/core/IMetadataService"
+import { AbstractProfile } from "@/lib/core/profiles/impl/AbstractProfile"
 
 /**
  * Fallback profile implementation that is used when no other profile implementation is applicable.
  */
-export class GenericProfile implements IProfileHandler {
-    protected _events = new Observable<IProfileHandlerEvents>()
-    readonly events: IObservable<IProfileHandlerEvents> = this._events
+export class GenericProfile extends AbstractProfile {
     readonly name: string = "Generic"
-    readonly id
 
-    protected isReady = true
-    protected readonly definition: ProfileDefinition
-    protected errors: string[] = []
-
-    constructor(rootEntity: IEntity) {
-        this.definition = buildProfileDefinitionFromRootEntity(rootEntity)
-        this.id = crypto.randomUUID()
+    constructor(rootEntity: IEntity, metadataService: IMetadataService) {
+        super(rootEntity, metadataService)
     }
 
-    getIsReady(): boolean {
-        return this.isReady
-    }
-
-    getErrors(): string[] {
-        return structuredClone(this.errors)
-    }
-
-    getDefinition(): ProfileDefinition {
-        return this.definition
+    updateEntityMapping(entities: IEntity[]): void {
+        // The generic profile does not have any entity mappings
+        this.entityMapping = new Map()
+        super.updateEntityMapping(entities)
     }
 }

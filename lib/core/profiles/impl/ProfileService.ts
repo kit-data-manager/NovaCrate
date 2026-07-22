@@ -13,6 +13,7 @@ export class ProfileService implements IProfileService {
     private profileURIs: string[] = []
     private profiles: IProfileHandler[] = []
     private profileConstructionErrors: string[] = []
+    private metadata: IMetadataService
 
     constructor(metadata: IMetadataService) {
         this.probeAllReady = this.probeAllReady.bind(this)
@@ -22,6 +23,7 @@ export class ProfileService implements IProfileService {
             this.parseProfileURIsFromEntities(e)
         })
         this.parseProfileURIsFromEntities(metadata.getEntities())
+        this.metadata = metadata
     }
 
     private parseProfileURIsFromEntities(entities: IEntity[]) {
@@ -103,7 +105,7 @@ export class ProfileService implements IProfileService {
 
         for (const uri of profileURIs) {
             try {
-                const profile = await factory.createProfileFromURI(uri)
+                const profile = await factory.createProfileFromURI(uri, this.metadata)
                 if (guard !== this.setProfileURIsGuard) break // This guard will stop the current method run if another method run has started in the meantime
                 this.profiles.push(profile)
                 this._events.emit("profiles-changed", this.getProfiles())

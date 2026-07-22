@@ -5,6 +5,7 @@ interface ICoreService {}
 
 interface IProfileService {
     + events
+    - metadataService
     getAllReady()
     getAllErrors()
     setProfileURIs()
@@ -15,13 +16,19 @@ interface IProfileService {
 interface IProfile {
     + events
     + id
+    - entityMappings
+    - metadataService
     getIsReady(): boolean
     getErrors(): string[]
     getDefinition(): ProfileDefinition | null
+    getEntityMapping(): Map<string, string>
+    getClassRule(id: string): ProfileClass | null
+    getPropertyRule(id: string): ProfileProperty | null
+    getPropertiesOn(classRuleId: string)
 }
 
 class ProfileFactory {
-    createProfileFromURI(profileURI: string): Promise<IProfile>
+    createProfileFromURI(profileURI: string, metadata: IMetadataService): Promise<IProfile>
 }
 
 note top of ProfileFactory: Takes care of resolving the profileURIs to profile crates

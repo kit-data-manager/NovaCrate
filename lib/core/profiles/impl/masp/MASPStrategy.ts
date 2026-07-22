@@ -4,6 +4,7 @@ import { propertyValue } from "@/lib/property-value-utils"
 import { MASPProfile } from "@/lib/core/profiles/impl/masp/MASPProfile"
 import { PROFILE_CRATE_SCHEMA_RESOURCE } from "@/lib/constants"
 import { GenericStrategy } from "@/lib/core/profiles/impl/generic/GenericStrategy"
+import { IMetadataService } from "@/lib/core/IMetadataService"
 
 export class MASPStrategy extends GenericStrategy implements IProfileFactoryStrategy {
     name = "MASP"
@@ -15,7 +16,10 @@ export class MASPStrategy extends GenericStrategy implements IProfileFactoryStra
         return !!(maspSchema && maspSchema.hasPart && !propertyValue(maspSchema.hasPart).isEmpty())
     }
 
-    async createProfileFromProfileCrate(profileCrate: ICrate): Promise<IProfileHandler> {
+    async createProfileFromProfileCrate(
+        profileCrate: ICrate,
+        metadataService: IMetadataService
+    ): Promise<IProfileHandler> {
         const { root, maspSchema } = this.findRootAndMASPSchemaEntities(profileCrate)
 
         if (!maspSchema) {
@@ -26,7 +30,7 @@ export class MASPStrategy extends GenericStrategy implements IProfileFactoryStra
             return propertyValue(maspSchema.hasPart).contains({ "@id": entity["@id"] })
         })
 
-        return new MASPProfile(root, schemaEntities)
+        return new MASPProfile(root, schemaEntities, metadataService)
     }
 
     private findRootAndMASPSchemaEntities(profileCrate: ICrate) {

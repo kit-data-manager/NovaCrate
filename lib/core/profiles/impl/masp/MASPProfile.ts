@@ -1,10 +1,10 @@
-import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { propertyValue } from "@/lib/property-value-utils"
 import { z } from "zod/mini"
 import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
 import { isValidUrl, pickFirst, toArray } from "@/lib/utils"
 import { stringifyError } from "@/components/error"
-import { GenericProfile } from "@/lib/core/profiles/impl/generic/GenericProfile"
+import { IMetadataService } from "@/lib/core/IMetadataService"
+import { AbstractProfile } from "@/lib/core/profiles/impl/AbstractProfile"
 
 const MASPClass = z.object({
     "@id": z.string(),
@@ -45,11 +45,11 @@ const MASPItemList = z.object({
     ])
 })
 
-export class MASPProfile extends GenericProfile implements IProfileHandler {
+export class MASPProfile extends AbstractProfile {
     readonly name = "MASP"
 
-    constructor(rootEntity: IEntity, maspEntities: IEntity[]) {
-        super(rootEntity)
+    constructor(rootEntity: IEntity, maspEntities: IEntity[], metadataService: IMetadataService) {
+        super(rootEntity, metadataService)
 
         //
         // Parse Class Rules
@@ -126,6 +126,10 @@ export class MASPProfile extends GenericProfile implements IProfileHandler {
         }
 
         console.log(`Done with parsing MASP profile ${this.definition.name}`, this.definition)
+    }
+
+    updateEntityMapping(entities: IEntity[]) {
+        super.updateEntityMapping(entities)
     }
 }
 
