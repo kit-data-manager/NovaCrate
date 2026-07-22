@@ -43,11 +43,12 @@ export function ValidationContextProvider({ children }: PropsWithChildren) {
         return {
             editorState,
             schemaWorker,
+            profileService,
             fileService: fileService ?? undefined,
             resolver: contextService.getResolver(),
             context: contextService
         }
-    }, [contextService, editorState, fileService, schemaWorker])
+    }, [contextService, editorState, fileService, profileService, schemaWorker])
 
     const [validation] = useState(() => {
         const validation = new ValidationProvider(ctx)

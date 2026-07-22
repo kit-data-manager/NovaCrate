@@ -4,7 +4,6 @@ import { IObservable } from "@/lib/core/IObservable"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
 import { buildProfileDefinitionFromRootEntity } from "@/lib/core/profiles/impl/ProfileFactory"
 import { IMetadataService } from "@/lib/core/IMetadataService"
-import { structuredClone } from "next/dist/compiled/@edge-runtime/primitives"
 import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
 import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
 
@@ -28,7 +27,6 @@ export abstract class AbstractProfile implements IProfileHandler {
         this.definition = buildProfileDefinitionFromRootEntity(rootEntity)
         this.id = crypto.randomUUID()
 
-        this.updateEntityMapping(metadataService.getEntities())
         this._discardListener = metadataService.events.addEventListener(
             "graph-changed",
             (entities) => {

@@ -13,9 +13,8 @@ export class ProfileService implements IProfileService {
     private profileURIs: string[] = []
     private profiles: IProfileHandler[] = []
     private profileConstructionErrors: string[] = []
-    private metadata: IMetadataService
 
-    constructor(metadata: IMetadataService) {
+    constructor(private metadata: IMetadataService) {
         this.probeAllReady = this.probeAllReady.bind(this)
         this.forwardErrorEvent = this.forwardErrorEvent.bind(this)
 
@@ -23,7 +22,6 @@ export class ProfileService implements IProfileService {
             this.parseProfileURIsFromEntities(e)
         })
         this.parseProfileURIsFromEntities(metadata.getEntities())
-        this.metadata = metadata
     }
 
     private parseProfileURIsFromEntities(entities: IEntity[]) {

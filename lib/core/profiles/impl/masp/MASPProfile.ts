@@ -1,10 +1,11 @@
-import { propertyValue } from "@/lib/property-value-utils"
+import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { z } from "zod/mini"
 import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
 import { isValidUrl, pickFirst, toArray } from "@/lib/utils"
 import { stringifyError } from "@/components/error"
 import { IMetadataService } from "@/lib/core/IMetadataService"
 import { AbstractProfile } from "@/lib/core/profiles/impl/AbstractProfile"
+import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
 
 const MASPClass = z.object({
     "@id": z.string(),
@@ -125,11 +126,161 @@ export class MASPProfile extends AbstractProfile {
             }
         }
 
+        // Listener for automatic updates is attached in the abstract superclass
+        this.updateEntityMapping(metadataService.getEntities())
         console.log(`Done with parsing MASP profile ${this.definition.name}`, this.definition)
     }
 
     updateEntityMapping(entities: IEntity[]) {
+        const def = this.getDefinition()
+        if (!def || !this.getIsReady()) return []
+
+        const classRuleMapping = new Map<string, string>()
+        const done = new Set<string>()
+        const queue: string[] = []
+
+        const metadataDescriptorClassRule = this.findClassRuleWithMetadataDescriptorProperty(def)
+        if (!metadataDescriptorClassRule) {
+            this.pushError("Missing metadata descriptor property rule")
+            return
+        }
+
+        const metadataDescriptorEntity = entities.find((e) => e["@id"] === "ro-crate-metadata.json")
+        if (!metadataDescriptorEntity) {
+            this.pushError("Missing metadata descriptor entity")
+            return
+        }
+
+        classRuleMapping.set(metadataDescriptorEntity["@id"], metadataDescriptorClassRule["@id"])
+
+        const aboutPropertyRule = this.findPropertyRuleForLabel(
+            def,
+            metadataDescriptorClassRule["@id"],
+            "about"
+        )
+        if (!aboutPropertyRule) {
+            this.pushError("Missing 'about' property rule on metadata descriptor")
+            return
+        }
+
+        const aboutValue = metadataDescriptorEntity["about"]
+        if (
+            !aboutValue ||
+            !propertyValue(aboutValue).hasRefs() ||
+            propertyValue(aboutValue).isEmpty()
+        ) {
+            this.pushError("Missing 'about' property on metadata descriptor")
+            return
+        }
+
+        let rootEntityId: string | undefined
+        propertyValue(aboutValue).forEach((v) => {
+            if (PropertyValueUtils.isRef(v) && !rootEntityId) {
+                rootEntityId = v["@id"]
+            }
+        })
+        if (!rootEntityId) {
+            this.pushError("Missing root entity reference")
+            return
+        }
+
+        const rootEntityClassRuleId = this.findClassRuleIdByRange(
+            def,
+            aboutPropertyRule.rangeIncludes
+        )
+        if (!rootEntityClassRuleId) {
+            this.pushError("Missing root entity class rule")
+            return
+        }
+
+        const rootEntity = entities.find((e) => e["@id"] === rootEntityId)
+        if (!rootEntity) {
+            this.pushError("Missing root entity")
+            return
+        }
+
+        classRuleMapping.set(rootEntityId, rootEntityClassRuleId)
+        queue.push(metadataDescriptorEntity["@id"], rootEntityId)
+
+        while (queue.length > 0) {
+            const entityId = queue.shift()!
+            if (done.has(entityId)) continue
+            done.add(entityId)
+
+            const classRuleId = classRuleMapping.get(entityId)
+            if (!classRuleId) continue
+
+            const classRule = def.classes.find((c) => c["@id"] === classRuleId)
+            if (!classRule) continue
+
+            const entity = entities.find((e) => e["@id"] === entityId)
+            if (!entity) continue
+
+            const propertyRulesForClass = this.getPropertiesOnClass(classRuleId)
+            for (const propRule of propertyRulesForClass) {
+                if (!propRule.rangeIncludes) continue
+
+                const targetClassRuleId = this.findClassRuleIdByRange(def, propRule.rangeIncludes)
+                if (!targetClassRuleId) continue
+
+                const propValues = propertyValue(entity[propRule.label] ?? [])
+                propValues.forEach((value) => {
+                    if (PropertyValueUtils.isRef(value) && !propertyValue(value).isEmpty()) {
+                        const refId = (value as IReference)["@id"]
+                        if (refId && !classRuleMapping.has(refId)) {
+                            classRuleMapping.set(refId, targetClassRuleId)
+                            queue.push(refId)
+                        }
+                    }
+                })
+            }
+        }
+
+        this.entityMapping = classRuleMapping
+        console.log("Mapping updated", this.entityMapping)
         super.updateEntityMapping(entities)
+    }
+
+    private pushError(error: unknown) {
+        this.errors.push(stringifyError(error))
+        this._events.emit("error-emitted")
+    }
+
+    private findClassRuleWithMetadataDescriptorProperty(def: {
+        classes: ProfileClass[]
+        properties: ProfileProperty[]
+    }) {
+        return def.classes.find((classRule) => {
+            return def.properties.some((propRule) => {
+                if (propRule.label !== "@id") return false
+                if (!propRule.domainIncludes.some((d) => d["@id"] === classRule["@id"]))
+                    return false
+                if (!propRule.options) return false
+                return (
+                    propRule.options.length === 1 &&
+                    propRule.options[0] === "ro-crate-metadata.json"
+                )
+            })
+        })
+    }
+
+    private findPropertyRuleForLabel(
+        def: { classes: ProfileClass[]; properties: ProfileProperty[] },
+        classRuleId: string,
+        label: string
+    ): ProfileProperty | undefined {
+        return def.properties.find((propRule) => {
+            if (propRule.label !== label) return false
+            return propRule.domainIncludes.some((d) => d["@id"] === classRuleId)
+        })
+    }
+
+    private findClassRuleIdByRange(
+        def: { classes: ProfileClass[] },
+        rangeIncludes?: IReference[]
+    ): string | undefined {
+        if (!rangeIncludes) return undefined
+        return def.classes.find((c) => rangeIncludes.some((r) => r["@id"] === c["@id"]))?.["@id"]
     }
 }
 

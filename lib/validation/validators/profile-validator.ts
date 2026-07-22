@@ -29,7 +29,7 @@ export class ProfileValidator extends Validator {
         const def = this.profileHandler.getDefinition()
         if (!def || !this.profileHandler.getIsReady()) return []
 
-        const classRuleMapping = new Map<string, string>()
+        const classRuleMapping = this.profileHandler.getEntityMapping()
         const done = new Set<string>()
         const queue: string[] = []
         const validationOutput: ValidationResultWithoutTrace[] = []
@@ -137,7 +137,6 @@ export class ProfileValidator extends Validator {
             return validationOutput
         }
 
-        classRuleMapping.set(rootEntityId, rootEntityClassRuleId)
         queue.push(metadataDescriptorEntity["@id"], rootEntityId)
 
         while (queue.length > 0) {
@@ -157,27 +156,13 @@ export class ProfileValidator extends Validator {
             const typeResults = this.validateEntityType(entity, classRule)
             validationOutput.push(...typeResults)
 
-            const propertyRuleResults = this.validateEntityPropertyRules(entity, classRule, def, crate, classRuleMapping)
+            const propertyRuleResults = this.validateEntityPropertyRules(
+                entity,
+                classRule,
+                def,
+                classRuleMapping
+            )
             validationOutput.push(...propertyRuleResults)
-
-            const propertyRulesForClass = this.getPropertyRulesForClass(def, classRuleId)
-            for (const propRule of propertyRulesForClass) {
-                if (!propRule.rangeIncludes) continue
-
-                const targetClassRuleId = this.findClassRuleIdByRange(def, propRule.rangeIncludes)
-                if (!targetClassRuleId) continue
-
-                const propValues = propertyValue(entity[propRule.label] ?? [])
-                propValues.forEach((value) => {
-                    if (PropertyValueUtils.isRef(value) && !propertyValue(value).isEmpty()) {
-                        const refId = (value as IReference)["@id"]
-                        if (refId && !classRuleMapping.has(refId)) {
-                            classRuleMapping.set(refId, targetClassRuleId)
-                            queue.push(refId)
-                        }
-                    }
-                })
-            }
         }
 
         for (const classRule of def.classes) {
@@ -220,10 +205,12 @@ export class ProfileValidator extends Validator {
         return def.classes.find((classRule) => {
             return def.properties.some((propRule) => {
                 if (propRule.label !== "@id") return false
-                if (!propRule.domainIncludes.some((d) => d["@id"] === classRule["@id"])) return false
+                if (!propRule.domainIncludes.some((d) => d["@id"] === classRule["@id"]))
+                    return false
                 if (!propRule.options) return false
                 return (
-                    propRule.options.length === 1 && propRule.options[0] === "ro-crate-metadata.json"
+                    propRule.options.length === 1 &&
+                    propRule.options[0] === "ro-crate-metadata.json"
                 )
             })
         })
@@ -294,7 +281,6 @@ export class ProfileValidator extends Validator {
         entity: IEntity,
         classRule: ProfileClass,
         def: { classes: ProfileClass[]; properties: ProfileProperty[] },
-        crate: ICrate,
         classRuleMapping: Map<string, string>
     ): ValidationResultWithoutTrace[] {
         const results: ValidationResultWithoutTrace[] = []
@@ -365,10 +351,14 @@ export class ProfileValidator extends Validator {
             }
 
             if (propRule.rangeIncludes && propExists) {
-                const rangeIncludesClassRuleIds = propRule.rangeIncludes
-                    .map((ref) => ref["@id"])
+                const rangeIncludesClassRuleIds = propRule.rangeIncludes.map((ref) => ref["@id"])
 
-                if (rangeIncludesClassRuleIds.length > 0 && rangeIncludesClassRuleIds.every((id) => def.classes.some((c) => c["@id"] === id))) {
+                if (
+                    rangeIncludesClassRuleIds.length > 0 &&
+                    rangeIncludesClassRuleIds.every((id) =>
+                        def.classes.some((c) => c["@id"] === id)
+                    )
+                ) {
                     let index = 0
                     propertyValue(entity[propRule.label]).forEach((value) => {
                         if (propertyValue(value).isEmpty()) {
@@ -386,7 +376,10 @@ export class ProfileValidator extends Validator {
                         } else if (PropertyValueUtils.isRef(value)) {
                             const refId = (value as IReference)["@id"]
                             const assignedClassRuleId = classRuleMapping.get(refId)
-                            if (assignedClassRuleId && !rangeIncludesClassRuleIds.includes(assignedClassRuleId)) {
+                            if (
+                                assignedClassRuleId &&
+                                !rangeIncludesClassRuleIds.includes(assignedClassRuleId)
+                            ) {
                                 results.push({
                                     id: crypto.randomUUID(),
                                     entityId: entity["@id"],

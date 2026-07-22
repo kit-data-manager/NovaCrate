@@ -4,10 +4,12 @@ import { ISchemaWorkerContext } from "@/components/providers/schema-worker-provi
 import { IFileService } from "@/lib/core/persistence/IFileService"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { IContextService } from "@/lib/core/IContextService"
+import { IProfileService } from "@/lib/core/profiles/IProfileService"
 
 export type ValidatorContext = {
     editorState: EditorState
     fileService?: IFileService
+    profileService: IProfileService
     schemaWorker: ISchemaWorkerContext
     /** Resolver for translating between short-form term names and full URIs. */
     resolver: IContextResolverService
