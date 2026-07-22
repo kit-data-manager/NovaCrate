@@ -1,6 +1,7 @@
 import { RO_CRATE_VERSION } from "@/lib/constants"
 import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
 import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
+import { ProfilePropertyValue } from "@/lib/core/profiles/types/ProfilePropertyValue"
 
 /**
  * This type describes the shape of a profile definition within NovaCrate. All profiles
@@ -15,4 +16,5 @@ export type ProfileDefinition = {
     version?: string
     classes: ProfileClass[]
     properties: ProfileProperty[]
+    propertyValues: ProfilePropertyValue[]
 }

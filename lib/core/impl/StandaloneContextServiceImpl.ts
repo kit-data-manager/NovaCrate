@@ -1,9 +1,5 @@
 import { RO_CRATE_VERSION } from "@/lib/constants"
-import { IContextService, IContextServiceEvents } from "@/lib/core/IContextService"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
-import { Observable } from "@/lib/core/impl/Observable"
-import { IObservable } from "@/lib/core/IObservable"
-import { IPersistenceAdapter } from "@/lib/core/IPersistenceAdapter"
 
 const KNOWN_CONTEXTS = [
     {
@@ -26,28 +22,22 @@ const KNOWN_CONTEXTS = [
     }
 ]
 
+// TODO this is a duplicate of the normal context for profile-related testing
+
 /**
  * Provides an easy interface into the crate context for id resolution and specification detection
  * @example resolve("Organization") -> "https://schema.org/Organization"
  */
-export class ContextServiceImpl implements IContextService, IContextResolverService {
+export class StandaloneContextServiceImpl implements IContextResolverService {
     private _context: Record<string, string> = {}
     private _contextReversed: Record<string, string> = {}
     private _customPairs: Record<string, string> = {}
     private _specification: RO_CRATE_VERSION | undefined = undefined
-    private _specificationUrl: string | undefined = undefined
-    private _usingFallback = false
     private _errors: unknown[] = []
     private raw?: CrateContextType
 
-    constructor(private persistenceAdapter: IPersistenceAdapter) {
+    constructor() {
         this.update = this.update.bind(this)
-        this.persistenceAdapter.events.addEventListener("context-changed", this.update)
-    }
-
-    private _events = new Observable<IContextServiceEvents>()
-    get events(): IObservable<IContextServiceEvents> {
-        return this._events
     }
 
     get context() {
@@ -70,38 +60,8 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         return structuredClone(this._specification)
     }
 
-    get usingFallback() {
-        return this._usingFallback
-    }
-
     get errors() {
         return structuredClone(this._errors)
-    }
-
-    getRaw(): CrateContextType | undefined {
-        return this.raw ? structuredClone(this.raw) : undefined
-    }
-
-    async addCustomContextPair(prefix: string, url: string): Promise<void> {
-        const customPairs = structuredClone(this._customPairs)
-        customPairs[prefix] = url
-        const updatedContext = {
-            "@vocab": this._specificationUrl,
-            ...customPairs
-        } as Record<string, string>
-        await this.update(updatedContext)
-        await this.persistenceAdapter.updateMetadataContext(updatedContext)
-    }
-
-    async removeCustomContextPair(prefix: string): Promise<void> {
-        const customPairs = structuredClone(this._customPairs)
-        delete customPairs[prefix]
-        const updatedContext = {
-            "@vocab": this._specificationUrl,
-            ...customPairs
-        } as Record<string, string>
-        await this.update(updatedContext)
-        await this.persistenceAdapter.updateMetadataContext(updatedContext)
     }
 
     private async loadKnownContext(primary: (typeof KNOWN_CONTEXTS)[number]) {
@@ -152,14 +112,6 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         return null
     }
 
-    getResolver(): IContextResolverService {
-        return this
-    }
-
-    dispose() {
-        this.persistenceAdapter.events.removeEventListener("context-changed", this.update)
-    }
-
     /**
      * Should be called to set the crate context up. Can be called multiple times without
      * creating a new instance.
@@ -171,8 +123,6 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         let tempContext = {}
         let tempCustomPairs: Record<string, string> = {}
         let tempSpecification = undefined
-        let tempSpecificationUrl = undefined
-        let tempUsingFallback = false
         let tempErrors = []
         let tempRaw = crateContext
 
@@ -181,11 +131,10 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
 
         for (const entry of content) {
             if (typeof entry === "string") {
-                const known = ContextServiceImpl.getKnownContext(entry)
+                const known = StandaloneContextServiceImpl.getKnownContext(entry)
                 if (known) {
                     const { specification, data } = await this.loadKnownContext(known)
                     tempSpecification = specification
-                    tempSpecificationUrl = known["@id"]
                     tempContext = { ...tempContext, ...data }
                 } else {
                     const msg = `Cannot load schema ${entry} without prefix. Please specify the schema as a custom context entry with a prefix.`
@@ -195,11 +144,10 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
             } else {
                 for (const [key, value] of Object.entries(entry)) {
                     if (key === "@vocab") {
-                        const known = ContextServiceImpl.getKnownContext(value)
+                        const known = StandaloneContextServiceImpl.getKnownContext(value)
                         if (known) {
                             const { specification, data } = await this.loadKnownContext(known)
                             tempSpecification = specification
-                            tempSpecificationUrl = known["@id"]
                             tempContext = { ...tempContext, ...data }
                         } else {
                             const msg = `Cannot load schema ${value} as @vocab. Only known specifications are supported. Please specify the schema as a custom context entry with a prefix.`
@@ -215,10 +163,8 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         }
 
         if (!tempSpecification) {
-            tempUsingFallback = true
             const { specification, data } = await this.loadKnownContext(fallback)
             tempSpecification = specification
-            tempSpecificationUrl = fallback["@id"]
             tempContext = { ...tempContext, ...data }
 
             const msg = `Could not determine the RO-Crate specification version. Using fallback context: ${fallback.version}`
@@ -229,16 +175,12 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         this.context = tempContext
         this._customPairs = tempCustomPairs
         this._specification = tempSpecification
-        this._specificationUrl = tempSpecificationUrl
-        this._usingFallback = tempUsingFallback
         this._errors = tempErrors
         this.raw = tempRaw
-        this._events.emit("context-changed", this.raw!)
     }
 
-    static async newInstance(persistenceAdapter: IPersistenceAdapter) {
-        const instance = new ContextServiceImpl(persistenceAdapter)
-        const context = await persistenceAdapter.getMetadataContext()
+    static async newInstance(context: CrateContextType) {
+        const instance = new StandaloneContextServiceImpl()
         await instance.update(context)
         return instance
     }

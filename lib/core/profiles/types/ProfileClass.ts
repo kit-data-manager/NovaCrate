@@ -13,6 +13,7 @@ export type ProfileClass = {
     /**
      * A set of classes from the base schema or other vocabulary that this profile class is a specialization of.
      * When specified, this class constrains all entities that have at leat all classes in the list as a type.
+     * It should be a full term URI.
      */
     specializationOf?: IReference[]
 

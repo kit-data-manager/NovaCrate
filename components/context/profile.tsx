@@ -59,6 +59,7 @@ export function Profile({ profile }: { profile: IProfileHandler }) {
                 <Badge>{profile.name}</Badge>
                 <Badge variant="secondary">{def.classes.length} Class Rules</Badge>
                 <Badge variant="secondary">{def.properties.length} Property Rules</Badge>
+                <Badge variant="secondary">{def.propertyValues.length} Property Value Rules</Badge>
                 <Tooltip>
                     <Dialog>
                         <TooltipTrigger asChild>

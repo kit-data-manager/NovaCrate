@@ -14,6 +14,7 @@ export type ProfileProperty = {
     /**
      * A property from base schema or other vocabulary that this profile property is a specialization of.
      * When specified, this property constrains the specified property. When not specified, this is a property term definition.
+     * It should be a full term URI.
      */
     specializationOf?: IReference
 

@@ -6,6 +6,8 @@ import { stringifyError } from "@/components/error"
 import { IMetadataService } from "@/lib/core/IMetadataService"
 import { AbstractProfile } from "@/lib/core/profiles/impl/AbstractProfile"
 import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
+import { ProfilePropertyValue } from "@/lib/core/profiles/types/ProfilePropertyValue"
+import { IContextResolverService } from "@/lib/core/IContextResolverService"
 
 const MASPClass = z.object({
     "@id": z.string(),
@@ -39,6 +41,15 @@ const MASPProperty = z.object({
     value: z.optional(z.string())
 })
 
+const MASPPropertyValue = z.object({
+    "@id": z.string(),
+    name: z.optional(z.string()),
+    description: z.optional(z.string()),
+    "sh:maxCount": z.optional(z.coerce.number()),
+    "sh:minCount": z.optional(z.coerce.number()),
+    value: z.union([z.string(), z.object({ "@id": z.string() })])
+})
+
 const MASPItemList = z.object({
     itemListElement: z.union([
         z.object({ "@id": z.string() }),
@@ -49,7 +60,12 @@ const MASPItemList = z.object({
 export class MASPProfile extends AbstractProfile {
     readonly name = "MASP"
 
-    constructor(rootEntity: IEntity, maspEntities: IEntity[], metadataService: IMetadataService) {
+    constructor(
+        rootEntity: IEntity,
+        maspEntities: IEntity[],
+        private context: IContextResolverService,
+        metadataService: IMetadataService
+    ) {
         super(rootEntity, metadataService)
 
         //
@@ -126,12 +142,39 @@ export class MASPProfile extends AbstractProfile {
             }
         }
 
+        //
+        // Parse Property Value Rules
+        //
+        for (const unparsedPropertyValueRule of maspEntities.filter((entity) =>
+            propertyValue(entity["@type"]).contains("PropertyValue")
+        )) {
+            const parsedPropertyValueRule = MASPPropertyValue.safeParse(unparsedPropertyValueRule)
+
+            if (parsedPropertyValueRule.success) {
+                const d = parsedPropertyValueRule.data
+
+                this.definition.propertyValues.push({
+                    "@id": httpsifyUrl(d["@id"]),
+                    name: d.name,
+                    description: d.description,
+                    maxCount: d["sh:maxCount"],
+                    minCount: d["sh:minCount"],
+                    value: d.value
+                })
+            } else {
+                this.errors.push(
+                    `Failed to parse MASP property value rule with id "${unparsedPropertyValueRule["@id"]}"}: ` +
+                        parsedPropertyValueRule.error.message
+                )
+            }
+        }
+
         // Listener for automatic updates is attached in the abstract superclass
         this.updateEntityMapping(metadataService.getEntities())
         console.log(`Done with parsing MASP profile ${this.definition.name}`, this.definition)
     }
 
-    updateEntityMapping(entities: IEntity[]) {
+    async updateEntityMapping(entities: IEntity[]) {
         const def = this.getDefinition()
         if (!def || !this.getIsReady()) return []
 
@@ -220,16 +263,46 @@ export class MASPProfile extends AbstractProfile {
             for (const propRule of propertyRulesForClass) {
                 if (!propRule.rangeIncludes) continue
 
-                const targetClassRuleId = this.findClassRuleIdByRange(def, propRule.rangeIncludes)
-                if (!targetClassRuleId) continue
+                const targetClassRule = def.classes.filter((c) =>
+                    propRule.rangeIncludes?.find((r) => r["@id"] === c["@id"])
+                )
+
+                const propertyValueRuleIds = def.propertyValues
+                    .filter((c) => propRule.rangeIncludes?.find((r) => r["@id"] === c["@id"]))
+                    .filter((propertyValuerRule) => typeof propertyValuerRule.value === "object")
+
+                targetClassRule.push(
+                    ...propertyValueRuleIds
+                        .map((propertyValueRule) =>
+                            def.classes.find(
+                                (c) => c["@id"] === (propertyValueRule.value as IReference)["@id"]
+                            )
+                        )
+                        .filter((c) => c !== undefined)
+                )
+
+                if (targetClassRule.length === 0) continue
 
                 const propValues = propertyValue(entity[propRule.label] ?? [])
                 propValues.forEach((value) => {
                     if (PropertyValueUtils.isRef(value) && !propertyValue(value).isEmpty()) {
                         const refId = (value as IReference)["@id"]
-                        if (refId && !classRuleMapping.has(refId)) {
-                            classRuleMapping.set(refId, targetClassRuleId)
-                            queue.push(refId)
+                        const targetEntity = entities.find((e) => e["@id"] === refId)
+                        if (targetEntity) {
+                            const resolved = toArray(targetEntity["@type"]).map(
+                                (type) => this.context.resolve(type) ?? type
+                            )
+                            for (const classRule of targetClassRule) {
+                                const matches = classRule.specializationOf
+                                    ? classRule.specializationOf.every((type) =>
+                                          resolved.find((t) => t === type["@id"])
+                                      )
+                                    : true
+                                if (matches && refId && !classRuleMapping.has(refId)) {
+                                    classRuleMapping.set(refId, classRule["@id"])
+                                    queue.push(refId)
+                                }
+                            }
                         }
                     }
                 })
@@ -249,17 +322,30 @@ export class MASPProfile extends AbstractProfile {
     private findClassRuleWithMetadataDescriptorProperty(def: {
         classes: ProfileClass[]
         properties: ProfileProperty[]
+        propertyValues: ProfilePropertyValue[]
     }) {
         return def.classes.find((classRule) => {
             return def.properties.some((propRule) => {
                 if (propRule.label !== "@id") return false
                 if (!propRule.domainIncludes.some((d) => d["@id"] === classRule["@id"]))
                     return false
-                if (!propRule.options) return false
-                return (
-                    propRule.options.length === 1 &&
-                    propRule.options[0] === "ro-crate-metadata.json"
-                )
+                if (propRule.options) {
+                    // TODO is this still an intended path?
+                    return (
+                        propRule.options.length === 1 &&
+                        propRule.options[0] === "ro-crate-metadata.json"
+                    )
+                } else if (propRule.rangeIncludes && propRule.rangeIncludes.length === 1) {
+                    // Find @id = ro-crate-metadata.json rule
+                    const propertyValueRule = def.propertyValues.find(
+                        (propertyValueRule) =>
+                            propertyValueRule["@id"] === propRule.rangeIncludes![0]["@id"]
+                    )
+                    return !!(
+                        propertyValueRule && propertyValueRule.value === "ro-crate-metadata.json"
+                    )
+                }
+                return false
             })
         })
     }

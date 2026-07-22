@@ -111,6 +111,7 @@ export function buildProfileDefinitionFromRootEntity(rootEntity: IEntity): Profi
         version: typeof version === "string" ? version : undefined,
         description: typeof description === "string" ? description : undefined,
         classes: [],
-        properties: []
+        properties: [],
+        propertyValues: []
     }
 }
