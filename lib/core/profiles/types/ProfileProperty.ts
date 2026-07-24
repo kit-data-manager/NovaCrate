@@ -49,7 +49,7 @@ export type ProfileProperty = {
     domainIncludes: IReference[]
 
     /**
-     * List of classes that values of this property can be instances of. Is preceded by {@link options}.
+     * References to {@link ProfileClass} or {@link ProfilePropertyValue} that values of this property can be instances of. Is preceded by {@link options}.
      */
     rangeIncludes?: IReference[]
 

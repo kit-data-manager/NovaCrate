@@ -2,6 +2,7 @@ import { IObservable } from "@/lib/core/IObservable"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
 import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
 import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
+import { ProfilePropertyValue } from "@/lib/core/profiles/types/ProfilePropertyValue"
 
 export type IProfileHandlerEvents = {
     /**
@@ -82,6 +83,12 @@ export interface IProfileHandler {
      * @param id of the property rule
      */
     getPropertyRule(id: string): ProfileProperty | undefined
+
+    /**
+     * Get the property rule corresponding to the given id. Returns undefined if it does not exist
+     * @param id of the property rule
+     */
+    getPropertyValueRule(id: string): ProfilePropertyValue | undefined
 
     /**
      * Get all property rules whose domainIncludes contains the given class rule id. Returns an empty array if none exist

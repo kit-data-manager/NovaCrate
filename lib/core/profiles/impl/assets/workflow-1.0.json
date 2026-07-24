@@ -301,7 +301,7 @@
                     "@id": "http://schema.org/SoftwareSourceCode"
                 },
                 {
-                    "@id": "https://bioschemas.org/ComputationalWorkflow"
+                    "@id": "https://bioschemas.org/terms/ComputationalWorkflow"
                 }
             ],
             "description": "The Main Workflow is the primary workflow of the RO-Crate. It represents the computational process that is described by the RO-Crate.",
@@ -710,7 +710,7 @@
                     "@id": "http://schema.org/CreativeWork"
                 },
                 {
-                    "@id": "http://schema.org/Profile"
+                    "@id": "http://www.w3.org/ns/dx/prof/Profile"
                 }
             ],
             "description": "A generic profile entity.",

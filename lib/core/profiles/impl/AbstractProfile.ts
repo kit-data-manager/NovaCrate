@@ -6,6 +6,7 @@ import { buildProfileDefinitionFromRootEntity } from "@/lib/core/profiles/impl/P
 import { IMetadataService } from "@/lib/core/IMetadataService"
 import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
 import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
+import { ProfilePropertyValue } from "@/lib/core/profiles/types/ProfilePropertyValue"
 
 /**
  *
@@ -63,6 +64,10 @@ export abstract class AbstractProfile implements IProfileHandler {
 
     getPropertyRule(id: string): ProfileProperty | undefined {
         return this.definition.properties.find((rule) => rule["@id"] === id)
+    }
+
+    getPropertyValueRule(id: string): ProfilePropertyValue | undefined {
+        return this.definition.propertyValues.find((rule) => rule["@id"] === id)
     }
 
     updateEntityMapping(_: IEntity[]): void {
