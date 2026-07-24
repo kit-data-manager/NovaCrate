@@ -9,6 +9,16 @@ export type ProfilePropertyValue = {
     "@id": string
 
     /**
+     * Identifier of the profile handler this property value belongs to.
+     */
+    onHandler: string
+
+    /**
+     * Identifier of the profile this property value belongs to.
+     */
+    onProfile: string
+
+    /**
      * Alternative of the label. Should be the same.
      */
     name?: string

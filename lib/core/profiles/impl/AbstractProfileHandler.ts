@@ -11,7 +11,7 @@ import { ProfilePropertyValue } from "@/lib/core/profiles/types/ProfilePropertyV
 /**
  *
  */
-export abstract class AbstractProfile implements IProfileHandler {
+export abstract class AbstractProfileHandler implements IProfileHandler {
     protected _events = new Observable<IProfileHandlerEvents>()
     readonly events: IObservable<IProfileHandlerEvents> = this._events
     abstract readonly name: string
@@ -25,8 +25,8 @@ export abstract class AbstractProfile implements IProfileHandler {
     private readonly _discardListener: () => void
 
     protected constructor(rootEntity: IEntity, metadataService: IMetadataService) {
-        this.definition = buildProfileDefinitionFromRootEntity(rootEntity)
         this.id = crypto.randomUUID()
+        this.definition = buildProfileDefinitionFromRootEntity(rootEntity, this.id)
 
         this._discardListener = metadataService.events.addEventListener(
             "graph-changed",

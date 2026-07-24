@@ -76,7 +76,7 @@ export function SimpleTypeSelect({
 
     const profileClassRules = useMemo(() => {
         return profile
-            .getProfiles()
+            .getProfileHandlers()
             .map((p) => {
                 const def = p.getDefinition()
                 return {

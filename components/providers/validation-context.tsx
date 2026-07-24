@@ -27,10 +27,10 @@ export function ValidationContextProvider({ children }: PropsWithChildren) {
     const contextService = core.getContextService()
     const profileService = core.getProfileService()
 
-    const [profiles, setProfiles] = useState<IProfileHandler[]>(profileService.getProfiles())
+    const [profiles, setProfiles] = useState<IProfileHandler[]>(profileService.getProfileHandlers())
 
     useEffect(() => {
-        setProfiles(profileService.getProfiles())
+        setProfiles(profileService.getProfileHandlers())
         const remove1 = profileService.events.addEventListener("profiles-changed", (profiles) =>
             setProfiles(profiles)
         )

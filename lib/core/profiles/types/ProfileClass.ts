@@ -11,6 +11,16 @@ export type ProfileClass = {
     "@id": string
 
     /**
+     * Identifier of the profile handler this class belongs to.
+     */
+    onHandler: string
+
+    /**
+     * Identifier of the profile definition this class belongs to.
+     */
+    onProfile: string
+
+    /**
      * A set of classes from the base schema or other vocabulary that this profile class is a specialization of.
      * When specified, this class constrains all entities that have at leat all classes in the list as a type.
      * It should be a full term URI.

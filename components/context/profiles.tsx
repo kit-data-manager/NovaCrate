@@ -14,11 +14,11 @@ import { Error } from "@/components/error"
 export function Profiles() {
     const core = useCore()
     const profileService = core.getProfileService()
-    const [profiles, setProfiles] = useState(profileService.getProfiles())
+    const [profiles, setProfiles] = useState(profileService.getProfileHandlers())
     const [errors, setErrors] = useState(profileService.getAllErrors())
 
     useEffect(() => {
-        setProfiles(profileService.getProfiles())
+        setProfiles(profileService.getProfileHandlers())
         const remove1 = profileService.events.addEventListener("profiles-changed", (profiles) =>
             setProfiles(profiles)
         )

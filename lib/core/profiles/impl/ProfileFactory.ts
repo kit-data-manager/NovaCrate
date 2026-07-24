@@ -93,8 +93,12 @@ export class ProfileFactory {
 /**
  * Utility to build a {@link ProfileDefinition} from a root entity. Likely useful for all profile factory strategies. `classes` and `properties` are empty and must be filled by the strategy.
  * @param rootEntity Root entity of the profile crate
+ * @param handlerId ID of the profile handler that will be used to handle this profile.
  */
-export function buildProfileDefinitionFromRootEntity(rootEntity: IEntity): ProfileDefinition {
+export function buildProfileDefinitionFromRootEntity(
+    rootEntity: IEntity,
+    handlerId: string
+): ProfileDefinition {
     const name = pickFirst(rootEntity.name)
     const isProfileOf = pickFirst(rootEntity.isProfileOf)
     const version = pickFirst(rootEntity.version)
@@ -102,6 +106,7 @@ export function buildProfileDefinitionFromRootEntity(rootEntity: IEntity): Profi
 
     return {
         "@id": rootEntity["@id"],
+        onHandler: handlerId,
         name: typeof name === "string" ? name : "Unnamed",
         specification:
             typeof isProfileOf !== "string"

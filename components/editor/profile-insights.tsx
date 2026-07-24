@@ -14,7 +14,7 @@ export function ProfileInsights({ entity }: { entity: IEntity }) {
 
     const determineRoles = useCallback(() => {
         const roles = profileService
-            .getProfiles()
+            .getProfileHandlers()
             .map((handler) => {
                 const ruleId = handler.getEntityMapping().get(entity["@id"])
                 if (ruleId) {

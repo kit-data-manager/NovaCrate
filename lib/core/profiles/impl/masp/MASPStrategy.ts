@@ -1,7 +1,7 @@
 import { IProfileFactoryStrategy } from "@/lib/core/profiles/IProfileFactoryStrategy"
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { propertyValue } from "@/lib/property-value-utils"
-import { MASPProfile } from "@/lib/core/profiles/impl/masp/MASPProfile"
+import { MASPProfileHandler } from "@/lib/core/profiles/impl/masp/MASPProfileHandler"
 import { PROFILE_CRATE_SCHEMA_RESOURCE } from "@/lib/constants"
 import { GenericStrategy } from "@/lib/core/profiles/impl/generic/GenericStrategy"
 import { IMetadataService } from "@/lib/core/IMetadataService"
@@ -32,7 +32,7 @@ export class MASPStrategy extends GenericStrategy implements IProfileFactoryStra
         })
 
         const resolver = await StandaloneContextServiceImpl.newInstance(profileCrate["@context"])
-        return new MASPProfile(root, schemaEntities, resolver, metadataService)
+        return new MASPProfileHandler(root, schemaEntities, resolver, metadataService)
     }
 
     private findRootAndMASPSchemaEntities(profileCrate: ICrate) {

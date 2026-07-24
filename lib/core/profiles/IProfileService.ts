@@ -12,7 +12,7 @@ export type IProfileServiceEvents = {
      */
     "profile-uris-changed": (profileURIs: string[]) => void
     /**
-     * This event is emitted whenever the list of active profiles (IProfile instances) changes.
+     * This event is emitted whenever the list of active profiles handlers ({@link IProfileHandler} instances) changes.
      */
     "profiles-changed": (profiles: IProfileHandler[]) => void
     /**
@@ -46,7 +46,7 @@ export interface IProfileService {
     /**
      * Set the list of profile URIs that are currently active. This will trigger parsing of all
      * supplied profiles. Once this method returns, all profiles are constructed and available
-     * through {@link getProfiles}. Profiles may not be in the ready state at this point. Use
+     * through {@link getProfileHandlers}. Profiles may not be in the ready state at this point. Use
      * {@link getAllReady} and/or {@link events} to check if all profiles are ready.
      * @param profileURIs Array of profile URIs to activate
      */
@@ -63,9 +63,9 @@ export interface IProfileService {
      * the returned array may be incomplete as long as the Promise returned by {@link setProfileURIs}
      * is not yet settled.
      */
-    getProfiles(): IProfileHandler[]
+    getProfileHandlers(): IProfileHandler[]
 
-    getProfile(id: string): IProfileHandler | undefined
+    getProfileHandler(id: string): IProfileHandler | undefined
 
     getEntityMappings(): Map<string, { profile: string; rule: string }[]>
 }

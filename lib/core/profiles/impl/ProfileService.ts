@@ -63,7 +63,7 @@ export class ProfileService implements IProfileService {
         return structuredClone(this.profileURIs)
     }
 
-    getProfiles(): IProfileHandler[] {
+    getProfileHandlers(): IProfileHandler[] {
         return [...this.profiles]
     }
 
@@ -109,7 +109,7 @@ export class ProfileService implements IProfileService {
                 const profile = await factory.createProfileFromURI(uri, this.metadata)
                 if (guard !== this.setProfileURIsGuard) break // This guard will stop the current method run if another method run has started in the meantime
                 this.profiles.push(profile)
-                this._events.emit("profiles-changed", this.getProfiles())
+                this._events.emit("profiles-changed", this.getProfileHandlers())
 
                 // Error handling
                 profile.events.addEventListener("error-emitted", this.forwardErrorEvent)
@@ -137,7 +137,7 @@ export class ProfileService implements IProfileService {
         }
     }
 
-    getProfile(id: string): IProfileHandler | undefined {
+    getProfileHandler(id: string): IProfileHandler | undefined {
         return this.profiles.find((p) => p.id === id)
     }
 
@@ -148,7 +148,7 @@ export class ProfileService implements IProfileService {
     private updateEntityMappings() {
         const newMappings: Map<string, { profile: string; rule: string }[]> = new Map()
 
-        for (const profile of this.getProfiles()) {
+        for (const profile of this.getProfileHandlers()) {
             const localMapping = profile.getEntityMapping()
             for (const [entityID, ruleID] of localMapping.entries()) {
                 if (newMappings.has(entityID)) {

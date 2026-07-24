@@ -12,6 +12,16 @@ export type ProfileProperty = {
     "@id": string
 
     /**
+     * Identifier of the profile handler this property belongs to.
+     */
+    onHandler: string
+
+    /**
+     * Identifier of the profile this property belongs to.
+     */
+    onProfile: string
+
+    /**
      * A property from base schema or other vocabulary that this profile property is a specialization of.
      * When specified, this property constrains the specified property. When not specified, this is a property term definition.
      * It should be a full term URI.

@@ -4,7 +4,7 @@ import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
 import { isValidUrl, pickFirst, toArray } from "@/lib/utils"
 import { stringifyError } from "@/components/error"
 import { IMetadataService } from "@/lib/core/IMetadataService"
-import { AbstractProfile } from "@/lib/core/profiles/impl/AbstractProfile"
+import { AbstractProfileHandler } from "@/lib/core/profiles/impl/AbstractProfileHandler"
 import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
 import { ProfilePropertyValue } from "@/lib/core/profiles/types/ProfilePropertyValue"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
@@ -57,7 +57,7 @@ const MASPItemList = z.object({
     ])
 })
 
-export class MASPProfile extends AbstractProfile {
+export class MASPProfileHandler extends AbstractProfileHandler {
     readonly name = "MASP"
 
     constructor(
@@ -80,6 +80,8 @@ export class MASPProfile extends AbstractProfile {
                 const d = parsedClassRule.data
                 this.definition.classes.push({
                     "@id": httpsifyUrl(d["@id"]),
+                    onProfile: this.definition["@id"],
+                    onHandler: this.id,
                     name: d.name,
                     description: d.description,
                     label: d["rdfs:label"],
@@ -120,6 +122,8 @@ export class MASPProfile extends AbstractProfile {
 
                 this.definition.properties.push({
                     "@id": httpsifyUrl(d["@id"]),
+                    onProfile: this.definition["@id"],
+                    onHandler: this.id,
                     name: d.name,
                     description: d.description,
                     label: d["rdfs:label"],
@@ -155,6 +159,8 @@ export class MASPProfile extends AbstractProfile {
 
                 this.definition.propertyValues.push({
                     "@id": httpsifyUrl(d["@id"]),
+                    onProfile: this.definition["@id"],
+                    onHandler: this.id,
                     name: d.name,
                     description: d.description,
                     maxCount: d["sh:maxCount"],

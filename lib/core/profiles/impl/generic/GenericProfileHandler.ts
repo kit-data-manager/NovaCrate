@@ -1,10 +1,10 @@
 import { IMetadataService } from "@/lib/core/IMetadataService"
-import { AbstractProfile } from "@/lib/core/profiles/impl/AbstractProfile"
+import { AbstractProfileHandler } from "@/lib/core/profiles/impl/AbstractProfileHandler"
 
 /**
  * Fallback profile implementation that is used when no other profile implementation is applicable.
  */
-export class GenericProfile extends AbstractProfile {
+export class GenericProfileHandler extends AbstractProfileHandler {
     readonly name: string = "Generic"
 
     constructor(rootEntity: IEntity, metadataService: IMetadataService) {

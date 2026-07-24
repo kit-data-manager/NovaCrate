@@ -2,7 +2,7 @@ import { IProfileFactoryStrategy } from "@/lib/core/profiles/IProfileFactoryStra
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { getRootEntityID } from "@/lib/utils"
 import { propertyValue } from "@/lib/property-value-utils"
-import { GenericProfile } from "@/lib/core/profiles/impl/generic/GenericProfile"
+import { GenericProfileHandler } from "@/lib/core/profiles/impl/generic/GenericProfileHandler"
 import { IMetadataService } from "@/lib/core/IMetadataService"
 
 /**
@@ -21,7 +21,7 @@ export class GenericStrategy implements IProfileFactoryStrategy {
     ): Promise<IProfileHandler> {
         const root = this.findRoot(profileCrate)
 
-        return new GenericProfile(root, metadataService)
+        return new GenericProfileHandler(root, metadataService)
     }
 
     protected findRoot(profileCrate: ICrate) {

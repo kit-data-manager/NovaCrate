@@ -133,7 +133,7 @@ export function useActivePropertyProfileRules(entityId: string, propertyName: st
         if (mapping) {
             const newPropertyRules: typeof propertyRules = []
             mapping.forEach(({ profile, rule }) => {
-                const handler = profileService.getProfile(profile)
+                const handler = profileService.getProfileHandler(profile)
                 if (handler) {
                     const rulesOfCurrentHandler = handler.getPropertiesOnClass(rule)
                     newPropertyRules.push(
