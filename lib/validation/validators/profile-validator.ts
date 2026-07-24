@@ -8,6 +8,7 @@ import { editorState } from "@/lib/state/editor-state"
 import { propertyValue } from "@/lib/property-value-utils"
 import { PropertyType } from "@/lib/property"
 import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
+import { ProfilePropertyValue } from "@/lib/core/profiles/types/ProfilePropertyValue"
 
 export class ProfileValidator extends Validator {
     name = "ProfileValidator"
@@ -50,16 +51,19 @@ export class ProfileValidator extends Validator {
         const propertyRules = this.profileHandler.getPropertiesOnClass(classRuleId)
 
         for (const propertyRule of propertyRules) {
-            if (!(propertyRule.label in entity)) continue
-            const property = entity[propertyRule.label]
+            let propertyCount = 0
+            if (propertyRule.label in entity) {
+                const property = entity[propertyRule.label]
 
-            if (propertyRule.options) {
-                this.validatePropertyOptions(property, propertyRule, results, entity)
-            } else if (propertyRule.rangeIncludes) {
-                this.validatePropertyRange(property, propertyRule, results, entity)
+                propertyCount = toArray(property).length
+
+                if (propertyRule.options) {
+                    this.validatePropertyOptions(property, propertyRule, results, entity)
+                } else if (propertyRule.rangeIncludes) {
+                    this.validatePropertyRange(property, propertyRule, results, entity)
+                }
             }
 
-            const propertyCount = toArray(property).length
             this.validatePropertyCount(propertyRule, propertyCount, results, entity)
         }
     }
@@ -101,7 +105,7 @@ export class ProfileValidator extends Validator {
             if (propertyRule.minCount === 1) {
                 results.push(
                     this.resultBuilder.rule("missingMandatoryProperty").error({
-                        resultTitle: "Missing mandatory property",
+                        resultTitle: `Missing \`${propertyRule.label}\` property`,
                         resultDescription: `The mandatory property \`${propertyRule.label}\` is missing from this entity`,
                         entityId: entity["@id"],
                         actions: [
@@ -120,7 +124,7 @@ export class ProfileValidator extends Validator {
             } else {
                 results.push(
                     this.resultBuilder.rule("tooFewMandatoryProperties").error({
-                        resultTitle: "Property has too few entries",
+                        resultTitle: `Property \`${propertyRule.label}\` too few entries`,
                         resultDescription: `The mandatory property \`${propertyRule.label}\` must be present at least ${propertyRule.minCount} times`,
                         entityId: entity["@id"],
                         actions: [
@@ -144,7 +148,7 @@ export class ProfileValidator extends Validator {
         if (propertyRule.maxCount !== undefined && propertyCount > propertyRule.maxCount) {
             results.push(
                 this.resultBuilder.rule("tooManyPropertyEntries").error({
-                    resultTitle: "Property has too many entries",
+                    resultTitle: `Property \`${propertyRule.label}\` has too many entries`,
                     resultDescription: `The property \`${propertyRule.label}\` must not be present more than ${propertyRule.maxCount} times`,
                     entityId: entity["@id"],
                     propertyName: propertyRule.label,
@@ -161,9 +165,21 @@ export class ProfileValidator extends Validator {
         entity: IEntity
     ) {
         if (!propertyRule.rangeIncludes) return
-        const propertyValueRules = propertyRule.rangeIncludes
-            .map((r) => this.profileHandler.getPropertyValueRule(r["@id"]))
-            .filter((pv) => pv !== undefined)
+
+        const classRules: ProfileClass[] = []
+        const propertyValueRules: ProfilePropertyValue[] = []
+        const types: string[] = []
+
+        // Classify each entry into one of the categories above. Types is the fallback category
+        for (const entry of propertyRule.rangeIncludes) {
+            const _classRule = this.profileHandler.getClassRule(entry["@id"])
+            if (_classRule) classRules.push(_classRule)
+            else {
+                const _propertyValueRule = this.profileHandler.getPropertyValueRule(entry["@id"])
+                if (_propertyValueRule) propertyValueRules.push(_propertyValueRule)
+                else types.push(entry["@id"])
+            }
+        }
 
         for (const propertyValueRule of propertyValueRules) {
             const matchingIndices: number[] = []
