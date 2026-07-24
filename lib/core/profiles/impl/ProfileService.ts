@@ -13,10 +13,12 @@ export class ProfileService implements IProfileService {
     private profileURIs: string[] = []
     private profiles: IProfileHandler[] = []
     private profileConstructionErrors: string[] = []
+    private entityMappings: Map<string, { profile: string; rule: string }[]> = new Map()
 
     constructor(private metadata: IMetadataService) {
         this.probeAllReady = this.probeAllReady.bind(this)
         this.forwardErrorEvent = this.forwardErrorEvent.bind(this)
+        this.updateEntityMappings = this.updateEntityMappings.bind(this)
 
         metadata.events.addEventListener("graph-changed", (e) => {
             this.parseProfileURIsFromEntities(e)
@@ -93,6 +95,7 @@ export class ProfileService implements IProfileService {
         this.profiles.forEach((p) => {
             p.events.removeEventListener("ready-changed", this.probeAllReady)
             p.events.removeEventListener("error-emitted", this.forwardErrorEvent)
+            p.events.removeEventListener("mapping-updated", this.updateEntityMappings)
         })
         this.profiles = []
         this.profileConstructionErrors = []
@@ -110,6 +113,7 @@ export class ProfileService implements IProfileService {
 
                 // Error handling
                 profile.events.addEventListener("error-emitted", this.forwardErrorEvent)
+                profile.events.addEventListener("mapping-updated", this.updateEntityMappings)
                 const existingErrors = profile.getErrors()
                 if (existingErrors.length > 0) {
                     this.forwardErrorEvent()
@@ -124,11 +128,39 @@ export class ProfileService implements IProfileService {
         }
 
         if (this.getAllReady()) {
+            this.updateEntityMappings()
             this._events.emit("all-ready-changed", true)
         } else {
             this.profiles.forEach((p) =>
                 p.events.addEventListener("ready-changed", this.probeAllReady)
             )
         }
+    }
+
+    getProfile(id: string): IProfileHandler | undefined {
+        return this.profiles.find((p) => p.id === id)
+    }
+
+    getEntityMappings(): Map<string, { profile: string; rule: string }[]> {
+        return structuredClone(this.entityMappings)
+    }
+
+    private updateEntityMappings() {
+        const newMappings: Map<string, { profile: string; rule: string }[]> = new Map()
+
+        for (const profile of this.getProfiles()) {
+            const localMapping = profile.getEntityMapping()
+            for (const [entityID, ruleID] of localMapping.entries()) {
+                if (newMappings.has(entityID)) {
+                    const current = newMappings.get(entityID)!
+                    current.push({ profile: profile.id, rule: ruleID })
+                } else {
+                    newMappings.set(entityID, [{ profile: profile.id, rule: ruleID }])
+                }
+            }
+        }
+
+        this.entityMappings = newMappings
+        this._events.emit("mappings-updated", this.getEntityMappings())
     }
 }

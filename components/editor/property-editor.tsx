@@ -23,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import useSWR from "swr"
 import { SinglePropertyValidation } from "@/components/editor/validation/single-property-validation"
 import { EntityEditorProperty, PropertyType } from "@/lib/property"
+import { useActivePropertyProfileRules } from "@/components/editor/property-hooks"
 
 export interface PropertyEditorProps {
     entityId: string
@@ -54,6 +55,7 @@ export const PropertyEditor = memo(function PropertyEditor({
     const unFocusProperty = useEntityEditorTabs((store) => store.unFocusProperty)
     const crateContextReady = useEditorState((store) => store.crateContextReady)
     const resolver = useContextResolver()
+    const profilePropertyRules = useActivePropertyProfileRules(entityId, property.propertyName)
     const container = createRef<HTMLDivElement>()
 
     const isFocused = useMemo(() => {
@@ -111,10 +113,12 @@ export const PropertyEditor = memo(function PropertyEditor({
         if (property.propertyName === "@type")
             return "The type defines which properties can occur on the entity"
         if (!resolvedPropertyName) throw `Property ${property.propertyName} not defined in context`
+        if (profilePropertyRules.filter((r) => r.description).length > 0)
+            return profilePropertyRules.map((r) => r.description).join("\n\n")
         const comment = await worker.execute("getPropertyComment", resolvedPropertyName)
         if (!comment) throw `Could not find comment for property ${resolvedPropertyName}`
         return comment
-    }, [property.propertyName, resolvedPropertyName, worker])
+    }, [profilePropertyRules, property.propertyName, resolvedPropertyName, worker])
 
     const {
         data: comment,

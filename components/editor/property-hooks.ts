@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
     SCHEMA_ORG_BOOLEAN,
     SCHEMA_ORG_DATE,
@@ -11,6 +11,8 @@ import { SlimClass } from "@/lib/schema-worker/helpers"
 import { DateTime } from "luxon"
 import { referenceCheck, textCheck } from "@/lib/utils"
 import { PropertyType } from "@/lib/property"
+import { useProfileEntityMapping, useProfileService } from "@/lib/hooks/use-profile-service"
+import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
 
 export function usePropertyCanBe(
     _propertyRange?: SlimClass[] | string[],
@@ -120,4 +122,30 @@ function textValueGuard(
     if (typeof value === "undefined") return fallback
     else if (typeof value === "string") return guardedFn(value)
     else return fallback
+}
+
+export function useActivePropertyProfileRules(entityId: string, propertyName: string) {
+    const profileService = useProfileService()
+    const mapping = useProfileEntityMapping(entityId)
+    const [propertyRules, setPropertyRules] = useState<ProfileProperty[]>([])
+
+    useEffect(() => {
+        if (mapping) {
+            const newPropertyRules: typeof propertyRules = []
+            mapping.forEach(({ profile, rule }) => {
+                const handler = profileService.getProfile(profile)
+                if (handler) {
+                    const rulesOfCurrentHandler = handler.getPropertiesOnClass(rule)
+                    newPropertyRules.push(
+                        ...rulesOfCurrentHandler.filter((r) => r.label === propertyName)
+                    )
+                }
+            })
+            setPropertyRules(newPropertyRules)
+        } else {
+            setPropertyRules([])
+        }
+    }, [mapping, profileService, propertyName])
+
+    return propertyRules
 }

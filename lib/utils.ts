@@ -43,7 +43,8 @@ export function toArray<T>(input: T | T[]): T[] {
 }
 
 /**
- * Takes the first element in an array or simply returns the input when it is not an array
+ * Takes the first element in an array or simply returns the input when it is not an array.
+ * Should only be used when the provided array contains at least one value.
  * @param input
  */
 export function pickFirst<T>(input: T | T[]): T {

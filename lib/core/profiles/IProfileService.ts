@@ -16,6 +16,10 @@ export type IProfileServiceEvents = {
      */
     "profiles-changed": (profiles: IProfileHandler[]) => void
     /**
+     * This event is emitted whenever the entity mappings of one of the profiles changes. Provides a merged view of the entity mappings of each profile
+     */
+    "mappings-updated": (entityMappings: Map<string, { profile: string; rule: string }[]>) => void
+    /**
      * This event is emitted whenever the service or any profiles emit an error.
      */
     "error-emitted": () => void
@@ -60,4 +64,8 @@ export interface IProfileService {
      * is not yet settled.
      */
     getProfiles(): IProfileHandler[]
+
+    getProfile(id: string): IProfileHandler | undefined
+
+    getEntityMappings(): Map<string, { profile: string; rule: string }[]>
 }
