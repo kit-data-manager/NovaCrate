@@ -25,7 +25,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { PathPicker } from "@/components/file-explorer/path-picker"
 import { useFileService } from "@/lib/hooks/use-persistence"
-import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { MarkdownComment } from "@/components/markdown-comment"
 
 export function CreateEntity({
@@ -48,7 +48,7 @@ export function CreateEntity({
     /**
      * When an entity is created based on a profile class
      */
-    profileClass?: ProfileClass
+    profileClass?: EntityRule
 }) {
     const resolver = useContextResolver()
     const fileService = useFileService()

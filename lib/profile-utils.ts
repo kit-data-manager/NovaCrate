@@ -12,7 +12,7 @@ export function getActiveProfileClassesForEntity(
             ?.map((mapping) =>
                 profileService
                     .getProfileHandler(mapping.profileId)
-                    ?.getClassRule(mapping.entityRuleId)
+                    ?.getEntityRule(mapping.entityRuleId)
             )
             .filter((c) => c !== undefined) ?? []
     )

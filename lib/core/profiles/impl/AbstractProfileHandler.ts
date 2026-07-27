@@ -4,9 +4,9 @@ import { IObservable } from "@/lib/core/IObservable"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
 import { buildProfileDefinitionFromRootEntity } from "@/lib/core/profiles/impl/ProfileFactory"
 import { IMetadataService } from "@/lib/core/IMetadataService"
-import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
-import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
-import { ProfilePropertyValue } from "@/lib/core/profiles/types/ProfilePropertyValue"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
+import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
+import { PropertyValueRule } from "@/lib/core/profiles/types/PropertyValueRule"
 
 /**
  *
@@ -48,26 +48,26 @@ export abstract class AbstractProfileHandler implements IProfileHandler {
         return this.definition
     }
 
-    getClassRule(id: string): ProfileClass | undefined {
-        return this.definition.classes.find((rule) => rule["@id"] === id)
+    getEntityRule(id: string): EntityRule | undefined {
+        return this.definition.entityRules.find((rule) => rule["@id"] === id)
     }
 
     getEntityMapping(): Map<string, string> {
         return structuredClone(this.entityMapping)
     }
 
-    getPropertiesOnClass(classRuleId: string): ProfileProperty[] {
-        return this.definition.properties.filter((rule) =>
-            rule.domainIncludes.some((ref) => ref["@id"] === classRuleId)
+    getPropertyRulesFor(entityRuleId: string): PropertyRule[] {
+        return this.definition.propertyRules.filter((rule) =>
+            rule.appliesToEntityRules.some((id) => id === entityRuleId)
         )
     }
 
-    getPropertyRule(id: string): ProfileProperty | undefined {
-        return this.definition.properties.find((rule) => rule["@id"] === id)
+    getPropertyRule(id: string): PropertyRule | undefined {
+        return this.definition.propertyRules.find((rule) => rule["@id"] === id)
     }
 
-    getPropertyValueRule(id: string): ProfilePropertyValue | undefined {
-        return this.definition.propertyValues.find((rule) => rule["@id"] === id)
+    getPropertyValueRule(id: string): PropertyValueRule | undefined {
+        return this.definition.propertyValueRules.find((rule) => rule["@id"] === id)
     }
 
     updateEntityMapping(_: IEntity[]): void {

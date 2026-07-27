@@ -6,8 +6,8 @@ import { ProfileFactory } from "@/lib/core/profiles/impl/ProfileFactory"
 import { IMetadataService } from "@/lib/core/IMetadataService"
 import { getRootEntityID, toArray } from "@/lib/utils"
 import { stringifyError } from "@/components/error"
-import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
-import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
+import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { ProfileEntityMapping } from "@/lib/core/profiles/types/ProfileEntityMapping"
 
 export class ProfileService implements IProfileService {
@@ -148,12 +148,12 @@ export class ProfileService implements IProfileService {
         return structuredClone(this.entityMappings)
     }
 
-    getPropertiesOnClasses(classes: ProfileClass[]) {
-        const properties: ProfileProperty[] = []
+    getPropertiesFor(classes: EntityRule[]) {
+        const properties: PropertyRule[] = []
         for (const profileClass of classes) {
             const handler = this.getProfileHandler(profileClass.onHandler)
             if (handler) {
-                const profileProperties = handler.getPropertiesOnClass(profileClass["@id"])
+                const profileProperties = handler.getPropertyRulesFor(profileClass["@id"])
                 properties.push(...profileProperties)
             }
         }

@@ -4,13 +4,13 @@ import { Badge } from "@/components/ui/badge"
 import { BoxIcon } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { MarkdownComment } from "@/components/markdown-comment"
-import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 
 export function ProfileInsights({ entity }: { entity: IEntity }) {
     const profileService = useCore().getProfileService()
 
-    const [roles, setRoles] = useState<{ rule: ProfileClass; handler: IProfileHandler }[]>()
+    const [roles, setRoles] = useState<{ rule: EntityRule; handler: IProfileHandler }[]>()
 
     const determineRoles = useCallback(() => {
         const roles = profileService
@@ -18,7 +18,7 @@ export function ProfileInsights({ entity }: { entity: IEntity }) {
             .map((handler) => {
                 const ruleId = handler.getEntityMapping().get(entity["@id"])
                 if (ruleId) {
-                    const rule = handler.getClassRule(ruleId)
+                    const rule = handler.getEntityRule(ruleId)
                     if (rule) return { rule, handler }
                 } else return undefined
             })

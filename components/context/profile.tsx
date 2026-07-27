@@ -57,9 +57,11 @@ export function Profile({ profile }: { profile: IProfileHandler }) {
             </div>
             <div className="flex gap-1">
                 <Badge>{profile.name}</Badge>
-                <Badge variant="secondary">{def.classes.length} Class Rules</Badge>
-                <Badge variant="secondary">{def.properties.length} Property Rules</Badge>
-                <Badge variant="secondary">{def.propertyValues.length} Property Value Rules</Badge>
+                <Badge variant="secondary">{def.entityRules.length} Class Rules</Badge>
+                <Badge variant="secondary">{def.propertyRules.length} Property Rules</Badge>
+                <Badge variant="secondary">
+                    {def.propertyValueRules.length} Property Value Rules
+                </Badge>
                 <Tooltip>
                     <Dialog>
                         <TooltipTrigger asChild>

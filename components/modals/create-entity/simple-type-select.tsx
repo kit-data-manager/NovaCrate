@@ -7,7 +7,7 @@ import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useContextResolver } from "@/lib/hooks/hooks"
 import { useCore } from "@/components/providers/core-provider"
 import { isValidUrl, pickFirst, toArray } from "@/lib/utils"
-import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 
 function TypeBadge({
     description,
@@ -20,12 +20,12 @@ function TypeBadge({
     type: string | string[]
     name?: string
     description: string
-    onTypeSelect(value: string | string[], profileClass?: ProfileClass): void
+    onTypeSelect(value: string | string[], profileClass?: EntityRule): void
     restrictToClasses?: SlimClass[]
     /**
      * Only used for reporting the selected profile class to the subsequent UI; type, name and description are used for the badge
      */
-    profileClass?: ProfileClass
+    profileClass?: EntityRule
 }) {
     const resolver = useContextResolver()
 
@@ -67,7 +67,7 @@ export function SimpleTypeSelect({
     onOpenChange,
     restrictToClasses
 }: {
-    onTypeSelect(value: string | string[], profileClass: ProfileClass): void
+    onTypeSelect(value: string | string[], profileClass: EntityRule): void
     setFullTypeBrowser(open: boolean): void
     onOpenChange(open: boolean): void
     restrictToClasses?: SlimClass[]
@@ -82,7 +82,7 @@ export function SimpleTypeSelect({
                 return {
                     id: p.id,
                     profileName: p.name,
-                    classes: def ? def.classes : []
+                    classes: def ? def.entityRules : []
                 }
             })
             .flat()
@@ -108,7 +108,7 @@ export function SimpleTypeSelect({
                         {profile.classes.map((c) => (
                             <TypeBadge
                                 key={c["@id"]}
-                                type={c.specializationOf?.map((s) => s["@id"]) || "Thing"} // TODO is Thing the right fallback?
+                                type={c.specializationOf || "Thing"} // TODO is Thing the right fallback?
                                 name={c.name || c["@id"]}
                                 description={c.description || "No description provided"}
                                 onTypeSelect={onTypeSelect}

@@ -1,13 +1,12 @@
 import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { z } from "zod/mini"
-import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
+import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { isValidUrl, pickFirst, toArray } from "@/lib/utils"
 import { stringifyError } from "@/components/error"
 import { IMetadataService } from "@/lib/core/IMetadataService"
 import { AbstractProfileHandler } from "@/lib/core/profiles/impl/AbstractProfileHandler"
-import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
-import { ProfilePropertyValue } from "@/lib/core/profiles/types/ProfilePropertyValue"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
+import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
 
 const MASPClass = z.object({
     "@id": z.string(),
@@ -79,7 +78,7 @@ export class MASPProfileHandler extends AbstractProfileHandler {
 
             if (parsedClassRule.success) {
                 const d = parsedClassRule.data
-                this.definition.classes.push({
+                this.definition.entityRules.push({
                     "@id": httpsifyUrl(d["@id"]),
                     onProfile: this.definition["@id"],
                     onHandler: this.id,
@@ -89,7 +88,9 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                     maxCount: d["sh:maxCount"],
                     minCount: d["sh:minCount"],
                     specializationOf: d["prov:specializationOf"]
-                        ? toArray(d["prov:specializationOf"]).map(this.autoResolveTerm)
+                        ? toArray(d["prov:specializationOf"]).map((ref) =>
+                              this.autoResolveTerm(ref["@id"])
+                          )
                         : undefined
                 })
             } else {
@@ -111,7 +112,7 @@ export class MASPProfileHandler extends AbstractProfileHandler {
             if (parsedPropertyRule.success) {
                 const d = parsedPropertyRule.data
 
-                let options: ProfileProperty["options"] | undefined = undefined
+                let options: PropertyRule["options"] | undefined = undefined
                 try {
                     options = determineMASPPropertyOptions(d, maspEntities)
                 } catch (e) {
@@ -121,7 +122,7 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                     )
                 }
 
-                this.definition.properties.push({
+                this.definition.propertyRules.push({
                     "@id": httpsifyUrl(d["@id"]),
                     onProfile: this.definition["@id"],
                     onHandler: this.id,
@@ -131,11 +132,11 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                     maxCount: d["sh:maxCount"],
                     minCount: d["sh:minCount"],
                     specializationOf: d["prov:specializationOf"] // TODO FIX: Only the first entry is used, all others are dropped
-                        ? this.autoResolveTerm(pickFirst(d["prov:specializationOf"]))
+                        ? this.autoResolveTerm(pickFirst(d["prov:specializationOf"])["@id"])
                         : undefined,
-                    domainIncludes: toArray(d.domainIncludes),
+                    appliesToEntityRules: toArray(d.domainIncludes).map((ref) => ref["@id"]),
                     rangeIncludes: d.rangeIncludes
-                        ? toArray(d.rangeIncludes).map(this.autoResolveTerm)
+                        ? toArray(d.rangeIncludes).map((ref) => this.autoResolveTerm(ref["@id"]))
                         : undefined,
                     options
                 })
@@ -158,7 +159,7 @@ export class MASPProfileHandler extends AbstractProfileHandler {
             if (parsedPropertyValueRule.success) {
                 const d = parsedPropertyValueRule.data
 
-                this.definition.propertyValues.push({
+                this.definition.propertyValueRules.push({
                     "@id": httpsifyUrl(d["@id"]),
                     onProfile: this.definition["@id"],
                     onHandler: this.id,
@@ -181,10 +182,10 @@ export class MASPProfileHandler extends AbstractProfileHandler {
         console.log(`Done with parsing MASP profile ${this.definition.name}`, this.definition)
     }
 
-    autoResolveTerm(term: IReference): IReference {
-        const withHttps = httpsifyUrlRef(term)
-        if (!isValidUrl(withHttps["@id"])) {
-            withHttps["@id"] = this.context.resolve(withHttps["@id"]) ?? withHttps["@id"]
+    autoResolveTerm(term: string): string {
+        let withHttps = httpsifyUrl(term)
+        if (!isValidUrl(withHttps)) {
+            withHttps = this.context.resolve(withHttps) ?? withHttps
         }
         return withHttps
     }
@@ -268,28 +269,32 @@ export class MASPProfileHandler extends AbstractProfileHandler {
             const classRuleId = classRuleMapping.get(entityId)
             if (!classRuleId) continue
 
-            const classRule = def.classes.find((c) => c["@id"] === classRuleId)
+            const classRule = def.entityRules.find((c) => c["@id"] === classRuleId)
             if (!classRule) continue
 
             const entity = entities.find((e) => e["@id"] === entityId)
             if (!entity) continue
 
-            const propertyRulesForClass = this.getPropertiesOnClass(classRuleId)
+            const propertyRulesForClass = this.getPropertyRulesFor(classRuleId)
             for (const propRule of propertyRulesForClass) {
                 if (!propRule.rangeIncludes) continue
 
-                const targetClassRule = def.classes.filter((c) =>
-                    propRule.rangeIncludes?.find((r) => r["@id"] === c["@id"])
+                const targetClassRule = def.entityRules.filter((c) =>
+                    propRule.rangeIncludes?.find((targetElementId) => targetElementId === c["@id"])
                 )
 
-                const propertyValueRuleIds = def.propertyValues
-                    .filter((c) => propRule.rangeIncludes?.find((r) => r["@id"] === c["@id"]))
+                const propertyValueRuleIds = def.propertyValueRules
+                    .filter((c) =>
+                        propRule.rangeIncludes?.find(
+                            (targetElementId) => targetElementId === c["@id"]
+                        )
+                    )
                     .filter((propertyValuerRule) => typeof propertyValuerRule.value === "object")
 
                 targetClassRule.push(
                     ...propertyValueRuleIds
                         .map((propertyValueRule) =>
-                            def.classes.find(
+                            def.entityRules.find(
                                 (c) => c["@id"] === (propertyValueRule.value as IReference)["@id"]
                             )
                         )
@@ -310,7 +315,7 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                             for (const classRule of targetClassRule) {
                                 const matches = classRule.specializationOf
                                     ? classRule.specializationOf.every((type) =>
-                                          resolved.find((t) => t === type["@id"])
+                                          resolved.find((t) => t === type)
                                       )
                                     : true
                                 if (matches && refId && !classRuleMapping.has(refId)) {
@@ -334,27 +339,29 @@ export class MASPProfileHandler extends AbstractProfileHandler {
         this._events.emit("error-emitted")
     }
 
-    private findClassRuleWithMetadataDescriptorProperty(def: {
-        classes: ProfileClass[]
-        properties: ProfileProperty[]
-        propertyValues: ProfilePropertyValue[]
-    }) {
-        return def.classes.find((classRule) => {
-            return def.properties.some((propRule) => {
-                if (propRule.label !== "@id") return false
-                if (!propRule.domainIncludes.some((d) => d["@id"] === classRule["@id"]))
+    private findClassRuleWithMetadataDescriptorProperty(
+        def: Pick<ProfileDefinition, "entityRules" | "propertyRules" | "propertyValueRules">
+    ) {
+        return def.entityRules.find((entityRule) => {
+            return def.propertyRules.some((propertyRule) => {
+                if (propertyRule.label !== "@id") return false
+                if (
+                    !propertyRule.appliesToEntityRules.some(
+                        (entityRuleId) => entityRuleId === entityRule["@id"]
+                    )
+                )
                     return false
-                if (propRule.options) {
+                if (propertyRule.options) {
                     // TODO is this still an intended path?
                     return (
-                        propRule.options.length === 1 &&
-                        propRule.options[0] === "ro-crate-metadata.json"
+                        propertyRule.options.length === 1 &&
+                        propertyRule.options[0] === "ro-crate-metadata.json"
                     )
-                } else if (propRule.rangeIncludes && propRule.rangeIncludes.length === 1) {
+                } else if (propertyRule.rangeIncludes && propertyRule.rangeIncludes.length === 1) {
                     // Find @id = ro-crate-metadata.json rule
-                    const propertyValueRule = def.propertyValues.find(
+                    const propertyValueRule = def.propertyValueRules.find(
                         (propertyValueRule) =>
-                            propertyValueRule["@id"] === propRule.rangeIncludes![0]["@id"]
+                            propertyValueRule["@id"] === propertyRule.rangeIncludes![0]
                     )
                     return !!(
                         propertyValueRule && propertyValueRule.value === "ro-crate-metadata.json"
@@ -366,22 +373,26 @@ export class MASPProfileHandler extends AbstractProfileHandler {
     }
 
     private findPropertyRuleForLabel(
-        def: { classes: ProfileClass[]; properties: ProfileProperty[] },
+        def: Pick<ProfileDefinition, "propertyRules">,
         classRuleId: string,
         label: string
-    ): ProfileProperty | undefined {
-        return def.properties.find((propRule) => {
+    ): PropertyRule | undefined {
+        return def.propertyRules.find((propRule) => {
             if (propRule.label !== label) return false
-            return propRule.domainIncludes.some((d) => d["@id"] === classRuleId)
+            return propRule.appliesToEntityRules.some(
+                (appliesToEntityRuleId) => appliesToEntityRuleId === classRuleId
+            )
         })
     }
 
     private findClassRuleIdByRange(
-        def: { classes: ProfileClass[] },
-        rangeIncludes?: IReference[]
+        def: Pick<ProfileDefinition, "entityRules">,
+        rangeIncludes?: string[]
     ): string | undefined {
         if (!rangeIncludes) return undefined
-        return def.classes.find((c) => rangeIncludes.some((r) => r["@id"] === c["@id"]))?.["@id"]
+        return def.entityRules.find((c) =>
+            rangeIncludes.some((targetElementId) => targetElementId === c["@id"])
+        )?.["@id"]
     }
 }
 
@@ -389,7 +400,7 @@ function determineMASPPropertyOptions(
     property: z.infer<typeof MASPProperty>,
     maspEntities: IEntity[]
 ) {
-    let options: ProfileProperty["options"] | undefined = undefined
+    let options: PropertyRule["options"] | undefined = undefined
 
     if (property.value) {
         return [property.value]
@@ -410,12 +421,6 @@ function determineMASPPropertyOptions(
     }
 
     return options
-}
-
-function httpsifyUrlRef(ref: IReference): IReference {
-    return {
-        "@id": httpsifyUrl(ref["@id"])
-    }
 }
 
 function httpsifyUrl(url: string) {

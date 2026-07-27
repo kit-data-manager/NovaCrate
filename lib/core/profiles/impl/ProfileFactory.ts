@@ -115,8 +115,8 @@ export function buildProfileDefinitionFromRootEntity(
                 : RO_CRATE_VERSION.V1_1_3,
         version: typeof version === "string" ? version : undefined,
         description: typeof description === "string" ? description : undefined,
-        classes: [],
-        properties: [],
-        propertyValues: []
+        entityRules: [],
+        propertyRules: [],
+        propertyValueRules: []
     }
 }

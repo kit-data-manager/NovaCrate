@@ -3,12 +3,12 @@ import { Validator } from "../validator"
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { isValidUrl, toArray } from "@/lib/utils"
 import { ValidationResultBuilder } from "@/lib/validation/validation-result-builder"
-import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { editorState } from "@/lib/state/editor-state"
 import { propertyValue } from "@/lib/property-value-utils"
 import { PropertyType } from "@/lib/property"
-import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
-import { ProfilePropertyValue } from "@/lib/core/profiles/types/ProfilePropertyValue"
+import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
+import { PropertyValueRule } from "@/lib/core/profiles/types/PropertyValueRule"
 
 export class ProfileValidator extends Validator {
     name = "ProfileValidator"
@@ -34,7 +34,7 @@ export class ProfileValidator extends Validator {
         const mapping = this.profileHandler.getEntityMapping()
         const classRuleId = mapping.get(entity["@id"])
         if (!classRuleId) return []
-        const classRule = this.profileHandler.getClassRule(classRuleId)
+        const classRule = this.profileHandler.getEntityRule(classRuleId)
         if (!classRule) return []
 
         this.validateEntityType(entity, classRule, results)
@@ -48,7 +48,7 @@ export class ProfileValidator extends Validator {
         entity: IEntity,
         results: ValidationResultWithoutTrace[]
     ) {
-        const propertyRules = this.profileHandler.getPropertiesOnClass(classRuleId)
+        const propertyRules = this.profileHandler.getPropertyRulesFor(classRuleId)
 
         for (const propertyRule of propertyRules) {
             let propertyCount = 0
@@ -70,7 +70,7 @@ export class ProfileValidator extends Validator {
 
     private validateEntityType(
         entity: IEntity,
-        classRule: ProfileClass,
+        classRule: EntityRule,
         results: ValidationResultWithoutTrace[]
     ) {
         const missingTypes = this.classRuleFindMissingTypes(entity, classRule)
@@ -96,7 +96,7 @@ export class ProfileValidator extends Validator {
     }
 
     private validatePropertyCount(
-        propertyRule: ProfileProperty,
+        propertyRule: PropertyRule,
         propertyCount: number,
         results: ValidationResultWithoutTrace[],
         entity: IEntity
@@ -160,24 +160,24 @@ export class ProfileValidator extends Validator {
 
     private validatePropertyRange(
         property: string | IReference | (string | IReference)[],
-        propertyRule: ProfileProperty,
+        propertyRule: PropertyRule,
         results: ValidationResultWithoutTrace[],
         entity: IEntity
     ) {
         if (!propertyRule.rangeIncludes) return
 
-        const classRules: ProfileClass[] = []
-        const propertyValueRules: ProfilePropertyValue[] = []
+        const classRules: EntityRule[] = []
+        const propertyValueRules: PropertyValueRule[] = []
         const types: string[] = []
 
         // Classify each entry into one of the categories above. Types is the fallback category
-        for (const entry of propertyRule.rangeIncludes) {
-            const _classRule = this.profileHandler.getClassRule(entry["@id"])
+        for (const targetElementId of propertyRule.rangeIncludes) {
+            const _classRule = this.profileHandler.getEntityRule(targetElementId)
             if (_classRule) classRules.push(_classRule)
             else {
-                const _propertyValueRule = this.profileHandler.getPropertyValueRule(entry["@id"])
+                const _propertyValueRule = this.profileHandler.getPropertyValueRule(targetElementId)
                 if (_propertyValueRule) propertyValueRules.push(_propertyValueRule)
-                else types.push(entry["@id"])
+                else types.push(targetElementId)
             }
         }
 
@@ -283,7 +283,7 @@ export class ProfileValidator extends Validator {
 
     private validatePropertyOptions(
         property: string | IReference | (string | IReference)[],
-        propertyRule: ProfileProperty,
+        propertyRule: PropertyRule,
         results: ValidationResultWithoutTrace[],
         entity: IEntity
     ) {
@@ -318,13 +318,11 @@ export class ProfileValidator extends Validator {
         }
     }
 
-    private classRuleFindMissingTypes(entity: IEntity, classRule: ProfileClass) {
+    private classRuleFindMissingTypes(entity: IEntity, classRule: EntityRule) {
         const entityTypes = toArray(entity["@type"]).map((type) =>
             isValidUrl(type) ? type : (this.getContext().resolver.resolve(type) ?? type)
         )
-        return (
-            classRule.specializationOf ? classRule.specializationOf.map((s) => s["@id"]) : []
-        ).filter((t) => !entityTypes.includes(t))
+        return (classRule.specializationOf ?? []).filter((t) => !entityTypes.includes(t))
     }
 
     async validateCrate(crate: ICrate): Promise<ValidationResultWithoutTrace[]> {
@@ -339,7 +337,7 @@ export class ProfileValidator extends Validator {
             classCounts[classRuleId] = (classCounts[classRuleId] ?? 0) + 1
         }
 
-        for (const classRule of def.classes) {
+        for (const classRule of def.entityRules) {
             const classCount = classCounts[classRule["@id"]] ?? 0
 
             if (classRule.minCount !== undefined && classCount < classRule.minCount) {
@@ -374,6 +372,6 @@ export class ProfileValidator extends Validator {
     }
 }
 
-function classRuleName(c: ProfileClass) {
+function classRuleName(c: EntityRule) {
     return c.name || c.label || c["@id"]
 }

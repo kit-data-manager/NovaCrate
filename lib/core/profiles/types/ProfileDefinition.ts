@@ -1,7 +1,7 @@
 import { RO_CRATE_VERSION } from "@/lib/constants"
-import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
-import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
-import { ProfilePropertyValue } from "@/lib/core/profiles/types/ProfilePropertyValue"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
+import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
+import { PropertyValueRule } from "@/lib/core/profiles/types/PropertyValueRule"
 
 /**
  * This type describes the shape of a profile definition within NovaCrate. All profiles
@@ -40,10 +40,10 @@ export type ProfileDefinition = {
     version?: string
 
     /**
-     * Classes, properties and property values that are defined in this profile.
+     * Rules that are defined in this profile.
      */
 
-    classes: ProfileClass[]
-    properties: ProfileProperty[]
-    propertyValues: ProfilePropertyValue[]
+    entityRules: EntityRule[]
+    propertyRules: PropertyRule[]
+    propertyValueRules: PropertyValueRule[]
 }

@@ -12,7 +12,7 @@ import { DateTime } from "luxon"
 import { referenceCheck, textCheck } from "@/lib/utils"
 import { PropertyType } from "@/lib/property"
 import { useProfileEntityMapping, useProfileService } from "@/lib/hooks/use-profile-service"
-import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
+import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 
 export function usePropertyCanBe(
     _propertyRange?: SlimClass[] | string[],
@@ -127,7 +127,7 @@ function textValueGuard(
 export function useActivePropertyProfileRules(entityId: string, propertyName: string) {
     const profileService = useProfileService()
     const mapping = useProfileEntityMapping(entityId)
-    const [propertyRules, setPropertyRules] = useState<ProfileProperty[]>([])
+    const [propertyRules, setPropertyRules] = useState<PropertyRule[]>([])
 
     useEffect(() => {
         if (mapping) {
@@ -135,7 +135,7 @@ export function useActivePropertyProfileRules(entityId: string, propertyName: st
             mapping.forEach(({ profileId, entityRuleId }) => {
                 const handler = profileService.getProfileHandler(profileId)
                 if (handler) {
-                    const rulesOfCurrentHandler = handler.getPropertiesOnClass(entityRuleId)
+                    const rulesOfCurrentHandler = handler.getPropertyRulesFor(entityRuleId)
                     newPropertyRules.push(
                         ...rulesOfCurrentHandler.filter((r) => r.label === propertyName)
                     )

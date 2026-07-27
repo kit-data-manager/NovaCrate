@@ -20,7 +20,7 @@ import { camelCaseReadable } from "@/lib/utils"
 import { MarkdownComment } from "@/components/markdown-comment"
 import HelpTooltip from "@/components/help-tooltip"
 import useSWR from "swr"
-import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { useProfileService } from "@/lib/hooks/use-profile-service"
 
 const AddPropertyModalEntry = memo(function AddPropertyModalEntry({
@@ -70,7 +70,7 @@ export function SelectProperty({
     open: boolean
     onPropertySelect: (propertyName: string, canBe: ReturnType<typeof usePropertyCanBe>) => void
     typeArray: string[]
-    profileClasses: ProfileClass[]
+    profileClasses: EntityRule[]
     onlyReferences: boolean
 }) {
     const [open, setOpen] = useState(_open)
@@ -97,18 +97,17 @@ export function SelectProperty({
         // 1. If this entity conforms to a profile (ProfileClass), then only display properties from conforming profiles
         // 2. If this entity does not conform to a profile, then display all properties that are allowed on the entity type (or all known properties if the user bypassed the restrictions)
 
-        const profileProperties = profileService.getPropertiesOnClasses(profileClasses)
+        const profileProperties = profileService.getPropertiesFor(profileClasses)
         if (profileProperties.length > 0 && !ignoreProfile) {
             return profileProperties.map(
                 (property) =>
                     ({
                         propertyName: property.label,
                         comment: property.description,
-                        range: property.rangeIncludes?.map((r) => r["@id"]) ?? [],
+                        range: property.rangeIncludes ?? [],
                         rangeReadable:
                             property.rangeIncludes
-                                ?.map((r) => r["@id"])
-                                .filter((id) => !id.startsWith("#"))
+                                ?.filter((id) => !id.startsWith("#"))
                                 .map((id) => resolver.reverse(id) ?? id) ?? []
                     }) satisfies PossibleProperty
             )

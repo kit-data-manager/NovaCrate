@@ -1,8 +1,8 @@
 import { IObservable } from "@/lib/core/IObservable"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
-import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
-import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
-import { ProfilePropertyValue } from "@/lib/core/profiles/types/ProfilePropertyValue"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
+import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
+import { PropertyValueRule } from "@/lib/core/profiles/types/PropertyValueRule"
 
 export type IProfileHandlerEvents = {
     /**
@@ -33,7 +33,7 @@ export interface IProfileHandler {
     readonly events: IObservable<IProfileHandlerEvents>
 
     /**
-     * The unique identifier of this profile instance. It must be unique in each instance of the class.
+     * The unique identifier of this profile instance. It must be unique in each handler instance.
      */
     readonly id: string
 
@@ -60,42 +60,41 @@ export interface IProfileHandler {
 
     /**
      * Update the entity mapping. The method is given all entities in the graph. The profile implementation
-     * is responsible for mapping the entity @ids to class rule identifiers.
+     * is responsible for mapping the entity @ids to entity rule ids.
      * @param entities in the graph
      */
     updateEntityMapping(entities: IEntity[]): void
 
     /**
-     * Maps entity @ids to class rule identifiers. Entities that do not match any class rule are not
+     * Maps entity @ids to entity rule ids. Entities that do not match any rule are not
      * included by default. The profile implementation is responsible for mapping the entity @ids to
-     * class rule identifiers.
+     * entity rule identifiers.
      */
     getEntityMapping(): Map<string, string>
 
     /**
-     * Get the class rule corresponding to the given id. Returns undefined if it does not exist
-     * @param id of the class rule
+     * Get the entity rule corresponding to the given id. Returns undefined if it does not exist
+     * @param id of the entity rule
      */
-    getClassRule(id: string): ProfileClass | undefined
+    getEntityRule(id: string): EntityRule | undefined
 
     /**
      * Get the property rule corresponding to the given id. Returns undefined if it does not exist
      * @param id of the property rule
      */
-    getPropertyRule(id: string): ProfileProperty | undefined
+    getPropertyRule(id: string): PropertyRule | undefined
 
     /**
      * Get the property rule corresponding to the given id. Returns undefined if it does not exist
      * @param id of the property rule
      */
-    getPropertyValueRule(id: string): ProfilePropertyValue | undefined
+    getPropertyValueRule(id: string): PropertyValueRule | undefined
 
     /**
-     * Get all property rules whose domainIncludes contains the given class rule id. Returns an empty array if none exist
-     * or if the class rule does not exist
-     * @param classRuleId id of the class rule
+     * Get all property rules defined on the given entity rule
+     * @param entityRuleId id of the entity rule
      */
-    getPropertiesOnClass(classRuleId: string): ProfileProperty[]
+    getPropertyRulesFor(entityRuleId: string): PropertyRule[]
 
     /**
      * Discard the profile. This will remove any event listeners this profile has registered.

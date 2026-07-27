@@ -1,7 +1,7 @@
 import { IObservable } from "@/lib/core/IObservable"
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
-import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
-import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
+import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { ProfileEntityMapping } from "@/lib/core/profiles/types/ProfileEntityMapping"
 
 export type IProfileServiceEvents = {
@@ -81,8 +81,8 @@ export interface IProfileService {
     getEntityMappings(): Map<string, ProfileEntityMapping[]>
 
     /**
-     * Find all property rules defined on the given profile classes
-     * @param classes
+     * Find all property rules defined on the given entity rules
+     * @param entityRules
      */
-    getPropertiesOnClasses(classes: ProfileClass[]): ProfileProperty[]
+    getPropertiesFor(entityRules: EntityRule[]): PropertyRule[]
 }

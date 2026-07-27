@@ -11,9 +11,10 @@ interface IProfileService {
     setProfileURIs()
     getProfileURIs()
     getProfiles()
+    getEntityMapping(): Map<string, ProfileEntityMappings>
 }
 
-interface IProfile {
+interface IProfileHandler {
     + events
     + id
     - entityMappings
@@ -22,13 +23,14 @@ interface IProfile {
     getErrors(): string[]
     getDefinition(): ProfileDefinition | null
     getEntityMapping(): Map<string, string>
-    getClassRule(id: string): ProfileClass | null
-    getPropertyRule(id: string): ProfileProperty | null
-    getPropertiesOn(classRuleId: string)
+    getEntityRule(id: string): EntityRule | null
+    getPropertyRule(id: string): PropertyRule | null
+    getPropertyValueRule(id: string): PropertyValueRule | null
+    getPropertiesOn(entityRuleId: string)
 }
 
 class ProfileFactory {
-    createProfileFromURI(profileURI: string, metadata: IMetadataService): Promise<IProfile>
+    createProfileFromURI(profileURI: string, metadata: IMetadataService): Promise<IProfileHandler>
 }
 
 note top of ProfileFactory: Takes care of resolving the profileURIs to profile crates
@@ -40,46 +42,27 @@ interface IProfileFactoryStrategy {
 }
 
 ICoreService *-- "1" IProfileService: profileService
-IProfileService *-- "*" IProfile: profiles
-IProfile *-- "1" ProfileDefinition: definition
+IProfileService *-- "*" IProfileHandler: profiles
+IProfileHandler *-- "1" ProfileDefinition: definition
 ProfileFactory --> "*" IProfileFactoryStrategy: STRATEGIES
 
-IProfileFactoryStrategy ..> IProfile: <<creates>>
+IProfileFactoryStrategy ..> IProfileHandler: <<creates>>
 IProfileService ..> ProfileFactory: <<uses>>
 
 class ProfileDefinition {
-    @id: String
-    name: String
-    description?: string
-    specification: RO_CRATE_SPEC
-    version?: string
 }
 
-class ProfileClass {
-    @id: string
-    specializationOf?: IReference[]
-    name?: string
-    label?: string
-    description?: string
-    minCount?: number
-    maxCount?: number
+class EntityRule {
 }
 
-class ProfileProperty {
-    @id: string
-    specializationOf?: IReference
-    name?: string
-    label: string
-    description?: string
-    minCount?: number
-    maxCount?: number
-    domainIncludes: IReference[]
-    rangeIncludes?: IReference[]
-    value?: EntityPropertyTypes
-    options?: EntitySinglePropertyTypes[]
+class PropertyRule {
 }
 
-ProfileDefinition "1" *-- "*" ProfileClass: classes
-ProfileDefinition "1" *-- "*" ProfileProperty: properties
+class PropertyValueRule {
+}
+
+ProfileDefinition "1" *-- "*" EntityRule: entityRules
+ProfileDefinition "1" *-- "*" PropertyRule: propertyRules
+ProfileDefinition "1" *-- "*" PropertyValueRule: propertyValueRules
 
 @enduml

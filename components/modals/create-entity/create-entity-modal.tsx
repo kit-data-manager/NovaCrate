@@ -12,7 +12,7 @@ import { UploadProgress } from "@/components/modals/create-entity/upload-progres
 import { RO_CRATE_FILE } from "@/lib/constants"
 import { asValidPath, AutoReference, toArray } from "@/lib/utils"
 import { CreateProviders } from "@/components/modals/create-entity/create-providers"
-import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 
 export function CreateEntityModal({
     open,
@@ -43,7 +43,7 @@ export function CreateEntityModal({
     /**
      * Set when the entity to be created comes from a profile
      */
-    const [selectedProfileClass, setSelectedProfileClass] = useState<ProfileClass | undefined>()
+    const [selectedProfileClass, setSelectedProfileClass] = useState<EntityRule | undefined>()
 
     const [uploading, setUploading] = useState(false)
     const [currentUploadProgress, setCurrentUploadProgress] = useState(0)
@@ -68,7 +68,7 @@ export function CreateEntityModal({
         }
     }, [forceId, open, resetUploadState, restrictToClasses])
 
-    const onTypeSelect = useCallback((value: string | string[], profileClass?: ProfileClass) => {
+    const onTypeSelect = useCallback((value: string | string[], profileClass?: EntityRule) => {
         console.log("selected", value)
         setSelectedType(value)
         setSelectedProfileClass(profileClass)
