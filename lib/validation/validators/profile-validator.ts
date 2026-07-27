@@ -9,6 +9,7 @@ import { propertyValue } from "@/lib/property-value-utils"
 import { PropertyType } from "@/lib/property"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { PropertyValueRule } from "@/lib/core/profiles/types/PropertyValueRule"
+import { usePropertyCanBe } from "@/components/editor/property-hooks"
 
 export class ProfileValidator extends Validator {
     name = "ProfileValidator"
@@ -107,18 +108,7 @@ export class ProfileValidator extends Validator {
                     this.resultBuilder.rule("missingMandatoryProperty").error({
                         resultTitle: `Missing \`${propertyRule.label}\` property`,
                         resultDescription: `The mandatory property \`${propertyRule.label}\` is missing from this entity`,
-                        entityId: entity["@id"],
-                        actions: [
-                            this.resultBuilder.action("add-property", "Add Property", () => {
-                                editorState
-                                    .getState()
-                                    .addPropertyEntry(
-                                        entity["@id"],
-                                        propertyRule.label,
-                                        PropertyType.Text
-                                    )
-                            })
-                        ]
+                        entityId: entity["@id"]
                     })
                 )
             } else {
@@ -126,20 +116,7 @@ export class ProfileValidator extends Validator {
                     this.resultBuilder.rule("tooFewMandatoryProperties").error({
                         resultTitle: `Property \`${propertyRule.label}\` too few entries`,
                         resultDescription: `The mandatory property \`${propertyRule.label}\` must be present at least ${propertyRule.minCount} times`,
-                        entityId: entity["@id"],
-                        actions: [
-                            this.resultBuilder.action("add-property", "Add Properties", () => {
-                                for (let i = propertyCount; i < (propertyRule.minCount ?? 0); i++) {
-                                    editorState
-                                        .getState()
-                                        .addPropertyEntry(
-                                            entity["@id"],
-                                            propertyRule.label,
-                                            PropertyType.Text
-                                        )
-                                }
-                            })
-                        ]
+                        entityId: entity["@id"]
                     })
                 )
             }
@@ -166,14 +143,15 @@ export class ProfileValidator extends Validator {
     ) {
         if (!propertyRule.rangeIncludes) return
 
-        const classRules: EntityRule[] = []
+        // TODO implement rules for entities and normal types
+        const entityRules: EntityRule[] = []
         const propertyValueRules: PropertyValueRule[] = []
         const types: string[] = []
 
         // Classify each entry into one of the categories above. Types is the fallback category
         for (const targetElementId of propertyRule.rangeIncludes) {
             const _classRule = this.profileHandler.getEntityRule(targetElementId)
-            if (_classRule) classRules.push(_classRule)
+            if (_classRule) entityRules.push(_classRule)
             else {
                 const _propertyValueRule = this.profileHandler.getPropertyValueRule(targetElementId)
                 if (_propertyValueRule) propertyValueRules.push(_propertyValueRule)
@@ -181,9 +159,19 @@ export class ProfileValidator extends Validator {
             }
         }
 
+        this.validatePropertyValueRules(entity, property, propertyRule, propertyValueRules, results)
+    }
+
+    private validatePropertyValueRules(
+        entity: IEntity,
+        propertyVal: string | IReference | (string | IReference)[],
+        propertyRule: PropertyRule,
+        propertyValueRules: PropertyValueRule[],
+        results: ValidationResultWithoutTrace[]
+    ) {
         for (const propertyValueRule of propertyValueRules) {
             const matchingIndices: number[] = []
-            propertyValue(property).forEach((value, i) => {
+            propertyValue(propertyVal).forEach((value, i) => {
                 let match = false
                 if (typeof propertyValueRule.value === "object" && typeof value === "object") {
                     if (propertyValueRule.value["@id"] === value["@id"]) match = true
@@ -249,33 +237,26 @@ export class ProfileValidator extends Validator {
                         })
                     )
                 }
+            }
 
-                if (
-                    propertyValueRule.maxCount !== undefined &&
-                    matches > propertyValueRule.maxCount
-                ) {
-                    for (const i of matchingIndices) {
-                        results.push(
-                            this.resultBuilder.rule("tooManyPropertyValues").error({
-                                resultTitle: "Too many values",
-                                resultDescription: `This property must contain ${typeof propertyValueRule.value === "object" ? "a reference to `" + propertyValueRule.value + "`" : "the value `" + propertyValueRule.value + "`"} no more than ${propertyValueRule.maxCount} times`,
-                                entityId: entity["@id"],
-                                propertyName: propertyRule.label,
-                                propertyIndex: i,
-                                actions: [
-                                    this.resultBuilder.action("remove", "Remove Value", () => {
-                                        editorState
-                                            .getState()
-                                            .removePropertyEntry(
-                                                entity["@id"],
-                                                propertyRule.label,
-                                                i
-                                            )
-                                    })
-                                ]
-                            })
-                        )
-                    }
+            if (propertyValueRule.maxCount !== undefined && matches > propertyValueRule.maxCount) {
+                for (const i of matchingIndices) {
+                    results.push(
+                        this.resultBuilder.rule("tooManyPropertyValues").error({
+                            resultTitle: "Too many values",
+                            resultDescription: `This property must contain ${typeof propertyValueRule.value === "object" ? "a reference to `" + propertyValueRule.value + "`" : "the value `" + propertyValueRule.value + "`"} no more than ${propertyValueRule.maxCount} times`,
+                            entityId: entity["@id"],
+                            propertyName: propertyRule.label,
+                            propertyIndex: i,
+                            actions: [
+                                this.resultBuilder.action("remove", "Remove Value", () => {
+                                    editorState
+                                        .getState()
+                                        .removePropertyEntry(entity["@id"], propertyRule.label, i)
+                                })
+                            ]
+                        })
+                    )
                 }
             }
         }
