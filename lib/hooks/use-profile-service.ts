@@ -1,6 +1,7 @@
 import { useCore } from "@/components/providers/core-provider"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { deepEqual } from "@/lib/utils"
+import { ProfileEntityMapping } from "@/lib/core/profiles/types/ProfileEntityMapping"
 
 export function useProfileService() {
     const core = useCore()
@@ -9,12 +10,10 @@ export function useProfileService() {
 
 export function useProfileEntityMapping(entityId: string) {
     const profileService = useProfileService()
-    const [stableMapping, setStableMapping] = useState<
-        { profile: string; rule: string }[] | undefined
-    >()
+    const [stableMapping, setStableMapping] = useState<ProfileEntityMapping[] | undefined>()
 
     const updateStableMapping = useCallback(
-        (mappings: Map<string, { profile: string; rule: string }[]>) => {
+        (mappings: Map<string, ProfileEntityMapping[]>) => {
             const match = mappings.get(entityId)
             setStableMapping((current) => {
                 if (!deepEqual(current, match)) return match

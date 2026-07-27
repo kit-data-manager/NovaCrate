@@ -6,6 +6,9 @@ import { ProfileFactory } from "@/lib/core/profiles/impl/ProfileFactory"
 import { IMetadataService } from "@/lib/core/IMetadataService"
 import { getRootEntityID, toArray } from "@/lib/utils"
 import { stringifyError } from "@/components/error"
+import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
+import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
+import { ProfileEntityMapping } from "@/lib/core/profiles/types/ProfileEntityMapping"
 
 export class ProfileService implements IProfileService {
     private _events = new Observable<IProfileServiceEvents>()
@@ -13,7 +16,7 @@ export class ProfileService implements IProfileService {
     private profileURIs: string[] = []
     private profiles: IProfileHandler[] = []
     private profileConstructionErrors: string[] = []
-    private entityMappings: Map<string, { profile: string; rule: string }[]> = new Map()
+    private entityMappings: Map<string, ProfileEntityMapping[]> = new Map()
 
     constructor(private metadata: IMetadataService) {
         this.probeAllReady = this.probeAllReady.bind(this)
@@ -141,21 +144,33 @@ export class ProfileService implements IProfileService {
         return this.profiles.find((p) => p.id === id)
     }
 
-    getEntityMappings(): Map<string, { profile: string; rule: string }[]> {
+    getEntityMappings(): Map<string, ProfileEntityMapping[]> {
         return structuredClone(this.entityMappings)
     }
 
+    getPropertiesOnClasses(classes: ProfileClass[]) {
+        const properties: ProfileProperty[] = []
+        for (const profileClass of classes) {
+            const handler = this.getProfileHandler(profileClass.onHandler)
+            if (handler) {
+                const profileProperties = handler.getPropertiesOnClass(profileClass["@id"])
+                properties.push(...profileProperties)
+            }
+        }
+        return properties
+    }
+
     private updateEntityMappings() {
-        const newMappings: Map<string, { profile: string; rule: string }[]> = new Map()
+        const newMappings: Map<string, ProfileEntityMapping[]> = new Map()
 
         for (const profile of this.getProfileHandlers()) {
             const localMapping = profile.getEntityMapping()
             for (const [entityID, ruleID] of localMapping.entries()) {
                 if (newMappings.has(entityID)) {
                     const current = newMappings.get(entityID)!
-                    current.push({ profile: profile.id, rule: ruleID })
+                    current.push({ profileId: profile.id, entityRuleId: ruleID })
                 } else {
-                    newMappings.set(entityID, [{ profile: profile.id, rule: ruleID }])
+                    newMappings.set(entityID, [{ profileId: profile.id, entityRuleId: ruleID }])
                 }
             }
         }

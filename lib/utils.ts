@@ -82,12 +82,7 @@ export function getEntityDisplayName(entity: IEntity, fallback: boolean = true) 
  * @param string String to check
  */
 export function isValidUrl(string: string) {
-    try {
-        new URL(string)
-        return true
-    } catch {
-        return false
-    }
+    return string.match(/[a-z]:\/\/.*/) !== null
 }
 
 /**
@@ -312,7 +307,7 @@ export function isNoneOf(value: string, of: string[]) {
 
 /**
  * Check if a given property type range allows for its value to be a reference.
- * A property can have a reference as its value if at least one of its allowed types is not a primitive datatype
+ * A property can have a reference as its value if at least one of its allowed types is not a primitive datatype, or if the property range is empty
  * @param propertyRange
  */
 export function referenceCheck(propertyRange?: string[]) {

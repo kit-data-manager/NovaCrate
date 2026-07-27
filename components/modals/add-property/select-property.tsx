@@ -20,6 +20,8 @@ import { camelCaseReadable } from "@/lib/utils"
 import { MarkdownComment } from "@/components/markdown-comment"
 import HelpTooltip from "@/components/help-tooltip"
 import useSWR from "swr"
+import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
+import { useProfileService } from "@/lib/hooks/use-profile-service"
 
 const AddPropertyModalEntry = memo(function AddPropertyModalEntry({
     property,
@@ -62,17 +64,21 @@ export function SelectProperty({
     open: _open,
     onPropertySelect,
     typeArray,
+    profileClasses,
     onlyReferences
 }: {
     open: boolean
     onPropertySelect: (propertyName: string, canBe: ReturnType<typeof usePropertyCanBe>) => void
     typeArray: string[]
+    profileClasses: ProfileClass[]
     onlyReferences: boolean
 }) {
     const [open, setOpen] = useState(_open)
     const resolver = useContextResolver()
-    const { isReady: crateVerifyReady, worker } = useContext(SchemaWorker)
+    const { isReady: schemaWorkerReady, worker } = useContext(SchemaWorker)
     const [bypassRestrictions, setBypassRestrictions] = useState(false)
+    const [ignoreProfile, setIgnoreProfile] = useState(false)
+    const profileService = useProfileService()
 
     useEffect(() => {
         if (_open) {
@@ -87,7 +93,26 @@ export function SelectProperty({
     const possiblePropertiesResolver = useCallback(async () => {
         const types = bypassRestrictions ? ["*"] : typeArray
 
-        if (crateVerifyReady) {
+        // Strategy:
+        // 1. If this entity conforms to a profile (ProfileClass), then only display properties from conforming profiles
+        // 2. If this entity does not conform to a profile, then display all properties that are allowed on the entity type (or all known properties if the user bypassed the restrictions)
+
+        const profileProperties = profileService.getPropertiesOnClasses(profileClasses)
+        if (profileProperties.length > 0 && !ignoreProfile) {
+            return profileProperties.map(
+                (property) =>
+                    ({
+                        propertyName: property.label,
+                        comment: property.description,
+                        range: property.rangeIncludes?.map((r) => r["@id"]) ?? [],
+                        rangeReadable:
+                            property.rangeIncludes
+                                ?.map((r) => r["@id"])
+                                .filter((id) => !id.startsWith("#"))
+                                .map((id) => resolver.reverse(id) ?? id) ?? []
+                    }) satisfies PossibleProperty
+            )
+        } else if (schemaWorkerReady) {
             const data = bypassRestrictions
                 ? await worker.execute("getAllProperties", { onlyReferences })
                 : await worker.execute(
@@ -111,7 +136,17 @@ export function SelectProperty({
                 })
                 .filter((s) => typeof s.propertyName === "string") as PossibleProperty[]
         }
-    }, [bypassRestrictions, resolver, crateVerifyReady, onlyReferences, typeArray, worker])
+    }, [
+        bypassRestrictions,
+        typeArray,
+        profileService,
+        profileClasses,
+        ignoreProfile,
+        schemaWorkerReady,
+        resolver,
+        worker,
+        onlyReferences
+    ])
 
     const handleBypassCheckedChange = useCallback((s: CheckedState) => {
         if (!s) {
@@ -124,8 +159,8 @@ export function SelectProperty({
         error: possiblePropertiesError,
         isLoading: possiblePropertiesPending
     } = useSWR(
-        crateVerifyReady
-            ? `possible-properties-${bypassRestrictions}-${typeArray.join(",")}`
+        schemaWorkerReady
+            ? `possible-properties-${bypassRestrictions}-${ignoreProfile}-${typeArray.join(",")}`
             : null,
         possiblePropertiesResolver
     )
@@ -165,19 +200,42 @@ export function SelectProperty({
                     </CommandGroup>
                 </CommandList>
             </Command>
-            <div className="flex gap-2 items-center">
-                <Checkbox
-                    checked={!bypassRestrictions}
-                    onCheckedChange={handleBypassCheckedChange}
-                    id="onlyShowAllowed-create"
-                />
-                <label htmlFor="onlyShowAllowed-create">
-                    Only show matching Properties{" "}
-                    <HelpTooltip>
-                        When enabled, only properties that are allowed on the current type are
-                        shown. Should only be deactivated by experts.
-                    </HelpTooltip>
-                </label>
+            <div className="space-y-1">
+                {profileClasses.length > 0 && (
+                    <div className="flex gap-2 items-center">
+                        <Checkbox
+                            checked={ignoreProfile}
+                            onCheckedChange={(state) =>
+                                state === "indeterminate"
+                                    ? setIgnoreProfile(true)
+                                    : setIgnoreProfile(state)
+                            }
+                            id="ignoreProfile-addProperty"
+                        />
+                        <label htmlFor="ignoreProfile-addProperty">
+                            Ignore Profile restrictions{" "}
+                            <HelpTooltip>
+                                Enabling this will ignore any property restrictions placed on the
+                                current entity by any active profile.
+                            </HelpTooltip>
+                        </label>
+                    </div>
+                )}
+                <div className="flex gap-2 items-center">
+                    <Checkbox
+                        disabled={profileClasses.length > 0 && !ignoreProfile}
+                        checked={!bypassRestrictions}
+                        onCheckedChange={handleBypassCheckedChange}
+                        id="onlyShowAllowed-create"
+                    />
+                    <label htmlFor="onlyShowAllowed-create">
+                        Only show matching Properties{" "}
+                        <HelpTooltip>
+                            When enabled, only properties that are allowed on the current type are
+                            shown. Should only be deactivated by experts.
+                        </HelpTooltip>
+                    </label>
+                </div>
             </div>
         </>
     )

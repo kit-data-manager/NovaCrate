@@ -28,7 +28,7 @@ export interface IGlobalModalContext {
     showDeleteEntityModal(entityId: string): void
     showGlobalSearchModal(): void
     showAddPropertyModal(
-        typeArray: string[],
+        entity: IEntity,
         callback: AddPropertyModalCallback,
         onlyReferences?: boolean
     ): void
@@ -88,12 +88,11 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     const [addPropertyModalState, setAddPropertyModalState] = useState<{
         open: boolean
         onPropertyAdd: AddPropertyModalCallback
-        typeArray: string[]
+        entity?: IEntity
         onlyReferences: boolean
     }>({
         open: false,
         onPropertyAdd: () => {},
-        typeArray: [],
         onlyReferences: false
     })
     const [findReferencesModalState, setFindReferencesModalState] = useState({
@@ -154,14 +153,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     }, [])
 
     const showAddPropertyModal = useCallback(
-        (
-            typeArray: string[],
-            callback: AddPropertyModalCallback,
-            onlyReferences: boolean = false
-        ) => {
+        (entity: IEntity, callback: AddPropertyModalCallback, onlyReferences: boolean = false) => {
             setAddPropertyModalState({
                 open: true,
-                typeArray,
+                entity,
                 onPropertyAdd: callback,
                 onlyReferences
             })
@@ -327,7 +322,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                     open={addPropertyModalState.open}
                     onPropertyAdd={addPropertyModalState.onPropertyAdd}
                     onOpenChange={onAddPropertyModalOpenChange}
-                    typeArray={addPropertyModalState.typeArray}
+                    entity={addPropertyModalState.entity!}
                     onlyReferences={addPropertyModalState.onlyReferences}
                 />
                 <FindReferencesModal

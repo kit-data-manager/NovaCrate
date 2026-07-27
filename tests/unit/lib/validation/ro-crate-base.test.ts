@@ -18,7 +18,8 @@ function buildContext(): ValidatorContext {
             getRaw() {
                 return "https://w3id.org/ro/crate/1.2/context"
             }
-        } as ValidatorContext["context"]
+        } as ValidatorContext["context"],
+        profileService: {} as ValidatorContext["profileService"]
     }
 }
 

@@ -1,5 +1,8 @@
 import { IObservable } from "@/lib/core/IObservable"
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
+import { ProfileClass } from "@/lib/core/profiles/types/ProfileClass"
+import { ProfileProperty } from "@/lib/core/profiles/types/ProfileProperty"
+import { ProfileEntityMapping } from "@/lib/core/profiles/types/ProfileEntityMapping"
 
 export type IProfileServiceEvents = {
     /**
@@ -18,7 +21,7 @@ export type IProfileServiceEvents = {
     /**
      * This event is emitted whenever the entity mappings of one of the profiles changes. Provides a merged view of the entity mappings of each profile
      */
-    "mappings-updated": (entityMappings: Map<string, { profile: string; rule: string }[]>) => void
+    "mappings-updated": (entityMappings: Map<string, ProfileEntityMapping[]>) => void
     /**
      * This event is emitted whenever the service or any profiles emit an error.
      */
@@ -59,13 +62,27 @@ export interface IProfileService {
     getProfileURIs(): string[]
 
     /**
-     * Get the profiles that are currently active. This is set by {@link setProfileURIs}. Note that
+     * Get the profile handlers that are currently active. This is set by {@link setProfileURIs}. Note that
      * the returned array may be incomplete as long as the Promise returned by {@link setProfileURIs}
      * is not yet settled.
      */
     getProfileHandlers(): IProfileHandler[]
 
+    /**
+     * Get a currently active profile handler by its id. Returns undefined if no handler with the
+     * supplied id exists
+     * @param id
+     */
     getProfileHandler(id: string): IProfileHandler | undefined
 
-    getEntityMappings(): Map<string, { profile: string; rule: string }[]>
+    /**
+     * Get a combined map of entity ids to applied profile rules
+     */
+    getEntityMappings(): Map<string, ProfileEntityMapping[]>
+
+    /**
+     * Find all property rules defined on the given profile classes
+     * @param classes
+     */
+    getPropertiesOnClasses(classes: ProfileClass[]): ProfileProperty[]
 }

@@ -67,6 +67,7 @@ export class MASPProfileHandler extends AbstractProfileHandler {
         metadataService: IMetadataService
     ) {
         super(rootEntity, metadataService)
+        this.autoResolveTerm = this.autoResolveTerm.bind(this)
 
         //
         // Parse Class Rules
@@ -88,7 +89,7 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                     maxCount: d["sh:maxCount"],
                     minCount: d["sh:minCount"],
                     specializationOf: d["prov:specializationOf"]
-                        ? toArray(d["prov:specializationOf"]).map(httpsifyUrlRef)
+                        ? toArray(d["prov:specializationOf"]).map(this.autoResolveTerm)
                         : undefined
                 })
             } else {
@@ -130,11 +131,11 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                     maxCount: d["sh:maxCount"],
                     minCount: d["sh:minCount"],
                     specializationOf: d["prov:specializationOf"] // TODO FIX: Only the first entry is used, all others are dropped
-                        ? httpsifyUrlRef(pickFirst(d["prov:specializationOf"]))
+                        ? this.autoResolveTerm(pickFirst(d["prov:specializationOf"]))
                         : undefined,
                     domainIncludes: toArray(d.domainIncludes),
                     rangeIncludes: d.rangeIncludes
-                        ? toArray(d.rangeIncludes).map(httpsifyUrlRef)
+                        ? toArray(d.rangeIncludes).map(this.autoResolveTerm)
                         : undefined,
                     options
                 })
@@ -178,6 +179,14 @@ export class MASPProfileHandler extends AbstractProfileHandler {
         // Listener for automatic updates is attached in the abstract superclass
         this.updateEntityMapping(metadataService.getEntities())
         console.log(`Done with parsing MASP profile ${this.definition.name}`, this.definition)
+    }
+
+    autoResolveTerm(term: IReference): IReference {
+        const withHttps = httpsifyUrlRef(term)
+        if (!isValidUrl(withHttps["@id"])) {
+            withHttps["@id"] = this.context.resolve(withHttps["@id"]) ?? withHttps["@id"]
+        }
+        return withHttps
     }
 
     async updateEntityMapping(entities: IEntity[]) {
