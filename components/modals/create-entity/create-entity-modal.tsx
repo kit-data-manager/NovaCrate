@@ -2,17 +2,15 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import React, { useCallback, useEffect, useState } from "react"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useContextResolver } from "@/lib/hooks/hooks"
 import { TypeSelect } from "@/components/modals/create-entity/type-select"
 import { CreateEntity } from "@/components/modals/create-entity/create-entity"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { SimpleTypeSelect } from "@/components/modals/create-entity/simple-type-select"
-import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { UploadProgress } from "@/components/modals/create-entity/upload-progress"
-import { RO_CRATE_FILE } from "@/lib/constants"
-import { asValidPath, AutoReference, toArray } from "@/lib/utils"
+import { AutoReference, toArray } from "@/lib/utils"
 import { CreateProviders } from "@/components/modals/create-entity/create-providers"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
+import { useCreateEntityUpload } from "@/components/modals/create-entity/hooks/use-create-entity-upload"
 
 export function CreateEntityModal({
     open,
@@ -32,10 +30,7 @@ export function CreateEntityModal({
     const addEntity = useEditorState((store) => store.addEntity)
     const focusTab = useEntityEditorTabs((store) => store.focusTab)
     const openTab = useEntityEditorTabs((store) => store.openTab)
-    const { createFileEntity, createFolderEntity } = useCrateMutations()
-    const resolver = useContextResolver()
 
-    const [fullTypeBrowser, setFullTypeBrowser] = useState(false)
     /**
      * Expected to be a shortened type when possible.
      */
@@ -43,25 +38,29 @@ export function CreateEntityModal({
     /**
      * Set when the entity to be created comes from a profile
      */
-    const [selectedProfileClass, setSelectedProfileClass] = useState<EntityRule | undefined>()
+    const [selectedEntityRule, setSelectedEntityRule] = useState<EntityRule | undefined>()
 
-    const [uploading, setUploading] = useState(false)
-    const [currentUploadProgress, setCurrentUploadProgress] = useState(0)
-    const [maxUploadProgress, setMaxUploadProgress] = useState(0)
-    const [uploadErrors, setUploadErrors] = useState<unknown[]>([])
+    const [fullTypeBrowser, setFullTypeBrowser] = useState(false)
 
-    const resetUploadState = useCallback(() => {
-        setUploading(false)
-        setCurrentUploadProgress(0)
-        setMaxUploadProgress(0)
-        setUploadErrors([])
-    }, [])
+    const {
+        uploading,
+        currentUploadProgress,
+        maxUploadProgress,
+        uploadErrors,
+        resetUploadState,
+        onUploadFile,
+        onUploadFolder
+    } = useCreateEntityUpload({
+        selectedType,
+        openTab,
+        onClose: useCallback(() => onOpenChange(false), [onOpenChange])
+    })
 
     useEffect(() => {
         if (!open) {
             setTimeout(() => {
                 setSelectedType("")
-                setSelectedProfileClass(undefined)
+                setSelectedEntityRule(undefined)
                 setFullTypeBrowser(false)
                 resetUploadState()
             }, 200)
@@ -69,9 +68,8 @@ export function CreateEntityModal({
     }, [forceId, open, resetUploadState, restrictToClasses])
 
     const onTypeSelect = useCallback((value: string | string[], profileClass?: EntityRule) => {
-        console.log("selected", value)
         setSelectedType(value)
-        setSelectedProfileClass(profileClass)
+        setSelectedEntityRule(profileClass)
     }, [])
 
     const onEntityCreated = useCallback(() => {
@@ -109,79 +107,9 @@ export function CreateEntityModal({
         [focusTab, onEntityCreated, openTab]
     )
 
-    const onUploadFile = useCallback(
-        async (id: string, name: string, file: File) => {
-            setUploading(true)
-            setMaxUploadProgress(1)
-            try {
-                console.log("creatign with", selectedType)
-                const result = await createFileEntity(
-                    {
-                        "@id": id,
-                        "@type": selectedType,
-                        name
-                    },
-                    file
-                )
-                if (!result) setUploadErrors(["File upload failed"])
-                else {
-                    setCurrentUploadProgress(1)
-                    openTab({ entityId: id }, true)
-                    onOpenChange(false)
-                }
-            } catch (e) {
-                setUploadErrors([e])
-            }
-        },
-        [createFileEntity, onOpenChange, openTab, selectedType]
-    )
-
-    const onUploadFolder = useCallback(
-        async (id: string, name: string, files: File[]) => {
-            setUploading(true)
-            setMaxUploadProgress(files.length > 0 ? files.length : 1)
-            const folderPath = asValidPath(id, true)
-            try {
-                const result = await createFolderEntity(
-                    {
-                        "@id": folderPath,
-                        "@type": selectedType,
-                        name
-                    },
-                    files.map((file) => {
-                        return {
-                            entity: {
-                                "@id":
-                                    folderPath +
-                                    file.webkitRelativePath.split("/").slice(1).join("/"),
-                                "@type": resolver.reverse(RO_CRATE_FILE) || RO_CRATE_FILE,
-                                name: file.name
-                            },
-                            file
-                        }
-                    }),
-                    (current: number, max: number, errors: unknown[]) => {
-                        setCurrentUploadProgress(current)
-                        setMaxUploadProgress(max)
-                        setUploadErrors(errors)
-                    }
-                )
-                if (!result) setUploadErrors(["Folder upload failed"])
-                else {
-                    setCurrentUploadProgress(files.length > 0 ? files.length : 1)
-                    openTab({ entityId: folderPath }, true)
-                    onOpenChange(false)
-                }
-            } catch (e) {
-                setUploadErrors([e])
-            }
-        },
-        [createFolderEntity, selectedType, resolver, openTab, onOpenChange]
-    )
-
     const backToTypeSelect = useCallback(() => {
         setSelectedType("")
-        setSelectedProfileClass(undefined)
+        setSelectedEntityRule(undefined)
     }, [])
 
     return (
@@ -228,7 +156,7 @@ export function CreateEntityModal({
                                 basePath={basePath}
                                 onUploadFile={onUploadFile}
                                 onUploadFolder={onUploadFolder}
-                                profileClass={selectedProfileClass}
+                                entityRule={selectedEntityRule}
                             />
                         }
                     />

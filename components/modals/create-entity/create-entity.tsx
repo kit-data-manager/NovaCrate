@@ -1,33 +1,19 @@
-import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import {
-    ArrowLeft,
-    File,
-    Folder,
-    FolderDot,
-    Globe,
-    HardDrive,
-    Plus,
-    TriangleAlert
-} from "lucide-react"
-import { camelCaseReadable, isValidUrl, pickFirst, toArray } from "@/lib/utils"
+import { useMemo } from "react"
 import { Error } from "@/components/error"
-import prettyBytes from "pretty-bytes"
-import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { useContextResolver } from "@/lib/hooks/hooks"
-import HelpTooltip from "@/components/help-tooltip"
-import { useAutoId } from "@/lib/hooks/hooks"
-import { CreateEntityHint } from "@/components/modals/create-entity/create-entity-hint"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { PathPicker } from "@/components/file-explorer/path-picker"
-import { useFileService } from "@/lib/hooks/use-persistence"
+import { toArray } from "@/lib/utils"
+import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
-import { MarkdownComment } from "@/components/markdown-comment"
+import { ContextualEntityForm } from "@/components/modals/create-entity/forms/contextual-entity-form"
+import { FileEntityForm } from "@/components/modals/create-entity/forms/file-entity-form"
+import { FolderEntityForm } from "@/components/modals/create-entity/forms/folder-entity-form"
 
+/**
+ * Top-level create-entity stage. Decides which form to render based on the
+ * resolved entity type (File, Dataset, or contextual) and whether an id is
+ * forced. When an id is forced, file/folder uploads are skipped and the
+ * contextual form is used (so the data entity is created from metadata only).
+ */
 export function CreateEntity({
     selectedType,
     onBackClick,
@@ -36,7 +22,7 @@ export function CreateEntity({
     basePath,
     onUploadFile,
     onUploadFolder,
-    profileClass
+    entityRule
 }: {
     selectedType: string | string[]
     onBackClick: () => void
@@ -45,16 +31,10 @@ export function CreateEntity({
     basePath?: string
     onUploadFile(id: string, name: string, file: File): void
     onUploadFolder(id: string, name: string, files: File[]): void
-    /**
-     * When an entity is created based on a profile class
-     */
-    profileClass?: EntityRule
+    entityRule?: EntityRule
 }) {
     const resolver = useContextResolver()
-    const fileService = useFileService()
 
-    const [externalResource, setExternalResource] = useState(false)
-    const [path, setPath] = useState("")
     const fileUpload = useMemo(() => {
         return toArray(selectedType).some((type) => resolver.resolve(type) === RO_CRATE_FILE)
     }, [resolver, selectedType])
@@ -63,413 +43,51 @@ export function CreateEntity({
         return toArray(selectedType).some((type) => resolver.resolve(type) === RO_CRATE_DATASET)
     }, [resolver, selectedType])
 
-    const defaultName = useMemo(() => {
-        if ((fileUpload || folderUpload) && forceId) {
-            const split = forceId.split("/").filter((part) => !!part)
-            return split[split.length - 1]
-        } else return undefined
-    }, [fileUpload, folderUpload, forceId])
-
-    const [name, setName] = useState(defaultName || "")
-    const [identifier, setIdentifier] = useState<string>("")
-    const [emptyFolder, setEmptyFolder] = useState(false)
-    const createEntityFileUploadRef = useRef<HTMLInputElement>(null)
-    const createEntityFolderUploadRef = useRef<HTMLInputElement>(null)
-
-    const [plainFiles, setPlainFiles] = useState<File[]>([])
-    const [folderFiles, setFolderFiles] = useState<File[]>([])
-
-    const openFilePicker = useCallback(() => {
-        if (createEntityFileUploadRef.current) {
-            createEntityFileUploadRef.current.click()
-        }
-    }, [])
-
-    const openFolderPicker = useCallback(() => {
-        if (createEntityFolderUploadRef.current) {
-            createEntityFolderUploadRef.current.setAttribute("webkitdirectory", "")
-            createEntityFolderUploadRef.current.click()
-        }
-    }, [])
-
-    const onFileInputChange = useCallback(() => {
-        setPlainFiles([...(createEntityFileUploadRef.current?.files ?? [])])
-    }, [])
-
-    const onFolderInputChange = useCallback(() => {
-        setFolderFiles([...(createEntityFolderUploadRef.current?.files ?? [])])
-    }, [])
-
-    const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        setName(e.target.value)
-    }, [])
-
-    const onIdentifierChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        setIdentifier(e.target.value)
-    }, [])
-
-    const autoId = useAutoId(name)
-
-    const hasFileUpload = useMemo(() => {
-        return fileUpload && !forceId
-    }, [fileUpload, forceId])
-
-    const hasFolderUpload = useMemo(() => {
-        return folderUpload && !forceId
-    }, [folderUpload, forceId])
-
-    const baseFileName = useMemo(() => {
-        if (plainFiles.length > 0) {
-            return plainFiles[0].name
-        } else if (folderFiles.length > 0) {
-            return folderFiles[0].webkitRelativePath.split("/")[0]
-        } else return undefined
-    }, [folderFiles, plainFiles])
-
-    const localOnCreateClick = useCallback(() => {
-        if (
-            !forceId &&
-            ((hasFileUpload && !externalResource) || (hasFolderUpload && !externalResource))
-        ) {
-            if (hasFileUpload) {
-                onUploadFile(path.replace(/^\.\//, "") + name, name, plainFiles[0])
-            } else {
-                onUploadFolder(
-                    path.replace(/^\.\//, "") + name,
-                    name,
-                    emptyFolder ? [] : folderFiles
-                )
-            }
-        } else onCreateClick(forceId || identifier || autoId, name)
-    }, [
-        forceId,
-        hasFileUpload,
-        externalResource,
-        hasFolderUpload,
-        onCreateClick,
-        identifier,
-        autoId,
-        name,
-        onUploadFile,
-        path,
-        plainFiles,
-        onUploadFolder,
-        emptyFolder,
-        folderFiles
-    ])
-
-    const onNameInputKeyDown = useCallback(
-        (e: React.KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === "Enter") {
-                localOnCreateClick()
-            }
-        },
-        [localOnCreateClick]
-    )
-
-    useEffect(() => {
-        if (plainFiles.length > 0) {
-            setName((oldName) => (oldName === "" ? plainFiles[0].name : oldName))
-        }
-    }, [plainFiles])
-
-    useEffect(() => {
-        if (folderFiles.length > 0) {
-            setName((oldName) =>
-                oldName === "" ? folderFiles[0].webkitRelativePath.split("/")[0] : oldName
-            )
-        }
-    }, [folderFiles])
-
-    const identifierValid = useMemo(() => {
-        return !(externalResource && !isValidUrl(identifier))
-    }, [externalResource, identifier])
-
-    const createDisabled = useMemo(() => {
-        if (!identifierValid) return true
-        if (hasFolderUpload && !externalResource && !emptyFolder && folderFiles.length === 0)
-            return true
-        if (hasFileUpload && !externalResource && plainFiles.length === 0) return true
-        return autoId.length <= 0
-    }, [
-        autoId.length,
-        emptyFolder,
-        externalResource,
-        folderFiles.length,
-        hasFileUpload,
-        hasFolderUpload,
-        identifierValid,
-        plainFiles.length
-    ])
+    const hasFileUpload = fileUpload && !forceId
+    const hasFolderUpload = folderUpload && !forceId
 
     if (hasFileUpload && hasFolderUpload)
         return (
             <Error error="Cannot determine whether this is a file upload or a folder upload. Make sure your context is not ambiguous." />
         )
 
+    const defaultName =
+        (fileUpload || folderUpload) && forceId
+            ? forceId.split("/").filter((part) => !!part).pop()
+            : undefined
+
+    if (hasFileUpload)
+        return (
+            <FileEntityForm
+                selectedType={selectedType}
+                onBackClick={onBackClick}
+                onCreateClick={onCreateClick}
+                basePath={basePath}
+                onUploadFile={onUploadFile}
+                entityRule={entityRule}
+            />
+        )
+
+    if (hasFolderUpload)
+        return (
+            <FolderEntityForm
+                selectedType={selectedType}
+                onBackClick={onBackClick}
+                onCreateClick={onCreateClick}
+                basePath={basePath}
+                onUploadFolder={onUploadFolder}
+                entityRule={entityRule}
+            />
+        )
+
     return (
-        <div className="flex flex-col gap-4 min-w-0">
-            <DialogHeader>
-                <DialogTitle>
-                    Create a new{" "}
-                    {profileClass && profileClass.name
-                        ? profileClass.name
-                        : camelCaseReadable(pickFirst(selectedType))}{" "}
-                    Entity
-                </DialogTitle>
-
-                <DialogDescription>
-                    {profileClass && profileClass.description && (
-                        <div className="mb-2 max-h-52 overflow-auto">
-                            <MarkdownComment comment={profileClass.description} allowLinks />
-                        </div>
-                    )}
-
-                    {!hasFileUpload && !hasFolderUpload ? (
-                        <>
-                            Enter a name for the entity.{" "}
-                            {forceId
-                                ? ""
-                                : `An ID will be generated.
-                            You can also change the ID.`}{" "}
-                            Press Create to start adding Properties.
-                        </>
-                    ) : null}
-
-                    {hasFileUpload ? (
-                        <>
-                            Add a file to the Crate. Use the File Explorer to upload the file to a
-                            specific folder. This will import the File into the Crate and also
-                            create a corresponding Data Entity.
-                        </>
-                    ) : null}
-
-                    {hasFolderUpload ? (
-                        <>
-                            Add a folder to the Crate. If you want to create an empty folder, select
-                            Empty Folder and enter a name of your choice. Otherwise, the folder and
-                            all contained files and folders will be uploaded.
-                        </>
-                    ) : null}
-                </DialogDescription>
-            </DialogHeader>
-
-            <CreateEntityHint selectedType={pickFirst(selectedType)} />
-
-            {hasFileUpload ? (
-                <div>
-                    <Tabs
-                        className="mb-4"
-                        value={externalResource ? "without-file" : "with-file"}
-                        onValueChange={(v) => {
-                            setExternalResource(v === "without-file")
-                        }}
-                    >
-                        <TabsList className="flex self-center">
-                            <TabsTrigger value="with-file">
-                                <HardDrive className="size-4" /> Local File
-                            </TabsTrigger>
-                            <TabsTrigger value="without-file">
-                                <Globe className="size-4" /> Web Resource
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-                    {externalResource ? null : (
-                        <div className="space-y-4">
-                            <Label>Destination</Label>
-                            <PathPicker onPathPicked={setPath} defaultPath={basePath} />
-                            {fileService === null && (
-                                <Error
-                                    warn
-                                    title={"File won't be added to RO-Crate"}
-                                    error={
-                                        "The metadata for this file will be created as normal, but it is not possible to add data to this RO-Crate. (No FileService available)"
-                                    }
-                                />
-                            )}
-                            <Label>File</Label>
-                            <div>
-                                <Button
-                                    className="min-w-0 max-w-full truncate"
-                                    variant="outline"
-                                    onClick={openFilePicker}
-                                >
-                                    <File className="size-4 mr-2 shrink-0" />
-                                    <span className="truncate min-w-0">
-                                        {plainFiles.length == 0
-                                            ? "Select File"
-                                            : plainFiles[0].name}
-                                    </span>
-                                </Button>
-                                <span className="ml-2 text-muted-foreground">
-                                    {plainFiles.length == 0 ? "" : prettyBytes(plainFiles[0].size)}
-                                </span>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            ) : null}
-
-            {hasFolderUpload ? (
-                <div>
-                    <Tabs
-                        className="mb-4"
-                        value={externalResource ? "without-file" : "with-file"}
-                        onValueChange={(v) => {
-                            setExternalResource(v === "without-file")
-                        }}
-                    >
-                        <TabsList className="flex self-center">
-                            <TabsTrigger value="with-file">
-                                <HardDrive className="size-4" /> Local Folder
-                            </TabsTrigger>
-                            <TabsTrigger value="without-file">
-                                <Globe className="size-4" /> Web Resource
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-                    {externalResource ? null : (
-                        <div className="space-y-4">
-                            <Label>Destination</Label>
-                            <PathPicker onPathPicked={setPath} defaultPath={basePath} />
-                            {fileService === null && (
-                                <Error
-                                    warn
-                                    title={"Files won't be added to RO-Crate"}
-                                    error={
-                                        "The metadata for the selected folder will be created as normal, but it is not possible to add data to this RO-Crate. (No FileService available)"
-                                    }
-                                />
-                            )}
-                            <Label>Folder</Label>
-                            <div className="flex items-center">
-                                {!emptyFolder ? (
-                                    <Button
-                                        className="min-w-0 max-w-full truncate shrink"
-                                        variant="outline"
-                                        onClick={openFolderPicker}
-                                    >
-                                        <Folder className="size-4 mr-2" />
-                                        <span className={"truncate min-w-0"}>
-                                            {folderFiles.length == 0
-                                                ? "Select Folder"
-                                                : folderFiles[0].webkitRelativePath.split("/")[0]}
-                                        </span>
-                                    </Button>
-                                ) : null}
-                                {baseFileName || emptyFolder ? null : (
-                                    <span className="m-2 text-muted-foreground">or</span>
-                                )}
-                                {baseFileName ? null : (
-                                    <Button
-                                        variant={emptyFolder ? "default" : "outline"}
-                                        onClick={() => setEmptyFolder((v) => !v)}
-                                    >
-                                        <FolderDot className="size-4 mr-2" />
-                                        Empty Folder
-                                    </Button>
-                                )}
-                                <span className="ml-2 text-muted-foreground">
-                                    {folderFiles.length == 0
-                                        ? ""
-                                        : `${folderFiles.length} files (${prettyBytes(folderFiles.map((f) => f.size).reduce((a, b) => a + b))} total)`}
-                                </span>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            ) : null}
-
-            {/* Only show the name field if either
-                  1. This is neither a file upload nor a folder upload (contextual entity creation)
-                  2. This is a web-based data entity (name can't be inferred)
-                  3. This is a file upload and there is a file selected
-                  4. This is a folder upload and either...
-                     4a. there are files selected
-                     4b. the user wants to create an empty folder
-               Because the name field is filled automatically when a folder or file is uploaded, we hide the field beforehand to reduce the visual complexity.
-            */}
-            {((!hasFileUpload && !hasFolderUpload) ||
-                (hasFileUpload && plainFiles.length > 0) ||
-                (hasFolderUpload && (folderFiles.length > 0 || emptyFolder)) ||
-                externalResource) && (
-                <div>
-                    <Label>
-                        Name
-                        <HelpTooltip>
-                            Give the entity a human-readable name that tells other humans what this
-                            entity describes
-                        </HelpTooltip>
-                    </Label>
-                    <Input
-                        value={name}
-                        placeholder={emptyFolder ? "Folder Name" : "Entity Name"}
-                        onChange={onNameChange}
-                        onKeyDown={onNameInputKeyDown}
-                    />
-                </div>
-            )}
-
-            {(!hasFileUpload || externalResource) &&
-            (!hasFolderUpload || externalResource) &&
-            !forceId ? (
-                <div>
-                    <Label>
-                        {externalResource ? "URL" : "Identifier"}
-                        <HelpTooltip>
-                            The identifier must be unique and persistent. Consider using a PID such
-                            as a DOI as the identifier. In most cases, a locally unique ID is
-                            automatically generated for you.
-                        </HelpTooltip>
-                    </Label>
-                    <Input
-                        placeholder={
-                            externalResource
-                                ? "https://..."
-                                : autoId || "Unique and persistent identifier"
-                        }
-                        value={identifier}
-                        onChange={onIdentifierChange}
-                    />
-                </div>
-            ) : null}
-
-            {externalResource && !identifierValid && identifier.length > 0 ? (
-                <Alert className="text-warn border-warn/40">
-                    <TriangleAlert />
-                    <AlertTitle>The provided URL is invalid.</AlertTitle>
-                    <AlertDescription>
-                        Make sure the URL is properly formatted, including the protocol. Example:
-                        https://doi.org/example.pid
-                    </AlertDescription>
-                </Alert>
-            ) : null}
-
-            <div className="mt-2 flex justify-between">
-                <Button variant="secondary" onClick={() => onBackClick()}>
-                    <ArrowLeft className="size-4 mr-2" /> Back
-                </Button>
-                <Button onClick={() => localOnCreateClick()} disabled={createDisabled}>
-                    <Plus className="size-4 mr-2" />
-                    Create
-                </Button>
-            </div>
-
-            <input
-                type="file"
-                className="hidden"
-                data-testid="create-entity-file-upload"
-                ref={createEntityFileUploadRef}
-                onChange={onFileInputChange}
-            />
-
-            <input
-                type="file"
-                className="hidden"
-                data-testid="create-entity-folder-upload"
-                ref={createEntityFolderUploadRef}
-                onChange={onFolderInputChange}
-            />
-        </div>
+        <ContextualEntityForm
+            selectedType={selectedType}
+            onBackClick={onBackClick}
+            onCreateClick={onCreateClick}
+            forceId={forceId}
+            entityRule={entityRule}
+            defaultName={defaultName}
+        />
     )
 }
