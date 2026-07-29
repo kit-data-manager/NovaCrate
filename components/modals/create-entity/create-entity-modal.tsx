@@ -11,6 +11,7 @@ import { AutoReference, toArray } from "@/lib/utils"
 import { CreateProviders } from "@/components/modals/create-entity/create-providers"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { useCreateEntityUpload } from "@/components/modals/create-entity/hooks/use-create-entity-upload"
+import { useEntityFromRule } from "@/components/modals/create-entity/hooks/use-entity-from-rule"
 
 export function CreateEntityModal({
     open,
@@ -39,8 +40,10 @@ export function CreateEntityModal({
      * Set when the entity to be created comes from a profile
      */
     const [selectedEntityRule, setSelectedEntityRule] = useState<EntityRule | undefined>()
+    const createEntityFromRule = useEntityFromRule(selectedEntityRule)
 
     const [fullTypeBrowser, setFullTypeBrowser] = useState(false)
+    const [simpleTypeBrowserDisabled, setSimpleTypeBrowserDisabled] = useState(false)
 
     const {
         uploading,
@@ -53,7 +56,8 @@ export function CreateEntityModal({
     } = useCreateEntityUpload({
         selectedType,
         openTab,
-        onClose: useCallback(() => onOpenChange(false), [onOpenChange])
+        onClose: useCallback(() => onOpenChange(false), [onOpenChange]),
+        entityRule: selectedEntityRule
     })
 
     useEffect(() => {
@@ -63,36 +67,56 @@ export function CreateEntityModal({
                 setSelectedEntityRule(undefined)
                 setFullTypeBrowser(false)
                 resetUploadState()
+                setSimpleTypeBrowserDisabled(false)
             }, 200)
         }
     }, [forceId, open, resetUploadState, restrictToClasses])
 
-    const onTypeSelect = useCallback((value: string | string[], profileClass?: EntityRule) => {
+    const onTypeSelect = useCallback((value: string | string[], entityRule?: EntityRule) => {
         setSelectedType(value)
-        setSelectedEntityRule(profileClass)
+        setSelectedEntityRule(entityRule)
     }, [])
 
     const onEntityCreated = useCallback(() => {
         onOpenChange(false)
     }, [onOpenChange])
 
-    const onCreate = useCallback(
-        (id: string, name: string) => {
+    const disableSimpleTypeSelect = useCallback(() => {
+        setSimpleTypeBrowserDisabled(true)
+        setFullTypeBrowser(true)
+    }, [])
+
+    /**
+     * This callback only runs when an entity is not created through a provider (e.g. ORCID import)
+     * and when no file or folder upload is done.
+     */
+    const onCreateSimpleEntity = useCallback(
+        async (id: string, name: string) => {
+            const entityFromEntityRule = await createEntityFromRule(id)
+
+            const entityToBeCreated: IEntity = entityFromEntityRule
+                ? {
+                      ...entityFromEntityRule,
+                      name
+                  }
+                : {
+                      "@id": id,
+                      "@type": selectedType,
+                      name
+                  }
+
             const newEntity = addEntity(
-                id,
-                toArray(selectedType),
-                {
-                    name
-                },
+                entityToBeCreated["@id"],
+                toArray(entityToBeCreated["@type"]),
+                entityToBeCreated,
                 autoReference
             )
             if (newEntity) {
-                // TODO add mandatory properties to make the validator pick the entity up correctly when it was created from a profile
                 onEntityCreated()
                 focusTab(id)
             }
         },
-        [addEntity, autoReference, focusTab, onEntityCreated, selectedType]
+        [addEntity, autoReference, createEntityFromRule, focusTab, onEntityCreated, selectedType]
     )
 
     const onProviderCreate = useCallback(
@@ -126,18 +150,21 @@ export function CreateEntityModal({
                         errors={uploadErrors}
                     />
                 ) : !selectedType ? (
-                    fullTypeBrowser ? (
+                    fullTypeBrowser || simpleTypeBrowserDisabled ? (
                         <TypeSelect
                             open={open}
                             restrictToClasses={restrictToClasses}
                             onTypeSelect={onTypeSelect}
-                            setFullTypeBrowser={setFullTypeBrowser}
+                            setFullTypeBrowser={
+                                simpleTypeBrowserDisabled ? undefined : setFullTypeBrowser
+                            }
                         />
                     ) : (
                         <SimpleTypeSelect
                             onTypeSelect={onTypeSelect}
                             onOpenChange={onOpenChange}
                             setFullTypeBrowser={setFullTypeBrowser}
+                            disableSimpleTypeSelect={disableSimpleTypeSelect}
                             restrictToClasses={restrictToClasses}
                         />
                     )
@@ -147,10 +174,11 @@ export function CreateEntityModal({
                         backToTypeSelect={backToTypeSelect}
                         onProviderCreate={onProviderCreate}
                         autoReference={autoReference}
+                        entityRule={selectedEntityRule}
                         fallback={
                             <CreateEntity
                                 onBackClick={backToTypeSelect}
-                                onCreateClick={onCreate}
+                                onCreateClick={onCreateSimpleEntity}
                                 forceId={forceId}
                                 selectedType={selectedType}
                                 basePath={basePath}

@@ -47,8 +47,7 @@ export class CoreServiceImpl implements ICoreService {
     }
 
     async addFileEntity(
-        name: string,
-        types: string | string[],
+        baseEntity: Omit<IEntity, "@id">,
         path: string,
         file: File,
         overwrite?: boolean
@@ -58,9 +57,8 @@ export class CoreServiceImpl implements ICoreService {
         }
 
         const entity: IEntity = {
+            ...(baseEntity as IEntity),
             "@id": path,
-            "@type": types,
-            name: name,
             contentSize: file.size.toString(),
             encodingFormat: file.type,
             dateModified: file.lastModified
@@ -76,8 +74,7 @@ export class CoreServiceImpl implements ICoreService {
     }
 
     async addFolderEntity(
-        name: string,
-        types: string | string[],
+        baseEntity: Omit<IEntity, "@id">,
         path: string,
         overwrite?: boolean
     ): Promise<void> {
@@ -88,9 +85,8 @@ export class CoreServiceImpl implements ICoreService {
         const normalizedPath = path.endsWith("/") ? path : path + "/"
 
         const entity: IEntity = {
-            "@id": normalizedPath,
-            "@type": types,
-            name: name
+            ...(baseEntity as IEntity),
+            "@id": normalizedPath
         }
 
         const result = await this.metadata.addEntity(entity, overwrite)

@@ -1,7 +1,7 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useCallback, useEffect, useState } from "react"
 import { SelectProperty } from "@/components/modals/add-property/select-property"
-import { usePropertyCanBe } from "@/components/editor/property-hooks"
+import { usePropertyCanBe } from "@/lib/hooks/property-can-be"
 import { SelectType } from "@/components/modals/add-property/select-type"
 import { SchemaNode } from "@/lib/schema-worker/SchemaNode"
 import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"

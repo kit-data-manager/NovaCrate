@@ -7,6 +7,8 @@ import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/di
 import { useEditorState } from "@/lib/state/editor-state"
 import { Error } from "@/components/error"
 import { AutoReference, toArray } from "@/lib/utils"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
+import { useEntityFromRule } from "@/components/modals/create-entity/hooks/use-entity-from-rule"
 
 /**
  * Generic import-from-external-source form. Renders just the import UI
@@ -24,6 +26,7 @@ export function EntityImport({
     descriptionSuffix,
     backToTypeSelect,
     onProviderCreate,
+    entityRule,
     autoReference
 }: {
     importFn: (value: string) => Promise<IEntity>
@@ -35,6 +38,7 @@ export function EntityImport({
     descriptionSuffix: string
     backToTypeSelect: () => void
     onProviderCreate: (entity: IEntity) => void
+    entityRule?: EntityRule
     autoReference?: AutoReference
 }) {
     const [value, setValue] = useState("")
@@ -42,19 +46,32 @@ export function EntityImport({
     const [error, setError] = useState<unknown>()
     const addEntity = useEditorState((store) => store.addEntity)
 
+    const createEntityFromRule = useEntityFromRule(entityRule)
+
     const onImportPress = useCallback(async () => {
         try {
             setCreating(true)
-            const entity = await importFn(value)
-            addEntity(entity["@id"], toArray(entity["@type"]), entity, autoReference)
+            const entityFromFile = await importFn(value)
+            const entityFromRule = await createEntityFromRule(entityFromFile["@id"])
+            const mergedEntity: IEntity = {
+                ...entityFromRule,
+                ...entityFromFile // File entity takes precedence over automatic properties from rule
+            }
+
+            addEntity(
+                mergedEntity["@id"],
+                toArray(mergedEntity["@type"]),
+                mergedEntity,
+                autoReference
+            )
             setCreating(false)
             setError(undefined)
-            onProviderCreate(entity)
+            onProviderCreate(mergedEntity)
         } catch (e) {
             setCreating(false)
             setError(e)
         }
-    }, [addEntity, autoReference, importFn, onProviderCreate, value])
+    }, [addEntity, autoReference, createEntityFromRule, importFn, onProviderCreate, value])
 
     const onKeyDown = useCallback(
         (e: React.KeyboardEvent) => {

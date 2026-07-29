@@ -4,6 +4,8 @@ import { useContextResolver } from "@/lib/hooks/hooks"
 import { asValidPath } from "@/lib/utils"
 import { RO_CRATE_FILE } from "@/lib/constants"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
+import { useEntityFromRule } from "@/components/modals/create-entity/hooks/use-entity-from-rule"
 
 /**
  * Owns the upload-progress state and the file/folder upload handlers used by the
@@ -13,11 +15,13 @@ import { IContextResolverService } from "@/lib/core/IContextResolverService"
 export function useCreateEntityUpload({
     selectedType,
     openTab,
-    onClose
+    onClose,
+    entityRule
 }: {
     selectedType: string | string[]
     openTab: (tab: { entityId: string }, focus?: boolean) => void
     onClose: () => void
+    entityRule?: EntityRule
 }) {
     const { createFileEntity, createFolderEntity } = useCrateMutations()
     const resolver: IContextResolverService = useContextResolver()
@@ -26,6 +30,8 @@ export function useCreateEntityUpload({
     const [currentUploadProgress, setCurrentUploadProgress] = useState(0)
     const [maxUploadProgress, setMaxUploadProgress] = useState(0)
     const [uploadErrors, setUploadErrors] = useState<unknown[]>([])
+
+    const createEntityFromRule = useEntityFromRule(entityRule)
 
     const resetUploadState = useCallback(() => {
         setUploading(false)
@@ -39,8 +45,10 @@ export function useCreateEntityUpload({
             setUploading(true)
             setMaxUploadProgress(1)
             try {
+                const entityFromRule = (await createEntityFromRule(id)) ?? {}
                 const result = await createFileEntity(
                     {
+                        ...entityFromRule,
                         "@id": id,
                         "@type": selectedType,
                         name
@@ -57,7 +65,7 @@ export function useCreateEntityUpload({
                 setUploadErrors([e])
             }
         },
-        [createFileEntity, onClose, openTab, selectedType]
+        [createEntityFromRule, createFileEntity, onClose, openTab, selectedType]
     )
 
     const onUploadFolder = useCallback(
@@ -66,8 +74,10 @@ export function useCreateEntityUpload({
             setMaxUploadProgress(files.length > 0 ? files.length : 1)
             const folderPath = asValidPath(id, true)
             try {
+                const entityFromRule = (await createEntityFromRule(id)) ?? {}
                 const result = await createFolderEntity(
                     {
+                        ...entityFromRule,
                         "@id": folderPath,
                         "@type": selectedType,
                         name
@@ -100,7 +110,7 @@ export function useCreateEntityUpload({
                 setUploadErrors([e])
             }
         },
-        [createFolderEntity, onClose, openTab, resolver, selectedType]
+        [createEntityFromRule, createFolderEntity, onClose, openTab, resolver, selectedType]
     )
 
     return {

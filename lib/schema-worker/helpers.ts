@@ -8,12 +8,20 @@ import { RO_CRATE_VERSION } from "@/lib/constants"
 const schemaResolver = new SchemaResolver([])
 const schemaGraph = new SchemaGraph(schemaResolver)
 
-export async function getPropertyComment(propertyId: string) {
-    return (await schemaGraph.getNode(propertyId))?.comment
+/**
+ * Get the comment of a known property
+ * @param propertyTermURI The full URI to the term of the property, e.g. https://schema.org/author
+ */
+export async function getPropertyComment(propertyTermURI: string) {
+    return (await schemaGraph.getNode(propertyTermURI))?.comment
 }
 
-export async function getPropertyDomain(propertyId: string) {
-    const refs = (await schemaGraph.getNode(propertyId))?.domain
+/**
+ * Get a list of types (term URIs) that can contain the given property.
+ * @param propertyTermURI The full URI to the term of the property, e.g. https://schema.org/author
+ */
+export async function getPropertyDomain(propertyTermURI: string) {
+    const refs = (await schemaGraph.getNode(propertyTermURI))?.domain
     if (!refs) return []
 
     if (Array.isArray(refs)) {
@@ -23,8 +31,19 @@ export async function getPropertyDomain(propertyId: string) {
     }
 }
 
+/**
+ * Slim variant of {@link SchemaNode} for transfer from schema worker to UI.
+ */
 export interface SlimClass {
+    /**
+     * Full URI of the node. Within NovaCrate, nodes almost exclusively refer to vocabulary terms.
+     * @example https://schema.org/author
+     */
     "@id": string
+
+    /**
+     * Comment of the node
+     */
     comment: SchemaNode["comment"]
 }
 

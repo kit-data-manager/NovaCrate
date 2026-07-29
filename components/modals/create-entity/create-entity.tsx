@@ -26,6 +26,9 @@ export function CreateEntity({
 }: {
     selectedType: string | string[]
     onBackClick: () => void
+    /**
+     * This is only called for contextual entities or remote data entities (not for file or folder uploads)
+     */
     onCreateClick: (id: string, name: string) => void
     forceId?: string
     basePath?: string
@@ -53,7 +56,10 @@ export function CreateEntity({
 
     const defaultName =
         (fileUpload || folderUpload) && forceId
-            ? forceId.split("/").filter((part) => !!part).pop()
+            ? forceId
+                  .split("/")
+                  .filter((part) => !!part)
+                  .pop()
             : undefined
 
     if (hasFileUpload)

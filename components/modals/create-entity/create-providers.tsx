@@ -6,6 +6,7 @@ import { AutoReference, toArray } from "@/lib/utils"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { EntityImport } from "@/components/modals/create-entity/components/entity-import"
 import { importOrganizationFromRor, importPersonFromOrcid } from "@/lib/entity-import"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 
 /**
  * Configuration for a single import provider. The parent {@link CreateProviders}
@@ -23,12 +24,14 @@ export function CreateProviders({
     backToTypeSelect,
     onProviderCreate,
     autoReference,
+    entityRule,
     fallback
 }: {
     selectedType: string | string[]
     backToTypeSelect: () => void
     onProviderCreate: (entity: IEntity | string) => void
     autoReference?: AutoReference
+    entityRule?: EntityRule
     fallback: React.ReactNode
 }) {
     const resolver = useContextResolver()
@@ -60,6 +63,7 @@ export function CreateProviders({
                         backToTypeSelect={backToTypeSelect}
                         onProviderCreate={onProviderCreate}
                         autoReference={autoReference}
+                        entityRule={entityRule}
                     />
                 )
             }
@@ -78,6 +82,7 @@ export function CreateProviders({
                         backToTypeSelect={backToTypeSelect}
                         onProviderCreate={onProviderCreate}
                         autoReference={autoReference}
+                        entityRule={entityRule}
                     />
                 )
             }
@@ -87,6 +92,7 @@ export function CreateProviders({
         backToTypeSelect,
         canUseOrganizationProvider,
         canUsePersonProvider,
+        entityRule,
         onProviderCreate
     ])
 

@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { ArrowLeftRight, EllipsisVertical, Eraser, Trash, Unlink } from "lucide-react"
 import TypeSelectDropdown from "@/components/editor/type-select-dropdown"
-import { usePropertyCanBe } from "@/components/editor/property-hooks"
+import { usePropertyCanBe } from "@/lib/hooks/property-can-be"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { cn } from "@/lib/utils"
 import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"

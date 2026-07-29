@@ -15,7 +15,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Checkbox } from "@/components/ui/checkbox"
 import { PossibleProperty } from "@/components/modals/add-property/add-property-modal"
-import { usePropertyCanBe } from "@/components/editor/property-hooks"
+import { usePropertyCanBe } from "@/lib/hooks/property-can-be"
 import { camelCaseReadable } from "@/lib/utils"
 import { MarkdownComment } from "@/components/markdown-comment"
 import HelpTooltip from "@/components/help-tooltip"

@@ -6,7 +6,7 @@ import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
  * A profile's entity rules grouped together for display. Each entry corresponds
  * to one active profile handler and the entity rules its definition declares.
  */
-export type ProfileClassRules = {
+export type ProfileEntityRules = {
     id: string
     profileName: string
     classes: EntityRule[]
@@ -17,7 +17,7 @@ export type ProfileClassRules = {
  * collects their entity rules into a rendering-friendly shape. Returns an empty
  * array when no profiles are active or no definitions are ready yet.
  */
-export function useProfileClassRules(): ProfileClassRules[] {
+export function useProfileEntityRules(): ProfileEntityRules[] {
     const profile = useCore().getProfileService()
 
     return useMemo(() => {
@@ -25,7 +25,7 @@ export function useProfileClassRules(): ProfileClassRules[] {
             const def = p.getDefinition()
             return {
                 id: p.id,
-                profileName: p.name,
+                profileName: p.getDefinition()?.name ?? p.name,
                 classes: def ? def.entityRules : []
             }
         })

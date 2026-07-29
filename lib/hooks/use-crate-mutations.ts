@@ -4,7 +4,7 @@ import { useCore } from "@/components/providers/core-provider"
 import { operationState } from "@/lib/state/operation-state"
 import { editorState } from "@/lib/state/editor-state"
 import { EntityIcon } from "@/components/entity/entity-icon"
-import { getEntityDisplayName, toArray } from "@/lib/utils"
+import { getEntityDisplayName } from "@/lib/utils"
 import React from "react"
 
 /**
@@ -116,13 +116,7 @@ export function useCrateMutations() {
             const { setIsSaving, addSaveError } = operationState.getState()
             setIsSaving(true)
             try {
-                await core.addFileEntity(
-                    entity.name,
-                    toArray(entity["@type"]),
-                    entity["@id"],
-                    file,
-                    overwrite
-                )
+                await core.addFileEntity(entity, entity["@id"], file, overwrite)
                 return true
             } catch (e) {
                 console.error("Error occurred while trying to create file entity", e)
@@ -146,19 +140,14 @@ export function useCrateMutations() {
             const { setIsSaving, addSaveError } = operationState.getState()
             setIsSaving(true)
             try {
-                await core.addFolderEntity(entity.name, toArray(entity["@type"]), entity["@id"])
+                await core.addFolderEntity(entity, entity["@id"])
 
                 const errors: unknown[] = []
                 let progress = 0
 
                 for (const file of files) {
                     try {
-                        await core.addFileEntity(
-                            file.entity.name as string,
-                            toArray(file.entity["@type"]),
-                            file.entity["@id"],
-                            file.file
-                        )
+                        await core.addFileEntity(file.entity, file.entity["@id"], file.file)
                         if (progressCallback) progressCallback(++progress, files.length, errors)
                     } catch (e) {
                         errors.push(e)

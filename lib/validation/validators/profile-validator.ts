@@ -9,7 +9,7 @@ import { propertyValue } from "@/lib/property-value-utils"
 import { PropertyType } from "@/lib/property"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { PropertyValueRule } from "@/lib/core/profiles/types/PropertyValueRule"
-import { usePropertyCanBe } from "@/components/editor/property-hooks"
+import { usePropertyCanBe } from "@/lib/hooks/property-can-be"
 
 export class ProfileValidator extends Validator {
     name = "ProfileValidator"

@@ -25,16 +25,14 @@ export interface ICoreService {
     /**
      * Upload `file` to `path` inside the crate and create a corresponding
      * data entity with the given `name` in the metadata graph.
-     * @param name - Human-readable name for the entity.
-     * @param types - Types on the entity (must require at least File). Shortened terms are expected here.
+     * @param baseEntity - The entity that will describe the supplied file. Must at least contain an id and a type
      * @param path - Crate-relative path where the file will be stored.
      * @param file - The file bytes to upload.
      * @param overwrite - If `true`, overwrites any existing entity with the
      *   same `@id`. Defaults to `false`.
      */
     addFileEntity(
-        name: string,
-        types: string | string[],
+        baseEntity: Omit<IEntity, "@id">,
         path: string,
         file: File,
         overwrite?: boolean
@@ -42,15 +40,13 @@ export interface ICoreService {
     /**
      * Create a folder at `path` inside the crate and add a corresponding
      * data entity with the given `name` to the metadata graph.
-     * @param name - Human-readable name for the entity.
-     * @param types - Types on the entity (must require at least File). Shortened terms are expected here.
+     * @param baseEntity - The entity that will describe the supplied file. Must at least contain an id and a type
      * @param path - Crate-relative path of the new folder.
      * @param overwrite - If `true`, overwrites any existing entity with the
      *   same `@id`. Defaults to `false`.
      */
     addFolderEntity(
-        name: string,
-        types: string | string[],
+        baseEntity: Omit<IEntity, "@id">,
         path: string,
         overwrite?: boolean
     ): Promise<void>

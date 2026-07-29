@@ -23,7 +23,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import useSWR from "swr"
 import { SinglePropertyValidation } from "@/components/editor/validation/single-property-validation"
 import { EntityEditorProperty, PropertyType } from "@/lib/property"
-import { useActivePropertyProfileRules } from "@/components/editor/property-hooks"
+import { useActivePropertyProfileRules } from "@/lib/hooks/property-can-be"
 
 export interface PropertyEditorProps {
     entityId: string
