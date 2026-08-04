@@ -27,7 +27,7 @@ import { usePersistence } from "@/components/providers/persistence-provider"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import AIAssistantChat from "@/components/ai/chat"
 import { useLayoutState } from "@/lib/state/layout-state"
-import { usePanelRef } from "react-resizable-panels"
+import { useDefaultLayout, usePanelRef } from "react-resizable-panels"
 
 function NavSidebarButton({
     children,
@@ -93,6 +93,10 @@ export function NavSidebar({ children }: PropsWithChildren) {
 
     const ref = usePanelRef()
 
+    const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+        id: "nav-sidebar-ai-assistant"
+    })
+
     useEffect(() => {
         if (!ref.current) return
         if (showAIAssistant) {
@@ -103,7 +107,11 @@ export function NavSidebar({ children }: PropsWithChildren) {
     }, [ref, showAIAssistant])
 
     return (
-        <ResizablePanelGroup orientation="horizontal">
+        <ResizablePanelGroup
+            orientation="horizontal"
+            defaultLayout={defaultLayout}
+            onLayoutChanged={onLayoutChanged}
+        >
             <ResizablePanel minSize={"50%"}>
                 <div className="grid grid-cols-[58px_auto] h-full">
                     <div className="relative h-full flex flex-col">
