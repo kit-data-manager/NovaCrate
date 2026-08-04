@@ -6,6 +6,8 @@ import {
     SUGGESTED_CONTEXTUAL_ENTITIES,
     SUGGESTED_DATA_ENTITIES
 } from "@/components/modals/create-entity/data/suggested-types"
+import { isTypeAllowed } from "@/components/modals/create-entity/components/type-allowed"
+import { useContextResolver } from "@/lib/hooks/hooks"
 
 /**
  * Content of the "General" tab: the curated data-entity and contextual-entity
@@ -19,19 +21,22 @@ export function SuggestedTypesSection({
     onTypeSelect(value: string | string[], entityRule?: EntityRule): void
     restrictToClasses?: SlimClass[]
 }) {
+    const resolver = useContextResolver()
+
     return (
         <div className="space-y-4">
             <div>
                 <div className="text-lg font-bold">Data Entities</div>
                 <div className="grid grid-cols-3 gap-4">
-                    {SUGGESTED_DATA_ENTITIES.map((suggested) => (
+                    {SUGGESTED_DATA_ENTITIES.filter((suggested) =>
+                        isTypeAllowed(resolver, suggested.type, restrictToClasses)
+                    ).map((suggested) => (
                         <TypeBadge
                             key={suggested.type as string}
                             type={suggested.type}
                             name={suggested.name}
                             description={suggested.description}
                             onTypeSelect={onTypeSelect}
-                            restrictToClasses={restrictToClasses}
                         />
                     ))}
                 </div>
@@ -39,14 +44,15 @@ export function SuggestedTypesSection({
             <div>
                 <div className="text-lg font-bold">Contextual Entities</div>
                 <div className="grid grid-cols-3 gap-4">
-                    {SUGGESTED_CONTEXTUAL_ENTITIES.map((suggested) => (
+                    {SUGGESTED_CONTEXTUAL_ENTITIES.filter((suggested) =>
+                        isTypeAllowed(resolver, suggested.type, restrictToClasses)
+                    ).map((suggested) => (
                         <TypeBadge
                             key={suggested.type as string}
                             type={suggested.type}
                             name={suggested.name}
                             description={suggested.description}
                             onTypeSelect={onTypeSelect}
-                            restrictToClasses={restrictToClasses}
                         />
                     ))}
                 </div>
