@@ -60,7 +60,7 @@
     "memoizee": "^0.4.17",
     "monaco-editor": "0.53.0",
     "motion": "^12.29.2",
-    "next": "^16.1.5",
+    "next": "^16.3.0",
     "next-themes": "^0.4.4",
     "papaparse": "^5.5.4",
     "prettier": "^3.2.5",
