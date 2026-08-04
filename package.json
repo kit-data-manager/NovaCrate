@@ -118,7 +118,7 @@
     "webpack-cli": "^7.0.2"
   },
   "overrides": {
-    "postcss": "8.5.10"
+    "postcss": "8.5.23"
   },
   "description": "Web-based interactive editor for creating, editing and visualising research object crates.",
   "keywords": [
