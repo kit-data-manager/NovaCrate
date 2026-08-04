@@ -21,7 +21,7 @@ export default function ExternalNode({
     const { showCreateEntityModal } = useContext(GlobalModalContext)
 
     const createEntity = useCallback(() => {
-        showCreateEntityModal(undefined, undefined, data.id)
+        showCreateEntityModal({ id: data.id })
     }, [data.id, showCreateEntityModal])
 
     return (

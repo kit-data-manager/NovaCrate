@@ -2,7 +2,7 @@ import { memo, useCallback, useContext, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { SelectReferenceModal } from "@/components/editor/select-reference-modal"
 import { ExternalLink, Eye, LinkIcon, Plus, PlusIcon } from "lucide-react"
-import { findEntity, getEntityDisplayName } from "@/lib/utils"
+import { findEntity, getEntityDisplayName, undefinedIfEmpty } from "@/lib/utils"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { SlimClass } from "@/lib/schema-worker/helpers"
@@ -12,12 +12,9 @@ import { EntityIcon } from "@/components/entity/entity-icon"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import * as z from "zod/mini"
 import { PropertyType } from "@/lib/property"
-
-function undefinedIfEmpty<T>(arr?: T[]) {
-    if (arr?.length === 0) {
-        return undefined
-    } else return arr
-}
+import { useActivePropertyProfileRules } from "@/lib/hooks/property-can-be"
+import { getRangeEntityRules } from "@/lib/core/profiles/impl/util/get-range-entity-rules"
+import { useProfileService } from "@/lib/hooks/use-profile-service"
 
 export const ReferenceField = memo(function ReferenceField({
     entityId,
@@ -41,16 +38,32 @@ export const ReferenceField = memo(function ReferenceField({
     const referencedEntity = useEditorState((store) => findEntity(store.entities, value["@id"]))
     const { showCreateEntityModal } = useContext(GlobalModalContext)
     const openTab = useEntityEditorTabs((store) => store.openTab)
+    const profilePropertyRules = useActivePropertyProfileRules(entityId, propertyName)
+    const profileService = useProfileService()
 
     const [selectModalOpen, setSelectModalOpen] = useState(false)
 
     const onCreateClick = useCallback(() => {
-        showCreateEntityModal(undefinedIfEmpty(propertyRange), {
-            entityId,
-            propertyName,
-            valueIdx
+        showCreateEntityModal({
+            restrictToClasses: undefinedIfEmpty(propertyRange),
+            restrictToEntityRules: undefinedIfEmpty(
+                getRangeEntityRules(profileService, profilePropertyRules)
+            ),
+            autoReference: {
+                entityId,
+                propertyName,
+                valueIdx
+            }
         })
-    }, [entityId, propertyName, propertyRange, showCreateEntityModal, valueIdx])
+    }, [
+        entityId,
+        profilePropertyRules,
+        profileService,
+        propertyName,
+        propertyRange,
+        showCreateEntityModal,
+        valueIdx
+    ])
 
     const onSelect = useCallback(
         (selection: IReference) => {

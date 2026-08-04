@@ -1,10 +1,8 @@
 import { useMemo } from "react"
 import { TypeIcon } from "@/components/type-icon"
-import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useContextResolver } from "@/lib/hooks/hooks"
 import { isValidUrl, pickFirst, toArray } from "@/lib/utils"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
-import { isTypeAllowed } from "@/components/modals/create-entity/components/type-allowed"
 
 /**
  * A selectable type card. Resolves the (possibly short) type id against the
@@ -21,14 +19,12 @@ export function TypeBadge({
     type,
     name,
     onTypeSelect,
-    restrictToClasses,
     entityRule
 }: {
     type: string | string[]
     name?: string
     description: string
     onTypeSelect(value: string | string[], entityRule?: EntityRule): void
-    restrictToClasses?: SlimClass[]
     entityRule?: EntityRule
 }) {
     const resolver = useContextResolver()
@@ -37,14 +33,10 @@ export function TypeBadge({
         return toArray(type).map((t) => (isValidUrl(t) ? (resolver.reverse(t) ?? t) : t))
     }, [resolver, type])
 
-    const disabled = useMemo(() => {
-        return !isTypeAllowed(resolver, type, restrictToClasses)
-    }, [resolver, type, restrictToClasses])
-
     return (
         <div
-            className={`p-4 border rounded-lg flex gap-4 hover:bg-secondary cursor-pointer transition ${disabled ? "opacity-30 cursor-not-allowed pointer-events-none" : ""}`}
-            onClick={() => (disabled ? "" : onTypeSelect(revertedTypes, entityRule))}
+            className={`p-4 border rounded-lg flex gap-4 hover:bg-secondary cursor-pointer transition`}
+            onClick={() => onTypeSelect(revertedTypes, entityRule)}
         >
             <TypeIcon type={pickFirst(revertedTypes)} className="mt-1 w-5 h-5 shrink-0" />
             <div>

@@ -5,7 +5,7 @@ import { usePropertyCanBe } from "@/lib/hooks/property-can-be"
 import { SelectType } from "@/components/modals/add-property/select-type"
 import { SchemaNode } from "@/lib/schema-worker/SchemaNode"
 import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
-import { getActiveProfileClassesForEntity } from "@/lib/profile-utils"
+import { getActiveProfileClassesForEntity } from "@/lib/core/profiles/impl/util/get-active-profile-classes-for-entity"
 import { useProfileService } from "@/lib/hooks/use-profile-service"
 import { toArray } from "@/lib/utils"
 

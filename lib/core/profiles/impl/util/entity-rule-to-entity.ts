@@ -16,10 +16,13 @@ export async function createEntityForRule(
     schemaWorker: ISchemaWorkerContext["worker"]
 ): Promise<IEntity> {
     const properties = getMandatoryProperties(handler, rule)
+    const resolvedTypes = rule.specializationOf
+        ? rule.specializationOf.map((typeUrl) => resolver.reverse(typeUrl) ?? typeUrl)
+        : "Thing"
 
     const base: IEntity = {
         "@id": id,
-        "@type": rule.specializationOf ?? "Thing"
+        "@type": resolvedTypes
     }
 
     for (const property of properties) {
