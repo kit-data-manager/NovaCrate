@@ -24,6 +24,9 @@ import useSWR from "swr"
 import { SinglePropertyValidation } from "@/components/editor/validation/single-property-validation"
 import { EntityEditorProperty, PropertyType } from "@/lib/property"
 import { useActivePropertyProfileRules } from "@/lib/hooks/property-can-be"
+import { determinePropertyRuleRange } from "@/lib/core/profiles/impl/util/determine-property-rule-range"
+import { useProfileService } from "@/lib/hooks/use-profile-service"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 
 export interface PropertyEditorProps {
@@ -60,12 +63,13 @@ export const PropertyEditor = memo(function PropertyEditor({
     isDeleted,
     onRemovePropertyEntry
 }: PropertyEditorProps) {
-    const { isReady: crateVerifyReady, worker } = useContext(SchemaWorker)
+    const { isReady: schemaWorkerReady, worker } = useContext(SchemaWorker)
     const focusedProperty = useEntityEditorTabs((store) => store.focusedProperty)
     const unFocusProperty = useEntityEditorTabs((store) => store.unFocusProperty)
     const crateContextReady = useEditorState((store) => store.crateContextReady)
     const resolver = useContextResolver()
     const profilePropertyRules = useActivePropertyProfileRules(entityId, property.propertyName)
+    const profileService = useProfileService()
     const container = createRef<HTMLDivElement>()
 
     const isFocused = useMemo(() => {
@@ -102,19 +106,43 @@ export const PropertyEditor = memo(function PropertyEditor({
         return resolver.resolve(property.propertyName)
     }, [resolver, crateContextReady, property.propertyName])
 
+    const resolvePropertyRuleTypeRange = useCallback(async (): Promise<SlimClass[]> => {
+        const result: SlimClass[] = []
+        for (const propertyRule of profilePropertyRules) {
+            const handler = profileService.getProfileHandler(propertyRule.onHandler)
+            if (!handler) continue
+            const range = await determinePropertyRuleRange(handler, propertyRule, resolver, worker)
+            result.push(
+                ...range.rangeIncludesTypes.map(
+                    (id) => ({ "@id": id, comment: "" }) satisfies SlimClass
+                )
+            )
+        }
+        console.log(result)
+        return result
+    }, [profilePropertyRules, profileService, resolver, worker])
+
     const referenceTypeRangeResolver = useCallback(async () => {
         if (property.propertyName.startsWith("@")) return []
-        if (crateVerifyReady) {
+        if (schemaWorkerReady) {
             if (!resolvedPropertyName)
                 throw `Property ${property.propertyName} not defined in context`
+            if (profilePropertyRules.length > 0) return resolvePropertyRuleTypeRange()
             return await worker.execute("getPropertyRange", resolvedPropertyName)
         }
-    }, [crateVerifyReady, property.propertyName, resolvedPropertyName, worker])
+    }, [
+        property.propertyName,
+        schemaWorkerReady,
+        resolvedPropertyName,
+        profilePropertyRules.length,
+        resolvePropertyRuleTypeRange,
+        worker
+    ])
 
     const profileCacheKey = makeProfilePropertyRulesCacheKey(profilePropertyRules)
 
     const { data: propertyRange, error: propertyRangeError } = useSWR(
-        crateVerifyReady && crateContextReady
+        schemaWorkerReady && crateContextReady
             ? "property-type-range-" + property.propertyName + "-" + profileCacheKey
             : null,
         referenceTypeRangeResolver
@@ -137,7 +165,7 @@ export const PropertyEditor = memo(function PropertyEditor({
         error: commentError,
         isLoading: commentIsPending
     } = useSWR(
-        crateVerifyReady && crateContextReady
+        schemaWorkerReady && crateContextReady
             ? "property-comment-" + property.propertyName + "-" + profileCacheKey
             : null,
         propertyCommentResolver

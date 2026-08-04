@@ -12,6 +12,9 @@ import { EntityIcon } from "@/components/entity/entity-icon"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import * as z from "zod/mini"
 import { PropertyType } from "@/lib/property"
+import { useActivePropertyProfileRules } from "@/lib/hooks/property-can-be"
+import { getRangeEntityRules } from "@/lib/core/profiles/impl/util/get-range-entity-rules"
+import { useProfileService } from "@/lib/hooks/use-profile-service"
 
 export const ReferenceField = memo(function ReferenceField({
     entityId,
@@ -35,16 +38,32 @@ export const ReferenceField = memo(function ReferenceField({
     const referencedEntity = useEditorState((store) => findEntity(store.entities, value["@id"]))
     const { showCreateEntityModal } = useContext(GlobalModalContext)
     const openTab = useEntityEditorTabs((store) => store.openTab)
+    const profilePropertyRules = useActivePropertyProfileRules(entityId, propertyName)
+    const profileService = useProfileService()
 
     const [selectModalOpen, setSelectModalOpen] = useState(false)
 
     const onCreateClick = useCallback(() => {
-        showCreateEntityModal(undefinedIfEmpty(propertyRange), {
-            entityId,
-            propertyName,
-            valueIdx
+        showCreateEntityModal({
+            restrictToClasses: undefinedIfEmpty(propertyRange),
+            restrictToEntityRules: undefinedIfEmpty(
+                getRangeEntityRules(profileService, profilePropertyRules)
+            ),
+            autoReference: {
+                entityId,
+                propertyName,
+                valueIdx
+            }
         })
-    }, [entityId, propertyName, propertyRange, showCreateEntityModal, valueIdx])
+    }, [
+        entityId,
+        profilePropertyRules,
+        profileService,
+        propertyName,
+        propertyRange,
+        showCreateEntityModal,
+        valueIdx
+    ])
 
     const onSelect = useCallback(
         (selection: IReference) => {

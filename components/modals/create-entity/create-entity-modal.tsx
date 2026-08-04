@@ -17,6 +17,7 @@ export function CreateEntityModal({
     open,
     onOpenChange,
     restrictToClasses,
+    restrictToEntityRules,
     autoReference,
     forceId,
     basePath
@@ -24,6 +25,7 @@ export function CreateEntityModal({
     open: boolean
     onOpenChange: (open: boolean) => void
     restrictToClasses?: SlimClass[]
+    restrictToEntityRules?: string[]
     autoReference?: AutoReference
     forceId?: string
     basePath?: string
@@ -166,6 +168,7 @@ export function CreateEntityModal({
                             setFullTypeBrowser={setFullTypeBrowser}
                             disableSimpleTypeSelect={disableSimpleTypeSelect}
                             restrictToClasses={restrictToClasses}
+                            restrictToEntityRules={restrictToEntityRules}
                         />
                     )
                 ) : (

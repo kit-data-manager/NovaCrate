@@ -22,6 +22,7 @@ export function SimpleTypeSelect({
     setFullTypeBrowser,
     onOpenChange,
     restrictToClasses,
+    restrictToEntityRules,
     disableSimpleTypeSelect
 }: {
     onTypeSelect(value: string | string[], profileClass: EntityRule): void
@@ -29,6 +30,7 @@ export function SimpleTypeSelect({
     onOpenChange(open: boolean): void
     disableSimpleTypeSelect: () => void
     restrictToClasses?: SlimClass[]
+    restrictToEntityRules?: string[]
 }) {
     const profileEntityRules = useProfileEntityRules()
     const resolver = useContextResolver()
@@ -41,12 +43,15 @@ export function SimpleTypeSelect({
     }, [resolver, restrictToClasses])
 
     const visibleProfiles = useMemo(() => {
-        return profileEntityRules.filter((profile) =>
-            profile.classes.some((c) =>
-                isTypeAllowed(resolver, c.specializationOf || "Thing", restrictToClasses)
+        return profileEntityRules.map((profile) => {
+            profile.classes = profile.classes.filter((c) =>
+                restrictToEntityRules
+                    ? restrictToEntityRules.includes(c["@id"])
+                    : isTypeAllowed(resolver, c.specializationOf || "Thing", restrictToClasses)
             )
-        )
-    }, [profileEntityRules, resolver, restrictToClasses])
+            return profile
+        })
+    }, [profileEntityRules, resolver, restrictToClasses, restrictToEntityRules])
 
     const showGeneral = !restrictToClasses || generalAllowed
     const visibleProfileTabs = visibleProfiles.filter((p) => p.classes.length > 0)
@@ -88,11 +93,7 @@ export function SimpleTypeSelect({
 
                     {visibleProfileTabs.map((profile) => (
                         <TabsContent key={profile.id} value={profile.id}>
-                            <ProfileTypeSection
-                                profile={profile}
-                                onTypeSelect={onTypeSelect}
-                                restrictToClasses={restrictToClasses}
-                            />
+                            <ProfileTypeSection profile={profile} onTypeSelect={onTypeSelect} />
                         </TabsContent>
                     ))}
 

@@ -13,18 +13,26 @@ export async function determinePropertyRuleRange(
     const baseTypes = propertyRule.specializationOf
         ? await schemaWorker.execute("getPropertyRange", propertyRule.specializationOf)
         : undefined
-    const mappedBaseTypes = baseTypes?.map((sc) => sc["@id"])
     const rangeIncludesTypes: string[] = []
 
     if (propertyRule.options !== undefined) {
-        return { baseTypes: mappedBaseTypes, rangeIncludesTypes: ["Text"] }
+        return {
+            baseTypes: baseTypes,
+            rangeIncludesTypes: [resolver.resolve("Text") ?? "Text"]
+        }
     }
 
     if (propertyRule.rangeIncludes !== undefined) {
         for (const rangeItem of propertyRule.rangeIncludes) {
-            if (profileHandler.getEntityRule(rangeItem))
-                rangeIncludesTypes.push(resolver.resolve("Thing") ?? "Thing")
-            else if (profileHandler.getPropertyValueRule(rangeItem)) {
+            if (profileHandler.getEntityRule(rangeItem)) {
+                const entityRule = profileHandler.getEntityRule(rangeItem)!
+
+                rangeIncludesTypes.push(
+                    ...(entityRule.specializationOf
+                        ? entityRule.specializationOf
+                        : [resolver.resolve("Thing") ?? "Thing"])
+                )
+            } else if (profileHandler.getPropertyValueRule(rangeItem)) {
                 const valueRule = profileHandler.getPropertyValueRule(rangeItem)!
                 if (typeof valueRule.value === "object") {
                     rangeIncludesTypes.push(resolver.resolve("Thing") ?? "Thing")
@@ -44,5 +52,5 @@ export async function determinePropertyRuleRange(
         }
     }
 
-    return { baseTypes: mappedBaseTypes, rangeIncludesTypes }
+    return { baseTypes: baseTypes, rangeIncludesTypes }
 }
