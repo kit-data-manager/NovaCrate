@@ -1,6 +1,6 @@
 {
   "name": "novacrate",
-  "version": "1.13.0",
+  "version": "1.13.1",
   "private": true,
   "scripts": {
     "dev": "npm-run-all --parallel dev-next dev-webworker",
@@ -60,7 +60,7 @@
     "memoizee": "^0.4.17",
     "monaco-editor": "0.53.0",
     "motion": "^12.29.2",
-    "next": "^16.1.5",
+    "next": "^16.3.0",
     "next-themes": "^0.4.4",
     "papaparse": "^5.5.4",
     "prettier": "^3.2.5",
@@ -118,7 +118,7 @@
     "webpack-cli": "^7.0.2"
   },
   "overrides": {
-    "postcss": "8.5.10"
+    "postcss": "8.5.23"
   },
   "description": "Web-based interactive editor for creating, editing and visualising research object crates.",
   "keywords": [

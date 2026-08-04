@@ -4,10 +4,19 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { FileExplorer } from "@/components/file-explorer/explorer"
 import { FilePreview } from "@/components/file-explorer/preview"
 import { Metadata } from "@/components/Metadata"
+import { useDefaultLayout } from "react-resizable-panels"
 
 function Content() {
+    const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+        id: "file-explorer"
+    })
+
     return (
-        <ResizablePanelGroup orientation="horizontal">
+        <ResizablePanelGroup
+            orientation="horizontal"
+            defaultLayout={defaultLayout}
+            onLayoutChanged={onLayoutChanged}
+        >
             <ResizablePanel defaultSize={"34%"} minSize={"400px"}>
                 <FileExplorer />
             </ResizablePanel>

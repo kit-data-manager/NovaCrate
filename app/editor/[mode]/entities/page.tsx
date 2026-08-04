@@ -15,7 +15,7 @@ import { useGoToFileExplorer } from "@/lib/hooks/hooks"
 import { useEditorState } from "@/lib/state/editor-state"
 import { findEntity } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { usePanelRef } from "react-resizable-panels"
+import { useDefaultLayout, usePanelRef } from "react-resizable-panels"
 
 function EntityEditorFilePreview(props: PropsWithChildren) {
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
@@ -23,6 +23,10 @@ function EntityEditorFilePreview(props: PropsWithChildren) {
     const entities = useEditorState((s) => s.entities)
     const goToFileExplorer = useGoToFileExplorer(findEntity(entities, previewingFilePath))
     const openTab = useEntityEditorTabs((store) => store.openTab)
+
+    const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+        id: "entity-editor-file-preview"
+    })
 
     const focusEntity = useCallback(() => {
         const entity = findEntity(entities, previewingFilePath)
@@ -40,7 +44,11 @@ function EntityEditorFilePreview(props: PropsWithChildren) {
     }
 
     return (
-        <ResizablePanelGroup orientation="horizontal">
+        <ResizablePanelGroup
+            orientation="horizontal"
+            defaultLayout={defaultLayout}
+            onLayoutChanged={onLayoutChanged}
+        >
             <ResizablePanel defaultSize={"66%"} minSize={"400px"}>
                 <div className="h-full w-full overflow-auto">{props.children}</div>
             </ResizablePanel>
@@ -102,6 +110,10 @@ export default function Entities() {
     const entityBrowserPanel = usePanelRef()
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
 
+    const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+        id: "entity-browser"
+    })
+
     const toggleEntityBrowserPanel = useCallback(() => {
         if (entityBrowserPanel.current) {
             if (!entityBrowserPanel.current.isCollapsed()) {
@@ -115,7 +127,11 @@ export default function Entities() {
     return (
         <>
             <Metadata page={"Entities"} />
-            <ResizablePanelGroup orientation={"horizontal"}>
+            <ResizablePanelGroup
+                orientation={"horizontal"}
+                defaultLayout={defaultLayout}
+                onLayoutChanged={onLayoutChanged}
+            >
                 <ResizablePanel
                     defaultSize={"400px"}
                     minSize={"200px"}
