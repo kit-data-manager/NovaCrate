@@ -1,5 +1,5 @@
 import { CrateSchema, pickFirst } from "@/lib/utils"
-import { ContextServiceImpl } from "@/lib/core/impl/ContextServiceImpl"
+import { SynchronizedContextService } from "@/lib/core/impl/SynchronizedContextService"
 import { RO_CRATE_VERSION } from "@/lib/constants"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
 import { IProfileFactoryStrategy } from "@/lib/core/profiles/IProfileFactoryStrategy"
@@ -110,7 +110,7 @@ export function buildProfileDefinitionFromRootEntity(
         name: typeof name === "string" ? name : "Unnamed",
         specification:
             typeof isProfileOf !== "string"
-                ? (ContextServiceImpl.getKnownContext(isProfileOf["@id"])?.version ??
+                ? (SynchronizedContextService.getKnownContext(isProfileOf["@id"])?.version ??
                   RO_CRATE_VERSION.V1_1_3)
                 : RO_CRATE_VERSION.V1_1_3,
         version: typeof version === "string" ? version : undefined,

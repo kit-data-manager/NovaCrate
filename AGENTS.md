@@ -181,7 +181,7 @@ The core layer contains all RO-Crate domain logic. It is persistence-agnostic.
 
 - **`ICoreService` / `CoreServiceImpl`** — Orchestrates metadata and context services. Provides high-level operations: `addFileEntity`, `addFolderEntity`, `changeEntityIdentifier`, `deleteEntity`. Coordinates file service operations with metadata updates.
 - **`IMetadataService` / `MetadataServiceImpl`** — Entity CRUD. Stores the `@graph` as a `Map<string, IEntity>`. Manages `hasPart` on the root entity for data entities. Uses `getRootEntityID()` (not hardcoded `"./"`) to find the root entity via the metadata descriptor's `about` reference.
-- **`IContextService` / `ContextServiceImpl`** — Manages the `@context`. Resolves/reverses short names to/from full URIs. Handles custom context pairs. Loads known RO-Crate context definitions (v1.1, v1.2) from bundled JSON files.
+- **`IContextService` / `SynchronizedContextService`** — Manages the `@context`. Resolves/reverses short names to/from full URIs. Handles custom context pairs. Loads known RO-Crate context definitions (v1.1, v1.2) from bundled JSON files.
 - **`IPersistenceAdapter` / `PersistenceAdapterImpl`** — Bridges persistence (`ICrateService`) and core services. Converts between raw JSON metadata strings and typed graph/context objects.
 - **`Observable`** — Generic typed event emitter used throughout both layers. `emit()` spreads arguments to listeners: `listener(...args)`.
 - **`CrateFactory`** — Factory for creating new crates. All RO-Crate metadata structure knowledge lives here (templates, validation), keeping the repository service metadata-agnostic. Methods: `createEmptyCrate`, `createCrateFromFile`, `createCrateFromMetadataFile`, `createCrateFromFiles`, `duplicateCrate`.

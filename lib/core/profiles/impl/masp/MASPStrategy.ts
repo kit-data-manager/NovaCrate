@@ -5,7 +5,7 @@ import { MASPProfileHandler } from "@/lib/core/profiles/impl/masp/MASPProfileHan
 import { PROFILE_CRATE_SCHEMA_RESOURCE } from "@/lib/constants"
 import { GenericStrategy } from "@/lib/core/profiles/impl/generic/GenericStrategy"
 import { IMetadataService } from "@/lib/core/IMetadataService"
-import { StandaloneContextServiceImpl } from "@/lib/core/impl/StandaloneContextServiceImpl"
+import { SynchronizedContextService } from "@/lib/core/impl/SynchronizedContextService"
 
 export class MASPStrategy extends GenericStrategy implements IProfileFactoryStrategy {
     name = "MASP"
@@ -31,7 +31,7 @@ export class MASPStrategy extends GenericStrategy implements IProfileFactoryStra
             return propertyValue(maspSchema.hasPart).contains({ "@id": entity["@id"] })
         })
 
-        const resolver = await StandaloneContextServiceImpl.newInstance(profileCrate["@context"])
+        const resolver = await SynchronizedContextService.newInstance(profileCrate["@context"])
         return new MASPProfileHandler(root, schemaEntities, resolver, metadataService)
     }
 
