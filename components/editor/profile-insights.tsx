@@ -1,7 +1,7 @@
 import { useCore } from "@/components/providers/core-provider"
 import { useCallback, useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
-import { BoxIcon } from "lucide-react"
+import { BoxIcon, Library } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { MarkdownComment } from "@/components/markdown-comment"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
@@ -48,7 +48,7 @@ export function ProfileInsights({ entity }: { entity: IEntity }) {
         <Tooltip key={role.rule["@id"]}>
             <TooltipTrigger asChild>
                 <Badge>
-                    <BoxIcon />
+                    <Library />
                     {role.rule?.name || role.rule["@id"]}
                 </Badge>
             </TooltipTrigger>

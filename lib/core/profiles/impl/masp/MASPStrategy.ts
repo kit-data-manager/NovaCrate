@@ -18,6 +18,7 @@ export class MASPStrategy extends GenericStrategy implements IProfileFactoryStra
     }
 
     async createProfileFromProfileCrate(
+        profileUri: string,
         profileCrate: ICrate,
         metadataService: IMetadataService
     ): Promise<IProfileHandler> {
@@ -32,7 +33,7 @@ export class MASPStrategy extends GenericStrategy implements IProfileFactoryStra
         })
 
         const resolver = await SynchronizedContextService.newInstance(profileCrate["@context"])
-        return new MASPProfileHandler(root, schemaEntities, resolver, metadataService)
+        return new MASPProfileHandler(profileUri, root, schemaEntities, resolver, metadataService)
     }
 
     private findRootAndMASPSchemaEntities(profileCrate: ICrate) {

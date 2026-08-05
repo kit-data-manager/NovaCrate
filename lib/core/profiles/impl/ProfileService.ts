@@ -43,7 +43,7 @@ export class ProfileService implements IProfileService {
                     .filter((v) => typeof v === "object")
                     .map((r) => r["@id"])
             ).then() // The promise is intentionally ignored, this class manages itself automatically
-        }
+        } else this.setProfileURIs([]).then()
     }
 
     getAllErrors(): string[] {
@@ -135,6 +135,11 @@ export class ProfileService implements IProfileService {
                 )
                 this.forwardErrorEvent()
             }
+        }
+
+        // If there are no profiles active, we have to manually call this event, or it will never be fired
+        if (profileURIs.length === 0) {
+            this._events.emit("profiles-changed", this.getProfileHandlers())
         }
 
         if (this.getAllReady()) {

@@ -60,12 +60,13 @@ export class MASPProfileHandler extends AbstractProfileHandler {
     readonly name = "MASP"
 
     constructor(
+        profileUri: string,
         rootEntity: IEntity,
         maspEntities: IEntity[],
         private context: IContextResolverService,
         metadataService: IMetadataService
     ) {
-        super(rootEntity, metadataService)
+        super(profileUri, rootEntity, metadataService)
         this.autoResolveTerm = this.autoResolveTerm.bind(this)
 
         //

@@ -84,6 +84,7 @@ export class ProfileFactory {
             if (result) break
             try {
                 result = await strategy.createProfileFromProfileCrate(
+                    profileURI,
                     profileMetadata,
                     metadataService
                 )

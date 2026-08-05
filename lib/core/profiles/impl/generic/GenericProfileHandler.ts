@@ -7,8 +7,8 @@ import { AbstractProfileHandler } from "@/lib/core/profiles/impl/AbstractProfile
 export class GenericProfileHandler extends AbstractProfileHandler {
     readonly name: string = "Generic"
 
-    constructor(rootEntity: IEntity, metadataService: IMetadataService) {
-        super(rootEntity, metadataService)
+    constructor(profileUri: string, rootEntity: IEntity, metadataService: IMetadataService) {
+        super(profileUri, rootEntity, metadataService)
     }
 
     updateEntityMapping(entities: IEntity[]): void {

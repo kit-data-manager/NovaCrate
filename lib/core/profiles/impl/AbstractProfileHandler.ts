@@ -24,7 +24,11 @@ export abstract class AbstractProfileHandler implements IProfileHandler {
 
     private readonly _discardListener: () => void
 
-    protected constructor(rootEntity: IEntity, metadataService: IMetadataService) {
+    protected constructor(
+        public readonly profileUri: string,
+        rootEntity: IEntity,
+        metadataService: IMetadataService
+    ) {
         this.id = crypto.randomUUID()
         this.definition = buildProfileDefinitionFromRootEntity(rootEntity, this.id)
 
