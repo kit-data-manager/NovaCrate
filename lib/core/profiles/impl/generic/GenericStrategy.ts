@@ -16,12 +16,13 @@ export class GenericStrategy implements IProfileFactoryStrategy {
     }
 
     async createProfileFromProfileCrate(
+        profileUri: string,
         profileCrate: ICrate,
         metadataService: IMetadataService
     ): Promise<IProfileHandler> {
         const root = this.findRoot(profileCrate)
 
-        return new GenericProfileHandler(root, metadataService)
+        return new GenericProfileHandler(profileUri, root, metadataService)
     }
 
     protected findRoot(profileCrate: ICrate) {

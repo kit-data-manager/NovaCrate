@@ -20,8 +20,13 @@ export interface IProfileFactoryStrategy {
     /**
      * Create a profile from the given profile crate. This method should throw an Error when the profile crate
      * can't be parsed for any reason.
+     * @param profileUri the profileUri as specified in conformsTo of the root entity. For tracking profileUris to appropriate profile handlers
      * @param profileCrate
      * @param metadataService
      */
-    createProfileFromProfileCrate(profileCrate: ICrate, metadataService: IMetadataService): Promise<IProfileHandler>
+    createProfileFromProfileCrate(
+        profileUri: string,
+        profileCrate: ICrate,
+        metadataService: IMetadataService
+    ): Promise<IProfileHandler>
 }

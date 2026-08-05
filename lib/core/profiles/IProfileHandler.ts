@@ -43,6 +43,11 @@ export interface IProfileHandler {
     readonly name: string
 
     /**
+     * The URI of the profile that this handler handles
+     */
+    readonly profileUri: string
+
+    /**
      * Indicates whether the profile is ready to be used. If this method returns true,
      * {@link getDefinition} must not return null.
      */

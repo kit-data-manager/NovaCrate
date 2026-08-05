@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import {
     BookOpenText,
+    Box,
     Braces,
     Bug,
     Folder,
@@ -130,7 +131,7 @@ export function NavSidebar({ children }: PropsWithChildren) {
                             <NavSidebarLink page="json-editor" name={"JSON Editor"}>
                                 <Braces className="size-5" />
                             </NavSidebarLink>
-                            <NavSidebarLink page="context" name={"Context"}>
+                            <NavSidebarLink page="context" name={"Profiles & Context"}>
                                 <Library className="size-5" />
                             </NavSidebarLink>
 

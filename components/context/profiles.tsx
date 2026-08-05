@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Error } from "@/components/error"
+import { ManageProfilesModal } from "@/components/modals/manage-profiles-modal"
 
 export function Profiles() {
     const core = useCore()
@@ -19,9 +20,10 @@ export function Profiles() {
 
     useEffect(() => {
         setProfiles(profileService.getProfileHandlers())
-        const remove1 = profileService.events.addEventListener("profiles-changed", (profiles) =>
+        const remove1 = profileService.events.addEventListener("profiles-changed", (profiles) => {
             setProfiles(profiles)
-        )
+            setErrors(profileService.getAllErrors())
+        })
         setErrors(profileService.getAllErrors())
         const remove2 = profileService.events.addEventListener("error-emitted", () => {
             setErrors(profileService.getAllErrors())
@@ -36,6 +38,10 @@ export function Profiles() {
     return (
         <div className="space-y-2">
             <div className="font-bold">Profiles</div>
+            <ManageProfilesModal />
+            {profiles.length === 0 && (
+                <div className="text-sm text-muted-foreground">No profiles are active</div>
+            )}
             {profiles.map((profile) => (
                 <Profile profile={profile} key={profile.id} />
             ))}
