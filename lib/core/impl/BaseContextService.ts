@@ -3,7 +3,6 @@ import { IContextService, IContextServiceEvents } from "@/lib/core/IContextServi
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { Observable } from "@/lib/core/impl/Observable"
 import { IObservable } from "@/lib/core/IObservable"
-import { IPersistenceAdapter } from "@/lib/core/IPersistenceAdapter"
 
 const KNOWN_CONTEXTS = [
     {
@@ -30,7 +29,7 @@ const KNOWN_CONTEXTS = [
  * Provides an easy interface into the crate context for id resolution and specification detection
  * @example resolve("Organization") -> "https://schema.org/Organization"
  */
-export class ContextServiceImpl implements IContextService, IContextResolverService {
+export class BaseContextService implements IContextService, IContextResolverService {
     private _context: Record<string, string> = {}
     private _contextReversed: Record<string, string> = {}
     private _customPairs: Record<string, string> = {}
@@ -40,14 +39,8 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
     private _errors: unknown[] = []
     private raw?: CrateContextType
 
-    disposeGraphChangedEventListener: () => void
-
-    constructor(private persistenceAdapter: IPersistenceAdapter) {
+    constructor() {
         this.update = this.update.bind(this)
-        this.disposeGraphChangedEventListener = this.persistenceAdapter.events.addEventListener(
-            "context-changed",
-            this.update
-        )
     }
 
     private _events = new Observable<IContextServiceEvents>()
@@ -95,7 +88,6 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
             ...customPairs
         } as Record<string, string>
         await this.update(updatedContext)
-        await this.persistenceAdapter.updateMetadataContext(updatedContext)
     }
 
     async removeCustomContextPair(prefix: string): Promise<void> {
@@ -106,7 +98,6 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
             ...customPairs
         } as Record<string, string>
         await this.update(updatedContext)
-        await this.persistenceAdapter.updateMetadataContext(updatedContext)
     }
 
     private async loadKnownContext(primary: (typeof KNOWN_CONTEXTS)[number]) {
@@ -161,16 +152,14 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         return this
     }
 
-    dispose() {
-        this.disposeGraphChangedEventListener()
-    }
+    dispose() {}
 
     /**
      * Should be called to set the crate context up. Can be called multiple times without
      * creating a new instance.
      * @param crateContext The @context of the crate
      */
-    private async update(crateContext: CrateContextType) {
+    protected async update(crateContext: CrateContextType) {
         if (JSON.stringify(this.raw) === JSON.stringify(crateContext)) return
 
         let tempContext = {}
@@ -186,7 +175,7 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
 
         for (const entry of content) {
             if (typeof entry === "string") {
-                const known = ContextServiceImpl.getKnownContext(entry)
+                const known = BaseContextService.getKnownContext(entry)
                 if (known) {
                     const { specification, data } = await this.loadKnownContext(known)
                     tempSpecification = specification
@@ -200,7 +189,7 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
             } else {
                 for (const [key, value] of Object.entries(entry)) {
                     if (key === "@vocab") {
-                        const known = ContextServiceImpl.getKnownContext(value)
+                        const known = BaseContextService.getKnownContext(value)
                         if (known) {
                             const { specification, data } = await this.loadKnownContext(known)
                             tempSpecification = specification
@@ -241,9 +230,8 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         this._events.emit("context-changed", this.raw!)
     }
 
-    static async newInstance(persistenceAdapter: IPersistenceAdapter) {
-        const instance = new ContextServiceImpl(persistenceAdapter)
-        const context = await persistenceAdapter.getMetadataContext()
+    static async newInstance(context: CrateContextType) {
+        const instance = new BaseContextService()
         await instance.update(context)
         return instance
     }
