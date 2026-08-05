@@ -141,7 +141,7 @@ export class ProfileValidator extends Validator {
     ) {
         if (!propertyRule.rangeIncludes) return
 
-        // TODO implement rules for entities and normal types
+        // TODO what to validate for entity rules and types?
         const entityRules: EntityRule[] = []
         const propertyValueRules: PropertyValueRule[] = []
         const types: string[] = []

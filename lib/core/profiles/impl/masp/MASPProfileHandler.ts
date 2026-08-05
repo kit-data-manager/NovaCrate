@@ -131,7 +131,7 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                     label: d["rdfs:label"],
                     maxCount: d["sh:maxCount"],
                     minCount: d["sh:minCount"],
-                    specializationOf: d["prov:specializationOf"] // TODO FIX: Only the first entry is used, all others are dropped
+                    specializationOf: d["prov:specializationOf"]
                         ? this.autoResolveTerm(pickFirst(d["prov:specializationOf"])["@id"])
                         : undefined,
                     appliesToEntityRules: toArray(d.domainIncludes).map((ref) => ref["@id"]),
