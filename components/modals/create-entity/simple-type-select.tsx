@@ -14,6 +14,7 @@ import {
     SUGGESTED_CONTEXTUAL_ENTITIES,
     SUGGESTED_DATA_ENTITIES
 } from "@/components/modals/create-entity/data/suggested-types"
+import { undefinedIfEmpty } from "@/lib/utils"
 
 const GENERAL_TAB = "general"
 
@@ -45,8 +46,8 @@ export function SimpleTypeSelect({
     const visibleProfiles = useMemo(() => {
         return profileEntityRules.map((profile) => {
             profile.classes = profile.classes.filter((c) =>
-                restrictToEntityRules
-                    ? restrictToEntityRules.includes(c["@id"])
+                undefinedIfEmpty(restrictToEntityRules)
+                    ? restrictToEntityRules!.includes(c["@id"])
                     : isTypeAllowed(resolver, c.specializationOf || "Thing", restrictToClasses)
             )
             return profile
