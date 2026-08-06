@@ -43,7 +43,7 @@ export function Profile({ profile }: { profile: IProfileHandler }) {
 
     return (
         <div className="border rounded-lg p-2">
-            <div className={"mb-1 flex gap-1 items-end"}>
+            <div className={"mb-1 flex flex-wrap gap-1 items-end"}>
                 {def.name} {def.version || ""}{" "}
                 <a
                     href={def["@id"]}
@@ -55,7 +55,7 @@ export function Profile({ profile }: { profile: IProfileHandler }) {
                 </a>
                 <ExternalLink className="size-3 self-center" />
             </div>
-            <div className="flex gap-1">
+            <div className="flex flex-wrap gap-1">
                 <Badge>{profile.name}</Badge>
                 <Badge variant="secondary">{def.entityRules.length} Class Rules</Badge>
                 <Badge variant="secondary">{def.propertyRules.length} Property Rules</Badge>

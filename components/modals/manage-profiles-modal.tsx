@@ -3,8 +3,7 @@ import {
     DialogContent,
     DialogDescription,
     DialogHeader,
-    DialogTitle,
-    DialogTrigger
+    DialogTitle
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -24,13 +23,16 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table"
-import { CheckIcon, ChevronDown, CogIcon, EllipsisVertical, LucideIcon } from "lucide-react"
+import { CheckIcon, ChevronDown, CogIcon, EllipsisVertical, LucideIcon, XIcon } from "lucide-react"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
 import { Diff, isValidUrl } from "@/lib/utils"
 import { Error } from "@/components/error"
 import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
+import Link from "next/link"
+import { ProfileHandlerError } from "@/lib/core/profiles/impl/ProfileHandlerError"
+import { Badge } from "@/components/ui/badge"
 
 const RECOMMENDED_PROFILES: {
     uri: string
@@ -66,17 +68,29 @@ function AddCustomProfile({ addCustom }: { addCustom(uri: string): void }) {
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-102 space-y-1">
-                <div className="flex gap-2">
-                    <Input
-                        value={uri}
-                        onChange={(e) => setUri(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && confirm()}
-                        type={"url"}
-                        placeholder={"https://..."}
-                    />
-                    <Button onClick={confirm}>
-                        <CheckIcon />
-                    </Button>
+                <div className="space-y-2">
+                    <div>
+                        Provide a URL to a Profile RO-Crate hosted at a persistent location. See the{" "}
+                        <Link
+                            href={
+                                "https://www.researchobject.org/ro-crate/specification/1.3/profiles.html#profile-crate"
+                            }
+                        >
+                            Profile Crate Specification
+                        </Link>
+                    </div>
+                    <div className="flex gap-2">
+                        <Input
+                            value={uri}
+                            onChange={(e) => setUri(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && hasValidUrl && confirm()}
+                            type={"url"}
+                            placeholder={"https://..."}
+                        />
+                        <Button onClick={confirm} disabled={!hasValidUrl}>
+                            <CheckIcon />
+                        </Button>
+                    </div>
                 </div>
                 {!hasValidUrl && <div className="text-sm text-error">Must be a valid URL</div>}
             </PopoverContent>
@@ -129,10 +143,17 @@ function RecommendedProfile({
     )
 }
 
-export function ManageProfilesModal() {
+export function ManageProfilesModal({
+    open,
+    onOpenChange
+}: {
+    open: boolean
+    onOpenChange(open: boolean): void
+}) {
     const profileService = useProfileService()
     const [tabState, setTabState] = useState("active")
     const [profileURIs, setProfileURIs] = useState<string[]>(() => profileService.getProfileURIs())
+    const [errors, setErrors] = useState<ProfileHandlerError[]>([])
     const removePropertyEntry = useEditorState((s) => s.removePropertyEntry)
     const addPropertyEntry = useEditorState((s) => s.addPropertyEntry)
     const rootId = useEditorState((s) => s.getRootEntityId())
@@ -141,11 +162,19 @@ export function ManageProfilesModal() {
 
     useEffect(() => {
         setProfileURIs(profileService.getProfileURIs())
-        const remove = profileService.events.addEventListener("profile-uris-changed", (uris) =>
+        setErrors(profileService.getAllErrors())
+        const remove1 = profileService.events.addEventListener("profile-uris-changed", (uris) => {
             setProfileURIs(uris)
+            setErrors(profileService.getAllErrors())
+        })
+        const remove2 = profileService.events.addEventListener("error-emitted", () =>
+            setErrors(profileService.getAllErrors())
         )
 
-        return () => remove()
+        return () => {
+            remove1()
+            remove2()
+        }
     }, [profileService])
 
     const removeProfile = useCallback(
@@ -167,9 +196,8 @@ export function ManageProfilesModal() {
     )
 
     return (
-        <Dialog>
-            <DialogTrigger>Manage Profiles</DialogTrigger>
-            <DialogContent className="w-200! max-w-none!">
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="w-200! max-w-screen!">
                 <DialogHeader>
                     <DialogTitle>Manage Profiles</DialogTitle>
                     <DialogDescription>
@@ -198,6 +226,7 @@ export function ManageProfilesModal() {
                             <Table className="w-full">
                                 <TableHeader>
                                     <TableRow>
+                                        <TableHead className="w-4"></TableHead>
                                         <TableHead>Profile</TableHead>
                                         <TableHead>Provider</TableHead>
                                         <TableHead className="text-end">Actions</TableHead>
@@ -207,6 +236,7 @@ export function ManageProfilesModal() {
                                 <TableBody>
                                     {profileURIs.length === 0 && (
                                         <TableRow>
+                                            <TableCell />
                                             <TableCell className="text-sm text-muted-foreground">
                                                 No profiles are active
                                             </TableCell>
@@ -219,13 +249,16 @@ export function ManageProfilesModal() {
                                             key={uri + i}
                                             uri={uri}
                                             removeProfile={() => removeProfile(uri)}
+                                            errors={errors.filter((e) => e.profileUri === uri)}
                                         />
                                     ))}
                                 </TableBody>
                             </Table>
                         </div>
 
-                        <AddCustomProfile addCustom={(uri) => addProfile(uri)} />
+                        <div className="flex justify-end">
+                            <AddCustomProfile addCustom={(uri) => addProfile(uri)} />
+                        </div>
                     </TabsContent>
 
                     <TabsContent value={"recommended"}>
@@ -247,7 +280,15 @@ export function ManageProfilesModal() {
     )
 }
 
-export function ProfileRow({ uri, removeProfile }: { uri: string; removeProfile(): void }) {
+export function ProfileRow({
+    uri,
+    removeProfile,
+    errors
+}: {
+    uri: string
+    removeProfile(): void
+    errors: ProfileHandlerError[]
+}) {
     const profileService = useProfileService()
 
     const hasHandler = useMemo(() => {
@@ -257,7 +298,28 @@ export function ProfileRow({ uri, removeProfile }: { uri: string; removeProfile(
     return (
         <TableRow className={hasHandler ? "" : "bg-error/10 hover:bg-error/20"}>
             <TableCell>
-                {hasHandler ? hasHandler.getDefinition()!.name : `Unsupported (uri: ${uri})`}
+                {hasHandler ? (
+                    <CheckIcon className="size-4 stroke-success" />
+                ) : (
+                    <XIcon className="size-4 stroke-error" />
+                )}
+            </TableCell>
+            <TableCell>
+                {hasHandler ? hasHandler.getDefinition()!.name : `Unsupported (uri: ${uri})`}{" "}
+                {errors.length > 0 && (
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Badge variant="destructive" className="ml-1">
+                                View Errors ({errors.length})
+                            </Badge>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-98 max-h-98 overflow-y-auto space-y-2">
+                            {errors.map((e, i) => (
+                                <Error key={i} error={e} />
+                            ))}
+                        </PopoverContent>
+                    </Popover>
+                )}
             </TableCell>
             <TableCell>{hasHandler && hasHandler.name}</TableCell>
             <TableCell className="p-0 flex justify-end">

@@ -5,17 +5,17 @@ import { Observable } from "@/lib/core/impl/Observable"
 import { ProfileFactory } from "@/lib/core/profiles/impl/ProfileFactory"
 import { IMetadataService } from "@/lib/core/IMetadataService"
 import { getRootEntityID, toArray } from "@/lib/utils"
-import { stringifyError } from "@/components/error"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { ProfileEntityMapping } from "@/lib/core/profiles/types/ProfileEntityMapping"
+import { ProfileHandlerError } from "@/lib/core/profiles/impl/ProfileHandlerError"
 
 export class ProfileService implements IProfileService {
     private _events = new Observable<IProfileServiceEvents>()
     readonly events: IObservable<IProfileServiceEvents> = this._events
     private profileURIs: string[] = []
     private profiles: IProfileHandler[] = []
-    private profileConstructionErrors: string[] = []
+    private profileConstructionErrors: ProfileHandlerError[] = []
     private entityMappings: Map<string, ProfileEntityMapping[]> = new Map()
 
     constructor(private metadata: IMetadataService) {
@@ -41,21 +41,8 @@ export class ProfileService implements IProfileService {
         } else this.setProfileURIs([]).then()
     }
 
-    getAllErrors(): string[] {
-        return structuredClone(
-            this.profileConstructionErrors.concat(
-                this.profiles
-                    .map((p) =>
-                        p
-                            .getErrors()
-                            .map(
-                                (e) =>
-                                    `In ${p.getDefinition()?.name ?? "Unnamed Profile"} (uri: ${p.getDefinition()?.["@id"]}, handler: ${p.name}): ${e}`
-                            )
-                    )
-                    .flat()
-            )
-        )
+    getAllErrors(): ProfileHandlerError[] {
+        return this.profileConstructionErrors.concat(this.profiles.map((p) => p.getErrors()).flat())
     }
 
     getAllReady(): boolean {
@@ -124,7 +111,15 @@ export class ProfileService implements IProfileService {
             } catch (e) {
                 console.error(`Failed to initialize profile ${uri}`, e)
                 this.profileConstructionErrors.push(
-                    `Failed to initialize profile "${uri}":` + stringifyError(e)
+                    e instanceof ProfileHandlerError
+                        ? e
+                        : new ProfileHandlerError(
+                              "Unknown error while trying to initialize profile",
+                              {
+                                  cause: e,
+                                  profileUri: uri
+                              }
+                          )
                 )
                 this.forwardErrorEvent()
             }

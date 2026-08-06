@@ -3,6 +3,7 @@ import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { PropertyValueRule } from "@/lib/core/profiles/types/PropertyValueRule"
+import { ProfileHandlerError } from "@/lib/core/profiles/impl/ProfileHandlerError"
 
 export type IProfileHandlerEvents = {
     /**
@@ -56,7 +57,7 @@ export interface IProfileHandler {
     /**
      * Get a list of errors that occurred during **parsing**.
      */
-    getErrors(): string[]
+    getErrors(): ProfileHandlerError[]
 
     /**
      * Get the profile definition behind this profile. Must not return null when the profile is ready.

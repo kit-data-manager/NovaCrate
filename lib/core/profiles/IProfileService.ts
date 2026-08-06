@@ -3,6 +3,7 @@ import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { ProfileEntityMapping } from "@/lib/core/profiles/types/ProfileEntityMapping"
+import { ProfileHandlerError } from "@/lib/core/profiles/impl/ProfileHandlerError"
 
 export type IProfileServiceEvents = {
     /**
@@ -44,7 +45,7 @@ export interface IProfileService {
     /**
      * Get a list of all errors that occurred during **parsing** of all profiles.
      */
-    getAllErrors(): string[]
+    getAllErrors(): ProfileHandlerError[]
 
     /**
      * Set the list of profile URIs that are currently active. This will trigger parsing of all

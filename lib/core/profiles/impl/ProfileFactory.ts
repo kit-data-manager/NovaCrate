@@ -7,6 +7,7 @@ import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { MASPStrategy } from "@/lib/core/profiles/impl/masp/MASPStrategy"
 import { GenericStrategy } from "@/lib/core/profiles/impl/generic/GenericStrategy"
 import { IMetadataService } from "@/lib/core/IMetadataService"
+import { ProfileHandlerError } from "@/lib/core/profiles/impl/ProfileHandlerError"
 
 const KNOWN_PROFILES: {
     uri: string
@@ -53,12 +54,16 @@ export class ProfileFactory {
             try {
                 profileMetadata = await known.loadProfile()
             } catch (e) {
-                throw new Error(`Failed to load known profile ${profileURI}`, { cause: e })
+                throw new ProfileHandlerError(`Failed to load known profile ${profileURI}`, {
+                    cause: e,
+                    profileUri: profileURI
+                })
             }
         } else {
             // TODO Resolve external profile crate
-            throw new Error(
-                `Unknown profile URI: ${profileURI}. Unknown profiles are not supported yet`
+            throw new ProfileHandlerError(
+                `Unknown profile URI: ${profileURI}. Unknown profiles are not supported yet`,
+                { profileUri: profileURI }
             )
         }
 
@@ -82,8 +87,9 @@ export class ProfileFactory {
         }
 
         if (!result) {
-            throw new Error(
-                `Could not create profile from metadata, no strategy matched/successful`
+            throw new ProfileHandlerError(
+                `Could not create profile from metadata, no strategy matched/successful`,
+                { profileUri: profileURI }
             )
         }
 

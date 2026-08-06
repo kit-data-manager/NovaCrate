@@ -7,6 +7,7 @@ import { IMetadataService } from "@/lib/core/IMetadataService"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { PropertyValueRule } from "@/lib/core/profiles/types/PropertyValueRule"
+import { ProfileHandlerError } from "@/lib/core/profiles/impl/ProfileHandlerError"
 
 /**
  *
@@ -19,7 +20,7 @@ export abstract class AbstractProfileHandler implements IProfileHandler {
 
     protected isReady = true
     protected readonly definition: ProfileDefinition
-    protected errors: string[] = []
+    protected errors: ProfileHandlerError[] = []
     protected entityMapping: Map<string, string> = new Map()
 
     private readonly _discardListener: () => void
@@ -44,7 +45,7 @@ export abstract class AbstractProfileHandler implements IProfileHandler {
         return this.isReady
     }
 
-    getErrors(): string[] {
+    getErrors(): ProfileHandlerError[] {
         return structuredClone(this.errors)
     }
 
