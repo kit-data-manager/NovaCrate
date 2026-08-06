@@ -203,7 +203,6 @@ export function EntityEditorTabs({
                     <EntityEditor
                         key={currentTab?.entityId ?? "--loading--"}
                         entityId={currentTab?.entityId ?? "--loading--"}
-                        toggleEntityBrowserPanel={toggleEntityBrowserPanel}
                     />
                 </div>
             </div>

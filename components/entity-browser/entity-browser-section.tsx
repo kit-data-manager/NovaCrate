@@ -1,11 +1,12 @@
 import { useStoreWithEqualityFn } from "zustand/traditional"
 import { editorState } from "@/lib/state/editor-state"
-import { memo, useCallback, useEffect, useState } from "react"
+import React, { memo, useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ChevronDown } from "lucide-react"
 import { EntityBrowserItem } from "@/components/entity-browser/entity-browser-item"
 import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { getEntityDisplayName, toArray } from "@/lib/utils"
+import { SectionTrigger } from "@/components/ui/section-trigger"
 
 export type DefaultSectionOpen = boolean | "indeterminate"
 
@@ -64,28 +65,19 @@ export const EntityBrowserSection = memo(function EntityBrowserSection(props: {
         )
 
     return (
-        <div className="shrink-0">
-            <Button
-                size="sm"
-                variant="list-entry"
-                className="hover:underline underline-offset-2 w-full"
-                onClick={toggle}
-            >
-                <ChevronDown
-                    className="w-5 h-5 mr-2 aria-disabled:-rotate-90 shrink-0"
-                    aria-disabled={!open}
-                />
-                <div className="truncate mr-2">
-                    {props.sectionTitle} ({entities.length})
-                </div>
-            </Button>
-            {open ? (
-                <div className="flex flex-col pl-4">
-                    {entities.map(([key]) => {
-                        return <EntityBrowserItem entityId={key} key={key} />
-                    })}
-                </div>
-            ) : null}
-        </div>
+        <SectionTrigger
+            open={open}
+            toggleOpen={toggle}
+            triggerText={
+                <>
+                    <span className="text-sm shrink-0">{props.sectionTitle}</span>{" "}
+                    <span className="text-xs text-muted-foreground">({props.entities.size})</span>
+                </>
+            }
+        >
+            {entities.map(([key]) => {
+                return <EntityBrowserItem entityId={key} key={key} />
+            })}
+        </SectionTrigger>
     )
 })

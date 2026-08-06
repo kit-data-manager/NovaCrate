@@ -1,13 +1,5 @@
 import { Button } from "@/components/ui/button"
-import {
-    EllipsisVertical,
-    Eye,
-    Folder,
-    GitFork,
-    PanelLeftClose,
-    RefreshCw,
-    Save
-} from "lucide-react"
+import { EllipsisVertical, Eye, Folder, GitFork, RefreshCw, Save } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -18,47 +10,37 @@ import {
 import { memo } from "react"
 import { ActionButton, ActionDropdownMenuItem } from "@/components/actions/action-buttons"
 import { useAction } from "@/lib/hooks/hooks"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { ValidationOverview } from "@/components/editor/validation/validation-overview"
 
 export const EntityEditorHeader = memo(function EntityEditorHeader({
+    entityId,
     isSaving,
     hasUnsavedChanges,
     canSaveAs,
-    toggleEntityBrowserPanel,
     canHavePreview,
     togglePreview,
     isBeingPreviewed,
     goToGraph,
-    goToFileExplorer
+    goToFileExplorer,
+    transparentBackground
 }: {
+    entityId: string
     hasUnsavedChanges: boolean
     isSaving: boolean
     canSaveAs: boolean
-    toggleEntityBrowserPanel(): void
     canHavePreview: boolean
     togglePreview: () => void
     isBeingPreviewed: boolean
     goToGraph: () => void
     goToFileExplorer?: () => void
+    transparentBackground: boolean
 }) {
     const saveAction = useAction("entity.save")
 
     return (
-        <div className="flex gap-2 p-2 border-b border-t overflow-x-auto shrink-0 bg-accent no-scrollbar">
-            <Tooltip delayDuration={500}>
-                <TooltipTrigger asChild>
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs"
-                        onClick={toggleEntityBrowserPanel}
-                    >
-                        <PanelLeftClose className="size-4" />
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent>Toggle Entity Browser</TooltipContent>
-            </Tooltip>
-
+        <div
+            className={`flex gap-2 p-2 border-b border-t overflow-x-auto shrink-0 ${transparentBackground ? "border-b-transparent pt-4 pl-4 pr-4" : "bg-accent"} no-scrollbar transition-all`}
+        >
             <ActionButton
                 actionId="entity.add-property"
                 size="sm"
@@ -94,6 +76,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                     )}
                     {saveAction.name}
                 </Button>
+                <ValidationOverview entityId={entityId} size="sm" />
                 {canHavePreview ? (
                     <Button
                         variant={isBeingPreviewed ? "default" : "outline"}

@@ -229,13 +229,9 @@ export const PropertyEditor = memo(function PropertyEditor({
 
     return (
         <div
-            className={`grid grid-cols-[12px_4fr_5fr] w-full transition-colors ${isFocused ? "bg-secondary" : ""} py-3 px-1 rounded-lg`}
+            className={`grid grid-cols-[4fr_12px_5fr] w-full transition-colors ${isFocused ? "bg-secondary" : ""} py-3 px-1 rounded-lg`}
             ref={container}
         >
-            <div
-                className={`${isDeleted ? "bg-destructive" : isNew ? "bg-success" : hasChanges ? "bg-info" : ""} max-w-1 rounded-full transition`}
-            ></div>
-
             <div className="pr-8">
                 <div>{readablePropertyName}</div>
                 <div
@@ -261,6 +257,10 @@ export const PropertyEditor = memo(function PropertyEditor({
                     </Tooltip>
                 )}
             </div>
+
+            <div
+                className={`${isDeleted ? "bg-destructive" : isNew ? "bg-success" : hasChanges ? "bg-info" : ""} max-w-1 rounded-full transition`}
+            ></div>
 
             <div className="truncate p-1">
                 {isDeleted ? (
