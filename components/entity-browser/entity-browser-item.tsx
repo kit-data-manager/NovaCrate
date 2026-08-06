@@ -2,17 +2,20 @@ import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
 import { memo, useCallback, useMemo } from "react"
-import { Diff, getEntityDisplayName, toArray } from "@/lib/utils"
+import { camelCaseReadable, Diff, getEntityDisplayName, toArray } from "@/lib/utils"
 import { EntityContextMenu } from "@/components/entity/entity-context-menu"
 import { Button } from "@/components/ui/button"
 import { EntityIcon } from "@/components/entity/entity-icon"
+import { useActiveEntityRules } from "@/lib/hooks/use-profile-service"
 
 export const EntityBrowserItem = memo(function EntityBrowserItem(props: { entityId: string }) {
     const showEntityType = useEntityBrowserSettings((store) => store.showEntityType)
+    const showEntityRules = useEntityBrowserSettings((store) => store.showEntityRules)
     const showIdInsteadOfName = useEntityBrowserSettings((store) => store.showIdInsteadOfName)
     const openTab = useEntityEditorTabs((store) => store.openTab)
     const entity = useEditorState((state) => state.entities.get(props.entityId))
     const diff = useEditorState((state) => state.getEntityDiff(props.entityId))
+    const activeRoles = useActiveEntityRules(props.entityId)
 
     const hasUnsavedChanges = useMemo(() => {
         return entity ? diff !== Diff.None : false
@@ -22,6 +25,11 @@ export const EntityBrowserItem = memo(function EntityBrowserItem(props: { entity
         if (!entity) return
         openTab(createEntityEditorTab(entity), true)
     }, [openTab, entity])
+
+    const activeRoleNames = useMemo(() => {
+        if (!showEntityRules) return undefined
+        return activeRoles?.map((role) => role.rule.name ?? role.rule["@id"]).join(", ")
+    }, [activeRoles, showEntityRules])
 
     if (!entity) {
         console.warn(
@@ -44,9 +52,14 @@ export const EntityBrowserItem = memo(function EntityBrowserItem(props: { entity
                     <span className="group-hover/entityBrowserItem:underline underline-offset-2">
                         {showIdInsteadOfName ? props.entityId : getEntityDisplayName(entity)}
                     </span>
-                    {showEntityType ? (
+                    {showEntityType && !activeRoleNames ? (
                         <span className="ml-2 text-xs text-muted-foreground">
-                            {toArray(entity["@type"]).join(", ")}
+                            {toArray(entity["@type"]).map(camelCaseReadable).join(", ")}
+                        </span>
+                    ) : null}
+                    {activeRoleNames ? (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                            {activeRoleNames}
                         </span>
                     ) : null}
                 </div>

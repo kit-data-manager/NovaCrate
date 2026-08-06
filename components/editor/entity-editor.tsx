@@ -206,10 +206,9 @@ export function EntityEditor({
                 goToFileExplorer={canHavePreview ? showInFileExplorer : undefined}
             />
 
-            <div className="pt-12 p-4 pr-10 overflow-y-auto max-w-full">
+            <div className="p-4 overflow-y-auto max-w-full">
                 <div className="flex justify-between items-center">
                     <h2 className="text-3xl font-bold flex items-center gap-4">
-                        <EntityBadge entity={entity} size="lg" />
                         <span className="break-all">{displayName}</span>
                     </h2>
                     <div className="gap-2 flex entity-validation-overview">
@@ -217,7 +216,10 @@ export function EntityEditor({
                     </div>
                 </div>
 
-                <ProfileInsights entity={entity} />
+                <div className="flex items-center gap-1 pt-1">
+                    <EntityBadge entity={entity} />
+                    <ProfileInsights entity={entity} />
+                </div>
 
                 <WebWorkerWarning />
                 <InternalEntityHint entity={entity} />
@@ -250,13 +252,15 @@ export function EntityEditor({
                             </div>
                         )
                     })}
-                    <ActionButton
-                        actionId={"entity.add-property"}
-                        size="sm"
-                        variant="outline"
-                        className="text-xs"
-                        noShortcut
-                    />
+                    <div className="flex justify-end pr-8">
+                        <ActionButton
+                            actionId={"entity.add-property"}
+                            size="sm"
+                            variant="outline"
+                            className="text-xs"
+                            noShortcut
+                        />
+                    </div>
                 </div>
             </div>
         </div>

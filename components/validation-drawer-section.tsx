@@ -35,7 +35,10 @@ export function ValidationDrawerSection({
 
     return (
         <div>
-            <div className="flex items-center gap-2 hover:bg-muted rounded">
+            <div
+                className="flex items-center gap-1 hover:bg-muted rounded"
+                onDoubleClick={toggleOpen}
+            >
                 <Button size="icon" variant="ghost" className={`shrink-0`} onClick={toggleOpen}>
                     <ChevronRight className={`size-4 ${open ? "rotate-90" : ""}`} />
                 </Button>
