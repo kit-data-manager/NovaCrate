@@ -108,7 +108,6 @@ export const PropertyEditor = memo(function PropertyEditor({
                 )
             )
         }
-        console.log(result)
         return result
     }, [profilePropertyRules, profileService, resolver, worker])
 
