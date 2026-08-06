@@ -84,6 +84,51 @@ function AddCustomProfile({ addCustom }: { addCustom(uri: string): void }) {
     )
 }
 
+function RecommendedProfile({
+    profile,
+    activeProfileURIs,
+    removeProfile,
+    addProfile
+}: {
+    profile: { uri: string; name: string; description: string; icon: LucideIcon }
+    activeProfileURIs: string[]
+    removeProfile: (uri: string) => void
+    addProfile: (uri: string) => void
+}) {
+    const isActive = useMemo(() => {
+        return activeProfileURIs.find(
+            (uri) =>
+                uri === profile.uri || uri.startsWith(profile.uri) || profile.uri.startsWith(uri)
+        )
+    }, [profile.uri, activeProfileURIs])
+
+    return (
+        <div className="p-2 border rounded-lg flex">
+            <profile.icon className="size-10 p-1 self-center" />
+            <div className="p-2 grow">
+                <div className="font-semibold">{profile.name}</div>
+                <div className="text-sm">{profile.description}</div>
+            </div>
+            {isActive ? (
+                <Button
+                    variant="destructive"
+                    className="self-center justify-self-end"
+                    onClick={() => removeProfile(isActive)}
+                >
+                    Remove
+                </Button>
+            ) : (
+                <Button
+                    className="self-center justify-self-end"
+                    onClick={() => addProfile(profile.uri)}
+                >
+                    Activate
+                </Button>
+            )}
+        </div>
+    )
+}
+
 export function ManageProfilesModal() {
     const profileService = useProfileService()
     const [tabState, setTabState] = useState("active")
@@ -185,35 +230,14 @@ export function ManageProfilesModal() {
 
                     <TabsContent value={"recommended"}>
                         <div>
-                            {RECOMMENDED_PROFILES.map((profile, i) => (
-                                <div key={i} className="p-2 border rounded-lg flex">
-                                    <profile.icon className="size-10 p-1 self-center" />
-                                    <div className="p-2 grow">
-                                        <div className="font-semibold">{profile.name}</div>
-                                        <div className="text-sm">{profile.description}</div>
-                                    </div>
-                                    {profileURIs.find(
-                                        (uri) =>
-                                            uri === profile.uri ||
-                                            uri.startsWith(profile.uri) ||
-                                            profile.uri.startsWith(uri)
-                                    ) ? (
-                                        <Button
-                                            variant="destructive"
-                                            className="self-center justify-self-end"
-                                            onClick={() => removeProfile(profile.uri)}
-                                        >
-                                            Remove
-                                        </Button>
-                                    ) : (
-                                        <Button
-                                            className="self-center justify-self-end"
-                                            onClick={() => addProfile(profile.uri)}
-                                        >
-                                            Activate
-                                        </Button>
-                                    )}
-                                </div>
+                            {RECOMMENDED_PROFILES.map((profile) => (
+                                <RecommendedProfile
+                                    key={profile.uri}
+                                    profile={profile}
+                                    activeProfileURIs={profileURIs}
+                                    removeProfile={removeProfile}
+                                    addProfile={addProfile}
+                                />
                             ))}
                         </div>
                     </TabsContent>
