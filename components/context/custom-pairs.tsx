@@ -161,42 +161,43 @@ export function CustomPairs() {
                 </Button>
             </div>
             <Error error={removePairError} title="Failed to remove pair" />
-            <Table>
-                <TableCaption>
-                    Custom context pairs define extensions to your base specification.
-                </TableCaption>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Key</TableHead>
-                        <TableHead>Value</TableHead>
-                        <TableHead className="w-[200px]">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {customPairs.map((pair) => (
-                        <TableRow key={pair.key}>
-                            <TableCell className="font-medium">{pair.key}</TableCell>
-                            <TableCell>{pair.value}</TableCell>
-                            <TableCell className="flex gap-2">
-                                <Button
-                                    variant="destructive"
-                                    onClick={() => removePair(pair.key)}
-                                    disabled={removing}
-                                >
-                                    <Trash className="size-4 mr-2" /> Delete
-                                </Button>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                    {customPairs.length === 0 ? (
+            <div className="border border-border rounded-lg">
+                <Table>
+                    <TableHeader>
                         <TableRow>
-                            <TableCell className="p-4 text-muted-foreground">
-                                No Custom Context pairs have been configured
-                            </TableCell>
+                            <TableHead>Key</TableHead>
+                            <TableHead>Value</TableHead>
+                            <TableHead className="w-[200px]">Actions</TableHead>
                         </TableRow>
-                    ) : null}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {customPairs.map((pair) => (
+                            <TableRow key={pair.key}>
+                                <TableCell className="font-medium">{pair.key}</TableCell>
+                                <TableCell>{pair.value}</TableCell>
+                                <TableCell className="flex gap-2">
+                                    <Button
+                                        variant="destructive"
+                                        onClick={() => removePair(pair.key)}
+                                        disabled={removing}
+                                    >
+                                        <Trash className="size-4 mr-2" /> Delete
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                        {customPairs.length === 0 ? (
+                            <TableRow>
+                                <TableCell className="p-4 text-muted-foreground">
+                                    No Custom Context pairs have been configured
+                                </TableCell>
+                                <TableCell />
+                                <TableCell />
+                            </TableRow>
+                        ) : null}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     )
 }

@@ -2,11 +2,11 @@ import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { z } from "zod/mini"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { hasAtLeastOneValue, isValidUrl, pickFirst, toArray } from "@/lib/utils"
-import { stringifyError } from "@/components/error"
 import { IMetadataService } from "@/lib/core/IMetadataService"
 import { AbstractProfileHandler } from "@/lib/core/profiles/impl/AbstractProfileHandler"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
+import { ProfileHandlerError } from "@/lib/core/profiles/impl/ProfileHandlerError"
 
 const MASPClass = z.object({
     "@id": z.string(),
@@ -96,8 +96,14 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                 })
             } else {
                 this.errors.push(
-                    `Failed to parse MASP class rule with id "${unparsedClassRule["@id"]}"}: ` +
-                        parsedClassRule.error.message
+                    new ProfileHandlerError(
+                        `Failed to parse MASP class rule with id "${unparsedClassRule["@id"]}"`,
+                        {
+                            cause: parsedClassRule.error,
+                            profileUri: profileUri,
+                            handlerName: this.name
+                        }
+                    )
                 )
             }
         }
@@ -119,7 +125,14 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                 } catch (e) {
                     console.error(`Failed to determine options for property ${d["@id"]}`, e)
                     this.errors.push(
-                        `Failed to determine options for property ${d["@id"]}:` + stringifyError(e)
+                        new ProfileHandlerError(
+                            `Failed to determine options for property ${d["@id"]}`,
+                            {
+                                cause: e,
+                                profileUri: profileUri,
+                                handlerName: this.name
+                            }
+                        )
                     )
                 }
 
@@ -145,8 +158,14 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                 })
             } else {
                 this.errors.push(
-                    `Failed to parse MASP property rule with id "${unparsedPropertyRule["@id"]}"}: ` +
-                        parsedPropertyRule.error.message
+                    new ProfileHandlerError(
+                        `Failed to parse MASP property rule with id "${unparsedPropertyRule["@id"]}"`,
+                        {
+                            cause: parsedPropertyRule.error.message,
+                            profileUri: profileUri,
+                            handlerName: this.name
+                        }
+                    )
                 )
             }
         }
@@ -174,8 +193,14 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                 })
             } else {
                 this.errors.push(
-                    `Failed to parse MASP property value rule with id "${unparsedPropertyValueRule["@id"]}"}: ` +
-                        parsedPropertyValueRule.error.message
+                    new ProfileHandlerError(
+                        `Failed to parse MASP property value rule with id "${unparsedPropertyValueRule["@id"]}"`,
+                        {
+                            cause: parsedPropertyValueRule.error.message,
+                            profileUri: profileUri,
+                            handlerName: this.name
+                        }
+                    )
                 )
             }
         }
@@ -337,8 +362,13 @@ export class MASPProfileHandler extends AbstractProfileHandler {
         super.updateEntityMapping(entities)
     }
 
-    private pushError(error: unknown) {
-        this.errors.push(stringifyError(error))
+    private pushError(error: string) {
+        this.errors.push(
+            new ProfileHandlerError(error, {
+                profileUri: this.profileUri,
+                handlerName: this.name
+            })
+        )
         this._events.emit("error-emitted")
     }
 

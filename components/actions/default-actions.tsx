@@ -13,7 +13,8 @@ import {
     Undo2,
     FileIcon,
     Info,
-    SparklesIcon
+    SparklesIcon,
+    LibraryIcon
 } from "lucide-react"
 import { generateCratePreview } from "@/lib/ro-crate-preview"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
@@ -21,8 +22,13 @@ import { toast } from "sonner"
 import { useLayoutState } from "@/lib/state/layout-state"
 
 export default function DefaultActions() {
-    const { showCreateEntityModal, showGlobalSearchModal, showSettingsModal, showAboutModal } =
-        useContext(GlobalModalContext)
+    const {
+        showCreateEntityModal,
+        showGlobalSearchModal,
+        showSettingsModal,
+        showAboutModal,
+        showManageProfilesModal
+    } = useContext(GlobalModalContext)
     const persistence = usePersistence()
     const { createFileEntity } = useCrateMutations()
     const revertAllEntities = useEditorState((store) => store.revertAllEntities)
@@ -101,6 +107,10 @@ export default function DefaultActions() {
 
     useRegisterAction("editor.toggle-ai-assistant", "Toggle AI Assistant", toggleAIAssistant, {
         icon: SparklesIcon
+    })
+
+    useRegisterAction("crate.manage-profiles", "Manage Profiles", showManageProfilesModal, {
+        icon: LibraryIcon
     })
 
     return null
