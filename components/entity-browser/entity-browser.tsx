@@ -176,6 +176,12 @@ export function EntityBrowser() {
                                 Show Entity Type
                             </DropdownMenuCheckboxItem>
                             <DropdownMenuCheckboxItem
+                                checked={state.showEntityRules}
+                                onClick={() => state.setShowEntityRules(!state.showEntityRules)}
+                            >
+                                Show Entity Rule
+                            </DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem
                                 checked={state.showIdInsteadOfName}
                                 onClick={() =>
                                     state.setShowIdInsteadOfName(!state.showIdInsteadOfName)
