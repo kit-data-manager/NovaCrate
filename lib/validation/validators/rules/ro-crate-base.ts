@@ -201,6 +201,16 @@ export const RoCrateBase = {
                                 propertyIndex: i
                             })
                         )
+                    } else if (PropertyValueUtils.isString(v) && propertyValue(v).isEmpty()) {
+                        results.push(
+                            builder.rule("emptyProperty").warning({
+                                resultTitle: `Empty property`,
+                                resultDescription: `The property is empty. You should either remove it or enter a value.`,
+                                entityId: entity["@id"],
+                                propertyName,
+                                propertyIndex: i
+                            })
+                        )
                     }
                 })
             } catch (e) {
