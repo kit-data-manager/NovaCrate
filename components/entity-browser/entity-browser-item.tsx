@@ -41,15 +41,10 @@ export const EntityBrowserItem = memo(function EntityBrowserItem(props: { entity
 
     return (
         <EntityContextMenu entity={entity} asChild>
-            <Button
-                size="sm"
-                variant="list-entry"
-                className="group/entityBrowserItem shrink-0"
-                onClick={openSelf}
-            >
+            <Button size="sm" variant="list-entry" className="shrink-0" onClick={openSelf}>
                 <EntityIcon entity={entity} unsavedChanges={hasUnsavedChanges} />
                 <div className="truncate">
-                    <span className="group-hover/entityBrowserItem:underline underline-offset-2">
+                    <span>
                         {showIdInsteadOfName ? props.entityId : getEntityDisplayName(entity)}
                     </span>
                     {showEntityType && !activeRoleNames ? (
