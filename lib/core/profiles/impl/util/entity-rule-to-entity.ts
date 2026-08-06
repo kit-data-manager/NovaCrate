@@ -32,7 +32,7 @@ export async function createEntityForRule(
     return base
 }
 
-async function getDefaultValue(
+export async function getDefaultValue(
     profileHandler: IProfileHandler,
     propertyRule: PropertyRule,
     resolver: IContextResolverService,

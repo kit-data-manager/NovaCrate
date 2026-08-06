@@ -8,6 +8,8 @@ import { editorState } from "@/lib/state/editor-state"
 import { propertyValue } from "@/lib/property-value-utils"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { PropertyValueRule } from "@/lib/core/profiles/types/PropertyValueRule"
+import { getDefaultValue } from "@/lib/core/profiles/impl/util/entity-rule-to-entity"
+import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 
 export class ProfileValidator extends Validator {
     name = "ProfileValidator"
@@ -100,13 +102,46 @@ export class ProfileValidator extends Validator {
         results: ValidationResultWithoutTrace[],
         entity: IEntity
     ) {
+        const handler = this.getContext().profileService.getProfileHandler(propertyRule.onHandler)
         if (propertyRule.minCount !== undefined && propertyCount < propertyRule.minCount) {
             if (propertyRule.minCount === 1) {
                 results.push(
                     this.resultBuilder.rule("missingMandatoryProperty").error({
                         resultTitle: `Missing \`${propertyRule.label}\` property`,
                         resultDescription: `The mandatory property \`${propertyRule.label}\` is missing from this entity`,
-                        entityId: entity["@id"]
+                        entityId: entity["@id"],
+                        actions: handler
+                            ? [
+                                  {
+                                      name: "add-property",
+                                      displayName: "Add",
+                                      dispatch: async () => {
+                                          editorState
+                                              .getState()
+                                              .addPropertyEntry(
+                                                  entity["@id"],
+                                                  propertyRule.label,
+                                                  await getDefaultValue(
+                                                      handler,
+                                                      propertyRule,
+                                                      this.getContext().resolver,
+                                                      this.getContext().schemaWorker.worker
+                                                  )
+                                              )
+                                          setTimeout(
+                                              () =>
+                                                  useEntityEditorTabs
+                                                      .getState()
+                                                      .focusProperty(
+                                                          entity["@id"],
+                                                          propertyRule.label
+                                                      ),
+                                              100
+                                          )
+                                      }
+                                  }
+                              ]
+                            : []
                     })
                 )
             } else {
@@ -114,7 +149,46 @@ export class ProfileValidator extends Validator {
                     this.resultBuilder.rule("tooFewMandatoryProperties").error({
                         resultTitle: `Property \`${propertyRule.label}\` too few entries`,
                         resultDescription: `The mandatory property \`${propertyRule.label}\` must be present at least ${propertyRule.minCount} times`,
-                        entityId: entity["@id"]
+                        entityId: entity["@id"],
+                        actions: handler
+                            ? [
+                                  {
+                                      name: "add-property",
+                                      displayName: "Add",
+                                      dispatch: async () => {
+                                          const value = await getDefaultValue(
+                                              handler,
+                                              propertyRule,
+                                              this.getContext().resolver,
+                                              this.getContext().schemaWorker.worker
+                                          )
+                                          for (
+                                              let i = propertyCount;
+                                              i < (propertyRule.minCount ?? 0);
+                                              i++
+                                          ) {
+                                              editorState
+                                                  .getState()
+                                                  .addPropertyEntry(
+                                                      entity["@id"],
+                                                      propertyRule.label,
+                                                      value
+                                                  )
+                                          }
+                                          setTimeout(
+                                              () =>
+                                                  useEntityEditorTabs
+                                                      .getState()
+                                                      .focusProperty(
+                                                          entity["@id"],
+                                                          propertyRule.label
+                                                      ),
+                                              100
+                                          )
+                                      }
+                                  }
+                              ]
+                            : []
                     })
                 )
             }
