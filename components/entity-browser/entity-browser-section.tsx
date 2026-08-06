@@ -1,8 +1,6 @@
 import { useStoreWithEqualityFn } from "zustand/traditional"
 import { editorState } from "@/lib/state/editor-state"
 import React, { memo, useCallback, useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { ChevronDown } from "lucide-react"
 import { EntityBrowserItem } from "@/components/entity-browser/entity-browser-item"
 import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { getEntityDisplayName, toArray } from "@/lib/utils"

@@ -20,14 +20,13 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
-import { ActionButton, ActionContextMenuItem } from "@/components/actions/action-buttons"
+import { ActionButton } from "@/components/actions/action-buttons"
 import { PropertyOverview } from "@/components/editor/property-overview"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { DefaultSectionOpen } from "@/components/entity-browser/entity-browser-section"
 import { EntityBrowserContent } from "@/components/entity-browser/entity-browser-content"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useDefaultLayout, usePanelRef } from "react-resizable-panels"
-import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@/components/ui/context-menu"
 
 export function EntityBrowser() {
     const state = useEntityBrowserSettings()
