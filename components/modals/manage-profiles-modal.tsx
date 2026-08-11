@@ -33,6 +33,7 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { ProfileHandlerError } from "@/lib/core/profiles/impl/ProfileHandlerError"
 import { Badge } from "@/components/ui/badge"
+import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 
 const RECOMMENDED_PROFILES: {
     uri: string
@@ -153,6 +154,9 @@ export function ManageProfilesModal({
     const profileService = useProfileService()
     const [tabState, setTabState] = useState("active")
     const [profileURIs, setProfileURIs] = useState<string[]>(() => profileService.getProfileURIs())
+    const [profileHandlers, setProfileHandlers] = useState(() =>
+        profileService.getProfileHandlers()
+    )
     const [errors, setErrors] = useState<ProfileHandlerError[]>([])
     const removePropertyEntry = useEditorState((s) => s.removePropertyEntry)
     const addPropertyEntry = useEditorState((s) => s.addPropertyEntry)
@@ -162,18 +166,23 @@ export function ManageProfilesModal({
 
     useEffect(() => {
         setProfileURIs(profileService.getProfileURIs())
+        setProfileHandlers(profileService.getProfileHandlers())
         setErrors(profileService.getAllErrors())
         const remove1 = profileService.events.addEventListener("profile-uris-changed", (uris) => {
             setProfileURIs(uris)
             setErrors(profileService.getAllErrors())
         })
-        const remove2 = profileService.events.addEventListener("error-emitted", () =>
+        const remove2 = profileService.events.addEventListener("profiles-changed", (handlers) => {
+            setProfileHandlers(handlers)
+        })
+        const remove3 = profileService.events.addEventListener("error-emitted", () =>
             setErrors(profileService.getAllErrors())
         )
 
         return () => {
             remove1()
             remove2()
+            remove3()
         }
     }, [profileService])
 
@@ -248,6 +257,7 @@ export function ManageProfilesModal({
                                         <ProfileRow
                                             key={uri + i}
                                             uri={uri}
+                                            profileHandlers={profileHandlers}
                                             removeProfile={() => removeProfile(uri)}
                                             errors={errors.filter((e) => e.profileUri === uri)}
                                         />
@@ -282,18 +292,18 @@ export function ManageProfilesModal({
 
 export function ProfileRow({
     uri,
+    profileHandlers,
     removeProfile,
     errors
 }: {
     uri: string
+    profileHandlers: IProfileHandler[]
     removeProfile(): void
     errors: ProfileHandlerError[]
 }) {
-    const profileService = useProfileService()
-
     const hasHandler = useMemo(() => {
-        return profileService.getProfileHandlers().find((handler) => handler.profileUri === uri)
-    }, [profileService, uri])
+        return profileHandlers.find((handler) => handler.profileUri === uri)
+    }, [profileHandlers, uri])
 
     return (
         <TableRow className={hasHandler ? "" : "bg-error/10 hover:bg-error/20"}>
@@ -305,7 +315,7 @@ export function ProfileRow({
                 )}
             </TableCell>
             <TableCell>
-                {hasHandler ? hasHandler.getDefinition()!.name : `Unsupported (uri: ${uri})`}{" "}
+                {hasHandler ? hasHandler.getDefinition()!.name : `${uri}`}{" "}
                 {errors.length > 0 && (
                     <Popover>
                         <PopoverTrigger asChild>
