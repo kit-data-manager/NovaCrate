@@ -128,7 +128,11 @@ export const PropertyEditor = memo(function PropertyEditor({
         worker
     ])
 
-    const { data: propertyRange, error: propertyRangeError } = useSWR(
+    const {
+        data: propertyRange,
+        error: propertyRangeError,
+        mutate: reloadPropertyRange
+    } = useSWR(
         schemaWorkerReady && crateContextReady
             ? "property-type-range-" + property.propertyName
             : null,
@@ -150,11 +154,18 @@ export const PropertyEditor = memo(function PropertyEditor({
     const {
         data: comment,
         error: commentError,
-        isLoading: commentIsPending
+        isLoading: commentIsPending,
+        mutate: reloadComments
     } = useSWR(
         schemaWorkerReady && crateContextReady ? "property-comment-" + property.propertyName : null,
         propertyCommentResolver
     )
+
+    useEffect(() => {
+        // Reload comments and property range when the profile property rules change
+        reloadPropertyRange().then()
+        reloadComments().then()
+    }, [profilePropertyRules, reloadComments, reloadPropertyRange])
 
     const [expandComment, setExpandComment] = useState(false)
 
