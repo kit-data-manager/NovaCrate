@@ -4,6 +4,7 @@ import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { PropertyValueRule } from "@/lib/core/profiles/types/PropertyValueRule"
 import { ProfileHandlerError } from "@/lib/core/profiles/impl/ProfileHandlerError"
+import { IMetadataService } from "@/lib/core/IMetadataService"
 
 export type IProfileHandlerEvents = {
     /**
@@ -101,6 +102,12 @@ export interface IProfileHandler {
      * @param entityRuleId id of the entity rule
      */
     getPropertyRulesFor(entityRuleId: string): PropertyRule[]
+
+    /**
+     * Attach this profile handler to the metadata service to automatically update its entity mapping (see {@link getEntityMapping})
+     * @param metadataService The currently active metadata service from core
+     */
+    attach(metadataService: IMetadataService): void
 
     /**
      * Discard the profile. This will remove any event listeners this profile has registered.
