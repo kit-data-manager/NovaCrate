@@ -5,7 +5,7 @@ import { isValidUrl, toArray } from "@/lib/utils"
 import { ValidationResultBuilder } from "@/lib/validation/validation-result-builder"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { editorState } from "@/lib/state/editor-state"
-import { propertyValue } from "@/lib/property-value-utils"
+import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { PropertyValueRule } from "@/lib/core/profiles/types/PropertyValueRule"
 import { getDefaultValue } from "@/lib/core/profiles/impl/util/entity-rule-to-entity"
@@ -215,10 +215,8 @@ export class ProfileValidator extends Validator {
     ) {
         if (!propertyRule.rangeIncludes) return
 
-        // TODO what to validate for entity rules and types?
         const entityRules: EntityRule[] = []
         const propertyValueRules: PropertyValueRule[] = []
-        const types: string[] = []
 
         // Classify each entry into one of the categories above. Types is the fallback category
         for (const targetElementId of propertyRule.rangeIncludes) {
@@ -227,11 +225,49 @@ export class ProfileValidator extends Validator {
             else {
                 const _propertyValueRule = this.profileHandler.getPropertyValueRule(targetElementId)
                 if (_propertyValueRule) propertyValueRules.push(_propertyValueRule)
-                else types.push(targetElementId)
             }
         }
 
         this.validatePropertyValueRules(entity, property, propertyRule, propertyValueRules, results)
+
+        propertyValue(property).forEach((value, i) => {
+            if (PropertyValueUtils.isRef(value)) {
+                const target = this.getContext().editorState.getEntities().get(value["@id"])
+                if (!target) return
+
+                const resolved = toArray(target["@type"]).map(
+                    (type) => this.getContext().resolver.resolve(type) ?? type
+                )
+
+                let match = false
+                for (const entityRule of entityRules) {
+                    if (!entityRule.specializationOf) {
+                        match = true
+                        continue
+                    }
+
+                    const missingTypes = entityRule.specializationOf!.filter(
+                        (type) => !resolved.includes(type)
+                    )
+                    if (missingTypes.length === 0) {
+                        match = true
+                    }
+                }
+
+                if (!match) {
+                    results.push(
+                        this.resultBuilder.rule("mismatchingEntityType").error({
+                            resultTitle:
+                                "The referenced entity does not match any of the required types",
+                            resultDescription: `The referenced entity is expected to be one of: ${entityRules.map((r) => "`" + (r.name ?? r.label) + "`").join(", ")}`,
+                            entityId: entity["@id"],
+                            propertyName: propertyRule.label,
+                            propertyIndex: i
+                        })
+                    )
+                }
+            }
+        })
     }
 
     private validatePropertyValueRules(
