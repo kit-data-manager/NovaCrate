@@ -44,7 +44,8 @@ const RECOMMENDED_PROFILES: {
     {
         uri: "https://w3id.org/workflowhub/workflow-ro-crate/1.0",
         name: "Workflow Profile",
-        description: "The description of the workflow profile",
+        description:
+            "This profile is used by the WorkflowHub both as downloadable archives of workflow entries and their metadata, but also for manual and programmatic upload of workflows",
         icon: CogIcon
     }
 ]
@@ -119,7 +120,7 @@ function RecommendedProfile({
 
     return (
         <div className="p-2 border rounded-lg flex">
-            <profile.icon className="size-10 p-1 self-center" />
+            <profile.icon className="size-10 p-1 self-center shrink-0" />
             <div className="p-2 grow">
                 <div className="font-semibold">{profile.name}</div>
                 <div className="text-sm">{profile.description}</div>
@@ -282,6 +283,15 @@ export function ManageProfilesModal({
                                     addProfile={addProfile}
                                 />
                             ))}
+                        </div>
+                        <div className="flex justify-center pt-2 text-sm text-muted-foreground gap-1">
+                            Want to see more profiles in this list?{" "}
+                            <Link
+                                href={"https://github.com/kit-data-manager/NovaCrate/issues/new"}
+                                target={"_blank"}
+                            >
+                                Open an issue on GitHub
+                            </Link>
                         </div>
                     </TabsContent>
                 </Tabs>
