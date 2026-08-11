@@ -44,7 +44,7 @@ export function Profiles() {
             {profiles.length === 0 && (
                 <div className="text-sm text-muted-foreground">No profiles are active</div>
             )}
-            <div className="grid grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 xl:grid-cols-3 gap-2">
                 {profiles.map((profile) => (
                     <Profile profile={profile} key={profile.id} />
                 ))}
