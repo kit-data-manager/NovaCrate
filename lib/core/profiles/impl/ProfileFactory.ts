@@ -68,11 +68,19 @@ export class ProfileFactory {
                 })
             }
         } else {
-            // TODO Resolve external profile crate
-            throw new ProfileHandlerError(
-                `Unknown profile URI: ${profileURI}. Unknown profiles are not supported yet`,
-                { profileUri: profileURI }
-            )
+            const resolver = new CrateResolver(this.resolverOptions)
+            try {
+                const resolved = await resolver.resolveCrate(profileURI)
+                profileMetadata = resolved.metadata
+                profileCrateFiles = resolved.fileService
+            } catch (e) {
+                throw e instanceof ProfileHandlerError
+                    ? e
+                    : new ProfileHandlerError(
+                          `Failed to resolve external profile crate ${profileURI}`,
+                          { cause: e, profileUri: profileURI }
+                      )
+            }
         }
 
         function tryIsApplicable(strategy: IProfileFactoryStrategy): boolean {
