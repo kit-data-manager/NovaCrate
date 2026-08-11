@@ -266,7 +266,7 @@ export class ProfileValidator extends Validator {
                     results.push(
                         this.resultBuilder.rule("missingMandatoryPropertyValue").error({
                             resultTitle: "Missing mandatory value",
-                            resultDescription: `This property must contain ${typeof propertyValueRule.value === "object" ? "a reference to `" + propertyValueRule.value + "`" : "the value `" + propertyValueRule.value + "`"}`,
+                            resultDescription: `This property must contain ${typeof propertyValueRule.value === "object" ? "a reference to `" + propertyValueRule.value["@id"] + "`" : "the value `" + propertyValueRule.value + "`"}`,
                             entityId: entity["@id"],
                             propertyName: propertyRule.label,
                             actions: [
@@ -286,7 +286,7 @@ export class ProfileValidator extends Validator {
                     results.push(
                         this.resultBuilder.rule("tooFewMandatoryPropertyValues").error({
                             resultTitle: "Too few mandatory values",
-                            resultDescription: `This property must contain ${typeof propertyValueRule.value === "object" ? "a reference to `" + propertyValueRule.value + "`" : "the value `" + propertyValueRule.value + "`"} at least ${propertyValueRule.minCount} times`,
+                            resultDescription: `This property must contain ${typeof propertyValueRule.value === "object" ? "a reference to `" + propertyValueRule.value["@id"] + "`" : "the value `" + propertyValueRule.value + "`"} at least ${propertyValueRule.minCount} times`,
                             entityId: entity["@id"],
                             propertyName: propertyRule.label,
                             actions: [
@@ -316,7 +316,7 @@ export class ProfileValidator extends Validator {
                     results.push(
                         this.resultBuilder.rule("tooManyPropertyValues").error({
                             resultTitle: "Too many values",
-                            resultDescription: `This property must contain ${typeof propertyValueRule.value === "object" ? "a reference to `" + propertyValueRule.value + "`" : "the value `" + propertyValueRule.value + "`"} no more than ${propertyValueRule.maxCount} times`,
+                            resultDescription: `This property must contain ${typeof propertyValueRule.value === "object" ? "a reference to `" + propertyValueRule.value["@id"] + "`" : "the value `" + propertyValueRule.value + "`"} no more than ${propertyValueRule.maxCount} times`,
                             entityId: entity["@id"],
                             propertyName: propertyRule.label,
                             propertyIndex: i,
