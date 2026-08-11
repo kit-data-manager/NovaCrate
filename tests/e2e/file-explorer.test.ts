@@ -40,7 +40,13 @@ test("file explorer should associate entities correctly", async ({ page }) => {
             button: "right"
         })
     await page.getByRole("menuitem", { name: "Create Entity" }).click()
-    await page.locator("div").filter({ hasText: "FileImport a new single file" }).nth(2).click()
+    await page
+        .locator("div")
+        .filter({
+            hasText: /^FileImport a new single file into the Crate and create a data entity for it$/
+        })
+        .nth(1)
+        .click()
     await page.getByRole("textbox", { name: "Entity Name" }).click()
     await page.getByRole("textbox", { name: "Entity Name" }).press("ControlOrMeta+a")
     await page.getByRole("textbox", { name: "Entity Name" }).fill("Test results")
@@ -117,7 +123,13 @@ test("uploading with tree picker works", async ({ page }) => {
     ).toBeVisible()
     await page.getByRole("link", { name: "Entity Editor" }).getByRole("button").click()
     await page.getByRole("button", { name: "Add new Entity" }).click()
-    await page.locator("div").filter({ hasText: "FileImport a new single file" }).nth(2).click()
+    await page
+        .locator("div")
+        .filter({
+            hasText: /^FileImport a new single file into the Crate and create a data entity for it$/
+        })
+        .nth(1)
+        .click()
     await page.getByTestId("path-picker-extraData/").click()
     await page.getByRole("button", { name: "Select File" }).click()
     await page
@@ -125,12 +137,9 @@ test("uploading with tree picker works", async ({ page }) => {
         .setInputFiles("tests/data/TestFolder/img/candles-9247498_1280.jpg")
     await page.getByRole("button", { name: "Create" }).click()
     await page.getByRole("button", { name: "F candles-9247498_1280.jpgFile" }).click()
-    await expect(page.locator("body")).toMatchAriaSnapshot(`
-    - heading "File candles-9247498_1280.jpg" [level=2]:
-      - button "File"
-      - text: candles-9247498_1280.jpg
-    - button
-    - text: Identifier
+    await expect(page.getByTestId("entity-editor")).toMatchAriaSnapshot(`
+    - heading "candles-9247498_1280.jpg" [level=2]
+    - text: File Identifier
     - paragraph: The unique identifier of the entity
     - text: extraData/candles-9247498_1280.jpg
     - button
