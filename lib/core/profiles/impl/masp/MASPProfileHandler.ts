@@ -2,7 +2,6 @@ import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { z } from "zod/mini"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { hasAtLeastOneValue, isValidUrl, pickFirst, toArray } from "@/lib/utils"
-import { IMetadataService } from "@/lib/core/IMetadataService"
 import { AbstractProfileHandler } from "@/lib/core/profiles/impl/AbstractProfileHandler"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
@@ -63,10 +62,9 @@ export class MASPProfileHandler extends AbstractProfileHandler {
         profileUri: string,
         rootEntity: IEntity,
         maspEntities: IEntity[],
-        private context: IContextResolverService,
-        metadataService: IMetadataService
+        private context: IContextResolverService
     ) {
-        super(profileUri, rootEntity, metadataService)
+        super(profileUri, rootEntity)
         this.autoResolveTerm = this.autoResolveTerm.bind(this)
 
         //
@@ -205,8 +203,6 @@ export class MASPProfileHandler extends AbstractProfileHandler {
             }
         }
 
-        // Listener for automatic updates is attached in the abstract superclass
-        this.updateEntityMapping(metadataService.getEntities())
         console.log(`Done with parsing MASP profile ${this.definition.name}`, this.definition)
     }
 

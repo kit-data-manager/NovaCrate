@@ -23,22 +23,14 @@ export abstract class AbstractProfileHandler implements IProfileHandler {
     protected errors: ProfileHandlerError[] = []
     protected entityMapping: Map<string, string> = new Map()
 
-    private readonly _discardListener: () => void
+    private _discardListener?: () => void
 
     protected constructor(
         public readonly profileUri: string,
-        rootEntity: IEntity,
-        metadataService: IMetadataService
+        rootEntity: IEntity
     ) {
         this.id = crypto.randomUUID()
         this.definition = buildProfileDefinitionFromRootEntity(rootEntity, this.id)
-
-        this._discardListener = metadataService.events.addEventListener(
-            "graph-changed",
-            (entities) => {
-                this.updateEntityMapping(entities)
-            }
-        )
     }
 
     getIsReady(): boolean {
@@ -79,7 +71,17 @@ export abstract class AbstractProfileHandler implements IProfileHandler {
         this._events.emit("mapping-updated")
     }
 
+    attach(metadataService: IMetadataService) {
+        this.updateEntityMapping(metadataService.getEntities())
+        this._discardListener = metadataService.events.addEventListener(
+            "graph-changed",
+            (entities) => {
+                this.updateEntityMapping(entities)
+            }
+        )
+    }
+
     discard() {
-        this._discardListener()
+        this._discardListener?.()
     }
 }

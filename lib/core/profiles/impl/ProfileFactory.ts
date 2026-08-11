@@ -6,8 +6,10 @@ import { IProfileFactoryStrategy } from "@/lib/core/profiles/IProfileFactoryStra
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { MASPStrategy } from "@/lib/core/profiles/impl/masp/MASPStrategy"
 import { GenericStrategy } from "@/lib/core/profiles/impl/generic/GenericStrategy"
-import { IMetadataService } from "@/lib/core/IMetadataService"
 import { ProfileHandlerError } from "@/lib/core/profiles/impl/ProfileHandlerError"
+import { NoOpReadOnlyFileService } from "@/lib/core/profiles/impl/NoOpReadOnlyFileService"
+import { CrateResolver, CrateResolverOptions } from "@/lib/core/profiles/impl/CrateResolver"
+import { IReadOnlyFileService } from "@/lib/core/persistence/IReadOnlyFileService"
 
 const KNOWN_PROFILES: {
     uri: string
@@ -39,17 +41,23 @@ const STRATEGIES: IProfileFactoryStrategy[] = [new MASPStrategy(), new GenericSt
  * add the implementation to the `STRATEGIES` array.
  */
 export class ProfileFactory {
+    private readonly resolverOptions: CrateResolverOptions
+
+    constructor(resolverOptions: CrateResolverOptions = {}) {
+        this.resolverOptions = resolverOptions
+    }
+
     /**
      * Attempts to create a profile from the given profile URI. If the provided profileURI is known, the corresponding profile
      * metadata is loaded and passed to the configured strategy. If the profileURI (or strategy) is not known, all applicable strategies are
      * tried in order. If no strategy succeeds, an error is thrown.
      * @param profileURI
-     * @param metadataService
      */
-    async createProfileFromURI(profileURI: string, metadataService: IMetadataService) {
+    async createProfileFromURI(profileURI: string) {
         const known = KNOWN_PROFILES.find((p) => p.uri === profileURI)
 
         let profileMetadata: ICrate
+        let profileCrateFiles: IReadOnlyFileService = new NoOpReadOnlyFileService()
         if (known) {
             try {
                 profileMetadata = await known.loadProfile()
@@ -69,7 +77,7 @@ export class ProfileFactory {
 
         function tryIsApplicable(strategy: IProfileFactoryStrategy): boolean {
             try {
-                return strategy.isApplicable(profileMetadata)
+                return strategy.isApplicable(profileMetadata, profileCrateFiles)
             } catch (e) {
                 console.error(
                     `Profile factory strategy ${strategy.name} threw unexpectedly in the isApplicable method`,
@@ -91,7 +99,7 @@ export class ProfileFactory {
                 result = await strategy.createProfileFromProfileCrate(
                     profileURI,
                     profileMetadata,
-                    metadataService
+                    profileCrateFiles
                 )
             } catch (e) {
                 console.warn(`Failed to create profile with strategy "${strategy.name}"`, e)

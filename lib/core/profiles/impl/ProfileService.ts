@@ -101,8 +101,9 @@ export class ProfileService implements IProfileService {
 
         for (const uri of profileURIs) {
             try {
-                const profile = await factory.createProfileFromURI(uri, this.metadata)
+                const profile = await factory.createProfileFromURI(uri)
                 if (guard !== this.setProfileURIsGuard) return // This guard will stop the current method run if another method run has started in the meantime
+                profile.attach(this.metadata)
                 this.profiles.push(profile)
                 this._events.emit("profiles-changed", this.getProfileHandlers())
 

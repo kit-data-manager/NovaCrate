@@ -4,13 +4,12 @@ import { propertyValue } from "@/lib/property-value-utils"
 import { MASPProfileHandler } from "@/lib/core/profiles/impl/masp/MASPProfileHandler"
 import { PROFILE_CRATE_SCHEMA_RESOURCE } from "@/lib/constants"
 import { GenericStrategy } from "@/lib/core/profiles/impl/generic/GenericStrategy"
-import { IMetadataService } from "@/lib/core/IMetadataService"
 import { SynchronizedContextService } from "@/lib/core/impl/SynchronizedContextService"
 
 export class MASPStrategy extends GenericStrategy implements IProfileFactoryStrategy {
     name = "MASP"
 
-    isApplicable(profileCrate: ICrate): boolean {
+    async isApplicable(profileCrate: ICrate): Promise<boolean> {
         // TODO: Should also check whether the profile conforms to the MASP Profile (once it is officially released with a PID)
         const { maspSchema } = this.findRootAndMASPSchemaEntities(profileCrate)
 
@@ -19,8 +18,7 @@ export class MASPStrategy extends GenericStrategy implements IProfileFactoryStra
 
     async createProfileFromProfileCrate(
         profileUri: string,
-        profileCrate: ICrate,
-        metadataService: IMetadataService
+        profileCrate: ICrate
     ): Promise<IProfileHandler> {
         const { root, maspSchema } = this.findRootAndMASPSchemaEntities(profileCrate)
 
@@ -33,7 +31,7 @@ export class MASPStrategy extends GenericStrategy implements IProfileFactoryStra
         })
 
         const resolver = await SynchronizedContextService.newInstance(profileCrate["@context"])
-        return new MASPProfileHandler(profileUri, root, schemaEntities, resolver, metadataService)
+        return new MASPProfileHandler(profileUri, root, schemaEntities, resolver)
     }
 
     private findRootAndMASPSchemaEntities(profileCrate: ICrate) {
