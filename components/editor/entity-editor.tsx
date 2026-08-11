@@ -185,7 +185,7 @@ export function EntityEditor({ entityId }: { entityId: string }) {
     }
 
     return (
-        <div className="w-full h-full flex flex-col">
+        <div className="w-full h-full flex flex-col" data-testid={"entity-editor"}>
             <TypeSelectModal
                 onOpenChange={setTypeSelectModalOpen}
                 open={typeSelectModalOpen}

@@ -89,7 +89,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                 ) : null}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" aria-label={"More Options"}>
                             <EllipsisVertical className="size-4" />
                         </Button>
                     </DropdownMenuTrigger>
