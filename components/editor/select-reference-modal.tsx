@@ -204,31 +204,35 @@ export function SelectReferenceModal({
                     </Command>
                 )}
 
-                <div className="flex gap-2 items-center">
-                    <Checkbox
-                        checked={isReferenceUrl}
-                        onCheckedChange={onCheckIsReferenceUrl}
-                        id="isReferenceUrl-reference"
-                    />
-                    <label htmlFor="isReferenceUrl-reference">Reference external resource</label>
-                </div>
-
-                {propertyRangeIds && (
+                <div>
                     <div className="flex gap-2 items-center">
                         <Checkbox
-                            checked={onlyShowAllowed}
-                            onCheckedChange={onCheckOnlyShowAllowed}
-                            id="onlyShowMatching-reference"
+                            checked={isReferenceUrl}
+                            onCheckedChange={onCheckIsReferenceUrl}
+                            id="isReferenceUrl-reference"
                         />
-                        <label htmlFor="onlyShowMatching-reference">
-                            Only show Entities of matching type{" "}
-                            <HelpTooltip>
-                                Only Entities that can be used in the current property will be
-                                shown. Should only be deactivated by experts.
-                            </HelpTooltip>
+                        <label htmlFor="isReferenceUrl-reference">
+                            Reference external resource
                         </label>
                     </div>
-                )}
+
+                    {propertyRangeIds && (
+                        <div className="flex gap-2 items-center">
+                            <Checkbox
+                                checked={onlyShowAllowed}
+                                onCheckedChange={onCheckOnlyShowAllowed}
+                                id="onlyShowMatching-reference"
+                            />
+                            <label htmlFor="onlyShowMatching-reference">
+                                Only show Entities of matching type{" "}
+                                <HelpTooltip>
+                                    Only Entities that can be used in the current property will be
+                                    shown. Should only be deactivated by experts.
+                                </HelpTooltip>
+                            </label>
+                        </div>
+                    )}
+                </div>
             </DialogContent>
         </Dialog>
     )
