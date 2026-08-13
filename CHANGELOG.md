@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## Unreleased
+
+### Added
+- Added profile handling to NovaCrate
+- NovaCrate will attempt to load any references profiles via the `conformsTo` property of the root entity
+  - Note that this is only expected to work for the Workflow RO-Crate Profile at the moment
+- Active profiles enhance the editor in many different places, such as the modal for creating entities and the modal for adding properties to entities
+- Added a profiles section to the context page to understand active profiles and their effects
+- Added validation for profiles based on the RO-Crate MASP proposal
+
+## Changed
+- Adjusted the design around the header of the entity editor for better clarity and space efficiency
+- Small design improvements throughout the editor
+
 ## [1.13.1] - 2026-08-04
 
 ### Changed
