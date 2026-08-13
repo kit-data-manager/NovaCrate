@@ -28,6 +28,7 @@ import { determinePropertyRuleRange } from "@/lib/core/profiles/impl/util/determ
 import { useProfileService } from "@/lib/hooks/use-profile-service"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
+import { ActionButton } from "@/components/actions/action-buttons"
 
 export interface PropertyEditorProps {
     entityId: string
@@ -290,6 +291,14 @@ export const PropertyEditor = memo(function PropertyEditor({
                         save
                     </div>
                 ) : null}
+
+                {entityId === "./" && property.propertyName === "conformsTo" && (
+                    <ActionButton
+                        variant={"secondary"}
+                        className="mb-2"
+                        actionId={"crate.manage-profiles"}
+                    />
+                )}
 
                 <div
                     className="flex flex-col gap-4"

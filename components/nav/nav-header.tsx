@@ -252,6 +252,7 @@ export function NavHeader() {
                             actionId="crate.revert-all-entities"
                         />
                         <MenubarSeparator />
+                        <ActionMenubarItem actionId="crate.manage-profiles" />
                         <MenubarSub>
                             <MenubarSubTrigger>
                                 <Download className="size-4" /> Export
