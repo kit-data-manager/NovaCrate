@@ -26,6 +26,15 @@ export class SynchronizedContextService extends BaseContextService {
         this.persistenceAdapter.events.removeEventListener("context-changed", this.update)
     }
 
+    /**
+     * @deprecated Use {@link BaseContextService} instead
+     */
+    static async newInstance(): Promise<BaseContextService> {
+        throw new Error(
+            "SynchronizedContextService must be created with newInstanceWithPersistence"
+        )
+    }
+
     static async newInstanceWithPersistence(persistenceAdapter: IPersistenceAdapter) {
         const instance = new SynchronizedContextService(persistenceAdapter)
         const context = await persistenceAdapter.getMetadataContext()

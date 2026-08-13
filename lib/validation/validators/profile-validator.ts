@@ -229,11 +229,22 @@ export class ProfileValidator extends Validator {
         }
 
         this.validatePropertyValueRules(entity, property, propertyRule, propertyValueRules, results)
+        this.validatePropertyTarget(entity, property, propertyRule, entityRules, results)
+    }
 
+    private validatePropertyTarget(
+        entity: IEntity,
+        property: string | IReference | (string | IReference)[],
+        propertyRule: PropertyRule,
+        entityRules: EntityRule[],
+        results: ValidationResultWithoutTrace[]
+    ) {
         propertyValue(property).forEach((value, i) => {
             if (PropertyValueUtils.isRef(value)) {
                 const target = this.getContext().editorState.getEntities().get(value["@id"])
                 if (!target) return
+
+                const existingMapping = this.profileHandler.getEntityMapping().get(target["@id"])
 
                 const resolved = toArray(target["@type"]).map(
                     (type) => this.getContext().resolver.resolve(type) ?? type
@@ -241,7 +252,14 @@ export class ProfileValidator extends Validator {
 
                 let match = false
                 for (const entityRule of entityRules) {
+                    if (match) continue
+
                     if (!entityRule.specializationOf) {
+                        match = true
+                        continue
+                    }
+
+                    if (entityRule["@id"] == existingMapping) {
                         match = true
                         continue
                     }
@@ -411,6 +429,7 @@ export class ProfileValidator extends Validator {
         const entityTypes = toArray(entity["@type"]).map((type) =>
             isValidUrl(type) ? type : (this.getContext().resolver.resolve(type) ?? type)
         )
+        console.log(entityTypes)
         return (classRule.specializationOf ?? []).filter((t) => !entityTypes.includes(t))
     }
 

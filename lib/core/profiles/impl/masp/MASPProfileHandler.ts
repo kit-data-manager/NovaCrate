@@ -454,7 +454,8 @@ function determineMASPPropertyOptions(
 
 function httpsifyUrl(url: string) {
     if (isValidUrl(url)) {
-        if (url.startsWith("http://")) {
+        // Only httpsify schema.org terms, because they use the https protocol in NovaCrate
+        if (url.startsWith("http://schema.org")) {
             return url.replace("http://", "https://")
         }
     }

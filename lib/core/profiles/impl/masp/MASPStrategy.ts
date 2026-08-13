@@ -4,7 +4,7 @@ import { propertyValue } from "@/lib/property-value-utils"
 import { MASPProfileHandler } from "@/lib/core/profiles/impl/masp/MASPProfileHandler"
 import { PROFILE_CRATE_SCHEMA_RESOURCE } from "@/lib/constants"
 import { GenericStrategy } from "@/lib/core/profiles/impl/generic/GenericStrategy"
-import { SynchronizedContextService } from "@/lib/core/impl/SynchronizedContextService"
+import { BaseContextService } from "@/lib/core/impl/BaseContextService"
 
 export class MASPStrategy extends GenericStrategy implements IProfileFactoryStrategy {
     name = "MASP"
@@ -30,7 +30,7 @@ export class MASPStrategy extends GenericStrategy implements IProfileFactoryStra
             return propertyValue(maspSchema.hasPart).contains({ "@id": entity["@id"] })
         })
 
-        const resolver = await SynchronizedContextService.newInstance(profileCrate["@context"])
+        const resolver = await BaseContextService.newInstance(profileCrate["@context"])
         return new MASPProfileHandler(profileUri, root, schemaEntities, resolver)
     }
 
