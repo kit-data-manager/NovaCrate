@@ -2,12 +2,16 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import React, { PropsWithChildren, useEffect } from "react"
 import { ValidationDrawer } from "@/components/validation-drawer"
 import { useLayoutState } from "@/lib/state/layout-state"
-import { usePanelRef } from "react-resizable-panels"
+import { useDefaultLayout, usePanelRef } from "react-resizable-panels"
 
 export function NavDrawer({ children }: PropsWithChildren) {
     const showDrawer = useLayoutState((s) => s.showValidationDrawer)
     const setShowDrawer = useLayoutState((s) => s.setShowValidationDrawer)
     const ref = usePanelRef()
+
+    const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+        id: "nav-drawer"
+    })
 
     useEffect(() => {
         if (!ref.current) return
@@ -19,8 +23,14 @@ export function NavDrawer({ children }: PropsWithChildren) {
     }, [ref, showDrawer])
 
     return (
-        <ResizablePanelGroup orientation={"vertical"}>
-            <ResizablePanel defaultSize={"100%"}>{children}</ResizablePanel>
+        <ResizablePanelGroup
+            orientation={"vertical"}
+            defaultLayout={defaultLayout}
+            onLayoutChanged={onLayoutChanged}
+        >
+            <ResizablePanel defaultSize={"100%"} minSize={"200px"}>
+                {children}
+            </ResizablePanel>
             <ResizableHandle className="m-0.5" />
             <ResizablePanel
                 collapsible

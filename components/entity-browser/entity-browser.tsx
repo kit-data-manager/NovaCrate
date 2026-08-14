@@ -26,7 +26,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { DefaultSectionOpen } from "@/components/entity-browser/entity-browser-section"
 import { EntityBrowserContent } from "@/components/entity-browser/entity-browser-content"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { usePanelRef } from "react-resizable-panels"
+import { useDefaultLayout, usePanelRef } from "react-resizable-panels"
 
 export function EntityBrowser() {
     const state = useEntityBrowserSettings()
@@ -40,6 +40,10 @@ export function EntityBrowser() {
     const structureBy = useEntityBrowserSettings((store) => store.structureBy)
     const setSortBy = useEntityBrowserSettings((store) => store.setSortBy)
     const setStructureBy = useEntityBrowserSettings((store) => store.setStructureBy)
+
+    const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+        id: "entit-browser-property-overview"
+    })
 
     const collapseAllSections = useCallback(() => {
         setDefaultSectionOpen(false)
@@ -208,11 +212,18 @@ export function EntityBrowser() {
     ])
 
     return (
-        <ResizablePanelGroup orientation={"vertical"}>
+        <ResizablePanelGroup
+            orientation={"vertical"}
+            onLayoutChanged={onLayoutChanged}
+            defaultLayout={defaultLayout}
+        >
             <ResizablePanel defaultSize={"100%"} minSize={"200px"}>
                 {entityBrowserPanel}
             </ResizablePanel>
-            <ResizableHandle className={`${showPropertyOverview ? "" : "hidden"} m-0.5`} />
+            <ResizableHandle
+                disabled={!showPropertyOverview}
+                className={`${showPropertyOverview ? "" : "hidden"} m-0.5`}
+            />
             <ResizablePanel
                 defaultSize={"0%"}
                 minSize={"200px"}

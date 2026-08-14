@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.13.1] - 2026-08-04
+
+### Changed
+- Removed the AI Assistant banner from the homepage
+- The AI Assistant panel is now closed by default, but remembers if it was open previously
+
+### Fixed
+- Security updates
+
 ## [1.13.0] - 2026-07-13
 
 ### Added
