@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from "react"
+import React, { ChangeEvent, useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -90,9 +90,11 @@ export function NameField({
     onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
     placeholder?: string
 }) {
+    const [id] = useState(window.crypto.randomUUID)
+
     return (
         <div>
-            <Label>
+            <Label htmlFor={`nameField-${id}`}>
                 Name
                 <HelpTooltip>
                     Give the entity a human-readable name that tells other humans what this entity
@@ -100,6 +102,7 @@ export function NameField({
                 </HelpTooltip>
             </Label>
             <Input
+                id={`nameField-${id}`}
                 value={value}
                 placeholder={placeholder ?? "Entity Name"}
                 onChange={onChange}
@@ -120,9 +123,11 @@ export function IdentifierField({
     externalResource: boolean
     autoId: string
 }) {
+    const [id] = useState(window.crypto.randomUUID)
+
     return (
         <div>
-            <Label>
+            <Label htmlFor={`identifierField-${id}`}>
                 {externalResource ? "URL" : "Identifier"}
                 <HelpTooltip>
                     The identifier must be unique and persistent. Consider using a PID such as a DOI
@@ -131,6 +136,7 @@ export function IdentifierField({
                 </HelpTooltip>
             </Label>
             <Input
+                id={`identifierField-${id}`}
                 placeholder={
                     externalResource ? "https://..." : autoId || "Unique and persistent identifier"
                 }
