@@ -42,12 +42,16 @@ export function toArray<T>(input: T | T[]): T[] {
     }
 }
 
+export function hasAtLeastOneValue<T>(input: T | T[] | undefined): input is T | ([T] & T[]) {
+    return input !== undefined && (Array.isArray(input) ? input.length > 0 : true)
+}
+
 /**
  * Takes the first element in an array or simply returns the input when it is not an array.
  * Should only be used when the provided array contains at least one value.
  * @param input
  */
-export function pickFirst<T>(input: T | T[]): T {
+export function pickFirst<T>(input: T | ([T] & T[])): T {
     if (Array.isArray(input)) {
         return input[0]
     } else {

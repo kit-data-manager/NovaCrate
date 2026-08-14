@@ -7,7 +7,7 @@ import { Error } from "@/components/error"
 import { PathPicker } from "@/components/file-explorer/path-picker"
 import { useFileService } from "@/lib/hooks/use-persistence"
 import { useAutoId } from "@/lib/hooks/hooks"
-import { isValidUrl, pickFirst } from "@/lib/utils"
+import { hasAtLeastOneValue, isValidUrl, pickFirst } from "@/lib/utils"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { CreateEntityHint } from "@/components/modals/create-entity/create-entity-hint"
 import {
@@ -78,9 +78,7 @@ export function FolderEntityForm({
     }, [folderFiles])
 
     const baseFileName = useMemo(() => {
-        return folderFiles.length > 0
-            ? folderFiles[0].webkitRelativePath.split("/")[0]
-            : undefined
+        return folderFiles.length > 0 ? folderFiles[0].webkitRelativePath.split("/")[0] : undefined
     }, [folderFiles])
 
     const identifierValid = useMemo(() => {
@@ -89,13 +87,19 @@ export function FolderEntityForm({
 
     const submit = useCallback(() => {
         if (!externalResource) {
-            onUploadFolder(
-                path.replace(/^\.\//, "") + name,
-                name,
-                emptyFolder ? [] : folderFiles
-            )
+            onUploadFolder(path.replace(/^\.\//, "") + name, name, emptyFolder ? [] : folderFiles)
         } else onCreateClick(identifier || autoId, name)
-    }, [autoId, emptyFolder, externalResource, folderFiles, identifier, name, onCreateClick, onUploadFolder, path])
+    }, [
+        autoId,
+        emptyFolder,
+        externalResource,
+        folderFiles,
+        identifier,
+        name,
+        onCreateClick,
+        onUploadFolder,
+        path
+    ])
 
     const onNameInputKeyDown = useCallback(
         (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -118,7 +122,9 @@ export function FolderEntityForm({
                 variant="folder"
             />
 
-            <CreateEntityHint selectedType={pickFirst(selectedType)} />
+            {hasAtLeastOneValue(selectedType) && (
+                <CreateEntityHint selectedType={pickFirst(selectedType)} />
+            )}
 
             <div>
                 <ResourceSourceTabs
@@ -195,9 +201,7 @@ export function FolderEntityForm({
                 />
             )}
 
-            <UrlInvalidAlert
-                show={externalResource && !identifierValid && identifier.length > 0}
-            />
+            <UrlInvalidAlert show={externalResource && !identifierValid && identifier.length > 0} />
 
             <ActionBar onBack={onBackClick} onCreate={submit} createDisabled={createDisabled} />
 

@@ -7,7 +7,7 @@ import { Error } from "@/components/error"
 import { PathPicker } from "@/components/file-explorer/path-picker"
 import { useFileService } from "@/lib/hooks/use-persistence"
 import { useAutoId } from "@/lib/hooks/hooks"
-import { isValidUrl, pickFirst } from "@/lib/utils"
+import { hasAtLeastOneValue, isValidUrl, pickFirst } from "@/lib/utils"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { CreateEntityHint } from "@/components/modals/create-entity/create-entity-hint"
 import {
@@ -101,7 +101,9 @@ export function FileEntityForm({
                 variant="file"
             />
 
-            <CreateEntityHint selectedType={pickFirst(selectedType)} />
+            {hasAtLeastOneValue(selectedType) && (
+                <CreateEntityHint selectedType={pickFirst(selectedType)} />
+            )}
 
             <div>
                 <ResourceSourceTabs
@@ -131,9 +133,7 @@ export function FileEntityForm({
                             >
                                 <File className="size-4 mr-2 shrink-0" />
                                 <span className="truncate min-w-0">
-                                    {plainFiles.length == 0
-                                        ? "Select File"
-                                        : plainFiles[0].name}
+                                    {plainFiles.length == 0 ? "Select File" : plainFiles[0].name}
                                 </span>
                             </Button>
                             <span className="ml-2 text-muted-foreground">
@@ -145,11 +145,7 @@ export function FileEntityForm({
             </div>
 
             {(plainFiles.length > 0 || externalResource) && (
-                <NameField
-                    value={name}
-                    onChange={onNameChange}
-                    onKeyDown={onNameInputKeyDown}
-                />
+                <NameField value={name} onChange={onNameChange} onKeyDown={onNameInputKeyDown} />
             )}
 
             {externalResource && (
@@ -161,9 +157,7 @@ export function FileEntityForm({
                 />
             )}
 
-            <UrlInvalidAlert
-                show={externalResource && !identifierValid && identifier.length > 0}
-            />
+            <UrlInvalidAlert show={externalResource && !identifierValid && identifier.length > 0} />
 
             <ActionBar onBack={onBackClick} onCreate={submit} createDisabled={createDisabled} />
 

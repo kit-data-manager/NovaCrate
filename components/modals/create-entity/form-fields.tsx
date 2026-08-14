@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Globe, HardDrive, Plus, TriangleAlert } from "lucide-react"
-import { camelCaseReadable, pickFirst } from "@/lib/utils"
+import { camelCaseReadable, hasAtLeastOneValue, pickFirst } from "@/lib/utils"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import HelpTooltip from "@/components/help-tooltip"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -35,7 +35,9 @@ export function CreateEntityHeader({
                 Create a new{" "}
                 {entityRule && entityRule.name
                     ? entityRule.name
-                    : camelCaseReadable(pickFirst(selectedType))}{" "}
+                    : hasAtLeastOneValue(selectedType)
+                      ? camelCaseReadable(pickFirst(selectedType))
+                      : "Unknown"}{" "}
                 Entity
             </DialogTitle>
 

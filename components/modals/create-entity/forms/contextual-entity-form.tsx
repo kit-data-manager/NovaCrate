@@ -2,7 +2,7 @@ import { ChangeEvent, useCallback, useState } from "react"
 import { useAutoId } from "@/lib/hooks/hooks"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { CreateEntityHint } from "@/components/modals/create-entity/create-entity-hint"
-import { pickFirst } from "@/lib/utils"
+import { hasAtLeastOneValue, pickFirst } from "@/lib/utils"
 import {
     ActionBar,
     CreateEntityHeader,
@@ -63,7 +63,9 @@ export function ContextualEntityForm({
                 forceId={forceId}
             />
 
-            <CreateEntityHint selectedType={pickFirst(selectedType)} />
+            {hasAtLeastOneValue(selectedType) && (
+                <CreateEntityHint selectedType={pickFirst(selectedType)} />
+            )}
 
             <NameField value={name} onChange={onNameChange} onKeyDown={onNameInputKeyDown} />
 

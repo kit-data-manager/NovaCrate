@@ -1,7 +1,7 @@
 import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { z } from "zod/mini"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
-import { isValidUrl, pickFirst, toArray } from "@/lib/utils"
+import { hasAtLeastOneValue, isValidUrl, pickFirst, toArray } from "@/lib/utils"
 import { stringifyError } from "@/components/error"
 import { IMetadataService } from "@/lib/core/IMetadataService"
 import { AbstractProfileHandler } from "@/lib/core/profiles/impl/AbstractProfileHandler"
@@ -122,6 +122,8 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                     )
                 }
 
+                const specializationOf = d["prov:specializationOf"]
+
                 this.definition.propertyRules.push({
                     "@id": httpsifyUrl(d["@id"]),
                     onProfile: this.definition["@id"],
@@ -131,8 +133,8 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                     label: d["rdfs:label"],
                     maxCount: d["sh:maxCount"],
                     minCount: d["sh:minCount"],
-                    specializationOf: d["prov:specializationOf"] // TODO FIX: Only the first entry is used, all others are dropped
-                        ? this.autoResolveTerm(pickFirst(d["prov:specializationOf"])["@id"])
+                    specializationOf: hasAtLeastOneValue(specializationOf) // TODO FIX: Only the first entry is used, all others are dropped
+                        ? this.autoResolveTerm(pickFirst(specializationOf)["@id"])
                         : undefined,
                     appliesToEntityRules: toArray(d.domainIncludes).map((ref) => ref["@id"]),
                     rangeIncludes: d.rangeIncludes

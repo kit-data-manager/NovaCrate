@@ -2,7 +2,7 @@ import { useMemo } from "react"
 import { TypeIcon } from "@/components/type-icon"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { useContextResolver } from "@/lib/hooks/hooks"
-import { isValidUrl, pickFirst, toArray } from "@/lib/utils"
+import { hasAtLeastOneValue, isValidUrl, pickFirst, toArray } from "@/lib/utils"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { isTypeAllowed } from "@/components/modals/create-entity/components/type-allowed"
 import { Button } from "@/components/ui/button"
@@ -48,7 +48,10 @@ export function TypeBadge({
             onClick={() => onTypeSelect(revertedTypes, entityRule)}
             disabled={disabled}
         >
-            <TypeIcon type={pickFirst(revertedTypes)} className="mt-1 w-5 h-5 shrink-0" />
+            <TypeIcon
+                type={hasAtLeastOneValue(revertedTypes) ? pickFirst(revertedTypes) : ""}
+                className="mt-1 w-5 h-5 shrink-0"
+            />
             <div>
                 <div className="font-bold">{name || revertedTypes.join(", ")}</div>
                 <div className="text-sm">{description}</div>

@@ -6,7 +6,7 @@ import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { ISchemaWorkerContext } from "@/components/providers/schema-worker-provider"
 import { determinePropertyRuleRange } from "@/lib/core/profiles/impl/util/determine-property-rule-range"
 import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
-import { pickFirst, undefinedIfEmpty } from "@/lib/utils"
+import { hasAtLeastOneValue, pickFirst, undefinedIfEmpty } from "@/lib/utils"
 
 export async function createEntityForRule(
     handler: IProfileHandler,
@@ -48,7 +48,7 @@ async function getDefaultValue(
     const canBe = propertyCanBe(range)
 
     return getPropertyTypeDefaultValue(
-        canBe.possiblePropertyTypes.length > 0
+        hasAtLeastOneValue(canBe.possiblePropertyTypes)
             ? pickFirst(canBe.possiblePropertyTypes)
             : PropertyType.Text
     )
