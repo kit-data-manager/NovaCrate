@@ -2,7 +2,7 @@ import { memo, useCallback, useContext, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { SelectReferenceModal } from "@/components/editor/select-reference-modal"
 import { ExternalLink, Eye, LinkIcon, Plus, PlusIcon } from "lucide-react"
-import { findEntity, getEntityDisplayName } from "@/lib/utils"
+import { findEntity, getEntityDisplayName, undefinedIfEmpty } from "@/lib/utils"
 import { SinglePropertyDropdown } from "@/components/editor/single-property-dropdown"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { SlimClass } from "@/lib/schema-worker/helpers"
@@ -12,12 +12,6 @@ import { EntityIcon } from "@/components/entity/entity-icon"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import * as z from "zod/mini"
 import { PropertyType } from "@/lib/property"
-
-function undefinedIfEmpty<T>(arr?: T[]) {
-    if (arr?.length === 0) {
-        return undefined
-    } else return arr
-}
 
 export const ReferenceField = memo(function ReferenceField({
     entityId,

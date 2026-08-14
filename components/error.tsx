@@ -17,10 +17,12 @@ function cnIcon(size?: "md" | "xl") {
     }
 }
 
-export function stringifyError(e: unknown): string {
+export function stringifyError(e: unknown, depth = 0): string {
+    if (depth === 10) return "Maximum recursion depth reached"
+
     if (typeof e === "string") return e
     if (e instanceof globalThis.Error)
-        return `${e.message} (type: ${e.name}${e.cause ? ", cause: " + stringifyError(e.cause) : ""})`
+        return `${e.message} (type: ${e.name}${e.cause !== undefined ? ", cause: " + stringifyError(e.cause, depth + 1) : ""})`
 
     if (e && typeof e === "object") {
         try {

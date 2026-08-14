@@ -5,6 +5,7 @@ import { useContextResolver } from "@/lib/hooks/hooks"
 import { isValidUrl, pickFirst, toArray } from "@/lib/utils"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { isTypeAllowed } from "@/components/modals/create-entity/components/type-allowed"
+import { Button } from "@/components/ui/button"
 
 /**
  * A selectable type card. Resolves the (possibly short) type id against the
@@ -42,15 +43,16 @@ export function TypeBadge({
     }, [resolver, type, restrictToClasses])
 
     return (
-        <div
-            className={`p-4 border rounded-lg flex gap-4 hover:bg-secondary cursor-pointer transition ${disabled ? "opacity-30 cursor-not-allowed pointer-events-none" : ""}`}
-            onClick={() => (disabled ? "" : onTypeSelect(revertedTypes, entityRule))}
+        <button
+            className={`p-4 text-left border rounded-lg flex gap-4 hover:bg-secondary cursor-pointer transition ${disabled ? "opacity-30 cursor-not-allowed pointer-events-none" : ""}`}
+            onClick={() => onTypeSelect(revertedTypes, entityRule)}
+            disabled={disabled}
         >
             <TypeIcon type={pickFirst(revertedTypes)} className="mt-1 w-5 h-5 shrink-0" />
             <div>
                 <div className="font-bold">{name || revertedTypes.join(", ")}</div>
                 <div className="text-sm">{description}</div>
             </div>
-        </div>
+        </button>
     )
 }

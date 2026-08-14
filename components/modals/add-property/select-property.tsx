@@ -15,7 +15,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Checkbox } from "@/components/ui/checkbox"
 import { PossibleProperty } from "@/components/modals/add-property/add-property-modal"
-import { usePropertyCanBe } from "@/lib/hooks/property-can-be"
+import { propertyCanBe, usePropertyCanBe } from "@/lib/hooks/property-can-be"
 import { camelCaseReadable } from "@/lib/utils"
 import { MarkdownComment } from "@/components/markdown-comment"
 import HelpTooltip from "@/components/help-tooltip"
@@ -99,18 +99,22 @@ export function SelectProperty({
 
         const profileProperties = profileService.getPropertiesFor(profileClasses)
         if (profileProperties.length > 0 && !ignoreProfile) {
-            return profileProperties.map(
-                (property) =>
-                    ({
-                        propertyName: property.label,
-                        comment: property.description,
-                        range: property.rangeIncludes ?? [],
-                        rangeReadable:
-                            property.rangeIncludes
-                                ?.filter((id) => !id.startsWith("#"))
-                                .map((id) => resolver.reverse(id) ?? id) ?? []
-                    }) satisfies PossibleProperty
-            )
+            return profileProperties
+                .map(
+                    (property) =>
+                        ({
+                            propertyName: property.label,
+                            comment: property.description,
+                            range: property.rangeIncludes ?? [],
+                            rangeReadable:
+                                property.rangeIncludes
+                                    ?.filter((id) => !id.startsWith("#"))
+                                    .map((id) => resolver.reverse(id) ?? id) ?? []
+                        }) satisfies PossibleProperty
+                )
+                .filter((property) =>
+                    onlyReferences ? propertyCanBe(property.range).canBeReference : true
+                )
         } else if (schemaWorkerReady) {
             const data = bypassRestrictions
                 ? await worker.execute("getAllProperties", { onlyReferences })

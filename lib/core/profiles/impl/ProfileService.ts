@@ -18,14 +18,19 @@ export class ProfileService implements IProfileService {
     private profileConstructionErrors: string[] = []
     private entityMappings: Map<string, ProfileEntityMapping[]> = new Map()
 
+    disposeGraphChangedEventListener: () => void
+
     constructor(private metadata: IMetadataService) {
         this.probeAllReady = this.probeAllReady.bind(this)
         this.forwardErrorEvent = this.forwardErrorEvent.bind(this)
         this.updateEntityMappings = this.updateEntityMappings.bind(this)
 
-        metadata.events.addEventListener("graph-changed", (e) => {
-            this.parseProfileURIsFromEntities(e)
-        })
+        this.disposeGraphChangedEventListener = metadata.events.addEventListener(
+            "graph-changed",
+            (e) => {
+                this.parseProfileURIsFromEntities(e)
+            }
+        )
         this.parseProfileURIsFromEntities(metadata.getEntities())
     }
 
@@ -115,7 +120,9 @@ export class ProfileService implements IProfileService {
                 this._events.emit("profiles-changed", this.getProfileHandlers())
 
                 // Error handling
+                // eslint-disable-next-line novacrate/use-add-event-listener-return
                 profile.events.addEventListener("error-emitted", this.forwardErrorEvent)
+                // eslint-disable-next-line novacrate/use-add-event-listener-return
                 profile.events.addEventListener("mapping-updated", this.updateEntityMappings)
                 const existingErrors = profile.getErrors()
                 if (existingErrors.length > 0) {
@@ -177,5 +184,9 @@ export class ProfileService implements IProfileService {
 
         this.entityMappings = newMappings
         this._events.emit("mappings-updated", this.getEntityMappings())
+    }
+
+    dispose() {
+        this.disposeGraphChangedEventListener()
     }
 }

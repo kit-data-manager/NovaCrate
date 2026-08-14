@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useCore } from "@/components/providers/core-provider"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 
@@ -20,14 +20,26 @@ export type ProfileEntityRules = {
 export function useProfileEntityRules(): ProfileEntityRules[] {
     const profile = useCore().getProfileService()
 
-    return useMemo(() => {
+    const getProfileEntityRules = useCallback(() => {
         return profile.getProfileHandlers().map((p) => {
             const def = p.getDefinition()
             return {
                 id: p.id,
-                profileName: p.getDefinition()?.name ?? p.name,
+                profileName: def?.name ?? p.name,
                 classes: def ? def.entityRules : []
             }
         })
     }, [profile])
+
+    const [profileEntityRules, setProfileEntityRules] = useState(() => getProfileEntityRules())
+
+    useEffect(() => {
+        const remove1 = profile.events.addEventListener("all-ready-changed", () => {
+            setProfileEntityRules(getProfileEntityRules())
+        })
+
+        return () => remove1()
+    }, [getProfileEntityRules, profile.events])
+
+    return profileEntityRules
 }

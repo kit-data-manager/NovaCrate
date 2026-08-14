@@ -85,4 +85,9 @@ export interface IProfileService {
      * @param entityRules
      */
     getPropertiesFor(entityRules: EntityRule[]): PropertyRule[]
+
+    /**
+     * Dispose this profile service and deregister all listeners it holds
+     */
+    dispose(): void
 }

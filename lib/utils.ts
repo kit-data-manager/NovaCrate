@@ -428,6 +428,12 @@ export function formatJSON(json: string) {
     return JSON.stringify(JSON.parse(json), null, 2)
 }
 
+export function undefinedIfEmpty<T>(arr?: T[]) {
+    if (arr?.length === 0) {
+        return undefined
+    } else return arr
+}
+
 export const EntityPropertySchema = z.union([
     z.object({ "@id": z.coerce.string() }),
     z.array(z.union([z.object({ "@id": z.coerce.string() }), z.coerce.string()])),

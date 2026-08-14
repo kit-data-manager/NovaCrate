@@ -137,6 +137,9 @@ export class CoreServiceImpl implements ICoreService {
             this.removeFileServiceChangedListener()
             this.removeFileServiceChangedListener = null
         }
+        this.metadata.dispose()
+        this.context.dispose()
+        this.profiles.dispose()
     }
 
     static async newInstance(

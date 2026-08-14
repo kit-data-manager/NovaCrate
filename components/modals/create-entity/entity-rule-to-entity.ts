@@ -6,7 +6,7 @@ import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { ISchemaWorkerContext } from "@/components/providers/schema-worker-provider"
 import { determinePropertyRuleRange } from "@/lib/core/profiles/impl/util/determine-property-rule-range"
 import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
-import { pickFirst } from "@/lib/utils"
+import { pickFirst, undefinedIfEmpty } from "@/lib/utils"
 
 export async function createEntityForRule(
     handler: IProfileHandler,
@@ -19,7 +19,7 @@ export async function createEntityForRule(
 
     const base: IEntity = {
         "@id": id,
-        "@type": rule.specializationOf ?? "Thing"
+        "@type": undefinedIfEmpty(rule.specializationOf) || "Thing"
     }
 
     for (const property of properties) {

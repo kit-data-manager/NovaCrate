@@ -67,4 +67,6 @@ export interface IContextService {
      * provides term resolution and reversal without mutation capabilities.
      */
     getResolver(): IContextResolverService
+
+    dispose(): void
 }

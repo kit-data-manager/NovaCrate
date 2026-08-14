@@ -40,9 +40,14 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
     private _errors: unknown[] = []
     private raw?: CrateContextType
 
+    disposeGraphChangedEventListener: () => void
+
     constructor(private persistenceAdapter: IPersistenceAdapter) {
         this.update = this.update.bind(this)
-        this.persistenceAdapter.events.addEventListener("context-changed", this.update)
+        this.disposeGraphChangedEventListener = this.persistenceAdapter.events.addEventListener(
+            "context-changed",
+            this.update
+        )
     }
 
     private _events = new Observable<IContextServiceEvents>()
@@ -157,7 +162,7 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
     }
 
     dispose() {
-        this.persistenceAdapter.events.removeEventListener("context-changed", this.update)
+        this.disposeGraphChangedEventListener()
     }
 
     /**

@@ -24,6 +24,7 @@ import useSWR from "swr"
 import { SinglePropertyValidation } from "@/components/editor/validation/single-property-validation"
 import { EntityEditorProperty, PropertyType } from "@/lib/property"
 import { useActivePropertyProfileRules } from "@/lib/hooks/property-can-be"
+import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 
 export interface PropertyEditorProps {
     entityId: string
@@ -38,6 +39,15 @@ export interface PropertyEditorProps {
     isNew?: boolean
     hasChanges?: boolean
     isDeleted?: boolean
+}
+
+function makeProfilePropertyRulesCacheKey(profilePropertyRules: PropertyRule[]) {
+    return profilePropertyRules.length > 0
+        ? profilePropertyRules
+              .map((r) => r["@id"])
+              .sort()
+              .join(";")
+        : "no-profiles"
 }
 
 export const PropertyEditor = memo(function PropertyEditor({
@@ -101,9 +111,11 @@ export const PropertyEditor = memo(function PropertyEditor({
         }
     }, [crateVerifyReady, property.propertyName, resolvedPropertyName, worker])
 
+    const profileCacheKey = makeProfilePropertyRulesCacheKey(profilePropertyRules)
+
     const { data: propertyRange, error: propertyRangeError } = useSWR(
         crateVerifyReady && crateContextReady
-            ? "property-type-range-" + property.propertyName
+            ? "property-type-range-" + property.propertyName + "-" + profileCacheKey
             : null,
         referenceTypeRangeResolver
     )
@@ -125,7 +137,9 @@ export const PropertyEditor = memo(function PropertyEditor({
         error: commentError,
         isLoading: commentIsPending
     } = useSWR(
-        crateVerifyReady && crateContextReady ? "property-comment-" + property.propertyName : null,
+        crateVerifyReady && crateContextReady
+            ? "property-comment-" + property.propertyName + "-" + profileCacheKey
+            : null,
         propertyCommentResolver
     )
 

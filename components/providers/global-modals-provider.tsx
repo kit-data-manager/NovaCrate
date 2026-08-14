@@ -85,16 +85,15 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     const [globalSearchState, setGlobalSearchState] = useState({
         open: false
     })
-    const [addPropertyModalState, setAddPropertyModalState] = useState<{
-        open: boolean
-        onPropertyAdd: AddPropertyModalCallback
-        entity?: IEntity
-        onlyReferences: boolean
-    }>({
-        open: false,
-        onPropertyAdd: () => {},
-        onlyReferences: false
-    })
+    const [addPropertyModalState, setAddPropertyModalState] = useState<
+        | {
+              open: boolean
+              onPropertyAdd: AddPropertyModalCallback
+              entity: IEntity
+              onlyReferences: boolean
+          }
+        | undefined
+    >()
     const [findReferencesModalState, setFindReferencesModalState] = useState({
         open: false,
         entityId: ""
@@ -229,7 +228,9 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     }, [])
 
     const onAddPropertyModalOpenChange = useCallback(() => {
-        setAddPropertyModalState((old) => ({ ...old, open: false, onlyReferences: false }))
+        setAddPropertyModalState((old) =>
+            old === undefined ? old : { ...old, open: false, onlyReferences: false }
+        )
     }, [])
 
     const onFindReferencesModalOpenChange = useCallback(() => {
@@ -318,13 +319,15 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                     open={globalSearchState.open}
                     onOpenChange={onGlobalSearchModalOpenChange}
                 />
-                <AddPropertyModal
-                    open={addPropertyModalState.open}
-                    onPropertyAdd={addPropertyModalState.onPropertyAdd}
-                    onOpenChange={onAddPropertyModalOpenChange}
-                    entity={addPropertyModalState.entity!}
-                    onlyReferences={addPropertyModalState.onlyReferences}
-                />
+                {addPropertyModalState !== undefined && (
+                    <AddPropertyModal
+                        open={addPropertyModalState.open}
+                        onPropertyAdd={addPropertyModalState.onPropertyAdd}
+                        onOpenChange={onAddPropertyModalOpenChange}
+                        entity={addPropertyModalState.entity}
+                        onlyReferences={addPropertyModalState.onlyReferences}
+                    />
+                )}
                 <FindReferencesModal
                     open={findReferencesModalState.open}
                     onOpenChange={onFindReferencesModalOpenChange}

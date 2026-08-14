@@ -51,4 +51,6 @@ export interface IMetadataService {
      * @param id - The `@id` of the entity to delete.
      */
     deleteEntity(id: string): Promise<void>
+
+    dispose(): void
 }
