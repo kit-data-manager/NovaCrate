@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from "react"
+import React, { ChangeEvent, useId } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -90,7 +90,7 @@ export function NameField({
     onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
     placeholder?: string
 }) {
-    const [id] = useState(window.crypto.randomUUID)
+    const id = useId()
 
     return (
         <div>
@@ -123,7 +123,7 @@ export function IdentifierField({
     externalResource: boolean
     autoId: string
 }) {
-    const [id] = useState(window.crypto.randomUUID)
+    const id = useId()
 
     return (
         <div>

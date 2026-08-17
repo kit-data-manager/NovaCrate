@@ -40,11 +40,11 @@ test("file explorer should associate entities correctly", async ({ page }) => {
             button: "right"
         })
     await page.getByRole("menuitem", { name: "Create Entity" }).click()
-    await page.locator("div").filter({ hasText: "FileImport a new single file" }).nth(2).click()
-    await page.getByRole("textbox", { name: "Entity Name" }).click()
-    await page.getByRole("textbox", { name: "Entity Name" }).press("ControlOrMeta+a")
-    await page.getByRole("textbox", { name: "Entity Name" }).fill("Test results")
-    await page.getByRole("textbox", { name: "Entity Name" }).press("Enter")
+    await page.getByRole("button", { name: "File Import a new single file" }).click()
+    await page.getByRole("textbox", { name: "Name", exact: true }).click()
+    await page.getByRole("textbox", { name: "Name", exact: true }).press("ControlOrMeta+a")
+    await page.getByRole("textbox", { name: "Name", exact: true }).fill("Test results")
+    await page.getByRole("textbox", { name: "Name", exact: true }).press("Enter")
     await expect(page.getByRole("tree")).toMatchAriaSnapshot(`
     - treeitem "R Air quality measurements in Karlsruhe" [expanded] [level=1]
     - treeitem "__MACOSX" [expanded] [level=2]
@@ -100,12 +100,12 @@ test("uploading with tree picker works", async ({ page }) => {
         .getByTestId("create-upload-input")
         .setInputFiles("tests/data/air-quality-karlsruhe.zip")
     await page.getByRole("button", { name: "Add new Entity" }).click()
-    await page.locator("div").filter({ hasText: "FileImport a new single file" }).nth(2).click()
+    await page.getByRole("button", { name: "File Import a new single file" }).click()
     await page.getByRole("button", { name: "Back" }).click()
-    await page.getByText("Import a folder, including").click()
+    await page.getByRole("button", { name: "Folder Import a folder" }).click()
     await page.getByRole("button", { name: "Empty Folder" }).click()
-    await page.getByRole("textbox", { name: "Folder Name" }).click()
-    await page.getByRole("textbox", { name: "Folder Name" }).fill("extraData")
+    await page.getByRole("textbox", { name: "Name", exact: true }).click()
+    await page.getByRole("textbox", { name: "Name", exact: true }).fill("extraData")
     await page.getByRole("button", { name: "Create" }).click()
     await expect(page.getByRole("button", { name: "D extraDataDataset" })).toBeVisible()
     await page.getByRole("link", { name: "File Explorer" }).getByRole("button").click()
@@ -117,7 +117,7 @@ test("uploading with tree picker works", async ({ page }) => {
     ).toBeVisible()
     await page.getByRole("link", { name: "Entity Editor" }).getByRole("button").click()
     await page.getByRole("button", { name: "Add new Entity" }).click()
-    await page.locator("div").filter({ hasText: "FileImport a new single file" }).nth(2).click()
+    await page.getByRole("button", { name: "File Import a new single file" }).click()
     await page.getByTestId("path-picker-extraData/").click()
     await page.getByRole("button", { name: "Select File" }).click()
     await page
