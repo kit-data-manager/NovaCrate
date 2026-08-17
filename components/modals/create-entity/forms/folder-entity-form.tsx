@@ -101,18 +101,21 @@ export function FolderEntityForm({
         path
     ])
 
-    const onNameInputKeyDown = useCallback(
-        (e: React.KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === "Enter") submit()
-        },
-        [submit]
-    )
-
     const createDisabled = useMemo(() => {
         if (!identifierValid) return true
         if (!externalResource && !emptyFolder && folderFiles.length === 0) return true
         return autoId.length <= 0
     }, [autoId.length, emptyFolder, externalResource, folderFiles.length, identifierValid])
+
+    const onNameInputKeyDown = useCallback(
+        (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === "Enter" && !createDisabled) {
+                e.preventDefault()
+                submit()
+            }
+        },
+        [createDisabled, submit]
+    )
 
     return (
         <div className="flex flex-col gap-4 min-w-0">

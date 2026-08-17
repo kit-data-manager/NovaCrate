@@ -80,18 +80,21 @@ export function FileEntityForm({
         } else onCreateClick(identifier || autoId, name)
     }, [autoId, externalResource, identifier, name, onCreateClick, onUploadFile, path, plainFiles])
 
-    const onNameInputKeyDown = useCallback(
-        (e: React.KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === "Enter") submit()
-        },
-        [submit]
-    )
-
     const createDisabled = useMemo(() => {
         if (!identifierValid) return true
         if (!externalResource && plainFiles.length === 0) return true
         return autoId.length <= 0
     }, [autoId.length, externalResource, identifierValid, plainFiles.length])
+
+    const onNameInputKeyDown = useCallback(
+        (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === "Enter" && !createDisabled) {
+                e.preventDefault()
+                submit()
+            }
+        },
+        [createDisabled, submit]
+    )
 
     return (
         <div className="flex flex-col gap-4 min-w-0">

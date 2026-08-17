@@ -45,14 +45,17 @@ export function ContextualEntityForm({
         onCreateClick(forceId || identifier || autoId, name)
     }, [autoId, forceId, identifier, name, onCreateClick])
 
+    const createDisabled = autoId.length <= 0
+
     const onNameInputKeyDown = useCallback(
         (e: React.KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === "Enter") submit()
+            if (e.key === "Enter" && !createDisabled) {
+                e.preventDefault()
+                submit()
+            }
         },
-        [submit]
+        [createDisabled, submit]
     )
-
-    const createDisabled = autoId.length <= 0
 
     return (
         <div className="flex flex-col gap-4 min-w-0">
