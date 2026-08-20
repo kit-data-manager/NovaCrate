@@ -16,6 +16,7 @@ import { useGraphState } from "@/lib/state/graph-state"
 import { ProfileUriTrustVerdict } from "@/lib/core/profiles/IProfileService"
 import { profileTrustSettings } from "@/lib/state/profile-trust-settings"
 import { useProfileApprovalToasts } from "@/lib/hooks/use-profile-approval-toasts"
+import { useProfileErrorToasts } from "@/lib/hooks/use-profile-error-toasts"
 
 const CoreContext = createContext<ICoreService | null>(null)
 
@@ -108,6 +109,7 @@ export function CoreProvider({ children }: PropsWithChildren) {
     useCoreSync(core)
 
     useProfileApprovalToasts(core?.getProfileService() ?? null)
+    useProfileErrorToasts(core?.getProfileService() ?? null)
 
     useEffect(() => {
         // This must be done in a useEffect so it doesn't run on the server

@@ -75,6 +75,13 @@ export interface IProfileService {
     getPendingApprovalURIs(): string[]
 
     /**
+     * Get the errors that occurred when constructing profile handlers from profile
+     * URIs (e.g. fetch failures, invalid profile crates). Does not include errors
+     * that individual profile handlers reported during parsing.
+     */
+    getProfileConstructionErrors(): ProfileHandlerError[]
+
+    /**
      * Set the list of profile URIs that are currently active. This will trigger parsing of all
      * supplied profiles. Once this method returns, all profiles are constructed and available
      * through {@link getProfileHandlers}. Profiles may not be in the ready state at this point. Use

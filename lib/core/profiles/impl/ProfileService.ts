@@ -80,6 +80,10 @@ export class ProfileService implements IProfileService {
         return [...this.pendingApprovalURIs]
     }
 
+    getProfileConstructionErrors(): ProfileHandlerError[] {
+        return [...this.profileConstructionErrors]
+    }
+
     private probeAllReady() {
         if (this.getAllReady()) {
             this._events.emit("all-ready-changed", true)
