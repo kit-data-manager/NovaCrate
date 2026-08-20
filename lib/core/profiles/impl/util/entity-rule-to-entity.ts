@@ -6,7 +6,7 @@ import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { ISchemaWorkerContext } from "@/components/providers/schema-worker-provider"
 import { determinePropertyRuleRange } from "@/lib/core/profiles/impl/util/determine-property-rule-range"
 import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
-import { hasAtLeastOneValue, pickFirst, undefinedIfEmpty } from "@/lib/utils"
+import { hasAtLeastOneValue, pickFirst } from "@/lib/utils"
 
 export async function createEntityForRule(
     handler: IProfileHandler,
@@ -16,13 +16,16 @@ export async function createEntityForRule(
     schemaWorker: ISchemaWorkerContext["worker"]
 ): Promise<IEntity> {
     const properties = getMandatoryProperties(handler, rule)
-    const resolvedTypes = undefinedIfEmpty(rule.specializationOf) !== undefined
-        ? rule.specializationOf.map((typeUrl) => resolver.reverse(typeUrl) ?? typeUrl).filter(s => s !== null)
-        : "Thing"
+    const fallbackType = "Thing"
+    const resolvedTypes = rule.specializationOf
+        ? rule.specializationOf
+              .map((typeUrl) => resolver.reverse(typeUrl) ?? typeUrl)
+              .filter((s) => s !== null)
+        : fallbackType
 
     const base: IEntity = {
         "@id": id,
-        "@type": resolvedTypes
+        "@type": resolvedTypes.length > 0 ? resolvedTypes : fallbackType
     }
 
     for (const property of properties) {

@@ -83,9 +83,9 @@ export class ProfileFactory {
             }
         }
 
-        function tryIsApplicable(strategy: IProfileFactoryStrategy): boolean {
+        async function tryIsApplicable(strategy: IProfileFactoryStrategy): Promise<boolean> {
             try {
-                return strategy.isApplicable(profileMetadata, profileCrateFiles)
+                return await strategy.isApplicable(profileMetadata, profileCrateFiles)
             } catch (e) {
                 console.error(
                     `Profile factory strategy ${strategy.name} threw unexpectedly in the isApplicable method`,
@@ -95,10 +95,15 @@ export class ProfileFactory {
             }
         }
 
-        const strategies =
-            known && known.strategy
-                ? [known.strategy]
-                : STRATEGIES.filter((s) => tryIsApplicable(s))
+        const strategies = known && known.strategy ? [known.strategy] : []
+
+        if (strategies.length === 0) {
+            for (const strat of STRATEGIES) {
+                if (await tryIsApplicable(strat)) {
+                    strategies.push(strat)
+                }
+            }
+        }
 
         let result: IProfileHandler | undefined = undefined
         for (const strategy of strategies) {
