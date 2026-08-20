@@ -16,6 +16,8 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useProfileService } from "@/lib/hooks/use-profile-service"
+import { profileTrustSettings } from "@/lib/state/profile-trust-settings"
+import { useStore } from "zustand"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import {
     Table,
@@ -25,7 +27,15 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table"
-import { CheckIcon, ChevronDown, CogIcon, EllipsisVertical, LucideIcon, XIcon } from "lucide-react"
+import {
+    CheckIcon,
+    ChevronDown,
+    CogIcon,
+    EllipsisVertical,
+    InfoIcon,
+    LucideIcon,
+    XIcon
+} from "lucide-react"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
 import { Diff, getRootEntityID, isValidUrl } from "@/lib/utils"
 import { Error } from "@/components/error"
@@ -149,10 +159,12 @@ function RecommendedProfile({
 
 export function ManageProfilesModal({
     open,
-    onOpenChange
+    onOpenChange,
+    onOpenSettings
 }: {
     open: boolean
     onOpenChange(open: boolean): void
+    onOpenSettings(): void
 }) {
     const profileService = useProfileService()
     const [tabState, setTabState] = useState("active")
@@ -166,6 +178,11 @@ export function ManageProfilesModal({
     const rootId = useEditorState((s) => getRootEntityID(s.entities))
     const rootHasChanges = useEditorState((s) => (rootId ? s.getEntityDiff(rootId) : null))
     const { saveEntity } = useCrateMutations()
+
+    const openProfileSettings = useCallback(() => {
+        onOpenChange(false)
+        onOpenSettings()
+    }, [onOpenChange, onOpenSettings])
 
     useEffect(() => {
         setProfileURIs(profileService.getProfileURIs())
@@ -269,7 +286,22 @@ export function ManageProfilesModal({
                             </Table>
                         </div>
 
-                        <div className="flex justify-end">
+                        <div className="flex items-center justify-between gap-2 mt-4">
+                            <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                <InfoIcon className="size-4 shrink-0" />
+                                <span>
+                                    Profiles are only fetched from URLs you trust. To trust or block
+                                    a profile URL, open the{" "}
+                                    <button
+                                        type="button"
+                                        className="underline underline-offset-4 hover:text-foreground"
+                                        onClick={openProfileSettings}
+                                    >
+                                        Profile Settings
+                                    </button>
+                                    . Profiles bundled with NovaCrate do not need approval.
+                                </span>
+                            </div>
                             <AddCustomProfile addCustom={(uri) => addProfile(uri)} />
                         </div>
                     </TabsContent>
@@ -313,12 +345,28 @@ export function ProfileRow({
     removeProfile(): void
     errors: ProfileHandlerError[]
 }) {
+    const trusted = useStore(profileTrustSettings, (s) => s.trusted)
+    const blocked = useStore(profileTrustSettings, (s) => s.blocked)
     const hasHandler = useMemo(() => {
         return profileHandlers.find((handler) => handler.profileUri === uri)
     }, [profileHandlers, uri])
 
+    const trustStatus = useMemo(() => {
+        if (trusted.includes(uri)) return "trusted" as const
+        if (blocked.includes(uri)) return "blocked" as const
+        return "pending" as const
+    }, [blocked, trusted, uri])
+
     return (
-        <TableRow className={hasHandler ? "" : "bg-error/10 hover:bg-error/20"}>
+        <TableRow
+            className={
+                hasHandler
+                    ? ""
+                    : trustStatus === "trusted"
+                      ? "bg-error/10 hover:bg-error/20"
+                      : "bg-warn/10 hover:bg-warn/20"
+            }
+        >
             <TableCell>
                 {hasHandler ? (
                     <CheckIcon className="size-4 stroke-success" />
@@ -328,6 +376,16 @@ export function ProfileRow({
             </TableCell>
             <TableCell>
                 {hasHandler ? hasHandler.getDefinition()!.name : `${uri}`}{" "}
+                {!hasHandler && trustStatus === "blocked" && (
+                    <Badge variant="destructive" className="ml-1">
+                        Blocked
+                    </Badge>
+                )}
+                {!hasHandler && trustStatus === "pending" && (
+                    <Badge className="ml-1 bg-warn/20 text-warn-foreground border-warn/40">
+                        Not trusted
+                    </Badge>
+                )}
                 {errors.length > 0 && (
                     <Popover>
                         <PopoverTrigger asChild>

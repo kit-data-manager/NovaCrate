@@ -27,6 +27,27 @@ export type IProfileServiceEvents = {
      * This event is emitted whenever the service or any profiles emit an error.
      */
     "error-emitted": () => void
+    /**
+     * This event is emitted whenever the active profile URIs contain profiles
+     * that have not been approved for fetching. Emits the URIs that are awaiting
+     * a user decision. The affected profiles are not fetched until a decision is made.
+     */
+    "profile-approval-required": (profileURIs: string[]) => void
+}
+
+export type ProfileUriTrustVerdict = "allowed" | "blocked"
+export type ProfileUriTrustPolicy = (uri: string) => ProfileUriTrustVerdict
+
+/**
+ * Options for constructing a profile service.
+ */
+export type ProfileServiceOptions = {
+    /**
+     * Decides whether a profile URI is allowed to be fetched. When no policy is
+     * supplied, every profile URI is allowed (legacy behavior).
+     * Known, bundled profile URIs are always allowed regardless of this policy.
+     */
+    determineProfileUriTrust?: ProfileUriTrustPolicy
 }
 
 /**
@@ -46,6 +67,12 @@ export interface IProfileService {
      * Get a list of all errors that occurred during **parsing** of all profiles.
      */
     getAllErrors(): ProfileHandlerError[]
+
+    /**
+     * Get the profile URIs of the currently active list that are not allowed to be
+     * fetched yet (pending a user decision or blocked by the trust policy).
+     */
+    getPendingApprovalURIs(): string[]
 
     /**
      * Set the list of profile URIs that are currently active. This will trigger parsing of all

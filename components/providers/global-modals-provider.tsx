@@ -355,6 +355,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 <ManageProfilesModal
                     open={manageProfilesModalState.open}
                     onOpenChange={onManageProfileOpenChange}
+                    onOpenSettings={() => showSettingsModal(SettingsPages.PROFILES)}
                 />
             </CoreGuard>
 

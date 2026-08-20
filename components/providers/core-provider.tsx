@@ -13,6 +13,9 @@ import { useGoToMainMenu } from "@/lib/hooks/hooks"
 import { useFileExplorerState } from "@/lib/state/file-explorer-state"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useGraphState } from "@/lib/state/graph-state"
+import { ProfileUriTrustVerdict } from "@/lib/core/profiles/IProfileService"
+import { profileTrustSettings } from "@/lib/state/profile-trust-settings"
+import { useProfileApprovalToasts } from "@/lib/hooks/use-profile-approval-toasts"
 
 const CoreContext = createContext<ICoreService | null>(null)
 
@@ -59,7 +62,10 @@ export function CoreProvider({ children }: PropsWithChildren) {
             }
 
             const adapter = new PersistenceAdapterImpl(crateService)
-            const coreInstance = await CoreServiceImpl.newInstance(adapter, crateService)
+            const coreInstance = await CoreServiceImpl.newInstance(adapter, crateService, {
+                determineProfileUriTrust: (uri): ProfileUriTrustVerdict =>
+                    profileTrustSettings.getState().trusted.includes(uri) ? "allowed" : "blocked"
+            })
 
             if (cancelled) {
                 // Effect was cleaned up while we were awaiting — discard
@@ -100,6 +106,8 @@ export function CoreProvider({ children }: PropsWithChildren) {
     }, [goToMainMenu, persistence])
 
     useCoreSync(core)
+
+    useProfileApprovalToasts(core?.getProfileService() ?? null)
 
     useEffect(() => {
         // This must be done in a useEffect so it doesn't run on the server

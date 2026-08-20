@@ -141,7 +141,11 @@ export const PropertyEditor = memo(function PropertyEditor({
 
     const profileCacheKey = makeProfilePropertyRulesCacheKey(profilePropertyRules)
 
-    const { data: propertyRange, error: propertyRangeError, mutate: reloadPropertyRange } = useSWR(
+    const {
+        data: propertyRange,
+        error: propertyRangeError,
+        mutate: reloadPropertyRange
+    } = useSWR(
         schemaWorkerReady && crateContextReady
             ? "property-type-range-" + property.propertyName + "-" + profileCacheKey
             : null,
@@ -297,7 +301,7 @@ export const PropertyEditor = memo(function PropertyEditor({
                 {entityId === rootEntityId && property.propertyName === "conformsTo" && (
                     <ActionButton
                         variant={"secondary"}
-                        className="mb-2"
+                        className="mb-4"
                         actionId={"crate.manage-profiles"}
                     />
                 )}

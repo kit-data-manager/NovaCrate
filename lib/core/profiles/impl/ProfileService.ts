@@ -1,8 +1,12 @@
-import { IProfileService, IProfileServiceEvents } from "@/lib/core/profiles/IProfileService"
+import {
+    IProfileService,
+    IProfileServiceEvents,
+    ProfileServiceOptions
+} from "@/lib/core/profiles/IProfileService"
 import { IObservable } from "@/lib/core/IObservable"
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { Observable } from "@/lib/core/impl/Observable"
-import { ProfileFactory } from "@/lib/core/profiles/impl/ProfileFactory"
+import { ProfileFactory, isKnownProfileURI } from "@/lib/core/profiles/impl/ProfileFactory"
 import { IMetadataService } from "@/lib/core/IMetadataService"
 import { getRootEntityID, toArray } from "@/lib/utils"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
@@ -15,12 +19,16 @@ export class ProfileService implements IProfileService {
     readonly events: IObservable<IProfileServiceEvents> = this._events
     private profileURIs: string[] = []
     private profiles: IProfileHandler[] = []
+    private pendingApprovalURIs = new Set<string>()
     private profileConstructionErrors: ProfileHandlerError[] = []
     private entityMappings: Map<string, ProfileEntityMapping[]> = new Map()
 
     disposeGraphChangedEventListener: () => void
 
-    constructor(private metadata: IMetadataService) {
+    constructor(
+        private metadata: IMetadataService,
+        private options: ProfileServiceOptions = {}
+    ) {
         this.probeAllReady = this.probeAllReady.bind(this)
         this.forwardErrorEvent = this.forwardErrorEvent.bind(this)
         this.updateEntityMappings = this.updateEntityMappings.bind(this)
@@ -32,6 +40,12 @@ export class ProfileService implements IProfileService {
             }
         )
         this.parseProfileURIsFromEntities(metadata.getEntities())
+    }
+
+    private isProfileUriAllowed(uri: string): boolean {
+        if (isKnownProfileURI(uri)) return true
+        const verdict = this.options.determineProfileUriTrust?.(uri) ?? "allowed"
+        return verdict === "allowed"
     }
 
     private parseProfileURIsFromEntities(entities: IEntity[]) {
@@ -62,6 +76,10 @@ export class ProfileService implements IProfileService {
         return [...this.profiles]
     }
 
+    getPendingApprovalURIs(): string[] {
+        return [...this.pendingApprovalURIs]
+    }
+
     private probeAllReady() {
         if (this.getAllReady()) {
             this._events.emit("all-ready-changed", true)
@@ -78,14 +96,21 @@ export class ProfileService implements IProfileService {
     async setProfileURIs(profileURIs: string[]): Promise<void> {
         const guard = ++this.setProfileURIsGuard
 
+        const pendingApprovalURIs = new Set(
+            profileURIs.filter((uri) => !this.isProfileUriAllowed(uri))
+        )
+
         if (
             this.profileURIs.length === profileURIs.length &&
             this.profileURIs.every((uri) => profileURIs.includes(uri)) &&
-            profileURIs.every((uri) => this.profileURIs.includes(uri))
+            profileURIs.every((uri) => this.profileURIs.includes(uri)) &&
+            this.pendingApprovalURIs.size === pendingApprovalURIs.size &&
+            [...pendingApprovalURIs].every((uri) => this.pendingApprovalURIs.has(uri))
         ) {
             return // No changes
         }
 
+        this.pendingApprovalURIs = pendingApprovalURIs
         this.profileURIs = profileURIs
         this.profiles.forEach((p) => {
             p.discard()
@@ -99,13 +124,16 @@ export class ProfileService implements IProfileService {
         this._events.emit("profile-uris-changed", this.getProfileURIs())
 
         const factory = new ProfileFactory()
+        let anyProfileConstructed = false
 
         for (const uri of profileURIs) {
+            if (!this.isProfileUriAllowed(uri)) continue
             try {
                 const profile = await factory.createProfileFromURI(uri)
                 if (guard !== this.setProfileURIsGuard) return // This guard will stop the current method run if another method run has started in the meantime
                 profile.attach(this.metadata)
                 this.profiles.push(profile)
+                anyProfileConstructed = true
                 this._events.emit("profiles-changed", this.getProfileHandlers())
 
                 // Error handling
@@ -134,8 +162,8 @@ export class ProfileService implements IProfileService {
             }
         }
 
-        // If there are no profiles active, we have to manually call this event, or it will never be fired
-        if (profileURIs.length === 0) {
+        // If no profiles were constructed, we have to manually call this event, or it will never be fired
+        if (!anyProfileConstructed) {
             this._events.emit("profiles-changed", this.getProfileHandlers())
         }
 
@@ -146,6 +174,10 @@ export class ProfileService implements IProfileService {
             this.profiles.forEach((p) =>
                 p.events.addEventListener("ready-changed", this.probeAllReady)
             )
+        }
+
+        if (this.pendingApprovalURIs.size > 0) {
+            this._events.emit("profile-approval-required", this.getPendingApprovalURIs())
         }
     }
 

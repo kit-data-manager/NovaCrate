@@ -34,6 +34,14 @@ const KNOWN_PROFILES: {
     }
 ]
 
+/**
+ * Returns true if the given profile URI is a bundled profile that is loaded
+ * directly and never fetched from the network.
+ */
+export function isKnownProfileURI(uri: string): boolean {
+    return KNOWN_PROFILES.some((p) => p.uri === uri)
+}
+
 const STRATEGIES: IProfileFactoryStrategy[] = [new MASPStrategy(), new GenericStrategy()]
 
 /**
