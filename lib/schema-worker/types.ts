@@ -11,3 +11,20 @@ export const schemaFileSchema = z.object({
 })
 
 export type SchemaFile = z.infer<typeof schemaFileSchema>
+
+export type SchemaFormat = "jsonld" | "turtle"
+
+export interface FetchFailure {
+    accept: string
+    error: string
+    status?: number
+}
+
+export interface SchemaFetchResult {
+    url: string
+    resolvedUrl: string
+    contentType: string | null
+    format: SchemaFormat
+    content: string
+    cachedAt: string
+}

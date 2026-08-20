@@ -1,5 +1,5 @@
 import { useStore } from "zustand/index"
-import { RegisteredSchema, schemaResolverStore } from "@/lib/state/schema-resolver"
+import { KnownSchema, useSchemaResolverSettings } from "@/lib/state/schema-resolver-settings"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -27,8 +27,18 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 
 export function SchemaSettingsPage() {
-    const registeredSchemas = useStore(schemaResolverStore, (s) => s.registeredSchemas)
-    const addSchema = useStore(schemaResolverStore, (s) => s.addSchema)
+    const registeredSchemas = useStore(useSchemaResolverSettings, (s) => s.knownSchemas)
+    const addSchema = useStore(useSchemaResolverSettings, (s) => s.addSchema)
+    const preloadKnownSchemas = useStore(useSchemaResolverSettings, (s) => s.preloadKnownSchemas)
+    const setPreloadKnownSchemas = useStore(
+        useSchemaResolverSettings,
+        (s) => s.setPreloadKnownSchemas
+    )
+    const allowUnknownSchemas = useStore(useSchemaResolverSettings, (s) => s.allowUnknownSchemas)
+    const setAllowUnknownSchemas = useStore(
+        useSchemaResolverSettings,
+        (s) => s.setAllowUnknownSchemas
+    )
 
     const [newSchemaID, setNewSchemaID] = useState("")
     const [newSchemaDisplayName, setNewSchemaDisplayName] = useState("")
@@ -41,9 +51,10 @@ export function SchemaSettingsPage() {
         addSchema({
             id: newSchemaID.trim(),
             displayName: newSchemaDisplayName.trim(),
-            schemaUrl: "",
+            url: "",
+            overrideUrl: "",
             matchesUrls: [""],
-            activeOnSpec: [
+            restrictTo: [
                 RO_CRATE_VERSION.V1_3_0,
                 RO_CRATE_VERSION.V1_2_0,
                 RO_CRATE_VERSION.V1_1_3
@@ -63,6 +74,41 @@ export function SchemaSettingsPage() {
     return (
         <div className={"flex flex-col max-h-full"}>
             <h3 className="font-semibold text-2xl leading-none p-2 pl-0 pt-0 mb-2">Schemas</h3>
+
+            <div className="space-y-2 mb-4">
+                <div className="flex items-center gap-2">
+                    <Checkbox
+                        checked={preloadKnownSchemas}
+                        onCheckedChange={(state) =>
+                            setPreloadKnownSchemas(state === "indeterminate" ? true : state)
+                        }
+                        id="preload-known-schemas"
+                    />
+                    <Label className="mb-0 pb-0" htmlFor="preload-known-schemas">
+                        Preload known schemas
+                    </Label>
+                    <HelpTooltip>
+                        Known schemas are downloaded automatically when a crate is opened.
+                    </HelpTooltip>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Checkbox
+                        checked={allowUnknownSchemas}
+                        onCheckedChange={(state) =>
+                            setAllowUnknownSchemas(state === "indeterminate" ? true : state)
+                        }
+                        id="allow-unknown-schemas"
+                    />
+                    <Label className="mb-0 pb-0" htmlFor="allow-unknown-schemas">
+                        Allow unknown schemas
+                    </Label>
+                    <HelpTooltip>
+                        Terms that do not match any registered schema are fetched directly from
+                        their host. The host has to be permitted by the deployment allowlist
+                        (SCHEMA_FETCH_ALLOWED_URLS).
+                    </HelpTooltip>
+                </div>
+            </div>
 
             <div className="overflow-auto min-h-0 shrink my-2">
                 {registeredSchemas.map((name) => (
@@ -127,21 +173,21 @@ export function SchemaSettingsPage() {
     )
 }
 
-function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
-    const deleteSchema = useStore(schemaResolverStore, (s) => s.deleteSchema)
-    const updateSchema = useStore(schemaResolverStore, (s) => s.updateSchema)
-    const registeredSchemas = useStore(schemaResolverStore, (s) => s.registeredSchemas)
+function RegisteredSchemaDisplay({ schema }: { schema: KnownSchema }) {
+    const deleteSchema = useStore(useSchemaResolverSettings, (s) => s.deleteSchema)
+    const updateSchema = useStore(useSchemaResolverSettings, (s) => s.updateSchema)
+    const registeredSchemas = useStore(useSchemaResolverSettings, (s) => s.knownSchemas)
 
     const [matchesPrefixes, setMatchesPrefixes] = useState(schema.matchesUrls)
-    const [downloadURL, setDownloadURL] = useState(schema.schemaUrl)
+    const [downloadURL, setDownloadURL] = useState(schema.overrideUrl)
     const [activeOnROCrateV1_3_0, setActiveOnROCrateV1_3_0] = useState(
-        schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_3_0)
+        schema.restrictTo.includes(RO_CRATE_VERSION.V1_3_0)
     )
     const [activeOnROCrateV1_2_0, setActiveOnROCrateV1_2_0] = useState(
-        schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_2_0)
+        schema.restrictTo.includes(RO_CRATE_VERSION.V1_2_0)
     )
     const [activeOnROCrateV1_1_3, setActiveOnROCrateV1_1_3] = useState(
-        schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_1_3)
+        schema.restrictTo.includes(RO_CRATE_VERSION.V1_1_3)
     )
 
     const [newID, setNewID] = useState(schema.id)
@@ -206,31 +252,31 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
         deleteSchema(schema.id)
     }, [deleteSchema, schema.id])
 
-    const changedActiveOn = useMemo(() => {
-        const activeOn: RO_CRATE_VERSION[] = []
-        if (activeOnROCrateV1_3_0) activeOn.push(RO_CRATE_VERSION.V1_3_0)
-        if (activeOnROCrateV1_2_0) activeOn.push(RO_CRATE_VERSION.V1_2_0)
-        if (activeOnROCrateV1_1_3) activeOn.push(RO_CRATE_VERSION.V1_1_3)
-        return activeOn
+    const changedRestrictTo = useMemo(() => {
+        const restrictTo: RO_CRATE_VERSION[] = []
+        if (activeOnROCrateV1_3_0) restrictTo.push(RO_CRATE_VERSION.V1_3_0)
+        if (activeOnROCrateV1_2_0) restrictTo.push(RO_CRATE_VERSION.V1_2_0)
+        if (activeOnROCrateV1_1_3) restrictTo.push(RO_CRATE_VERSION.V1_1_3)
+        return restrictTo
     }, [activeOnROCrateV1_1_3, activeOnROCrateV1_2_0, activeOnROCrateV1_3_0])
 
     const saveSelf = useCallback(() => {
         updateSchema(schema.id, {
             ...schema,
-            schemaUrl: downloadURL.trim(),
+            overrideUrl: downloadURL.trim(),
             matchesUrls: matchesPrefixes.map((s) => s.trim()),
-            activeOnSpec: changedActiveOn
+            restrictTo: changedRestrictTo
         })
         forceSchemaLoad().then()
-    }, [changedActiveOn, downloadURL, forceSchemaLoad, matchesPrefixes, schema, updateSchema])
+    }, [changedRestrictTo, downloadURL, forceSchemaLoad, matchesPrefixes, schema, updateSchema])
 
     const revertSelf = useCallback(() => {
-        setDownloadURL(schema.schemaUrl)
+        setDownloadURL(schema.overrideUrl)
         setMatchesPrefixes(schema.matchesUrls)
-        setActiveOnROCrateV1_1_3(schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_1_3))
-        setActiveOnROCrateV1_2_0(schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_2_0))
-        setActiveOnROCrateV1_3_0(schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_3_0))
-    }, [schema.activeOnSpec, schema.matchesUrls, schema.schemaUrl])
+        setActiveOnROCrateV1_1_3(schema.restrictTo.includes(RO_CRATE_VERSION.V1_1_3))
+        setActiveOnROCrateV1_2_0(schema.restrictTo.includes(RO_CRATE_VERSION.V1_2_0))
+        setActiveOnROCrateV1_3_0(schema.restrictTo.includes(RO_CRATE_VERSION.V1_3_0))
+    }, [schema.matchesUrls, schema.overrideUrl, schema.restrictTo])
 
     const changeName = useCallback(() => {
         updateSchema(schema.id, {
@@ -250,18 +296,18 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
 
     const hasChanges = useMemo(() => {
         return (
-            downloadURL !== schema.schemaUrl ||
+            downloadURL !== schema.overrideUrl ||
             matchesPrefixes.join(",") !== schema.matchesUrls.join(",") ||
-            changedActiveOn.slice().sort().join(",") !==
-                schema.activeOnSpec.slice().sort().join(",")
+            changedRestrictTo.slice().sort().join(",") !==
+                schema.restrictTo.slice().sort().join(",")
         )
     }, [
-        changedActiveOn,
+        changedRestrictTo,
         downloadURL,
         matchesPrefixes,
-        schema.activeOnSpec,
         schema.matchesUrls,
-        schema.schemaUrl
+        schema.overrideUrl,
+        schema.restrictTo
     ])
 
     return (
@@ -359,10 +405,19 @@ function RegisteredSchemaDisplay({ schema }: { schema: RegisteredSchema }) {
                         <HelpTooltip>
                             Endpoint that responds with a JSON-LD file or Turtle file, containing
                             the schema. Requests will always be sent with &#34;Accept:
-                            application/ld+json&#34;
+                            application/ld+json&#34;. Leave empty to use the default download URL.
                         </HelpTooltip>
                     </div>
-                    <Input value={downloadURL} onChange={(e) => setDownloadURL(e.target.value)} />
+                    <Input
+                        value={downloadURL}
+                        placeholder={schema.url || "No download URL set"}
+                        onChange={(e) => setDownloadURL(e.target.value)}
+                    />
+                    {downloadURL.trim() === "" && schema.url && (
+                        <div className="text-xs text-muted-foreground">
+                            Default: <span className="font-mono">{schema.url}</span>
+                        </div>
+                    )}
                 </div>
             </div>
 

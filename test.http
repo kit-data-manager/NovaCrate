@@ -1,5 +1,9 @@
-### GET request to example server
-GET http://www.w3.org/ns/prov#
-Accept: text/turtle
+### Fetch a remote schema through the NovaCrate schema fetch API
+GET http://localhost:3000/api/schemas/fetch?url=https%3A%2F%2Fwww.w3.org%2FTR%2Fdx-prof%2Frdf%2Fprof.ttl
+Accept: application/ld+json
+
+### Fetch a bundled schema from the app itself
+GET http://localhost:3000/api/schemas/fetch?url=schema%2Fcodemeta-3.0-terms.jsonld
+Accept: application/ld+json
 
 ###

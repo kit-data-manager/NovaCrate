@@ -22,7 +22,7 @@
         "lib/utils.ts",
         "lib/function-worker.ts",
         "lib/CrateServiceProvider.ts",
-        "lib/state/schema-resolver.ts",
+        "lib/state/schema-resolver-settings.ts",
         "lib/types/frogcat__ttl2jsonld.d.ts",
         "lib/property-value-utils.ts",
         "lib/constants.ts"

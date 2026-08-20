@@ -82,6 +82,11 @@ npm install
 npm run dev
 ```
 
+Optional configuration is done via a `.env` file (see `.env.example`). For example,
+`SCHEMA_FETCH_ALLOWED_URLS` restricts which vocabulary hosts the schema fetch API may
+contact; it defaults to the hosts of the built-in schemas, so no configuration is
+required to get started.
+
 ### Updating dependencies
 
 This step might be necessary after fetching new commits and on the first installation.

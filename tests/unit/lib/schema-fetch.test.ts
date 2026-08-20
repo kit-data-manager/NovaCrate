@@ -5,6 +5,15 @@ jest.mock("next/cache", () => ({
 import { GET, SCHEMA_FETCH_CACHE_CONTROL, validateSchemaUrl } from "@/lib/schema-fetch"
 
 const originalFetch = global.fetch
+const ORIGINAL_ALLOWED_URLS = process.env.SCHEMA_FETCH_ALLOWED_URLS
+
+function setAllowedSchemaUrls(globs: string | undefined) {
+    if (globs === undefined) {
+        delete process.env.SCHEMA_FETCH_ALLOWED_URLS
+    } else {
+        process.env.SCHEMA_FETCH_ALLOWED_URLS = globs
+    }
+}
 
 function mockFetch(...responses: Array<Response | Error>) {
     const mockedFetch = jest.fn()
@@ -29,8 +38,16 @@ function schemaRequest(url: string | null) {
 }
 
 describe("schema fetch API", () => {
+    beforeEach(() => {
+        setAllowedSchemaUrls("https://schema.example/**")
+    })
+
     afterEach(() => {
         global.fetch = originalFetch
+    })
+
+    afterAll(() => {
+        setAllowedSchemaUrls(ORIGINAL_ALLOWED_URLS)
     })
 
     describe("validateSchemaUrl", () => {
@@ -96,7 +113,7 @@ describe("schema fetch API", () => {
             expect(fetchMock).toHaveBeenCalledWith(new URL("https://schema.example/terms"), {
                 headers: { Accept: "application/ld+json" },
                 cache: "force-cache",
-                next: { revalidate: 2592000 }
+                next: { revalidate: 86400 }
             })
         })
 
@@ -118,12 +135,12 @@ describe("schema fetch API", () => {
             expect(fetchMock).toHaveBeenNthCalledWith(1, new URL("https://schema.example/terms"), {
                 headers: { Accept: "application/ld+json" },
                 cache: "force-cache",
-                next: { revalidate: 2592000 }
+                next: { revalidate: 86400 }
             })
             expect(fetchMock).toHaveBeenNthCalledWith(2, new URL("https://schema.example/terms"), {
                 headers: { Accept: "text/turtle" },
                 cache: "force-cache",
-                next: { revalidate: 2592000 }
+                next: { revalidate: 86400 }
             })
         })
 
@@ -161,6 +178,89 @@ describe("schema fetch API", () => {
                 { accept: "application/ld+json", status: 404, error: "Not Found" },
                 { accept: "text/turtle", error: "Network failed" }
             ])
+        })
+
+        it("rejects fetch URLs that are not in the allowlist", async () => {
+            const response = await GET(schemaRequest("https://evil.example/terms.ttl"))
+            const body = await response.json()
+
+            expect(response.status).toBe(403)
+            expect(body.error).toContain("not allowed on this deployment")
+        })
+
+        it("rejects URLs not covered by the default allowlist when unset", async () => {
+            setAllowedSchemaUrls(undefined)
+
+            const response = await GET(schemaRequest("https://schema.example/terms"))
+            const body = await response.json()
+
+            expect(response.status).toBe(403)
+            expect(body.error).toContain("not allowed on this deployment")
+        })
+
+        it("allows URLs covered by the default allowlist when unset", async () => {
+            setAllowedSchemaUrls(undefined)
+            const fetchMock = mockFetch(
+                new Response('{"@context":{},"@graph":[]}', {
+                    status: 200,
+                    headers: { "Content-Type": "application/ld+json" }
+                })
+            )
+
+            const response = await GET(
+                schemaRequest("https://schema.org/version/latest/schemaorg-current-https.jsonld")
+            )
+            const body = await response.json()
+
+            expect(response.status).toBe(200)
+            expect(body.format).toBe("jsonld")
+            expect(fetchMock).toHaveBeenCalledTimes(1)
+        })
+    })
+
+    describe("bundled schemas", () => {
+        it("serves a bundled schema file for relative schema/ paths", async () => {
+            const response = await GET(schemaRequest("schema/codemeta-3.0-terms.jsonld"))
+            const body = await response.json()
+
+            expect(response.status).toBe(200)
+            expect(body.format).toBe("jsonld")
+            expect(JSON.parse(body.content)["@graph"]).toBeDefined()
+            expect(response.headers.get("Cache-Control")).toBe(SCHEMA_FETCH_CACHE_CONTROL)
+        })
+
+        it("serves bundled schemas even when the remote allowlist is empty", async () => {
+            setAllowedSchemaUrls(undefined)
+
+            const response = await GET(schemaRequest("schema/pcdm-selected.jsonld"))
+
+            expect(response.status).toBe(200)
+        })
+
+        it("handles a BASE_PATH prefixed bundled schema path", async () => {
+            setAllowedSchemaUrls(undefined)
+            const originalBasePath = process.env.BASE_PATH
+            process.env.BASE_PATH = "/novacrate"
+
+            try {
+                const response = await GET(schemaRequest("/novacrate/schema/codemeta-3.0-terms.jsonld"))
+                expect(response.status).toBe(200)
+            } finally {
+                if (originalBasePath === undefined) delete process.env.BASE_PATH
+                else process.env.BASE_PATH = originalBasePath
+            }
+        })
+
+        it("rejects paths that escape the bundled schema directory", async () => {
+            const response = await GET(schemaRequest("schema/../../package.json"))
+
+            expect(response.status).toBe(400)
+        })
+
+        it("rejects unknown bundled schema paths", async () => {
+            const response = await GET(schemaRequest("schema/does-not-exist.jsonld"))
+
+            expect(response.status).toBe(400)
         })
     })
 

@@ -16,6 +16,7 @@ import { camelCaseReadable, getRootEntityID } from "@/lib/utils"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
 import { useContextResolver } from "@/lib/hooks/hooks"
+import { useTermComment } from "@/lib/schema-lib"
 import { Trash, TriangleAlert } from "lucide-react"
 import { MarkdownComment } from "@/components/markdown-comment"
 import { Pagination } from "@/components/pagination"
@@ -152,29 +153,33 @@ export const PropertyEditor = memo(function PropertyEditor({
         referenceTypeRangeResolver
     )
 
-    const propertyCommentResolver = useCallback(async () => {
+    const commentTerm = useMemo(() => {
+        if (!crateContextReady) return null
+        if (property.propertyName.startsWith("@")) return null
+        return resolvedPropertyName
+    }, [crateContextReady, property.propertyName, resolvedPropertyName])
+
+    const {
+        status: commentStatus,
+        comment: resolvedComment,
+        error: commentError
+    } = useTermComment(commentTerm)
+
+    const comment = useMemo(() => {
         if (property.propertyName === "@id") return "The unique identifier of the entity"
         if (property.propertyName === "@type")
             return "The type defines which properties can occur on the entity"
-        if (!resolvedPropertyName) throw `Property ${property.propertyName} not defined in context`
         if (profilePropertyRules.filter((r) => r.description).length > 0)
             return profilePropertyRules.map((r) => r.description).join("\n\n")
-        const comment = await worker.execute("getPropertyComment", resolvedPropertyName)
-        if (!comment) throw `Could not find comment for property ${resolvedPropertyName}`
-        return comment
-    }, [profilePropertyRules, property.propertyName, resolvedPropertyName, worker])
+        return resolvedComment
+    }, [property.propertyName, resolvedComment])
 
-    const {
-        data: comment,
-        error: commentError,
-        isLoading: commentIsPending,
-        mutate: reloadComments
-    } = useSWR(
-        schemaWorkerReady && crateContextReady
-            ? "property-comment-" + property.propertyName + "-" + profileCacheKey
-            : null,
-        propertyCommentResolver
-    )
+    const commentIsPending = useMemo(() => {
+        if (property.propertyName.startsWith("@")) return false
+        if (!crateContextReady) return true
+        if (resolvedPropertyName === null) return false
+        return commentStatus === undefined || commentStatus === "loading"
+    }, [commentStatus, crateContextReady, property.propertyName, resolvedPropertyName])
 
     useEffect(() => {
         // Reload comments and property range when the profile property rules change

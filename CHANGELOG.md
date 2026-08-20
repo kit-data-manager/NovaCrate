@@ -16,10 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Active profiles enhance the editor in many different places, such as the modal for creating entities and the modal for adding properties to entities
 - Added a profiles section to the context page to understand active profiles and their effects
 - Added validation for profiles based on the RO-Crate MASP proposal
+- Schemas are now loaded automatically when their terms are used in the editor. Registered schemas can be restricted to specific RO-Crate spec versions and their download URL can be overridden.
+- Added settings to preload all known schemas and to allow fetching unknown schemas directly from their host.
+- Added a schema fetch API that is restricted to a deployment-configured allowlist of URL globs (`SCHEMA_FETCH_ALLOWED_URLS`, defaults to the built-in schema hosts). Bundled schemas are served locally by the app.
 
 ### Changed
 - Adjusted the design around the header of the entity editor for better clarity and space efficiency
 - Small design improvements throughout the editor
+- Schema downloads are now cached for 24 hours
 
 ## [1.13.1] - 2026-08-04
 

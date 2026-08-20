@@ -21,9 +21,8 @@ import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/di
 import { COMMON_PROPERTIES } from "@/lib/constants"
 import HelpTooltip from "@/components/help-tooltip"
 import useSWR from "swr"
-import { schemaResolverStore } from "@/lib/state/schema-resolver"
+import { useSchemaResolverSettings } from "@/lib/state/schema-resolver-settings"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-
 export function TypeSelect({
     open,
     restrictToClasses,
@@ -87,11 +86,11 @@ export function TypeSelect({
      */
     const checkIfMatchingSchemaUnloaded = useCallback(async () => {
         const status = await worker.executeUncached("getWorkerStatus")
-        const allMatchingRegisteredSchemas = schemaResolverStore
+        const allMatchingRegisteredSchemas = useSchemaResolverSettings
             .getState()
-            .registeredSchemas.filter((schema) =>
+            .knownSchemas.filter((schema) =>
                 crateContext.specification
-                    ? schema.activeOnSpec.includes(crateContext.specification)
+                    ? schema.restrictTo.includes(crateContext.specification)
                     : true
             )
             .map((schema) => schema.id)

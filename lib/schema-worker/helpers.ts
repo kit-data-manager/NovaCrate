@@ -11,7 +11,10 @@ const schemaResolver = new SchemaResolver({
     allowUnknownSchemas: false,
     setKnownSchemas() {},
     setAllowUnknownSchemas() {},
-    setPreloadKnownSchemas() {}
+    setPreloadKnownSchemas() {},
+    addSchema() {},
+    updateSchema() {},
+    deleteSchema() {}
 })
 const schemaGraph = new SchemaGraph(schemaResolver)
 
@@ -171,6 +174,9 @@ export function getWorkerStatus() {
 
 export function updateRegisteredSchemas(state: SchemaResolverSettings, spec: RO_CRATE_VERSION) {
     schemaResolver.updateRegisteredSchemas(state, spec)
+    if (state.preloadKnownSchemas) {
+        schemaGraph.loadAllSchemas().then()
+    }
 }
 
 export function forceSchemaLoad(schemaId: string) {

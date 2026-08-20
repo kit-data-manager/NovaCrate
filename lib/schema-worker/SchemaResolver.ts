@@ -1,10 +1,14 @@
-import { SchemaFile, schemaFileSchema } from "./types"
+import { FetchFailure, SchemaFetchResult, SchemaFile, schemaFileSchema } from "./types"
 import { parse as parseTtl } from "@frogcat/ttl2jsonld"
 import { RO_CRATE_VERSION } from "@/lib/constants"
 import { toArray } from "@/lib/utils"
-import { KnownSchema, SchemaResolverSettings } from "@/lib/state/schema-resolver-settings"
+import {
+    findKnownSchemas,
+    getEffectiveSchemaUrl,
+    KnownSchema,
+    SchemaResolverSettings
+} from "@/lib/state/schema-resolver-settings"
 import { addBasePath } from "next/dist/client/add-base-path"
-import { FetchFailure, SchemaFetchResult } from "@/lib/schema-fetch"
 
 export const DedupedSymbol = Symbol(
     "return value for fetch operations that are deduped and therefore aborted"
@@ -31,13 +35,7 @@ export class SchemaResolver {
         // Wait until the SchemaResolver becomes ready. Crucial to prevent errors on initial render
         await this.waitForReady()
 
-        const matched = this.settings.knownSchemas.filter(
-            (schema) =>
-                nodeId.startsWith(schema.url) &&
-                (this.spec
-                    ? schema.restrictTo.includes(this.spec) || schema.restrictTo.length === 0
-                    : true)
-        )
+        const matched = findKnownSchemas(this.settings.knownSchemas, nodeId, this.spec ?? undefined)
 
         for (const registeredSchema of matched) {
             if (exclude.includes(registeredSchema.id)) continue
@@ -135,7 +133,7 @@ export class SchemaResolver {
             )
         }
 
-        const url = typeof schema === "string" ? schema : schema.overrideUrl || schema.url
+        const url = typeof schema === "string" ? schema : getEffectiveSchemaUrl(schema)
         const existing = this.runningFetches.get(url)
         if (existing) {
             return existing.then(() => DedupedSymbol) // After the existing fetch is done, return with DedupedSymbol

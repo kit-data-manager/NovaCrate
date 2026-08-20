@@ -1,29 +1,18 @@
-export const SCHEMA_FETCH_CACHE_CONTROL =
-    "public, max-age=86400, s-maxage=2592000, stale-while-revalidate=31536000"
-export const SCHEMA_FETCH_REVALIDATE_SECONDS = 2592000
+import { promises as fs } from "fs"
+import path from "path"
+import type { FetchFailure, SchemaFetchResult, SchemaFormat } from "@/lib/schema-worker/types"
+import { assertSchemaFetchUrlAllowed } from "@/lib/schema-fetch-whitelist"
+
+export type { FetchFailure, SchemaFetchResult }
+
+export const SCHEMA_FETCH_CACHE_CONTROL = "public, max-age=86400, s-maxage=86400"
+export const SCHEMA_FETCH_REVALIDATE_SECONDS = 86400
 
 const MAX_SCHEMA_BYTES = 10 * 1024 * 1024
-
-type SchemaFormat = "jsonld" | "turtle"
 
 interface FetchAttempt {
     accept: string
     format: SchemaFormat
-}
-
-export interface FetchFailure {
-    accept: string
-    error: string
-    status?: number
-}
-
-export interface SchemaFetchResult {
-    url: string
-    resolvedUrl: string
-    contentType: string | null
-    format: SchemaFormat
-    content: string
-    cachedAt: string
 }
 
 const FETCH_ATTEMPTS: FetchAttempt[] = [
@@ -39,6 +28,15 @@ export async function GET(req: Request) {
         return Response.json({ error: "Bad Request" }, { status: 400 })
     }
 
+    const bundledSchema = await readBundledSchema(schemaUrl)
+    if (bundledSchema) {
+        return Response.json(bundledSchema, {
+            headers: {
+                "Cache-Control": SCHEMA_FETCH_CACHE_CONTROL
+            }
+        })
+    }
+
     let url: URL
     try {
         url = validateSchemaUrl(schemaUrl)
@@ -46,6 +44,15 @@ export async function GET(req: Request) {
         return Response.json(
             { error: error instanceof Error ? error.message : "Invalid schema URL" },
             { status: 400 }
+        )
+    }
+
+    try {
+        assertSchemaFetchUrlAllowed(url)
+    } catch (error) {
+        return Response.json(
+            { error: error instanceof Error ? error.message : "Schema URL not allowed" },
+            { status: 403 }
         )
     }
 
@@ -192,4 +199,63 @@ function isIPv4(hostname: string): boolean {
 
 function isIPv6(hostname: string): boolean {
     return hostname.includes(":")
+}
+
+/**
+ * Bundled schemas are shipped with the app under `public/schema/` and are
+ * referenced with relative `schema/...` paths (optionally prefixed by the
+ * deployment's `BASE_PATH`). They are served directly, never via the network,
+ * so they do not go through the fetch allowlist.
+ */
+async function readBundledSchema(input: string): Promise<SchemaFetchResult | null> {
+    const filePath = resolveBundledSchemaPath(input)
+    if (!filePath) return null
+
+    try {
+        const content = await fs.readFile(filePath, "utf8")
+        // Ensure the bundled file is a valid JSON-LD document.
+        JSON.parse(content)
+
+        return {
+            url: input,
+            resolvedUrl: input,
+            contentType: "application/ld+json",
+            format: "jsonld",
+            content,
+            cachedAt: new Date().toISOString()
+        }
+    } catch {
+        return null
+    }
+}
+
+/**
+ * Resolves a relative `schema/...` path to a file inside `public/schema/`.
+ * Returns null for absolute URLs and for any path that would leave the
+ * bundled schema directory.
+ */
+function resolveBundledSchemaPath(input: string): string | null {
+    try {
+        new URL(input)
+        return null
+    } catch {
+        // Relative path — may reference a bundled schema.
+    }
+
+    let p = input
+    const basePath = process.env.BASE_PATH ?? ""
+    if (basePath && (p === basePath || p.startsWith(basePath + "/"))) {
+        p = p.slice(basePath.length)
+    }
+    p = p.replace(/^\/+/, "")
+
+    if (!p.startsWith("schema/")) return null
+    if (p.includes("\0")) return null
+
+    const rel = p.slice("schema/".length)
+    const schemaDir = path.join(process.cwd(), "public", "schema")
+    const full = path.resolve(schemaDir, rel)
+    if (full !== schemaDir && !full.startsWith(schemaDir + path.sep)) return null
+
+    return full
 }

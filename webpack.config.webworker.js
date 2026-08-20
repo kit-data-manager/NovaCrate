@@ -25,11 +25,15 @@ const config = {
         ]
     },
     resolve: {
-        extensions: [".ts", ".ts", ".js"]
+        extensions: [".ts", ".ts", ".js"],
+        alias: {
+            "@": path.resolve(__dirname, ".")
+        }
     },
     plugins: [
         new webpack.DefinePlugin({
-            "process.env.BASE_PATH": JSON.stringify(process.env.BASE_PATH || "")
+            "process.env.BASE_PATH": JSON.stringify(process.env.BASE_PATH || ""),
+            "process.env.__NEXT_ROUTER_BASEPATH": JSON.stringify(process.env.BASE_PATH || "")
         })
         // new BundleAnalyzerPlugin({ enabled: process.env.ANALYZE === "true" })
     ]
