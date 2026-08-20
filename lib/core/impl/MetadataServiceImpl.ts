@@ -15,9 +15,11 @@ export class MetadataServiceImpl implements IMetadataService {
     private _events = new Observable<IMetadataServiceEvents>()
     readonly events: IObservable<IMetadataServiceEvents> = this._events
 
+    private disposeListeners: () => void
+
     constructor(private persistenceAdapter: IPersistenceAdapter) {
         this.updateGraph = this.updateGraph.bind(this)
-        persistenceAdapter.events.addEventListener("graph-changed", this.updateGraph)
+        this.disposeListeners = persistenceAdapter.events.addEventListener("graph-changed", this.updateGraph)
     }
 
     async addEntity(entity: IEntity, overwrite: boolean = false): Promise<boolean> {
@@ -183,7 +185,7 @@ export class MetadataServiceImpl implements IMetadataService {
     }
 
     dispose() {
-        this.persistenceAdapter.events.removeEventListener("graph-changed", this.updateGraph)
+        this.disposeListeners()
     }
 
     static async newInstance(persistenceAdapter: IPersistenceAdapter) {

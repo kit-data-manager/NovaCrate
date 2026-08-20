@@ -46,7 +46,8 @@ function createMockCrateService(): ICrateService & {
         setMetadata: jest.fn(async (newMetadata: string) => {
             metadata = newMetadata
         }),
-        getFileService: jest.fn(() => null)
+        getFileService: jest.fn(() => null),
+        dispose: jest.fn()
     }
 }
 

@@ -7,9 +7,14 @@ import { BaseContextService } from "@/lib/core/impl/BaseContextService"
  * @example resolve("Organization") -> "https://schema.org/Organization"
  */
 export class SynchronizedContextService extends BaseContextService {
+    private disposeListeners: () => void
+
     constructor(private persistenceAdapter: IPersistenceAdapter) {
         super()
-        this.persistenceAdapter.events.addEventListener("context-changed", this.update)
+        this.disposeListeners = this.persistenceAdapter.events.addEventListener(
+            "context-changed",
+            this.update
+        )
     }
 
     async addCustomContextPair(prefix: string, url: string): Promise<void> {
@@ -23,7 +28,7 @@ export class SynchronizedContextService extends BaseContextService {
     }
 
     dispose() {
-        this.persistenceAdapter.events.removeEventListener("context-changed", this.update)
+        this.disposeListeners()
     }
 
     /**

@@ -69,4 +69,6 @@ export interface IPersistenceService {
      * Resolves if healthy, throws if not.
      */
     healthCheck(): Promise<void>
+
+    dispose(): void
 }

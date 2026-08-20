@@ -53,7 +53,10 @@ export function PersistenceProvider({
 
     const prev = useRef(persistence)
     useEffect(() => {
-        if (prev.current !== persistence) console.warn("Persistence changed!")
+        if (prev.current !== persistence) {
+            console.warn("Persistence changed!")
+            prev.current.dispose()
+        }
         prev.current = persistence
     }, [persistence])
 

@@ -37,4 +37,6 @@ export class IFrameCrateService implements ICrateService {
     getFileService(): IFileService | null {
         return null
     }
+
+    dispose() {}
 }

@@ -31,13 +31,17 @@ export class BrowserCrateService implements ICrateService {
     readonly events: IObservable<ICrateServiceEvents> = this._events
 
     private fileService: BrowserFileService
+    private disposeListeners: () => void
 
     /** Cached metadata string and the timestamp (epoch ms) it was stored. */
     private metadataCache: { value: string; storedAt: number } | null = null
 
     constructor(crateId: string, worker: FunctionWorker<typeof opfsFunctions>) {
         this.fileService = new BrowserFileService(crateId, worker)
-        this.fileService.events.addEventListener("file-updated", this.onFileUpdated)
+        this.disposeListeners = this.fileService.events.addEventListener(
+            "file-updated",
+            this.onFileUpdated
+        )
     }
 
     private invalidateCache(): void {
@@ -74,5 +78,9 @@ export class BrowserCrateService implements ICrateService {
 
     getFileService(): IFileService | null {
         return this.fileService
+    }
+
+    dispose() {
+        this.disposeListeners()
     }
 }
