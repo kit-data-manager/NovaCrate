@@ -16,7 +16,6 @@ import { camelCaseReadable, getRootEntityID } from "@/lib/utils"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
 import { useContextResolver } from "@/lib/hooks/hooks"
-import { useTermComment } from "@/lib/schema-lib"
 import { Trash, TriangleAlert } from "lucide-react"
 import { MarkdownComment } from "@/components/markdown-comment"
 import { Pagination } from "@/components/pagination"
@@ -160,10 +159,13 @@ export const PropertyEditor = memo(function PropertyEditor({
     }, [crateContextReady, property.propertyName, resolvedPropertyName])
 
     const {
-        status: commentStatus,
-        comment: resolvedComment,
-        error: commentError
-    } = useTermComment(commentTerm)
+        data: resolvedComment,
+        error: commentError,
+        isLoading: commentIsLoading
+    } = useSWR(
+        schemaWorkerReady && commentTerm ? "property-comment-" + commentTerm : null,
+        async () => (await worker.execute("getPropertyComment", commentTerm as string))
+    )
 
     const comment = useMemo(() => {
         if (property.propertyName === "@id") return "The unique identifier of the entity"
@@ -172,20 +174,19 @@ export const PropertyEditor = memo(function PropertyEditor({
         if (profilePropertyRules.filter((r) => r.description).length > 0)
             return profilePropertyRules.map((r) => r.description).join("\n\n")
         return resolvedComment
-    }, [property.propertyName, resolvedComment])
+    }, [profilePropertyRules, property.propertyName, resolvedComment])
 
     const commentIsPending = useMemo(() => {
         if (property.propertyName.startsWith("@")) return false
         if (!crateContextReady) return true
         if (resolvedPropertyName === null) return false
-        return commentStatus === undefined || commentStatus === "loading"
-    }, [commentStatus, crateContextReady, property.propertyName, resolvedPropertyName])
+        return commentIsLoading
+    }, [commentIsLoading, crateContextReady, property.propertyName, resolvedPropertyName])
 
     useEffect(() => {
-        // Reload comments and property range when the profile property rules change
+        // Reload property range when the profile property rules change
         reloadPropertyRange().then()
-        reloadComments().then()
-    }, [profilePropertyRules, reloadComments, reloadPropertyRange])
+    }, [profilePropertyRules, reloadPropertyRange])
 
     const [expandComment, setExpandComment] = useState(false)
 
@@ -248,7 +249,23 @@ export const PropertyEditor = memo(function PropertyEditor({
                     <MarkdownComment comment={comment} allowLinks />
                 </span>
             )
-        } else return null
+        } else {
+            return (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="text-warn inline-flex items-center gap-2">
+                            <TriangleAlert className="size-4" /> Unresolved property (no matching
+                            schema)
+                        </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xl">
+                        This property ({resolvedPropertyName ?? property.propertyName}) could not be
+                        found in one of the registered schemas. Comment and type can not be
+                        determined. Please add the required schema in the settings.
+                    </TooltipContent>
+                </Tooltip>
+            )
+        }
     }, [
         comment,
         commentError,

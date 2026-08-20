@@ -53,6 +53,9 @@ export class SchemaResolver {
         if (matched.length === 0) {
             // No known schema exists. Can we load it anyway?
             if (this.settings.allowUnknownSchemas) {
+                // Known schemas are batched (one request per schema), but
+                // unknown terms are currently requested one by one. TODO: batch
+                // unknown terms that share a vocabulary into a single request.
                 try {
                     const schema = await this.fetchSchema(nodeId)
                     if (schema !== DedupedSymbol) loadedUnknownSchemas.set(nodeId, { schema })

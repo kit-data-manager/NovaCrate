@@ -119,7 +119,10 @@ export async function getPossibleEntityProperties(types: string[], opt?: Propert
     )
 }
 
-export function getAllClasses(): SlimClass[] {
+export async function getAllClasses(): Promise<SlimClass[]> {
+    // Ensure the known schemas are loaded before listing classes, so the first
+    // request blocks until the vocabulary fetches complete.
+    await schemaGraph.loadAllSchemas()
     return schemaGraph
         .getAllNodes()
         .filter((n) => n.isClass())
@@ -131,7 +134,10 @@ export function getAllClasses(): SlimClass[] {
         })
 }
 
-export function getAllProperties(opt?: Partial<PropertyOptions>): SlimProperty[] {
+export async function getAllProperties(opt?: Partial<PropertyOptions>): Promise<SlimProperty[]> {
+    // Ensure the known schemas are loaded before listing properties, so the
+    // first request blocks until the vocabulary fetches complete.
+    await schemaGraph.loadAllSchemas()
     return schemaGraph
         .getAllNodes()
         .filter((n) => n.isProperty())
