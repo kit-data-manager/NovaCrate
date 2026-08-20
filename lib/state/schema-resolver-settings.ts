@@ -1,5 +1,5 @@
 import { RO_CRATE_VERSION } from "@/lib/constants"
-import { addBasePath } from "next/dist/client/add-base-path"
+import { prependBasePath } from "@/lib/utils"
 import { create } from "zustand"
 import { persist, unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 import { immer } from "zustand/middleware/immer"
@@ -21,12 +21,20 @@ export interface KnownSchema {
     restrictTo: RO_CRATE_VERSION[]
 }
 
-export interface SchemaResolverSettings {
+/**
+ * Serializable subset of the schema resolver settings. This is the shape that
+ * is allowed to cross into the schema web worker (functions are not
+ * structured-cloneable and would make `postMessage` throw).
+ */
+export interface SchemaResolverSettingsData {
     preloadKnownSchemas: boolean
-    setPreloadKnownSchemas(to: boolean): void
     allowUnknownSchemas: boolean
-    setAllowUnknownSchemas(to: boolean): void
     knownSchemas: KnownSchema[]
+}
+
+export interface SchemaResolverSettings extends SchemaResolverSettingsData {
+    setPreloadKnownSchemas(to: boolean): void
+    setAllowUnknownSchemas(to: boolean): void
     setKnownSchemas(schemas: KnownSchema[]): void
 
     /**
@@ -41,7 +49,18 @@ export interface SchemaResolverSettings {
     deleteSchema(id: string): void
 }
 
-const ALL_SPECS = [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
+/** Extracts the serializable settings that may be sent to the schema worker. */
+export function toSchemaResolverSettingsData(
+    settings: SchemaResolverSettingsData
+): SchemaResolverSettingsData {
+    return {
+        preloadKnownSchemas: settings.preloadKnownSchemas,
+        allowUnknownSchemas: settings.allowUnknownSchemas,
+        knownSchemas: settings.knownSchemas
+    }
+}
+
+const ALL_SPECS = [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
 
 function cloneKnownSchemas(schemas: KnownSchema[]): KnownSchema[] {
     return schemas.map((schema) => ({
@@ -58,7 +77,7 @@ export const DEFAULT_KNOWN_SCHEMAS: KnownSchema[] = [
         matchesUrls: ["https://schema.org/"],
         url: "https://schema.org/version/latest/schemaorg-current-https.jsonld",
         overrideUrl: "",
-        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
+        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
     },
     {
         id: "bioschemas_types",
@@ -66,7 +85,7 @@ export const DEFAULT_KNOWN_SCHEMAS: KnownSchema[] = [
         matchesUrls: ["https://bioschemas.org/"],
         url: "https://bioschemas.org/types/bioschemas_types.jsonld",
         overrideUrl: "",
-        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
+        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
     },
     {
         id: "dcmi",
@@ -74,39 +93,40 @@ export const DEFAULT_KNOWN_SCHEMAS: KnownSchema[] = [
         matchesUrls: ["http://purl.org/dc/terms/"],
         url: "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
         overrideUrl: "",
-        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
+        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
     },
     {
         id: "prof-voc",
         displayName: "Profile Vocabulary",
         matchesUrls: ["http://www.w3.org/ns/dx/prof"],
-        url: "https://www.w3.org/TR/dx-prof/rdf/prof.ttl",
+        // Resolvable per term via content negotiation, no download URL needed.
+        url: "",
         overrideUrl: "",
-        restrictTo: [RO_CRATE_VERSION.V1_2_0]
+        restrictTo: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
     },
     {
         id: "geosparql",
         displayName: "GeoSPARQL",
         matchesUrls: ["http://www.opengis.net/ont/geosparql"],
-        url: "https://opengeospatial.github.io/ogc-geosparql/geosparql11/geo.ttl",
+        url: "https://raw.githubusercontent.com/opengeospatial/ogc-geosparql/master/geosparql-next/rdf/ontologies/geo.ttl",
         overrideUrl: "",
-        restrictTo: [RO_CRATE_VERSION.V1_2_0]
+        restrictTo: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
     },
     {
         id: "codemeta3",
         displayName: "CodeMeta 3.0",
         matchesUrls: ["https://codemeta.github.io/terms/"],
-        url: addBasePath("schema/codemeta-3.0-terms.jsonld"),
+        url: prependBasePath("schema/codemeta-3.0-terms.jsonld"),
         overrideUrl: "",
-        restrictTo: [RO_CRATE_VERSION.V1_2_0]
+        restrictTo: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
     },
     {
         id: "pcdm",
         displayName: "Portland Common Data Model",
         matchesUrls: ["http://pcdm.org/models#"],
-        url: addBasePath("schema/pcdm-selected.jsonld"),
+        url: prependBasePath("schema/pcdm-selected.jsonld"),
         overrideUrl: "",
-        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
+        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
     }
 ]
 
@@ -155,7 +175,7 @@ interface PersistedRegisteredSchema {
 const toKnownSchema = (registered: PersistedRegisteredSchema): KnownSchema => {
     const defaultForId = DEFAULT_KNOWN_SCHEMAS.find((d) => d.id === registered.id)
     const defaultUrl = defaultForId?.url ?? ""
-    const url = defaultForId ? defaultUrl : registered.schemaUrl ?? ""
+    const url = defaultForId ? defaultUrl : (registered.schemaUrl ?? "")
     const overrideUrl =
         defaultForId && registered.schemaUrl && registered.schemaUrl !== defaultUrl
             ? registered.schemaUrl
@@ -170,7 +190,7 @@ const toKnownSchema = (registered: PersistedRegisteredSchema): KnownSchema => {
         restrictTo:
             registered.activeOnSpec && registered.activeOnSpec.length > 0
                 ? registered.activeOnSpec
-                : defaultForId?.restrictTo ?? [...ALL_SPECS]
+                : (defaultForId?.restrictTo ?? [...ALL_SPECS])
     }
 }
 
@@ -195,9 +215,10 @@ export function migrateSchemaResolverSettings(
         return { knownSchemas: cloneKnownSchemas(DEFAULT_KNOWN_SCHEMAS) }
     }
 
-    const existing = raw && Array.isArray(raw.registeredSchemas)
-        ? (raw.registeredSchemas as PersistedRegisteredSchema[]).map(toKnownSchema)
-        : []
+    const existing =
+        raw && Array.isArray(raw.registeredSchemas)
+            ? (raw.registeredSchemas as PersistedRegisteredSchema[]).map(toKnownSchema)
+            : []
 
     const missingDefaults = DEFAULT_KNOWN_SCHEMAS.filter(
         (defaultSchema) => !existing.some((s) => s.id === defaultSchema.id)

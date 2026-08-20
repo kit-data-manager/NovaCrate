@@ -438,6 +438,18 @@ export function undefinedIfEmpty<T>(arr?: T[]) {
     } else return arr
 }
 
+/**
+ * Prepends the deployment base path (`BASE_PATH`) to a relative path, if the
+ * base path is defined. Returns the path unchanged when `BASE_PATH` is unset
+ * or empty, and avoids double-prefixing paths that already carry the base path.
+ */
+export function prependBasePath(path: string): string {
+    const basePath = process.env.BASE_PATH
+    if (!basePath) return path
+    if (path.startsWith(basePath)) return path
+    return basePath.replace(/\/+$/, "") + (path.startsWith("/") ? path : "/" + path)
+}
+
 export const EntityPropertySchema = z.union([
     z.object({ "@id": z.coerce.string() }),
     z.array(z.union([z.object({ "@id": z.coerce.string() }), z.coerce.string()])),

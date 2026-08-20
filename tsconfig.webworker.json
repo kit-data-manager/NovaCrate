@@ -13,7 +13,8 @@
         },
         "target": "ES2015",
         "outDir": "public/schema-worker",
-        "rootDir": "lib"
+        "rootDir": "lib",
+        "types": ["node"]
     },
     "include": [
         "lib/schema-worker/**/*.ts",

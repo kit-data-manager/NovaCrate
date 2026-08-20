@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Schemas are now loaded automatically when their terms are used in the editor. Registered schemas can be restricted to specific RO-Crate spec versions and their download URL can be overridden.
 - Added settings to preload all known schemas and to allow fetching unknown schemas directly from their host.
 - Added a schema fetch API that is restricted to a deployment-configured allowlist of URL globs (`SCHEMA_FETCH_ALLOWED_URLS`, defaults to the built-in schema hosts). Bundled schemas are served locally by the app.
+- Registered schemas can now omit a download URL and instead be resolved per term via content negotiation; term requests that share a vocabulary prefix are batched into a single request. The default Profile Vocabulary entry and unknown-schema fetching use this path.
+- Fixed the default GeoSPARQL entry to use a working ontology source.
 
 ### Changed
 - Adjusted the design around the header of the entity editor for better clarity and space efficiency

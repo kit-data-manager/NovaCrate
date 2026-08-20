@@ -4,7 +4,10 @@ import { FunctionWorker } from "@/lib/function-worker"
 import { useFunctionWorker } from "@/lib/hooks/use-function-worker"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { useEditorState } from "@/lib/state/editor-state"
-import { useSchemaResolverSettings } from "@/lib/state/schema-resolver-settings"
+import {
+    toSchemaResolverSettingsData,
+    useSchemaResolverSettings
+} from "@/lib/state/schema-resolver-settings"
 
 export interface ISchemaWorkerContext {
     isReady: boolean
@@ -33,7 +36,7 @@ export function SchemaWorkerProvider(props: PropsWithChildren) {
             worker
                 .executeUncached(
                     "updateRegisteredSchemas",
-                    useSchemaResolverSettings.getState(),
+                    toSchemaResolverSettingsData(useSchemaResolverSettings.getState()),
                     context.specification
                 )
                 .then()
@@ -41,7 +44,11 @@ export function SchemaWorkerProvider(props: PropsWithChildren) {
             return useSchemaResolverSettings.subscribe((newState) => {
                 if (context.specification)
                     worker
-                        .executeUncached("updateRegisteredSchemas", newState, context.specification)
+                        .executeUncached(
+                            "updateRegisteredSchemas",
+                            toSchemaResolverSettingsData(newState),
+                            context.specification
+                        )
                         .then()
             })
         }

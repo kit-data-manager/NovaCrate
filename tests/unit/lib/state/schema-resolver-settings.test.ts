@@ -10,6 +10,7 @@ import {
     findKnownSchemas,
     getEffectiveSchemaUrl,
     migrateSchemaResolverSettings,
+    toSchemaResolverSettingsData,
     useSchemaResolverSettings
 } from "@/lib/state/schema-resolver-settings"
 
@@ -34,6 +35,24 @@ function schemaWith(id: string, overrides: Partial<KnownSchema> = {}): KnownSche
         ...overrides
     }
 }
+
+describe("toSchemaResolverSettingsData", () => {
+    it("returns a serializable payload that contains no functions", () => {
+        const state = useSchemaResolverSettings.getState()
+        const data = toSchemaResolverSettingsData(state)
+
+        expect(Object.keys(data).sort()).toEqual([
+            "allowUnknownSchemas",
+            "knownSchemas",
+            "preloadKnownSchemas"
+        ])
+        expect(data.preloadKnownSchemas).toBe(state.preloadKnownSchemas)
+        expect(data.allowUnknownSchemas).toBe(state.allowUnknownSchemas)
+        expect(data.knownSchemas).toEqual(state.knownSchemas)
+        expect(Object.values(data).some((v) => typeof v === "function")).toBe(false)
+        expect(JSON.parse(JSON.stringify(data))).toEqual(data)
+    })
+})
 
 describe("useSchemaResolverSettings", () => {
     beforeEach(() => {
@@ -103,6 +122,15 @@ describe("useSchemaResolverSettings", () => {
             useSchemaResolverSettings.getState().deleteSchema("does-not-exist")
             expect(useSchemaResolverSettings.getState().knownSchemas).toEqual([])
         })
+    })
+})
+
+describe("DEFAULT_KNOWN_SCHEMAS", () => {
+    it("is active on the latest RO-Crate version", () => {
+        expect(DEFAULT_KNOWN_SCHEMAS.length).toBeGreaterThan(0)
+        for (const schema of DEFAULT_KNOWN_SCHEMAS) {
+            expect(schema.restrictTo).toContain(RO_CRATE_VERSION.V1_3_0)
+        }
     })
 })
 
@@ -237,7 +265,11 @@ describe("migrateSchemaResolverSettings", () => {
         const schema = result.knownSchemas?.find((s) => s.id === "custom")
         expect(schema?.url).toBe("https://custom.example/terms.ttl")
         expect(schema?.overrideUrl).toBe("")
-        expect(schema?.restrictTo).toEqual([RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0])
+        expect(schema?.restrictTo).toEqual([
+            RO_CRATE_VERSION.V1_1_3,
+            RO_CRATE_VERSION.V1_2_0,
+            RO_CRATE_VERSION.V1_3_0
+        ])
     })
 
     it("should add default schemas that are missing from persisted data", () => {

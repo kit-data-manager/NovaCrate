@@ -37,7 +37,7 @@ Note that when you configure any of these variables, you need to extend the Nova
 | IFRAME_TARGET_ORIGIN        | *empty*       | Required for using NovaCrate in IFrame embedded mode. Refer to the [IFrame Documentation](./iframe-interface.md)                                   |
 | AI_ASSISTANT_ENABLED        | *empty*       | Set this to `true` to enable the AI Assistant in your deployment.                                                                                  |
 | AI_ASSISTANT_BASE_URL_REGEX | *empty*       | Regex that matches allowed custom base URLs configured by the user for an LLM provider. Custom base URLs are disabled if this variable is not set. |
-| SCHEMA_FETCH_ALLOWED_URLS   | *secure default* | Whitespace- or comma-separated glob patterns for the URLs the schema fetch API is allowed to request. Defaults to the hosts of the built-in schemas (schema.org, bioschemas.org, dublincore.org, w3.org, opengeospatial.github.io, pcdm). Set this to restrict or extend which vocabularies can be downloaded. |
+| SCHEMA_FETCH_ALLOWED_URLS   | *secure default* | Whitespace- or comma-separated glob patterns for the URLs the schema fetch API is allowed to request. Defaults to the hosts of the built-in schemas (schema.org, bioschemas.org, dublincore.org, w3.org, raw.githubusercontent.com, pcdm). Set this to restrict or extend which vocabularies can be downloaded. |
 
 ### Attention: AI Assistant security considerations
 

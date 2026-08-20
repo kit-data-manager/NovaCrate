@@ -16,7 +16,7 @@ export const SCHEMA_FETCH_ALLOWED_URLS_ENV = "SCHEMA_FETCH_ALLOWED_URLS"
  */
 export const DEFAULT_SCHEMA_FETCH_ALLOWED_URLS =
     "https://schema.org/** https://bioschemas.org/** https://www.dublincore.org/** " +
-    "https://www.w3.org/TR/dx-prof/** https://opengeospatial.github.io/** " +
+    "https://www.w3.org/ns/dx/prof/** https://raw.githubusercontent.com/opengeospatial/** " +
     "http://pcdm.org/models#**"
 
 /**

@@ -1,20 +1,55 @@
 import { FetchFailure, SchemaFetchResult, SchemaFile, schemaFileSchema } from "./types"
 import { parse as parseTtl } from "@frogcat/ttl2jsonld"
 import { RO_CRATE_VERSION } from "@/lib/constants"
-import { toArray } from "@/lib/utils"
+import { toArray, prependBasePath } from "@/lib/utils"
 import {
     findKnownSchemas,
     getEffectiveSchemaUrl,
     KnownSchema,
-    SchemaResolverSettings
+    SchemaResolverSettingsData
 } from "@/lib/state/schema-resolver-settings"
-import { addBasePath } from "next/dist/client/add-base-path"
 
 export const DedupedSymbol = Symbol(
     "return value for fetch operations that are deduped and therefore aborted"
 )
 type DedupedSymbol = typeof DedupedSymbol
 type UnknownSchema = string
+
+/** How long term fetches are collected before they are grouped by prefix and requested. */
+const TERM_FETCH_DEBOUNCE_MS = 40
+
+/**
+ * The URL base shared by terms of one vocabulary: everything up to and
+ * including the last `/` or `#` (e.g. `https://schema.org/` or
+ * `http://www.opengis.net/ont/geosparql#`).
+ */
+export function getTermBase(term: string): string {
+    const splitAt = Math.max(term.lastIndexOf("#"), term.lastIndexOf("/"))
+    if (splitAt <= "https://".length) return term
+    return term.slice(0, splitAt + 1)
+}
+
+/** The schema fetch API only accepts https, so upgrade http term URLs. */
+function toSecureFetchUrl(url: string): string {
+    if (url.startsWith("http://")) return "https://" + url.slice("http://".length)
+    return url
+}
+
+function looksLikeTurtle(text: string): boolean {
+    const start = text.replace(/^\uFEFF/, "").trimStart().slice(0, 500)
+    return start.startsWith("@prefix") || start.startsWith("@base") || /<https?:\/\//.test(start)
+}
+
+interface TermRequest {
+    nodeId: string
+    resolve: (outcome: TermFetchOutcome | null) => void
+}
+
+interface TermFetchOutcome {
+    key: string
+    schema?: SchemaFile
+    error?: unknown
+}
 
 export class SchemaResolver {
     // SchemaResolver becomes ready with the first {@link SchemaResolver.updateRegisteredSchemas} call
@@ -23,21 +58,27 @@ export class SchemaResolver {
     private runningFetches: Map<string, Promise<SchemaFile>> = new Map()
     private spec: RO_CRATE_VERSION | null = null
 
-    constructor(private settings: SchemaResolverSettings) {}
+    // Term-fetch batching: terms of the same vocabulary are collected for a
+    // short debounce window and then fetched once by base URL.
+    private termQueue: Map<string, TermRequest[]> = new Map()
+    private termFlushTimer: ReturnType<typeof setTimeout> | null = null
+    private runningTermFetches: Map<string, Promise<void>> = new Map()
+    private loadedTermBases: Set<string> = new Set()
+
+    constructor(private settings: SchemaResolverSettingsData) {}
 
     async autoload(nodeId: string, exclude: string[]) {
-        // Map key is schema id
+        // Map key is schema id or, for term fetches, the vocabulary base/term.
         const loadedSchemas: Map<string, { schema?: SchemaFile; error?: unknown }> = new Map()
-        // Map key is node id
-        const loadedUnknownSchemas: Map<string, { schema?: SchemaFile; error?: unknown }> =
-            new Map()
 
         // Wait until the SchemaResolver becomes ready. Crucial to prevent errors on initial render
         await this.waitForReady()
 
         const matched = findKnownSchemas(this.settings.knownSchemas, nodeId, this.spec ?? undefined)
+        const knownWithUrl = matched.filter((schema) => getEffectiveSchemaUrl(schema) !== "")
+        const knownWithoutUrl = matched.filter((schema) => getEffectiveSchemaUrl(schema) === "")
 
-        for (const registeredSchema of matched) {
+        for (const registeredSchema of knownWithUrl) {
             if (exclude.includes(registeredSchema.id)) continue
 
             try {
@@ -50,23 +91,113 @@ export class SchemaResolver {
             }
         }
 
-        if (matched.length === 0) {
-            // No known schema exists. Can we load it anyway?
-            if (this.settings.allowUnknownSchemas) {
-                // Known schemas are batched (one request per schema), but
-                // unknown terms are currently requested one by one. TODO: batch
-                // unknown terms that share a vocabulary into a single request.
-                try {
-                    const schema = await this.fetchSchema(nodeId)
-                    if (schema !== DedupedSymbol) loadedUnknownSchemas.set(nodeId, { schema })
-                } catch (e) {
-                    console.error(`Failed to get unknown schema at ${nodeId}:`, e)
-                    loadedUnknownSchemas.set(nodeId, { error: e })
-                }
+        const needsTermFetch =
+            knownWithoutUrl.length > 0 ||
+            (matched.length === 0 && this.settings.allowUnknownSchemas)
+        if (needsTermFetch) {
+            const knownSchemaId =
+                knownWithoutUrl.length > 0 ? knownWithoutUrl[0].id : undefined
+            const outcome = await this.termFetch(nodeId, knownSchemaId, exclude)
+            if (outcome?.schema) {
+                loadedSchemas.set(outcome.key, { schema: outcome.schema })
+            } else if (outcome?.error) {
+                loadedSchemas.set(outcome.key, { error: outcome.error })
             }
         }
 
         return loadedSchemas
+    }
+
+    private async termFetch(
+        nodeId: string,
+        knownSchemaId: string | undefined,
+        exclude: string[]
+    ): Promise<TermFetchOutcome | null> {
+        if (knownSchemaId !== undefined && exclude.includes(knownSchemaId)) return null
+        const base = getTermBase(nodeId)
+        if (this.loadedTermBases.has(base)) return null
+
+        return new Promise<TermFetchOutcome | null>((resolve) => {
+            let group = this.termQueue.get(base)
+            if (!group) {
+                group = []
+                this.termQueue.set(base, group)
+            }
+            group.push({ nodeId, resolve })
+            this.scheduleTermFetchFlush()
+        })
+    }
+
+    private scheduleTermFetchFlush() {
+        if (this.termFlushTimer != null) return
+        this.termFlushTimer = setTimeout(() => {
+            this.termFlushTimer = null
+            void this.flushTermFetches()
+        }, TERM_FETCH_DEBOUNCE_MS)
+    }
+
+    private async flushTermFetches() {
+        const batches = this.termQueue
+        this.termQueue = new Map()
+        for (const [base, requests] of batches) {
+            await this.processTermBase(base, requests)
+        }
+    }
+
+    private async processTermBase(base: string, requests: TermRequest[]) {
+        const running = this.runningTermFetches.get(base)
+        if (running) {
+            await running
+            if (this.loadedTermBases.has(base)) {
+                for (const request of requests) request.resolve(null)
+            } else {
+                // The previous attempt failed; retry for these late requests.
+                await this.resolveTermBase(base, requests)
+            }
+            return
+        }
+        await this.resolveTermBase(base, requests)
+    }
+
+    private async resolveTermBase(base: string, requests: TermRequest[]) {
+        if (this.loadedTermBases.has(base)) {
+            for (const request of requests) request.resolve(null)
+            return
+        }
+
+        const promise = this.doFetchTerms(base, requests)
+        this.runningTermFetches.set(base, promise.catch(() => undefined))
+        await promise
+        this.runningTermFetches.delete(base)
+    }
+
+    private async doFetchTerms(base: string, requests: TermRequest[]) {
+        try {
+            const schema = await this.fetchSchemaUrl(base)
+            if (schema === DedupedSymbol) {
+                // Another fetch of this exact base URL is in progress and will
+                // populate the graph; nothing to add here.
+                for (const request of requests) request.resolve(null)
+                return
+            }
+            this.loadedTermBases.add(base)
+            for (const request of requests) request.resolve({ key: base, schema })
+        } catch (e) {
+            console.error(`Failed to fetch term base ${base}:`, e)
+            // The base URL itself did not resolve; fall back to each term URL.
+            await Promise.all(
+                requests.map(async (request) => {
+                    try {
+                        const schema = await this.fetchSchemaUrl(request.nodeId)
+                        request.resolve(
+                            schema === DedupedSymbol ? null : { key: request.nodeId, schema }
+                        )
+                    } catch (termError) {
+                        request.resolve({ key: request.nodeId, error: termError })
+                    }
+                })
+            )
+        }
     }
 
     private waitForReady(): Promise<void> {
@@ -99,7 +230,7 @@ export class SchemaResolver {
         return Promise.resolve()
     }
 
-    updateRegisteredSchemas(settings: SchemaResolverSettings, spec: RO_CRATE_VERSION) {
+    updateRegisteredSchemas(settings: SchemaResolverSettingsData, spec: RO_CRATE_VERSION) {
         this.ready = true
         this.settings = settings
         this.spec = spec
@@ -108,13 +239,20 @@ export class SchemaResolver {
     async forceLoad(schemaId: string) {
         const schema = this.settings.knownSchemas.find((schema) => schema.id === schemaId)
         if (!schema) return
+        // Schemas without a download URL can only be loaded per term.
+        if (getEffectiveSchemaUrl(schema) === "") return
         const fetched = await this.fetchSchema(schema)
         if (fetched === DedupedSymbol) return
         return fetched
     }
 
+    /**
+     * Returns fetch operations for all known schemas that have a download URL.
+     * Schemas without a URL (term-resolved vocabularies) are loaded on demand.
+     */
     loadAll(exclude: string[]) {
         const schemas = this.settings.knownSchemas
+            .filter((schema) => getEffectiveSchemaUrl(schema) !== "")
             .filter((schema) => !exclude.includes(schema.id))
             .filter((schema) =>
                 this.spec
@@ -137,61 +275,83 @@ export class SchemaResolver {
         }
 
         const url = typeof schema === "string" ? schema : getEffectiveSchemaUrl(schema)
-        const existing = this.runningFetches.get(url)
+        return this.fetchSchemaUrl(url)
+    }
+
+    private async fetchSchemaUrl(url: string): Promise<SchemaFile | DedupedSymbol> {
+        const secureUrl = toSecureFetchUrl(url)
+        const existing = this.runningFetches.get(secureUrl)
         if (existing) {
-            return existing.then(() => DedupedSymbol) // After the existing fetch is done, return with DedupedSymbol
-            // Because the existing fetch will actually fetch the schema and add it to the editor store, we do not need to fetch it again.
-            // We simply wait until the existing fetch is done.
-        } else {
-            const executeFetch = async () => {
-                const res = await fetch(
-                    addBasePath("/api/schemas/fetch?url=" + encodeURIComponent(url))
-                )
-                const body = (await res.json()) as
-                    | SchemaFetchResult
-                    | { error: string; attempts?: FetchFailure[] }
+            // After the existing fetch is done, return with DedupedSymbol.
+            // The existing fetch will add the schema to the editor store, so we
+            // just wait until it is done.
+            return existing.then(() => DedupedSymbol)
+        }
 
-                if ("error" in body) {
-                    throw new Error(
-                        body.error +
-                            ` (${body.attempts?.map((attempt) => `Tried ${attempt.accept} but got "${attempt.error}" (code: ${attempt.status})`).join("; ") ?? "No further information"})`
-                    )
-                } else {
-                    if (body.format === "jsonld") {
-                        const data = JSON.parse(body.content)
-                        this.runningFetches.delete(url)
-                        return schemaFileSchema.parse(data)
-                    } else if (body.format === "turtle") {
-                        const rawJson = parseTtl(body.content)
+        const promise = this.executeFetch(secureUrl)
+        this.runningFetches.set(secureUrl, promise)
+        return promise
+    }
 
-                        // Rewrite rdf:type style definitions to @type style definitions.
-                        // Remove owl references, use rdf and rdfs.
-                        rawJson["@graph"] = rawJson["@graph"].map((e) => {
-                            if ("rdf:type" in e) {
-                                e["@type"] = (e["rdf:type"] as IReference)["@id"]
-                            }
+    private async executeFetch(url: string): Promise<SchemaFile> {
+        const res = await fetch(prependBasePath("/api/schemas/fetch?url=" + encodeURIComponent(url)))
+        const body = (await res.json()) as SchemaFetchResult | { error: string; attempts?: FetchFailure[] }
 
-                            if (e["@type"]) {
-                                e["@type"] = toArray(e["@type"]).map((type) => {
-                                    if (type === "owl:Class") return "rdfs:Class"
-                                    if (type === "owl:ObjectProperty") return "rdf:Property"
-                                    return type
-                                })
-                            }
+        if ("error" in body) {
+            throw new Error(
+                body.error +
+                    ` (${body.attempts?.map((attempt) => `Tried ${attempt.accept} but got "${attempt.error}" (code: ${attempt.status})`).join("; ") ?? "No further information"})`
+            )
+        }
 
-                            return e
-                        })
+        const schema = this.parseSchemaBody(body)
+        this.runningFetches.delete(url)
+        return schema
+    }
 
-                        rawJson["@graph"] = rawJson["@graph"].filter((e) => "@type" in e)
-                        this.runningFetches.delete(url)
-                        return schemaFileSchema.parse(rawJson)
-                    } else throw new Error(`Unknown format ${body.format}`)
+    private parseSchemaBody(body: SchemaFetchResult): SchemaFile {
+        if (body.format === "jsonld") {
+            try {
+                const data: unknown = JSON.parse(body.content)
+                if (data && typeof data === "object" && "@graph" in data) {
+                    return schemaFileSchema.parse(data)
                 }
+                throw new Error("Response was not a JSON-LD schema")
+            } catch (e) {
+                // Some hosts serve Turtle as text/plain, which is then mislabeled
+                // as JSON-LD. Fall back to a Turtle parse in that case.
+                if (looksLikeTurtle(body.content)) {
+                    return this.parseTurtleContent(body.content)
+                }
+                throw e
+            }
+        } else if (body.format === "turtle") {
+            return this.parseTurtleContent(body.content)
+        } else throw new Error(`Unknown format ${body.format}`)
+    }
+
+    private parseTurtleContent(content: string): SchemaFile {
+        const rawJson = parseTtl(content)
+
+        // Rewrite rdf:type style definitions to @type style definitions.
+        // Remove owl references, use rdf and rdfs.
+        rawJson["@graph"] = rawJson["@graph"].map((e) => {
+            if ("rdf:type" in e) {
+                e["@type"] = (e["rdf:type"] as IReference)["@id"]
             }
 
-            const promise = executeFetch()
-            this.runningFetches.set(url, promise)
-            return promise
-        }
+            if (e["@type"]) {
+                e["@type"] = toArray(e["@type"]).map((type) => {
+                    if (type === "owl:Class") return "rdfs:Class"
+                    if (type === "owl:ObjectProperty") return "rdf:Property"
+                    return type
+                })
+            }
+
+            return e
+        })
+
+        rawJson["@graph"] = rawJson["@graph"].filter((e) => "@type" in e)
+        return schemaFileSchema.parse(rawJson)
     }
 }
