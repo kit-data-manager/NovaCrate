@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Error } from "@/components/error"
+import { ActionButton } from "@/components/actions/action-buttons"
 
 export function Profiles() {
     const core = useCore()
@@ -19,9 +20,10 @@ export function Profiles() {
 
     useEffect(() => {
         setProfiles(profileService.getProfileHandlers())
-        const remove1 = profileService.events.addEventListener("profiles-changed", (profiles) =>
+        const remove1 = profileService.events.addEventListener("profiles-changed", (profiles) => {
             setProfiles(profiles)
-        )
+            setErrors(profileService.getAllErrors())
+        })
         setErrors(profileService.getAllErrors())
         const remove2 = profileService.events.addEventListener("error-emitted", () => {
             setErrors(profileService.getAllErrors())
@@ -36,9 +38,18 @@ export function Profiles() {
     return (
         <div className="space-y-2">
             <div className="font-bold">Profiles</div>
-            {profiles.map((profile) => (
-                <Profile profile={profile} key={profile.id} />
-            ))}
+
+            <ActionButton actionId={"crate.manage-profiles"} variant="secondary" />
+
+            {profiles.length === 0 && (
+                <div className="text-sm text-muted-foreground">No profiles are active</div>
+            )}
+            <div className="grid grid-cols-2 xl:grid-cols-3 gap-2">
+                {profiles.map((profile) => (
+                    <Profile profile={profile} key={profile.id} />
+                ))}
+            </div>
+
             {errors.length > 0 && (
                 <Dialog>
                     <DialogTrigger asChild>
@@ -52,7 +63,7 @@ export function Profiles() {
                         <div className="max-h-[80vh] overflow-y-auto space-y-2">
                             {errors.map((error, i) => (
                                 <Error
-                                    title={"An error occurred while parsing"}
+                                    title={`An error occurred while parsing profile "${error.profileUri}"${error.handlerName ? " with handler " + error.handlerName : ""}`}
                                     error={error}
                                     key={i}
                                 />

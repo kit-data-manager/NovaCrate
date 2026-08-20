@@ -9,10 +9,9 @@ test("Rename Contextual Entity", async ({ page }) => {
     await page.getByRole("menuitem", { name: "Edit" }).click()
     await page.getByRole("textbox", { name: "#localname or https://" }).fill("#karlsruhe")
     await page.getByRole("button", { name: "Confirm" }).click()
-    await expect(page.locator("body")).toMatchAriaSnapshot(`
-    - heading "Contextual Karlsruhe" [level=2]:
-      - button "Contextual"
-    - text: Identifier
+    await expect(page.getByTestId("entity-editor")).toMatchAriaSnapshot(`
+    - heading "Karlsruhe" [level=2]
+    - text: Contextual Identifier
     - paragraph: The unique identifier of the entity
     - text: "#karlsruhe"
     - button
@@ -31,16 +30,12 @@ test("Rename Contextual Entity", async ({ page }) => {
     `)
     await expect(page.locator("#entity-browser-content")).toMatchAriaSnapshot(`
     - button "R TestCrateDataset"
-    - button "Contextual Entities (4)":
-      - img
-      - text: ""
+    - button "Contextual Entities (4)"
     - button "C Example OrgOrganization"
     - button "C KarlsruhePlace"
-    - button "C ro-crate-metadata.jsonCreativeWork"
+    - button "C ro-crate-metadata.jsonCreative Work"
     - button "C Test PersonPerson"
-    - button "Data Entities (1)":
-      - img
-      - text: ""
+    - button "Data Entities (1)"
     - button "F JSON Result FileFile"
     `)
 })

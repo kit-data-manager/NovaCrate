@@ -51,7 +51,8 @@ function createMockCrateService(fileService?: IFileService): ICrateService {
         setMetadata: jest.fn(async (m: string) => {
             metadata = m
         }),
-        getFileService: jest.fn(() => fs)
+        getFileService: jest.fn(() => fs),
+        dispose: jest.fn()
     }
 }
 
@@ -80,7 +81,8 @@ function createMockPersistence(
         getCrateService: jest.fn(() => null),
         getRepositoryService: jest.fn(() => r),
         createCrateServiceFor: jest.fn(async () => crateServiceForFactory ?? null),
-        healthCheck: jest.fn(async () => {})
+        healthCheck: jest.fn(async () => {}),
+        dispose: jest.fn()
     }
 }
 

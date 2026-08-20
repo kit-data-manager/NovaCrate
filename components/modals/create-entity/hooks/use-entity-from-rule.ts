@@ -1,5 +1,5 @@
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
-import { createEntityForRule } from "@/components/modals/create-entity/entity-rule-to-entity"
+import { createEntityForRule } from "@/lib/core/profiles/impl/util/entity-rule-to-entity"
 import { useCallback, useContext } from "react"
 import { useProfileService } from "@/lib/hooks/use-profile-service"
 import { useContextResolver } from "@/lib/hooks/hooks"

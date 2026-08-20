@@ -1,9 +1,6 @@
 import { IProfileService } from "@/lib/core/profiles/IProfileService"
 
-export function getActiveProfileClassesForEntity(
-    entityId: string,
-    profileService: IProfileService
-) {
+export function getActiveEntityRulesForEntity(entityId: string, profileService: IProfileService) {
     const mappings = profileService.getEntityMappings()
 
     return (

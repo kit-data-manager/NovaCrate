@@ -2,11 +2,10 @@ import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { z } from "zod/mini"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { hasAtLeastOneValue, isValidUrl, pickFirst, toArray } from "@/lib/utils"
-import { stringifyError } from "@/components/error"
-import { IMetadataService } from "@/lib/core/IMetadataService"
 import { AbstractProfileHandler } from "@/lib/core/profiles/impl/AbstractProfileHandler"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
+import { ProfileHandlerError } from "@/lib/core/profiles/impl/ProfileHandlerError"
 
 const MASPClass = z.object({
     "@id": z.string(),
@@ -60,12 +59,12 @@ export class MASPProfileHandler extends AbstractProfileHandler {
     readonly name = "MASP"
 
     constructor(
+        profileUri: string,
         rootEntity: IEntity,
         maspEntities: IEntity[],
-        private context: IContextResolverService,
-        metadataService: IMetadataService
+        private context: IContextResolverService
     ) {
-        super(rootEntity, metadataService)
+        super(profileUri, rootEntity)
         this.autoResolveTerm = this.autoResolveTerm.bind(this)
 
         //
@@ -95,8 +94,14 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                 })
             } else {
                 this.errors.push(
-                    `Failed to parse MASP class rule with id "${unparsedClassRule["@id"]}"}: ` +
-                        parsedClassRule.error.message
+                    new ProfileHandlerError(
+                        `Failed to parse MASP class rule with id "${unparsedClassRule["@id"]}"`,
+                        {
+                            cause: parsedClassRule.error,
+                            profileUri: profileUri,
+                            handlerName: this.name
+                        }
+                    )
                 )
             }
         }
@@ -118,7 +123,14 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                 } catch (e) {
                     console.error(`Failed to determine options for property ${d["@id"]}`, e)
                     this.errors.push(
-                        `Failed to determine options for property ${d["@id"]}:` + stringifyError(e)
+                        new ProfileHandlerError(
+                            `Failed to determine options for property ${d["@id"]}`,
+                            {
+                                cause: e,
+                                profileUri: profileUri,
+                                handlerName: this.name
+                            }
+                        )
                     )
                 }
 
@@ -133,7 +145,7 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                     label: d["rdfs:label"],
                     maxCount: d["sh:maxCount"],
                     minCount: d["sh:minCount"],
-                    specializationOf: hasAtLeastOneValue(specializationOf) // TODO FIX: Only the first entry is used, all others are dropped
+                    specializationOf: hasAtLeastOneValue(specializationOf)
                         ? this.autoResolveTerm(pickFirst(specializationOf)["@id"])
                         : undefined,
                     appliesToEntityRules: toArray(d.domainIncludes).map((ref) => ref["@id"]),
@@ -144,8 +156,14 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                 })
             } else {
                 this.errors.push(
-                    `Failed to parse MASP property rule with id "${unparsedPropertyRule["@id"]}"}: ` +
-                        parsedPropertyRule.error.message
+                    new ProfileHandlerError(
+                        `Failed to parse MASP property rule with id "${unparsedPropertyRule["@id"]}"`,
+                        {
+                            cause: parsedPropertyRule.error.message,
+                            profileUri: profileUri,
+                            handlerName: this.name
+                        }
+                    )
                 )
             }
         }
@@ -173,14 +191,18 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                 })
             } else {
                 this.errors.push(
-                    `Failed to parse MASP property value rule with id "${unparsedPropertyValueRule["@id"]}"}: ` +
-                        parsedPropertyValueRule.error.message
+                    new ProfileHandlerError(
+                        `Failed to parse MASP property value rule with id "${unparsedPropertyValueRule["@id"]}"`,
+                        {
+                            cause: parsedPropertyValueRule.error.message,
+                            profileUri: profileUri,
+                            handlerName: this.name
+                        }
+                    )
                 )
             }
         }
 
-        // Listener for automatic updates is attached in the abstract superclass
-        this.updateEntityMapping(metadataService.getEntities())
         console.log(`Done with parsing MASP profile ${this.definition.name}`, this.definition)
     }
 
@@ -336,8 +358,13 @@ export class MASPProfileHandler extends AbstractProfileHandler {
         super.updateEntityMapping(entities)
     }
 
-    private pushError(error: unknown) {
-        this.errors.push(stringifyError(error))
+    private pushError(error: string) {
+        this.errors.push(
+            new ProfileHandlerError(error, {
+                profileUri: this.profileUri,
+                handlerName: this.name
+            })
+        )
         this._events.emit("error-emitted")
     }
 
@@ -427,7 +454,8 @@ function determineMASPPropertyOptions(
 
 function httpsifyUrl(url: string) {
     if (isValidUrl(url)) {
-        if (url.startsWith("http://")) {
+        // Only httpsify schema.org terms, because they use the https protocol in NovaCrate
+        if (url.startsWith("http://schema.org")) {
             return url.replace("http://", "https://")
         }
     }

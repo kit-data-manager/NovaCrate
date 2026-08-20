@@ -55,7 +55,8 @@ function createMockCrateService(
         events,
         getMetadata: jest.fn(async () => ""),
         setMetadata: jest.fn(async () => {}),
-        getFileService: jest.fn(() => fileService)
+        getFileService: jest.fn(() => fileService),
+        dispose: jest.fn()
     }
 }
 

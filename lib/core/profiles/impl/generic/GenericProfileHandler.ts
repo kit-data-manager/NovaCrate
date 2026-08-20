@@ -1,4 +1,3 @@
-import { IMetadataService } from "@/lib/core/IMetadataService"
 import { AbstractProfileHandler } from "@/lib/core/profiles/impl/AbstractProfileHandler"
 
 /**
@@ -7,8 +6,8 @@ import { AbstractProfileHandler } from "@/lib/core/profiles/impl/AbstractProfile
 export class GenericProfileHandler extends AbstractProfileHandler {
     readonly name: string = "Generic"
 
-    constructor(rootEntity: IEntity, metadataService: IMetadataService) {
-        super(rootEntity, metadataService)
+    constructor(profileUri: string, rootEntity: IEntity) {
+        super(profileUri, rootEntity)
     }
 
     updateEntityMapping(entities: IEntity[]): void {

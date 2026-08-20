@@ -5,10 +5,10 @@ import { IPersistenceAdapter } from "@/lib/core/IPersistenceAdapter"
 import { ICrateService } from "@/lib/core/persistence/ICrateService"
 import { IFileService } from "@/lib/core/persistence/IFileService"
 import { MetadataServiceImpl } from "@/lib/core/impl/MetadataServiceImpl"
-import { ContextServiceImpl } from "@/lib/core/impl/ContextServiceImpl"
+import { SynchronizedContextService } from "@/lib/core/impl/SynchronizedContextService"
 import { isDataEntity } from "@/lib/utils"
 import { DateTime } from "luxon"
-import { IProfileService } from "@/lib/core/profiles/IProfileService"
+import { IProfileService, ProfileServiceOptions } from "@/lib/core/profiles/IProfileService"
 import { ProfileService } from "@/lib/core/profiles/impl/ProfileService"
 
 /**
@@ -144,10 +144,17 @@ export class CoreServiceImpl implements ICoreService {
 
     static async newInstance(
         persistenceAdapter: IPersistenceAdapter,
-        crateService: ICrateService
+        crateService: ICrateService,
+        profileServiceOptions: ProfileServiceOptions = {}
     ): Promise<CoreServiceImpl> {
         const metadata = await MetadataServiceImpl.newInstance(persistenceAdapter)
-        const context = await ContextServiceImpl.newInstance(persistenceAdapter)
-        return new CoreServiceImpl(metadata, context, new ProfileService(metadata), crateService)
+        const context =
+            await SynchronizedContextService.newInstanceWithPersistence(persistenceAdapter)
+        return new CoreServiceImpl(
+            metadata,
+            context,
+            new ProfileService(metadata, profileServiceOptions),
+            crateService
+        )
     }
 }

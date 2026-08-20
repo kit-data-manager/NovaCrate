@@ -1,4 +1,3 @@
-import { SlimClass } from "@/lib/schema-worker/helpers"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { TypeBadge } from "@/components/modals/create-entity/components/type-badge"
 import { ProfileEntityRules } from "@/components/modals/create-entity/hooks/use-profile-entity-rules"
@@ -12,12 +11,10 @@ import { undefinedIfEmpty } from "@/lib/utils"
  */
 export function ProfileTypeSection({
     profile,
-    onTypeSelect,
-    restrictToClasses
+    onTypeSelect
 }: {
     profile: ProfileEntityRules
     onTypeSelect(value: string | string[], entityRule?: EntityRule): void
-    restrictToClasses?: SlimClass[]
 }) {
     if (profile.classes.length === 0) return null
 
@@ -30,7 +27,6 @@ export function ProfileTypeSection({
                     name={c.name || c["@id"]}
                     description={c.description || "No description provided"}
                     onTypeSelect={onTypeSelect}
-                    restrictToClasses={restrictToClasses}
                     entityRule={c}
                 />
             ))}

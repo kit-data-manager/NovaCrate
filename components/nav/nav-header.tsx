@@ -109,21 +109,25 @@ export function NavHeader() {
     useInterval(updateSchemaWorkerIssues, 2000)
 
     const showUploadFolderModal = useCallback(() => {
-        showCreateEntityModal([
-            {
-                "@id": RO_CRATE_DATASET,
-                comment: ""
-            }
-        ])
+        showCreateEntityModal({
+            restrictToClasses: [
+                {
+                    "@id": RO_CRATE_DATASET,
+                    comment: ""
+                }
+            ]
+        })
     }, [showCreateEntityModal])
 
     const showUploadFileModal = useCallback(() => {
-        showCreateEntityModal([
-            {
-                "@id": RO_CRATE_FILE,
-                comment: ""
-            }
-        ])
+        showCreateEntityModal({
+            restrictToClasses: [
+                {
+                    "@id": RO_CRATE_FILE,
+                    comment: ""
+                }
+            ]
+        })
     }, [showCreateEntityModal])
 
     const crateName = useCrateName()
@@ -248,6 +252,7 @@ export function NavHeader() {
                             actionId="crate.revert-all-entities"
                         />
                         <MenubarSeparator />
+                        <ActionMenubarItem actionId="crate.manage-profiles" />
                         <MenubarSub>
                             <MenubarSubTrigger>
                                 <Download className="size-4" /> Export

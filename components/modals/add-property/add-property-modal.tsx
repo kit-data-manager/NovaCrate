@@ -5,7 +5,7 @@ import { usePropertyCanBe } from "@/lib/hooks/property-can-be"
 import { SelectType } from "@/components/modals/add-property/select-type"
 import { SchemaNode } from "@/lib/schema-worker/SchemaNode"
 import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
-import { getActiveProfileClassesForEntity } from "@/lib/profile-utils"
+import { getActiveEntityRulesForEntity } from "@/lib/core/profiles/impl/util/get-active-entity-rules-for-entity"
 import { useProfileService } from "@/lib/hooks/use-profile-service"
 import { toArray } from "@/lib/utils"
 
@@ -36,9 +36,7 @@ export function AddPropertyModal({
     const profileService = useProfileService()
 
     const typeArray = open ? toArray(entity["@type"]) : []
-    const profileClasses = open
-        ? getActiveProfileClassesForEntity(entity["@id"], profileService)
-        : []
+    const profileClasses = open ? getActiveEntityRulesForEntity(entity["@id"], profileService) : []
 
     const onPropertySelect = useCallback(
         (propertyName: string, canBe: ReturnType<typeof usePropertyCanBe>) => {

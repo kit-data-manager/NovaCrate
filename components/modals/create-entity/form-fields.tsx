@@ -41,39 +41,41 @@ export function CreateEntityHeader({
                 Entity
             </DialogTitle>
 
-            <DialogDescription>
-                {entityRule && entityRule.description && (
-                    <div className="mb-2 max-h-52 overflow-auto">
-                        <MarkdownComment comment={entityRule.description} allowLinks />
-                    </div>
-                )}
+            <DialogDescription asChild={true}>
+                <div>
+                    {entityRule && entityRule.description && (
+                        <div className="mb-2 max-h-52 overflow-auto">
+                            <MarkdownComment comment={entityRule.description} allowLinks />
+                        </div>
+                    )}
 
-                {variant === "contextual" ? (
-                    <>
-                        Enter a name for the entity.{" "}
-                        {forceId
-                            ? ""
-                            : `An ID will be generated.
+                    {variant === "contextual" ? (
+                        <>
+                            Enter a name for the entity.{" "}
+                            {forceId
+                                ? ""
+                                : `An ID will be generated.
                             You can also change the ID.`}{" "}
-                        Press Create to start adding Properties.
-                    </>
-                ) : null}
+                            Press Create to start adding Properties.
+                        </>
+                    ) : null}
 
-                {variant === "file" ? (
-                    <>
-                        Add a file to the Crate. Use the File Explorer to upload the file to a
-                        specific folder. This will import the File into the Crate and also create a
-                        corresponding Data Entity.
-                    </>
-                ) : null}
+                    {variant === "file" ? (
+                        <>
+                            Add a file to the Crate. Use the File Explorer to upload the file to a
+                            specific folder. This will import the File into the Crate and also
+                            create a corresponding Data Entity.
+                        </>
+                    ) : null}
 
-                {variant === "folder" ? (
-                    <>
-                        Add a folder to the Crate. If you want to create an empty folder, select
-                        Empty Folder and enter a name of your choice. Otherwise, the folder and all
-                        contained files and folders will be uploaded.
-                    </>
-                ) : null}
+                    {variant === "folder" ? (
+                        <>
+                            Add a folder to the Crate. If you want to create an empty folder, select
+                            Empty Folder and enter a name of your choice. Otherwise, the folder and
+                            all contained files and folders will be uploaded.
+                        </>
+                    ) : null}
+                </div>
             </DialogDescription>
         </DialogHeader>
     )

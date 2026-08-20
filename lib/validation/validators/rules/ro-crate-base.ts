@@ -191,16 +191,6 @@ export const RoCrateBase = {
                             )
                             return
                         }
-                    } else if (PropertyValueUtils.isRef(v) && propertyValue(v).isEmpty()) {
-                        results.push(
-                            builder.rule("emptyRef").warning({
-                                resultTitle: `Empty reference`,
-                                resultDescription: `The reference is empty. You can remove it, link it to an existing entity or create a new matching entity.`,
-                                entityId: entity["@id"],
-                                propertyName,
-                                propertyIndex: i
-                            })
-                        )
                     }
                 })
             } catch (e) {
@@ -209,6 +199,34 @@ export const RoCrateBase = {
                     e
                 )
             }
+            return results
+        },
+        async (entity, propertyName) => {
+            if (propertyName === "@id" || propertyName === "@type") return []
+            const results: PropertyValidationResult[] = []
+            propertyValue(entity[propertyName]).forEach((v, i) => {
+                if (PropertyValueUtils.isRef(v) && propertyValue(v).isEmpty()) {
+                    results.push(
+                        builder.rule("emptyRef").warning({
+                            resultTitle: `Empty reference`,
+                            resultDescription: `The reference is empty. You can remove it, link it to an existing entity or create a new matching entity.`,
+                            entityId: entity["@id"],
+                            propertyName,
+                            propertyIndex: i
+                        })
+                    )
+                } else if (PropertyValueUtils.isString(v) && propertyValue(v).isEmpty()) {
+                    results.push(
+                        builder.rule("emptyProperty").warning({
+                            resultTitle: `Empty property`,
+                            resultDescription: `The property is empty. You should either remove it or enter a value.`,
+                            entityId: entity["@id"],
+                            propertyName,
+                            propertyIndex: i
+                        })
+                    )
+                }
+            })
             return results
         },
         async (entity, propertyName) => {

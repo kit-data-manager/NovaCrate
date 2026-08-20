@@ -125,12 +125,9 @@ test("uploading with tree picker works", async ({ page }) => {
         .setInputFiles("tests/data/TestFolder/img/candles-9247498_1280.jpg")
     await page.getByRole("button", { name: "Create" }).click()
     await page.getByRole("button", { name: "F candles-9247498_1280.jpgFile" }).click()
-    await expect(page.locator("body")).toMatchAriaSnapshot(`
-    - heading "File candles-9247498_1280.jpg" [level=2]:
-      - button "File"
-      - text: candles-9247498_1280.jpg
-    - button
-    - text: Identifier
+    await expect(page.getByTestId("entity-editor")).toMatchAriaSnapshot(`
+    - heading "candles-9247498_1280.jpg" [level=2]
+    - text: File Identifier
     - paragraph: The unique identifier of the entity
     - text: extraData/candles-9247498_1280.jpg
     - button

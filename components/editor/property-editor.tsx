@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
 import { SinglePropertyEditor } from "@/components/editor/single-property-editor"
-import { camelCaseReadable } from "@/lib/utils"
+import { camelCaseReadable, getRootEntityID } from "@/lib/utils"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
 import { useContextResolver } from "@/lib/hooks/hooks"
@@ -24,7 +24,11 @@ import useSWR from "swr"
 import { SinglePropertyValidation } from "@/components/editor/validation/single-property-validation"
 import { EntityEditorProperty, PropertyType } from "@/lib/property"
 import { useActivePropertyProfileRules } from "@/lib/hooks/property-can-be"
+import { determinePropertyRuleRange } from "@/lib/core/profiles/impl/util/determine-property-rule-range"
+import { useProfileService } from "@/lib/hooks/use-profile-service"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
+import { ActionButton } from "@/components/actions/action-buttons"
 
 export interface PropertyEditorProps {
     entityId: string
@@ -60,12 +64,13 @@ export const PropertyEditor = memo(function PropertyEditor({
     isDeleted,
     onRemovePropertyEntry
 }: PropertyEditorProps) {
-    const { isReady: crateVerifyReady, worker } = useContext(SchemaWorker)
+    const { isReady: schemaWorkerReady, worker } = useContext(SchemaWorker)
     const focusedProperty = useEntityEditorTabs((store) => store.focusedProperty)
     const unFocusProperty = useEntityEditorTabs((store) => store.unFocusProperty)
     const crateContextReady = useEditorState((store) => store.crateContextReady)
     const resolver = useContextResolver()
     const profilePropertyRules = useActivePropertyProfileRules(entityId, property.propertyName)
+    const profileService = useProfileService()
     const container = createRef<HTMLDivElement>()
 
     const isFocused = useMemo(() => {
@@ -102,19 +107,46 @@ export const PropertyEditor = memo(function PropertyEditor({
         return resolver.resolve(property.propertyName)
     }, [resolver, crateContextReady, property.propertyName])
 
+    const resolvePropertyRuleTypeRange = useCallback(async (): Promise<SlimClass[]> => {
+        const result: SlimClass[] = []
+        for (const propertyRule of profilePropertyRules) {
+            const handler = profileService.getProfileHandler(propertyRule.onHandler)
+            if (!handler) continue
+            const range = await determinePropertyRuleRange(handler, propertyRule, resolver, worker)
+            result.push(
+                ...range.rangeIncludesTypes.map(
+                    (id) => ({ "@id": id, comment: "" }) satisfies SlimClass
+                )
+            )
+        }
+        return result
+    }, [profilePropertyRules, profileService, resolver, worker])
+
     const referenceTypeRangeResolver = useCallback(async () => {
         if (property.propertyName.startsWith("@")) return []
-        if (crateVerifyReady) {
+        if (schemaWorkerReady) {
             if (!resolvedPropertyName)
                 throw `Property ${property.propertyName} not defined in context`
+            if (profilePropertyRules.length > 0) return resolvePropertyRuleTypeRange()
             return await worker.execute("getPropertyRange", resolvedPropertyName)
         }
-    }, [crateVerifyReady, property.propertyName, resolvedPropertyName, worker])
+    }, [
+        property.propertyName,
+        schemaWorkerReady,
+        resolvedPropertyName,
+        profilePropertyRules.length,
+        resolvePropertyRuleTypeRange,
+        worker
+    ])
 
     const profileCacheKey = makeProfilePropertyRulesCacheKey(profilePropertyRules)
 
-    const { data: propertyRange, error: propertyRangeError } = useSWR(
-        crateVerifyReady && crateContextReady
+    const {
+        data: propertyRange,
+        error: propertyRangeError,
+        mutate: reloadPropertyRange
+    } = useSWR(
+        schemaWorkerReady && crateContextReady
             ? "property-type-range-" + property.propertyName + "-" + profileCacheKey
             : null,
         referenceTypeRangeResolver
@@ -135,15 +167,24 @@ export const PropertyEditor = memo(function PropertyEditor({
     const {
         data: comment,
         error: commentError,
-        isLoading: commentIsPending
+        isLoading: commentIsPending,
+        mutate: reloadComments
     } = useSWR(
-        crateVerifyReady && crateContextReady
+        schemaWorkerReady && crateContextReady
             ? "property-comment-" + property.propertyName + "-" + profileCacheKey
             : null,
         propertyCommentResolver
     )
 
+    useEffect(() => {
+        // Reload comments and property range when the profile property rules change
+        reloadPropertyRange().then()
+        reloadComments().then()
+    }, [profilePropertyRules, reloadComments, reloadPropertyRange])
+
     const [expandComment, setExpandComment] = useState(false)
+
+    const rootEntityId = useEditorState((store) => getRootEntityID(store.entities))
 
     const toggleExpandComment = useCallback(() => {
         setExpandComment((v) => !v)
@@ -216,13 +257,9 @@ export const PropertyEditor = memo(function PropertyEditor({
 
     return (
         <div
-            className={`grid grid-cols-[12px_4fr_5fr] w-full transition-colors ${isFocused ? "bg-secondary" : ""} py-3 px-1 rounded-lg`}
+            className={`grid grid-cols-[4fr_12px_5fr] w-full transition-colors ${isFocused ? "bg-secondary" : ""} py-3 px-1 rounded-lg`}
             ref={container}
         >
-            <div
-                className={`${isDeleted ? "bg-destructive" : isNew ? "bg-success" : hasChanges ? "bg-info" : ""} max-w-1 rounded-full transition`}
-            ></div>
-
             <div className="pr-8">
                 <div>{readablePropertyName}</div>
                 <div
@@ -249,6 +286,10 @@ export const PropertyEditor = memo(function PropertyEditor({
                 )}
             </div>
 
+            <div
+                className={`${isDeleted ? "bg-destructive" : isNew ? "bg-success" : hasChanges ? "bg-info" : ""} max-w-1 rounded-full transition`}
+            ></div>
+
             <div className="truncate p-1">
                 {isDeleted ? (
                     <div className="flex items-center text-muted-foreground mb-4">
@@ -256,6 +297,14 @@ export const PropertyEditor = memo(function PropertyEditor({
                         save
                     </div>
                 ) : null}
+
+                {entityId === rootEntityId && property.propertyName === "conformsTo" && (
+                    <ActionButton
+                        variant={"secondary"}
+                        className="mb-4"
+                        actionId={"crate.manage-profiles"}
+                    />
+                )}
 
                 <div
                     className="flex flex-col gap-4"

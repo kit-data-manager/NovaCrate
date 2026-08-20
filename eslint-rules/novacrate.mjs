@@ -17,7 +17,7 @@ const useAddEventListenerReturnRule = {
         type: "problem",
         docs: {
             description:
-                "Require the return value of IObservable.addEventListener (the unlisten callback) to be used.",
+                "Require the return value of IObservable.addEventListener (the unlisten callback) to be used."
         },
         schema: [
             {
@@ -26,16 +26,15 @@ const useAddEventListenerReturnRule = {
                     eventsProperties: {
                         type: "array",
                         items: { type: "string" },
-                        uniqueItems: true,
-                    },
+                        uniqueItems: true
+                    }
                 },
-                additionalProperties: false,
-            },
+                additionalProperties: false
+            }
         ],
         messages: {
-            unused:
-                "The return value of addEventListener() is the unlisten callback and must be used to avoid leaking listeners. Assign it (e.g. `const remove = …events.addEventListener(…)`) and call it during cleanup.",
-        },
+            unused: "The return value of addEventListener() is the unlisten callback and must be used to avoid leaking listeners. Assign it (e.g. `const remove = …events.addEventListener(…)`) and call it during cleanup."
+        }
     },
     create(context) {
         const options = context.options[0] || {}
@@ -45,7 +44,10 @@ const useAddEventListenerReturnRule = {
         function memberPropertyName(member) {
             if (!member || member.type !== "MemberExpression") return null
             if (member.computed) {
-                if (member.property.type === "Literal" && typeof member.property.value === "string") {
+                if (
+                    member.property.type === "Literal" &&
+                    typeof member.property.value === "string"
+                ) {
                     return member.property.value
                 }
                 return null
@@ -77,14 +79,16 @@ const useAddEventListenerReturnRule = {
                 if (isObservableAddEventListenerCall(expr)) {
                     context.report({ node: expr.callee, messageId: "unused" })
                 }
-            },
+            }
         }
-    },
+    }
 }
 
-export default {
+const config = {
     meta: { name: "novacrate", version: "1.0.0" },
     rules: {
-        "use-add-event-listener-return": useAddEventListenerReturnRule,
-    },
+        "use-add-event-listener-return": useAddEventListenerReturnRule
+    }
 }
+
+export default config

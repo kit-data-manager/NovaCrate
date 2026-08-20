@@ -7,6 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useEntityBrowserSettings } from "@/lib/state/entity-browser-settings"
 import { isDataEntity, toArray } from "@/lib/utils"
 import { useEditorState } from "@/lib/state/editor-state"
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@/components/ui/context-menu"
+import { ActionContextMenuItem } from "@/components/actions/action-buttons"
 
 export function EntityBrowserContent({
     defaultSectionOpen,
@@ -76,16 +78,23 @@ export function EntityBrowserContent({
         )
 
     return (
-        <div id="entity-browser-content" className="flex flex-col p-2 overflow-y-auto">
-            {structure.map(([sectionTitle, entities]) => (
-                <EntityBrowserSection
-                    key={sectionTitle}
-                    entities={entities}
-                    defaultSectionOpen={defaultSectionOpen}
-                    onSectionOpenChange={onSectionOpenChange}
-                    sectionTitle={sectionTitle}
-                />
-            ))}
-        </div>
+        <ContextMenu>
+            <ContextMenuTrigger asChild>
+                <div id="entity-browser-content" className="flex flex-col p-2 overflow-y-auto grow">
+                    {structure.map(([sectionTitle, entities]) => (
+                        <EntityBrowserSection
+                            key={sectionTitle}
+                            entities={entities}
+                            defaultSectionOpen={defaultSectionOpen}
+                            onSectionOpenChange={onSectionOpenChange}
+                            sectionTitle={sectionTitle}
+                        />
+                    ))}
+                </div>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+                <ActionContextMenuItem actionId={"crate.add-entity"} />
+            </ContextMenuContent>
+        </ContextMenu>
     )
 }

@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { BugIcon, FileJson2, HardDrive, HardHat, SparklesIcon } from "lucide-react"
+import { BugIcon, FileJson2, HardDrive, HardHat, ShieldCheck, SparklesIcon } from "lucide-react"
 import { PropsWithChildren, useEffect, useMemo, useState } from "react"
 import { GeneralSettings } from "@/components/modals/settings/general"
 import { WorkerSettings } from "@/components/modals/settings/workers"
@@ -9,6 +9,7 @@ import { StoragePage } from "@/components/modals/settings/storage"
 import { SchemaSettingsPage } from "@/components/modals/settings/schemas"
 import { ValidationSettings } from "@/components/modals/settings/validation"
 import { AiAssistantSettings } from "@/components/modals/settings/ai-assistant"
+import { ProfilesSettings } from "@/components/modals/settings/profiles"
 
 export enum SettingsPages {
     GENERAL,
@@ -16,7 +17,8 @@ export enum SettingsPages {
     STORAGE,
     SCHEMAS,
     VALIDATION,
-    AI_ASSISTANT
+    AI_ASSISTANT,
+    PROFILES
 }
 
 function SettingsPageButton({
@@ -67,6 +69,8 @@ export function SettingsModal({
                 return <SchemaSettingsPage />
             case SettingsPages.VALIDATION:
                 return <ValidationSettings />
+            case SettingsPages.PROFILES:
+                return <ProfilesSettings />
             case SettingsPages.AI_ASSISTANT:
                 return <AiAssistantSettings />
         }
@@ -102,6 +106,13 @@ export function SettingsModal({
                             setPage={setPage}
                         >
                             <BugIcon className="size-4 mr-2" /> Validation
+                        </SettingsPageButton>
+                        <SettingsPageButton
+                            page={SettingsPages.PROFILES}
+                            currentPage={page}
+                            setPage={setPage}
+                        >
+                            <ShieldCheck className="size-4 mr-2" /> Profiles
                         </SettingsPageButton>
                         {process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED === "true" && (
                             <SettingsPageButton

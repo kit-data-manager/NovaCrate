@@ -16,14 +16,16 @@ import { AboutModal } from "@/components/modals/about-modal"
 import { CrateExportedModal } from "@/components/modals/crate-exported-modal"
 import { MultiRenameModal } from "@/components/modals/multi-rename-modal"
 import { CoreGuard } from "@/components/providers/core-provider"
+import { ManageProfilesModal } from "@/components/modals/manage-profiles-modal"
 
 export interface IGlobalModalContext {
-    showCreateEntityModal(
-        restrictToClasses?: SlimClass[],
-        autoReference?: AutoReference,
-        id?: string,
+    showCreateEntityModal(options?: {
+        restrictToClasses?: SlimClass[]
+        restrictToEntityRules?: string[]
+        autoReference?: AutoReference
+        id?: string
         basePath?: string
-    ): void
+    }): void
     showSaveEntityChangesModal(entityId: string): void
     showDeleteEntityModal(entityId: string): void
     showGlobalSearchModal(): void
@@ -42,6 +44,7 @@ export interface IGlobalModalContext {
         changes: { from: string; to: string }[],
         onCloseCallback?: () => void
     ): void
+    showManageProfilesModal(): void
 }
 
 export type AddPropertyModalCallback = (
@@ -61,7 +64,8 @@ export const GlobalModalContext = createContext<IGlobalModalContext>({
     showDocumentationModal() {},
     showAboutModal() {},
     showCrateExportedModal() {},
-    showMultiRenameModal() {}
+    showMultiRenameModal() {},
+    showManageProfilesModal() {}
 })
 
 export function GlobalModalProvider(props: PropsWithChildren) {
@@ -69,6 +73,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         open: boolean
         autoReference?: AutoReference
         restrictToClasses?: SlimClass[]
+        restrictToEntityRules?: string[]
         id?: string
         basePath?: string
     }>({
@@ -114,17 +119,17 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         changes: { from: string; to: string }[]
         onCloseCallback?: () => void
     }>({ open: false, changes: [] })
+    const [manageProfilesModalState, setManageProfilesModalState] = useState<{
+        open: boolean
+    }>({ open: false })
 
-    const showCreateEntityModal = useCallback(
-        (
-            restrictToClasses?: SlimClass[],
-            autoReference?: AutoReference,
-            id?: string,
-            basePath?: string
-        ) => {
+    const showCreateEntityModal: IGlobalModalContext["showCreateEntityModal"] = useCallback(
+        ({ restrictToClasses, restrictToEntityRules, autoReference, id, basePath } = {}) => {
+            console.log(restrictToEntityRules)
             setCreateEntityModalState({
                 open: true,
                 restrictToClasses,
+                restrictToEntityRules,
                 autoReference,
                 id,
                 basePath
@@ -200,11 +205,16 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         []
     )
 
+    const showManageProfilesModal = useCallback(() => {
+        setManageProfilesModalState({ open: true })
+    }, [])
+
     const onCreateEntityModalOpenChange = useCallback((isOpen: boolean) => {
         setCreateEntityModalState({
             autoReference: undefined,
             id: undefined,
             restrictToClasses: undefined,
+            restrictToEntityRules: undefined,
             open: isOpen
         })
     }, [])
@@ -269,6 +279,12 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         [multiRenameModal]
     )
 
+    const onManageProfileOpenChange = useCallback((open: boolean) => {
+        setManageProfilesModalState({
+            open
+        })
+    }, [])
+
     return (
         <GlobalModalContext.Provider
             value={{
@@ -283,7 +299,8 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 showDocumentationModal,
                 showAboutModal,
                 showCrateExportedModal,
-                showMultiRenameModal
+                showMultiRenameModal,
+                showManageProfilesModal
             }}
         >
             <CoreGuard>
@@ -291,6 +308,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                     open={createEntityModalState.open}
                     onOpenChange={onCreateEntityModalOpenChange}
                     restrictToClasses={createEntityModalState.restrictToClasses}
+                    restrictToEntityRules={createEntityModalState.restrictToEntityRules}
                     autoReference={createEntityModalState.autoReference}
                     forceId={createEntityModalState.id}
                     basePath={createEntityModalState.basePath}
@@ -332,6 +350,11 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                     open={findReferencesModalState.open}
                     onOpenChange={onFindReferencesModalOpenChange}
                     entityId={findReferencesModalState.entityId}
+                />
+
+                <ManageProfilesModal
+                    open={manageProfilesModalState.open}
+                    onOpenChange={onManageProfileOpenChange}
                 />
             </CoreGuard>
 

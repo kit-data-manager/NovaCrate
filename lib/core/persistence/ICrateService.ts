@@ -51,4 +51,6 @@ export interface ICrateService {
      * be notified when the service becomes available.
      */
     getFileService(): IFileService | null
+
+    dispose(): void
 }

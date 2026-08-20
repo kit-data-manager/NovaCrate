@@ -36,7 +36,8 @@ function createMockPersistence(
         getCrateService: jest.fn(() => null),
         createCrateServiceFor: jest.fn(async () => null),
         getRepositoryService: jest.fn(() => null),
-        healthCheck: jest.fn(healthCheckImpl)
+        healthCheck: jest.fn(healthCheckImpl),
+        dispose: jest.fn()
     }
 }
 
