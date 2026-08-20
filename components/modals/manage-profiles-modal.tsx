@@ -18,7 +18,9 @@ import {
 import { useProfileService } from "@/lib/hooks/use-profile-service"
 import { profileTrustSettings } from "@/lib/state/profile-trust-settings"
 import { useStore } from "zustand"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { GlobalModalContext } from "@/components/providers/global-modals-provider"
+import { SettingsPages } from "@/components/modals/settings/settings-modal"
 import {
     Table,
     TableBody,
@@ -159,13 +161,12 @@ function RecommendedProfile({
 
 export function ManageProfilesModal({
     open,
-    onOpenChange,
-    onOpenSettings
+    onOpenChange
 }: {
     open: boolean
     onOpenChange(open: boolean): void
-    onOpenSettings(): void
 }) {
+    const { showSettingsModal } = useContext(GlobalModalContext)
     const profileService = useProfileService()
     const [tabState, setTabState] = useState("active")
     const [profileURIs, setProfileURIs] = useState<string[]>(() => profileService.getProfileURIs())
@@ -181,8 +182,8 @@ export function ManageProfilesModal({
 
     const openProfileSettings = useCallback(() => {
         onOpenChange(false)
-        onOpenSettings()
-    }, [onOpenChange, onOpenSettings])
+        showSettingsModal(SettingsPages.PROFILES)
+    }, [onOpenChange, showSettingsModal])
 
     useEffect(() => {
         setProfileURIs(profileService.getProfileURIs())
