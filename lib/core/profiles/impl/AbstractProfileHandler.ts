@@ -38,7 +38,7 @@ export abstract class AbstractProfileHandler implements IProfileHandler {
     }
 
     getErrors(): ProfileHandlerError[] {
-        return structuredClone(this.errors)
+        return [...this.errors]
     }
 
     getDefinition(): ProfileDefinition {
@@ -71,6 +71,13 @@ export abstract class AbstractProfileHandler implements IProfileHandler {
         this._events.emit("mapping-updated")
     }
 
+    /**
+     * Registers a single listener on the metadata service that updates the
+     * entity mapping whenever the graph changes. Must be called at most once per
+     * handler instance and must be matched by a single {@link discard} call.
+     * Calling attach again without a prior discard would leak the previous
+     * listener.
+     */
     attach(metadataService: IMetadataService) {
         this.updateEntityMapping(metadataService.getEntities())
         this._discardListener = metadataService.events.addEventListener(

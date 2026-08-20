@@ -27,7 +27,11 @@ import { EntityEditorProperty, mapEntityToProperties, PropertyType } from "@/lib
 import { useFileService } from "@/lib/hooks/use-persistence"
 import { ProfileInsights } from "@/components/editor/profile-insights"
 
-export function EntityEditor({ entityId }: { entityId: string }) {
+export interface IEntityEditorProps {
+    entityId: string
+}
+
+export function EntityEditor({ entityId }: IEntityEditorProps) {
     const isSaving = useOperationState((s) => s.isSaving)
     const saveErrors = useOperationState((s) => s.saveErrors)
     const clearSaveError = useOperationState((s) => s.clearSaveError)

@@ -1,3 +1,5 @@
+"use client"
+
 import {
     Dialog,
     DialogContent,
@@ -25,7 +27,7 @@ import {
 } from "@/components/ui/table"
 import { CheckIcon, ChevronDown, CogIcon, EllipsisVertical, LucideIcon, XIcon } from "lucide-react"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
-import { Diff, isValidUrl } from "@/lib/utils"
+import { Diff, getRootEntityID, isValidUrl } from "@/lib/utils"
 import { Error } from "@/components/error"
 import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -161,7 +163,7 @@ export function ManageProfilesModal({
     const [errors, setErrors] = useState<ProfileHandlerError[]>([])
     const removePropertyEntry = useEditorState((s) => s.removePropertyEntry)
     const addPropertyEntry = useEditorState((s) => s.addPropertyEntry)
-    const rootId = useEditorState((s) => s.getRootEntityId())
+    const rootId = useEditorState((s) => getRootEntityID(s.entities))
     const rootHasChanges = useEditorState((s) => (rootId ? s.getEntityDiff(rootId) : null))
     const { saveEntity } = useCrateMutations()
 

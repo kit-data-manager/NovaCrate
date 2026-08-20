@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Error } from "@/components/error"
 import { AddEntryDropdown } from "@/components/editor/add-entry-dropdown"
 import { SinglePropertyEditor } from "@/components/editor/single-property-editor"
-import { camelCaseReadable } from "@/lib/utils"
+import { camelCaseReadable, getRootEntityID } from "@/lib/utils"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
 import { useContextResolver } from "@/lib/hooks/hooks"
@@ -180,6 +180,8 @@ export const PropertyEditor = memo(function PropertyEditor({
 
     const [expandComment, setExpandComment] = useState(false)
 
+    const rootEntityId = useEditorState((store) => getRootEntityID(store.entities))
+
     const toggleExpandComment = useCallback(() => {
         setExpandComment((v) => !v)
     }, [])
@@ -292,7 +294,7 @@ export const PropertyEditor = memo(function PropertyEditor({
                     </div>
                 ) : null}
 
-                {entityId === "./" && property.propertyName === "conformsTo" && (
+                {entityId === rootEntityId && property.propertyName === "conformsTo" && (
                     <ActionButton
                         variant={"secondary"}
                         className="mb-2"

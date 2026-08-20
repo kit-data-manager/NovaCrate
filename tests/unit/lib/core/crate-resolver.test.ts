@@ -206,6 +206,27 @@ describe("CrateResolver", () => {
 
             expect(result.metadata["@graph"][0].name).toBe("Direct Body")
         })
+
+        it("resolves relative link targets against the final response URL", async () => {
+            const crate = validCrate("Relative Link")
+            const htmlResponse = mockResponse("<html></html>", {
+                headers: {
+                    "Content-Type": "text/html",
+                    Link: '<meta.json>; rel="describedby"; profile="https://w3id.org/ro/crate"'
+                }
+            })
+            Object.defineProperty(htmlResponse, "url", { value: "https://example.com/crate/" })
+            const { resolver, fetchMock } = createResolver([htmlResponse, makeJsonResponse(crate)])
+
+            const result = await resolver.resolveCrate("https://example.com/crate/")
+
+            expect(fetchMock).toHaveBeenNthCalledWith(
+                2,
+                "https://example.com/crate/meta.json",
+                expect.any(Object)
+            )
+            expect(result.metadata["@graph"][0].name).toBe("Relative Link")
+        })
     })
 
     describe("content negotiation", () => {

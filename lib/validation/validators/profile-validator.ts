@@ -96,6 +96,35 @@ export class ProfileValidator extends Validator {
         }
     }
 
+    private buildAddPropertyAction(
+        entity: IEntity,
+        propertyRule: PropertyRule,
+        handler: IProfileHandler | undefined,
+        missingCount: number
+    ) {
+        if (!handler || missingCount <= 0) return []
+        return [
+            this.resultBuilder.action("add-property", "Add", async () => {
+                const value = await getDefaultValue(
+                    handler,
+                    propertyRule,
+                    this.getContext().resolver,
+                    this.getContext().schemaWorker.worker
+                )
+                for (let i = 0; i < missingCount; i++) {
+                    editorState.getState().addPropertyEntry(entity["@id"], propertyRule.label, value)
+                }
+                setTimeout(
+                    () =>
+                        useEntityEditorTabs
+                            .getState()
+                            .focusProperty(entity["@id"], propertyRule.label),
+                    100
+                )
+            })
+        ]
+    }
+
     private validatePropertyCount(
         propertyRule: PropertyRule,
         propertyCount: number,
@@ -104,44 +133,19 @@ export class ProfileValidator extends Validator {
     ) {
         const handler = this.getContext().profileService.getProfileHandler(propertyRule.onHandler)
         if (propertyRule.minCount !== undefined && propertyCount < propertyRule.minCount) {
+            const missingCount = propertyRule.minCount - propertyCount
             if (propertyRule.minCount === 1) {
                 results.push(
                     this.resultBuilder.rule("missingMandatoryProperty").error({
                         resultTitle: `Missing \`${propertyRule.label}\` property`,
                         resultDescription: `The mandatory property \`${propertyRule.label}\` is missing from this entity`,
                         entityId: entity["@id"],
-                        actions: handler
-                            ? [
-                                  {
-                                      name: "add-property",
-                                      displayName: "Add",
-                                      dispatch: async () => {
-                                          editorState
-                                              .getState()
-                                              .addPropertyEntry(
-                                                  entity["@id"],
-                                                  propertyRule.label,
-                                                  await getDefaultValue(
-                                                      handler,
-                                                      propertyRule,
-                                                      this.getContext().resolver,
-                                                      this.getContext().schemaWorker.worker
-                                                  )
-                                              )
-                                          setTimeout(
-                                              () =>
-                                                  useEntityEditorTabs
-                                                      .getState()
-                                                      .focusProperty(
-                                                          entity["@id"],
-                                                          propertyRule.label
-                                                      ),
-                                              100
-                                          )
-                                      }
-                                  }
-                              ]
-                            : []
+                        actions: this.buildAddPropertyAction(
+                            entity,
+                            propertyRule,
+                            handler,
+                            missingCount
+                        )
                     })
                 )
             } else {
@@ -150,45 +154,12 @@ export class ProfileValidator extends Validator {
                         resultTitle: `Property \`${propertyRule.label}\` too few entries`,
                         resultDescription: `The mandatory property \`${propertyRule.label}\` must be present at least ${propertyRule.minCount} times`,
                         entityId: entity["@id"],
-                        actions: handler
-                            ? [
-                                  {
-                                      name: "add-property",
-                                      displayName: "Add",
-                                      dispatch: async () => {
-                                          const value = await getDefaultValue(
-                                              handler,
-                                              propertyRule,
-                                              this.getContext().resolver,
-                                              this.getContext().schemaWorker.worker
-                                          )
-                                          for (
-                                              let i = propertyCount;
-                                              i < (propertyRule.minCount ?? 0);
-                                              i++
-                                          ) {
-                                              editorState
-                                                  .getState()
-                                                  .addPropertyEntry(
-                                                      entity["@id"],
-                                                      propertyRule.label,
-                                                      value
-                                                  )
-                                          }
-                                          setTimeout(
-                                              () =>
-                                                  useEntityEditorTabs
-                                                      .getState()
-                                                      .focusProperty(
-                                                          entity["@id"],
-                                                          propertyRule.label
-                                                      ),
-                                              100
-                                          )
-                                      }
-                                  }
-                              ]
-                            : []
+                        actions: this.buildAddPropertyAction(
+                            entity,
+                            propertyRule,
+                            handler,
+                            missingCount
+                        )
                     })
                 )
             }
@@ -252,19 +223,19 @@ export class ProfileValidator extends Validator {
 
                 let match = false
                 for (const entityRule of entityRules) {
-                    if (match) continue
+                    if (match) break
 
                     if (!entityRule.specializationOf) {
                         match = true
                         continue
                     }
 
-                    if (entityRule["@id"] == existingMapping) {
+                    if (entityRule["@id"] === existingMapping) {
                         match = true
                         continue
                     }
 
-                    const missingTypes = entityRule.specializationOf!.filter(
+                    const missingTypes = entityRule.specializationOf.filter(
                         (type) => !resolved.includes(type)
                     )
                     if (missingTypes.length === 0) {
@@ -277,7 +248,7 @@ export class ProfileValidator extends Validator {
                         this.resultBuilder.rule("mismatchingEntityType").error({
                             resultTitle:
                                 "The referenced entity does not match any of the required types",
-                            resultDescription: `The referenced entity is expected to be one of: ${entityRules.map((r) => "`" + (r.name ?? r.label) + "`").join(", ")}`,
+                            resultDescription: `The referenced entity is expected to be one of: ${entityRules.map((r) => "`" + classRuleName(r) + "`").join(", ")}`,
                             entityId: entity["@id"],
                             propertyName: propertyRule.label,
                             propertyIndex: i
@@ -429,7 +400,6 @@ export class ProfileValidator extends Validator {
         const entityTypes = toArray(entity["@type"]).map((type) =>
             isValidUrl(type) ? type : (this.getContext().resolver.resolve(type) ?? type)
         )
-        console.log(entityTypes)
         return (classRule.specializationOf ?? []).filter((t) => !entityTypes.includes(t))
     }
 

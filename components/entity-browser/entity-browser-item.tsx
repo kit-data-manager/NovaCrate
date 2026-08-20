@@ -8,7 +8,11 @@ import { Button } from "@/components/ui/button"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { useActiveEntityRules } from "@/lib/hooks/use-profile-service"
 
-export const EntityBrowserItem = memo(function EntityBrowserItem(props: { entityId: string }) {
+export interface IEntityBrowserItemProps {
+    entityId: string
+}
+
+export const EntityBrowserItem = memo(function EntityBrowserItem(props: IEntityBrowserItemProps) {
     const showEntityType = useEntityBrowserSettings((store) => store.showEntityType)
     const showEntityRules = useEntityBrowserSettings((store) => store.showEntityRules)
     const showIdInsteadOfName = useEntityBrowserSettings((store) => store.showIdInsteadOfName)

@@ -18,10 +18,8 @@ export async function createEntityForRule(
     const properties = getMandatoryProperties(handler, rule)
     const fallbackType = "Thing"
     const resolvedTypes = rule.specializationOf
-        ? rule.specializationOf
-              .map((typeUrl) => resolver.reverse(typeUrl) ?? typeUrl)
-              .filter((s) => s !== null)
-        : fallbackType
+        ? rule.specializationOf.map((typeUrl) => resolver.reverse(typeUrl) ?? typeUrl)
+        : []
 
     const base: IEntity = {
         "@id": id,

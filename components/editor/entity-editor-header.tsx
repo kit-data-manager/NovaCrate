@@ -12,6 +12,19 @@ import { ActionButton, ActionDropdownMenuItem } from "@/components/actions/actio
 import { useAction } from "@/lib/hooks/hooks"
 import { ValidationOverview } from "@/components/editor/validation/validation-overview"
 
+export interface IEntityEditorHeaderProps {
+    entityId: string
+    hasUnsavedChanges: boolean
+    isSaving: boolean
+    canSaveAs: boolean
+    canHavePreview: boolean
+    togglePreview: () => void
+    isBeingPreviewed: boolean
+    goToGraph: () => void
+    goToFileExplorer?: () => void
+    transparentBackground: boolean
+}
+
 export const EntityEditorHeader = memo(function EntityEditorHeader({
     entityId,
     isSaving,
@@ -23,18 +36,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
     goToGraph,
     goToFileExplorer,
     transparentBackground
-}: {
-    entityId: string
-    hasUnsavedChanges: boolean
-    isSaving: boolean
-    canSaveAs: boolean
-    canHavePreview: boolean
-    togglePreview: () => void
-    isBeingPreviewed: boolean
-    goToGraph: () => void
-    goToFileExplorer?: () => void
-    transparentBackground: boolean
-}) {
+}: IEntityEditorHeaderProps) {
     const saveAction = useAction("entity.save")
 
     return (

@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { isDataEntity, isFileDataEntity } from "@/lib/utils"
 import { InfoIcon, PlusIcon } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -6,9 +5,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useEditorState } from "@/lib/state/editor-state"
 import { Badge } from "@/components/ui/badge"
 
-const entityBrowserItemIconBaseCN = "border px-2 py-1 text-sm"
+export interface IEntityBadgeProps {
+    entity?: IEntity
+}
 
-export function EntityBadge(props: { entity?: IEntity }) {
+export function EntityBadge(props: IEntityBadgeProps) {
     const rootEntityId = useEditorState((s) => s.getRootEntityId())
 
     if (!props.entity) {

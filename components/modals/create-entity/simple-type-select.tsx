@@ -44,14 +44,15 @@ export function SimpleTypeSelect({
     }, [resolver, restrictToClasses])
 
     const visibleProfiles = useMemo(() => {
-        return profileEntityRules.map((profile) => {
-            profile.classes = profile.classes.filter((c) =>
-                undefinedIfEmpty(restrictToEntityRules)
-                    ? restrictToEntityRules!.includes(c["@id"])
+        const restrictToEntityRulesFilter = undefinedIfEmpty(restrictToEntityRules)
+        return profileEntityRules.map((profile) => ({
+            ...profile,
+            classes: profile.classes.filter((c) =>
+                restrictToEntityRulesFilter
+                    ? restrictToEntityRulesFilter.includes(c["@id"])
                     : isTypeAllowed(resolver, c.specializationOf || "Thing", restrictToClasses)
             )
-            return profile
-        })
+        }))
     }, [profileEntityRules, resolver, restrictToClasses, restrictToEntityRules])
 
     const showGeneral = !restrictToClasses || generalAllowed

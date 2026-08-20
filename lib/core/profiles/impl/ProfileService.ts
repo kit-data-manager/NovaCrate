@@ -88,6 +88,7 @@ export class ProfileService implements IProfileService {
 
         this.profileURIs = profileURIs
         this.profiles.forEach((p) => {
+            p.discard()
             p.events.removeEventListener("ready-changed", this.probeAllReady)
             p.events.removeEventListener("error-emitted", this.forwardErrorEvent)
             p.events.removeEventListener("mapping-updated", this.updateEntityMappings)
@@ -188,6 +189,7 @@ export class ProfileService implements IProfileService {
     }
 
     dispose() {
+        this.profiles.forEach((p) => p.discard())
         this.disposeGraphChangedEventListener()
     }
 }

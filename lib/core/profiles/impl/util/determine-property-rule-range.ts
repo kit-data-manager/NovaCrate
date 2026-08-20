@@ -24,9 +24,8 @@ export async function determinePropertyRuleRange(
 
     if (propertyRule.rangeIncludes !== undefined) {
         for (const rangeItem of propertyRule.rangeIncludes) {
-            if (profileHandler.getEntityRule(rangeItem)) {
-                const entityRule = profileHandler.getEntityRule(rangeItem)!
-
+            const entityRule = profileHandler.getEntityRule(rangeItem)
+            if (entityRule) {
                 rangeIncludesTypes.push(
                     ...(entityRule.specializationOf
                         ? entityRule.specializationOf

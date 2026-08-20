@@ -5,7 +5,6 @@ import { ArrowLeft, ExternalLinkIcon, Plus, Trash } from "lucide-react"
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
     TableHead,
     TableHeader,
@@ -188,11 +187,9 @@ export function CustomPairs() {
                         ))}
                         {customPairs.length === 0 ? (
                             <TableRow>
-                                <TableCell className="p-4 text-muted-foreground">
+                                <TableCell className="p-4 text-muted-foreground" colSpan={3}>
                                     No Custom Context pairs have been configured
                                 </TableCell>
-                                <TableCell />
-                                <TableCell />
                             </TableRow>
                         ) : null}
                     </TableBody>

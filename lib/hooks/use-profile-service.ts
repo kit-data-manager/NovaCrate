@@ -41,7 +41,7 @@ export function useProfileEntityMapping(entityId: string) {
 }
 
 export function useActiveEntityRules(entityId?: string) {
-    const profileService = useCore().getProfileService()
+    const profileService = useProfileService()
 
     const [roles, setRoles] = useState<{ rule: EntityRule; handler: IProfileHandler }[]>()
 
@@ -70,10 +70,14 @@ export function useActiveEntityRules(entityId?: string) {
         const remove2 = profileService.events.addEventListener("all-ready-changed", () => {
             determineRoles()
         })
+        const remove3 = profileService.events.addEventListener("mappings-updated", () => {
+            determineRoles()
+        })
 
         return () => {
             remove1()
             remove2()
+            remove3()
         }
     }, [determineRoles, profileService.events])
 

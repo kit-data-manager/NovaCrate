@@ -2,11 +2,11 @@ import { IReadOnlyFileService } from "@/lib/core/persistence/IReadOnlyFileServic
 import { IFileInfo } from "@/lib/core/persistence"
 
 export class NoOpReadOnlyFileService implements IReadOnlyFileService {
-    getFile(): Promise<Blob> {
+    async getFile(): Promise<Blob> {
         throw new Error("Tried to call getFile on an empty file service (NoOpReadOnlyFileService)")
     }
 
-    getInfo(): Promise<IFileInfo> {
+    async getInfo(): Promise<IFileInfo> {
         throw new Error("Tried to call getInfo on an empty file service (NoOpReadOnlyFileService)")
     }
 

@@ -16,6 +16,9 @@ export type ResolvedCrate = {
 const RO_CRATE_PROFILE = "https://w3id.org/ro/crate"
 const METADATA_FILE = "ro-crate-metadata.json"
 const ACCEPT_HEADER = "application/ld+json;profile=https://w3id.org/ro/crate"
+const MAX_METADATA_UNCOMPRESSED_SIZE_BYTES = 50 * 1024 * 1024
+
+type ZipObjectWithUncompressedSize = { _data?: { uncompressedSize?: number } }
 
 export type CrateResolverOptions = {
     /** Abort the resolution. */
@@ -237,15 +240,6 @@ export class CrateResolver {
 
     private async extractZip(arrayBuffer: ArrayBuffer, sourceUrl: string): Promise<ResolvedCrate> {
         const zip = await JSZip.loadAsync(arrayBuffer)
-        const entries: { path: string; content: Blob }[] = []
-        const filePaths: string[] = []
-
-        for (const file of Object.values(zip.files)) {
-            if (file.dir) continue
-            const blob = await file.async("blob")
-            entries.push({ path: file.name, content: blob })
-            filePaths.push(file.name)
-        }
 
         let metadataEntry = zip.file(METADATA_FILE)
         let prefix = ""
@@ -253,9 +247,10 @@ export class CrateResolver {
         if (!metadataEntry) {
             // ELN-style single root folder: <folder>/ro-crate-metadata.json
             const folders = new Set<string>()
-            for (const name of filePaths) {
-                const slash = name.indexOf("/")
-                if (slash > 0) folders.add(name.slice(0, slash))
+            for (const file of Object.values(zip.files)) {
+                if (file.dir) continue
+                const slash = file.name.indexOf("/")
+                if (slash > 0) folders.add(file.name.slice(0, slash))
             }
             for (const folder of folders) {
                 const candidate = zip.file(`${folder}/${METADATA_FILE}`)
@@ -270,6 +265,18 @@ export class CrateResolver {
         if (!metadataEntry) {
             throw new ProfileHandlerError(
                 `ZIP archive does not contain ${METADATA_FILE}: ${sourceUrl}`,
+                { profileUri: sourceUrl }
+            )
+        }
+
+        const metadataUncompressedSize = (metadataEntry as ZipObjectWithUncompressedSize)._data
+            ?.uncompressedSize
+        if (
+            metadataUncompressedSize !== undefined &&
+            metadataUncompressedSize > MAX_METADATA_UNCOMPRESSED_SIZE_BYTES
+        ) {
+            throw new ProfileHandlerError(
+                `${METADATA_FILE} in ZIP archive exceeds the maximum allowed size: ${sourceUrl}`,
                 { profileUri: sourceUrl }
             )
         }
@@ -300,12 +307,18 @@ export class CrateResolver {
             )
         }
 
-        const stripped = entries
-            .filter((e) => e.path.startsWith(prefix))
-            .map((e) => ({
-                path: e.path.slice(prefix.length),
-                content: e.content
-            }))
+        const entries: { path: string; content: Blob }[] = []
+        for (const file of Object.values(zip.files)) {
+            if (file.dir) continue
+            if (!file.name.startsWith(prefix)) continue
+            const blob = await file.async("blob")
+            entries.push({ path: file.name, content: blob })
+        }
+
+        const stripped = entries.map((e) => ({
+            path: e.path.slice(prefix.length),
+            content: e.content
+        }))
 
         return {
             metadata: result.data,
@@ -334,7 +347,12 @@ export class CrateResolver {
         if (candidates.length === 0) return undefined
 
         const withProfile = candidates.find((l) => l.params.profile === RO_CRATE_PROFILE)
-        return (withProfile ?? candidates[0]).uri
+        const target = (withProfile ?? candidates[0]).uri
+        try {
+            return new URL(target, response.url).href
+        } catch {
+            return target
+        }
     }
 }
 

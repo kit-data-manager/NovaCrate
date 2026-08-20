@@ -36,6 +36,7 @@ export function ValidationDrawerSection({
         <SectionTrigger
             open={open}
             toggleOpen={toggleOpen}
+            keepMounted
             triggerText={
                 <>
                     <span className="text-sm">{header}</span>{" "}

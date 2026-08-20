@@ -107,6 +107,7 @@ export function EntityBrowser() {
                                 <Button
                                     variant="outline"
                                     size="sm"
+                                    aria-label="Toggle Property Overview"
                                     onClick={() =>
                                         state.setShowPropertyOverview(!state.showPropertyOverview)
                                     }
@@ -119,7 +120,7 @@ export function EntityBrowser() {
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="sm" aria-label="Sort entities">
                                     <ArrowDownNarrowWide className="size-4" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -168,7 +169,12 @@ export function EntityBrowser() {
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button size="sm" variant="outline" className={`text-xs`}>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className={`text-xs`}
+                                    aria-label="Entity Explorer Settings"
+                                >
                                     <EllipsisVertical className={`size-4`} />
                                 </Button>
                             </DropdownMenuTrigger>

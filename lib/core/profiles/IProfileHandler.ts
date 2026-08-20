@@ -104,13 +104,17 @@ export interface IProfileHandler {
     getPropertyRulesFor(entityRuleId: string): PropertyRule[]
 
     /**
-     * Attach this profile handler to the metadata service to automatically update its entity mapping (see {@link getEntityMapping})
+     * Attach this profile handler to the metadata service to automatically update its entity mapping (see {@link getEntityMapping}).
+     * Attach registers one mapping listener on the metadata service, so it must be called at most once per handler
+     * and each call must be matched by exactly one {@link discard} call. Calling attach repeatedly without a matching
+     * discard would leak listeners.
      * @param metadataService The currently active metadata service from core
      */
     attach(metadataService: IMetadataService): void
 
     /**
      * Discard the profile. This will remove any event listeners this profile has registered.
+     * Must be called exactly once for every preceding {@link attach} call.
      */
     discard(): void
 }
