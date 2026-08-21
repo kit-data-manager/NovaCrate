@@ -7,18 +7,19 @@ import { immer } from "zustand/middleware/immer"
 /**
  * A registered schema that the schema resolver knows about.
  *
- * `matchesUrls` defines which entity/property IDs trigger loading of this schema
- * (by URL prefix). `url` is the built-in download URL of the schema, while
- * `overrideUrl` lets the user replace it. An empty `overrideUrl` means the
- * default `url` is used.
+ * `displayName` is the unique identifier of the schema. `matchesUrls` defines
+ * which entity/property IDs trigger loading of this schema (by URL prefix).
+ * `url` is the built-in download URL of the schema, while `overrideUrl` lets the
+ * user replace it. An empty `overrideUrl` means the default `url` is used.
  */
 export interface KnownSchema {
-    id: string
     displayName: string
     matchesUrls: string[]
     url: string
     overrideUrl: string
     restrictTo: RO_CRATE_VERSION[]
+    /** True for schemas that ship with NovaCrate (factory defaults). */
+    builtIn: boolean
 }
 
 /**
@@ -38,15 +39,18 @@ export interface SchemaResolverSettings extends SchemaResolverSettingsData {
     setKnownSchemas(schemas: KnownSchema[]): void
 
     /**
-     * Add a new schema entry. If an entry with the same id already exists, it is updated.
+     * Add a new schema entry. If an entry with the same display name already exists, it is updated.
      */
     addSchema(schema: KnownSchema): void
 
     /**
-     * Update a schema entry. It is possible to change the schema id using the second parameter
+     * Update a schema entry. It is possible to change the display name using the schema parameter
      */
-    updateSchema(id: string, schema: KnownSchema): void
-    deleteSchema(id: string): void
+    updateSchema(displayName: string, schema: KnownSchema): void
+    deleteSchema(displayName: string): void
+
+    /** Restores a built-in schema to the factory default settings. */
+    resetSchemaToDefault(displayName: string): void
 }
 
 /** Extracts the serializable settings that may be sent to the schema worker. */
@@ -72,61 +76,61 @@ function cloneKnownSchemas(schemas: KnownSchema[]): KnownSchema[] {
 
 export const DEFAULT_KNOWN_SCHEMAS: KnownSchema[] = [
     {
-        id: "schema",
         displayName: "Schema.org",
         matchesUrls: ["https://schema.org/"],
         url: "https://schema.org/version/latest/schemaorg-current-https.jsonld",
         overrideUrl: "",
-        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
+        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0],
+        builtIn: true
     },
     {
-        id: "bioschemas_types",
         displayName: "Bioschemas.org Types",
         matchesUrls: ["https://bioschemas.org/"],
         url: "https://bioschemas.org/types/bioschemas_types.jsonld",
         overrideUrl: "",
-        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
+        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0],
+        builtIn: true
     },
     {
-        id: "dcmi",
         displayName: "DCMI",
         matchesUrls: ["http://purl.org/dc/terms/"],
         url: "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
         overrideUrl: "",
-        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
+        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0],
+        builtIn: true
     },
     {
-        id: "prof-voc",
         displayName: "Profile Vocabulary",
         matchesUrls: ["http://www.w3.org/ns/dx/prof"],
         // Resolvable per term via content negotiation, no download URL needed.
         url: "",
         overrideUrl: "",
-        restrictTo: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
+        restrictTo: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0],
+        builtIn: true
     },
     {
-        id: "geosparql",
         displayName: "GeoSPARQL",
         matchesUrls: ["http://www.opengis.net/ont/geosparql"],
         url: "https://raw.githubusercontent.com/opengeospatial/ogc-geosparql/master/geosparql-next/rdf/ontologies/geo.ttl",
         overrideUrl: "",
-        restrictTo: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
+        restrictTo: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0],
+        builtIn: true
     },
     {
-        id: "codemeta3",
         displayName: "CodeMeta 3.0",
         matchesUrls: ["https://codemeta.github.io/terms/"],
         url: prependBasePath("schema/codemeta-3.0-terms.jsonld"),
         overrideUrl: "",
-        restrictTo: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
+        restrictTo: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0],
+        builtIn: true
     },
     {
-        id: "pcdm",
         displayName: "Portland Common Data Model",
         matchesUrls: ["http://pcdm.org/models#"],
         url: prependBasePath("schema/pcdm-selected.jsonld"),
         overrideUrl: "",
-        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0]
+        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_3_0],
+        builtIn: true
     }
 ]
 
@@ -173,16 +177,17 @@ interface PersistedRegisteredSchema {
 }
 
 const toKnownSchema = (registered: PersistedRegisteredSchema): KnownSchema => {
-    const defaultForId = DEFAULT_KNOWN_SCHEMAS.find((d) => d.id === registered.id)
-    const defaultUrl = defaultForId?.url ?? ""
-    const url = defaultForId ? defaultUrl : (registered.schemaUrl ?? "")
+    const defaultForName = DEFAULT_KNOWN_SCHEMAS.find(
+        (d) => d.displayName === registered.displayName
+    )
+    const defaultUrl = defaultForName?.url ?? ""
+    const url = defaultForName ? defaultUrl : (registered.schemaUrl ?? "")
     const overrideUrl =
-        defaultForId && registered.schemaUrl && registered.schemaUrl !== defaultUrl
+        defaultForName && registered.schemaUrl && registered.schemaUrl !== defaultUrl
             ? registered.schemaUrl
             : ""
 
     return {
-        id: registered.id,
         displayName: registered.displayName,
         matchesUrls: Array.isArray(registered.matchesUrls) ? registered.matchesUrls : [],
         url,
@@ -190,14 +195,48 @@ const toKnownSchema = (registered: PersistedRegisteredSchema): KnownSchema => {
         restrictTo:
             registered.activeOnSpec && registered.activeOnSpec.length > 0
                 ? registered.activeOnSpec
-                : (defaultForId?.restrictTo ?? [...ALL_SPECS])
+                : (defaultForName?.restrictTo ?? [...ALL_SPECS]),
+        builtIn: defaultForName !== undefined
     }
 }
 
+/** Shape persisted before version 4 (still carried a separate `id`). */
+interface PersistedKnownSchemaV3 {
+    id?: string
+    displayName?: string
+    matchesUrls?: string[]
+    url?: string
+    overrideUrl?: string
+    restrictTo?: RO_CRATE_VERSION[]
+    builtIn?: boolean
+}
+
+const normalizeKnownSchema = (entry: PersistedKnownSchemaV3): KnownSchema => {
+    const displayName = entry.displayName || entry.id || "Schema"
+    const defaultForName = DEFAULT_KNOWN_SCHEMAS.find((d) => d.displayName === displayName)
+    return {
+        displayName,
+        matchesUrls: Array.isArray(entry.matchesUrls) ? entry.matchesUrls : [""],
+        url: entry.url ?? "",
+        overrideUrl: entry.overrideUrl ?? "",
+        restrictTo:
+            entry.restrictTo && entry.restrictTo.length > 0 ? entry.restrictTo : [...ALL_SPECS],
+        builtIn: entry.builtIn === true || defaultForName !== undefined
+    }
+}
+
+const uniqueByName = (schemas: KnownSchema[]): KnownSchema[] => {
+    const byName = new Map<string, KnownSchema>()
+    for (const schema of schemas) {
+        if (!byName.has(schema.displayName)) byName.set(schema.displayName, schema)
+    }
+    return [...byName.values()]
+}
+
 /**
- * Migrates persisted settings from the previous `schema-resolver` store
- * (version 1/2, `registeredSchemas`) to the current shape (`knownSchemas`).
- * The store persists under the same key so existing user data is preserved.
+ * Migrates persisted settings from previous `schema-resolver` store versions
+ * to the current shape (`knownSchemas` without a separate id). The store
+ * persists under the same key so existing user data is preserved.
  */
 export function migrateSchemaResolverSettings(
     persistedValue: unknown,
@@ -208,23 +247,25 @@ export function migrateSchemaResolverSettings(
             ? (persistedValue as Record<string, unknown>)
             : null
 
-    if (persistedVersion >= 3 && raw) {
-        if (Array.isArray(raw.knownSchemas)) {
-            return { knownSchemas: raw.knownSchemas as KnownSchema[] }
-        }
-        return { knownSchemas: cloneKnownSchemas(DEFAULT_KNOWN_SCHEMAS) }
+    if (raw && Array.isArray(raw.registeredSchemas)) {
+        const existing = uniqueByName(
+            (raw.registeredSchemas as PersistedRegisteredSchema[]).map(toKnownSchema)
+        )
+        const missingDefaults = DEFAULT_KNOWN_SCHEMAS.filter(
+            (defaultSchema) => !existing.some((s) => s.displayName === defaultSchema.displayName)
+        )
+        return { knownSchemas: [...existing, ...cloneKnownSchemas(missingDefaults)] }
     }
 
-    const existing =
-        raw && Array.isArray(raw.registeredSchemas)
-            ? (raw.registeredSchemas as PersistedRegisteredSchema[]).map(toKnownSchema)
-            : []
+    if (raw && Array.isArray(raw.knownSchemas)) {
+        return {
+            knownSchemas: uniqueByName(
+                (raw.knownSchemas as PersistedKnownSchemaV3[]).map(normalizeKnownSchema)
+            )
+        }
+    }
 
-    const missingDefaults = DEFAULT_KNOWN_SCHEMAS.filter(
-        (defaultSchema) => !existing.some((s) => s.id === defaultSchema.id)
-    )
-
-    return { knownSchemas: [...existing, ...missingDefaults] }
+    return { knownSchemas: cloneKnownSchemas(DEFAULT_KNOWN_SCHEMAS) }
 }
 
 export const useSchemaResolverSettings = create<SchemaResolverSettings>()(
@@ -251,7 +292,9 @@ export const useSchemaResolverSettings = create<SchemaResolverSettings>()(
                 },
                 addSchema(schema: KnownSchema) {
                     set((state) => {
-                        const existing = state.knownSchemas.find((s) => s.id === schema.id)
+                        const existing = state.knownSchemas.find(
+                            (s) => s.displayName === schema.displayName
+                        )
                         if (existing) {
                             state.knownSchemas[state.knownSchemas.indexOf(existing)] = schema
                         } else {
@@ -259,22 +302,35 @@ export const useSchemaResolverSettings = create<SchemaResolverSettings>()(
                         }
                     })
                 },
-                updateSchema(id: string, schema: KnownSchema) {
+                updateSchema(displayName: string, schema: KnownSchema) {
                     set((state) => {
-                        const i = state.knownSchemas.findIndex((s) => s.id === id)
+                        const i = state.knownSchemas.findIndex((s) => s.displayName === displayName)
                         if (i === -1) state.knownSchemas.push(schema)
                         else state.knownSchemas[i] = schema
                     })
                 },
-                deleteSchema(id: string) {
+                deleteSchema(displayName: string) {
                     set((state) => {
-                        state.knownSchemas = state.knownSchemas.filter((s) => s.id !== id)
+                        state.knownSchemas = state.knownSchemas.filter(
+                            (s) => s.displayName !== displayName
+                        )
+                    })
+                },
+                resetSchemaToDefault(displayName: string) {
+                    set((state) => {
+                        const defaultSchema = DEFAULT_KNOWN_SCHEMAS.find(
+                            (d) => d.displayName === displayName
+                        )
+                        if (!defaultSchema) return
+                        const i = state.knownSchemas.findIndex((s) => s.displayName === displayName)
+                        if (i === -1) return
+                        state.knownSchemas[i] = cloneKnownSchemas([defaultSchema])[0]
                     })
                 }
             })),
             {
                 name: "schema-resolver",
-                version: 3,
+                version: 4,
                 migrate: (persisted, version) => migrateSchemaResolverSettings(persisted, version)
             }
         )

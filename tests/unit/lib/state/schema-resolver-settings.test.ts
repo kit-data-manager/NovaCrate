@@ -22,16 +22,16 @@ function resetStore() {
     })
 }
 
-const SCHEMA_ORG = DEFAULT_KNOWN_SCHEMAS.find((s) => s.id === "schema")!
+const SCHEMA_ORG = DEFAULT_KNOWN_SCHEMAS.find((s) => s.displayName === "Schema.org")!
 
 function schemaWith(id: string, overrides: Partial<KnownSchema> = {}): KnownSchema {
     return {
-        id,
         displayName: id,
         matchesUrls: [`https://${id}.example/`],
         url: `https://${id}.example/terms.jsonld`,
         overrideUrl: "",
         restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0],
+        builtIn: false,
         ...overrides
     }
 }
@@ -80,16 +80,18 @@ describe("useSchemaResolverSettings", () => {
     describe("addSchema", () => {
         it("should add a new schema", () => {
             useSchemaResolverSettings.getState().addSchema(schemaWith("custom"))
-            expect(useSchemaResolverSettings.getState().knownSchemas).toEqual([schemaWith("custom")])
+            expect(useSchemaResolverSettings.getState().knownSchemas).toEqual([
+                schemaWith("custom")
+            ])
         })
 
-        it("should update the schema when the id already exists", () => {
+        it("should update the schema when the display name already exists", () => {
             useSchemaResolverSettings.getState().addSchema(schemaWith("custom"))
             useSchemaResolverSettings
                 .getState()
-                .addSchema(schemaWith("custom", { displayName: "Renamed" }))
+                .addSchema(schemaWith("custom", { overrideUrl: "https://mirror/x" }))
             expect(useSchemaResolverSettings.getState().knownSchemas).toEqual([
-                schemaWith("custom", { displayName: "Renamed" })
+                schemaWith("custom", { overrideUrl: "https://mirror/x" })
             ])
         })
     })
@@ -107,7 +109,9 @@ describe("useSchemaResolverSettings", () => {
 
         it("should add the schema when the id is unknown", () => {
             useSchemaResolverSettings.getState().updateSchema("unknown", schemaWith("unknown"))
-            expect(useSchemaResolverSettings.getState().knownSchemas).toEqual([schemaWith("unknown")])
+            expect(useSchemaResolverSettings.getState().knownSchemas).toEqual([
+                schemaWith("unknown")
+            ])
         })
     })
 
@@ -121,6 +125,28 @@ describe("useSchemaResolverSettings", () => {
         it("should be a no-op for unknown ids", () => {
             useSchemaResolverSettings.getState().deleteSchema("does-not-exist")
             expect(useSchemaResolverSettings.getState().knownSchemas).toEqual([])
+        })
+    })
+
+    describe("resetSchemaToDefault", () => {
+        it("should restore a built-in schema to the factory default", () => {
+            const customized = {
+                ...SCHEMA_ORG,
+                overrideUrl: "https://mirror.example/schemaorg.jsonld",
+                matchesUrls: ["https://custom.example/"],
+                restrictTo: [RO_CRATE_VERSION.V1_1_3]
+            }
+            useSchemaResolverSettings.setState({ knownSchemas: [customized] })
+            useSchemaResolverSettings.getState().resetSchemaToDefault(SCHEMA_ORG.displayName)
+            expect(useSchemaResolverSettings.getState().knownSchemas).toEqual([SCHEMA_ORG])
+        })
+
+        it("should be a no-op for custom schemas", () => {
+            useSchemaResolverSettings.setState({ knownSchemas: [schemaWith("custom")] })
+            useSchemaResolverSettings.getState().resetSchemaToDefault("custom")
+            expect(useSchemaResolverSettings.getState().knownSchemas).toEqual([
+                schemaWith("custom")
+            ])
         })
     })
 })
@@ -137,13 +163,16 @@ describe("DEFAULT_KNOWN_SCHEMAS", () => {
 describe("findKnownSchemas", () => {
     it("should match a term by URL prefix", () => {
         const result = findKnownSchemas(DEFAULT_KNOWN_SCHEMAS, "https://schema.org/Person")
-        expect(result.map((s) => s.id)).toEqual(["schema"])
+        expect(result.map((s) => s.displayName)).toEqual(["Schema.org"])
     })
 
     it("should match every schema that prefixes the term", () => {
         const custom = schemaWith("custom", { matchesUrls: ["https://schema.org/"] })
-        const result = findKnownSchemas([...DEFAULT_KNOWN_SCHEMAS, custom], "https://schema.org/Person")
-        expect(result.map((s) => s.id)).toEqual(["schema", "custom"])
+        const result = findKnownSchemas(
+            [...DEFAULT_KNOWN_SCHEMAS, custom],
+            "https://schema.org/Person"
+        )
+        expect(result.map((s) => s.displayName)).toEqual(["Schema.org", "custom"])
     })
 
     it("should return no matches for an unknown prefix", () => {
@@ -153,26 +182,39 @@ describe("findKnownSchemas", () => {
     it("should filter schemas by the target spec", () => {
         const term = "http://www.opengis.net/ont/geosparql"
         expect(findKnownSchemas(DEFAULT_KNOWN_SCHEMAS, term, RO_CRATE_VERSION.V1_1_3)).toEqual([])
-        expect(findKnownSchemas(DEFAULT_KNOWN_SCHEMAS, term, RO_CRATE_VERSION.V1_2_0).map((s) => s.id)).toEqual(
-            ["geosparql"]
-        )
+        expect(
+            findKnownSchemas(DEFAULT_KNOWN_SCHEMAS, term, RO_CRATE_VERSION.V1_2_0).map(
+                (s) => s.displayName
+            )
+        ).toEqual(["GeoSPARQL"])
     })
 
     it("should not filter by spec when none is given", () => {
         const result = findKnownSchemas(DEFAULT_KNOWN_SCHEMAS, "https://schema.org/Dataset")
-        expect(result.map((s) => s.id)).toEqual(["schema"])
+        expect(result.map((s) => s.displayName)).toEqual(["Schema.org"])
     })
 
     it("should match every term when an empty prefix is configured", () => {
-        const result = findKnownSchemas([schemaWith("always", { matchesUrls: [""] })], "https://anything.example/x")
-        expect(result.map((s) => s.id)).toEqual(["always"])
+        const result = findKnownSchemas(
+            [schemaWith("always", { matchesUrls: [""] })],
+            "https://anything.example/x"
+        )
+        expect(result.map((s) => s.displayName)).toEqual(["always"])
+    })
+
+    it("should match nothing when the prefix is not a valid url", () => {
+        const result = findKnownSchemas(
+            [schemaWith("always", { matchesUrls: ["schema"] })],
+            "https://schema.org/Person"
+        )
+        expect(result.map((s) => s.displayName)).toEqual([])
     })
 })
 
 describe("findKnownSchema", () => {
     it("should return the first matching schema", () => {
         const result = findKnownSchema(DEFAULT_KNOWN_SCHEMAS, "https://schema.org/Person")
-        expect(result?.id).toBe("schema")
+        expect(result?.displayName).toBe("Schema.org")
     })
 
     it("should return undefined when nothing matches", () => {
@@ -203,7 +245,10 @@ describe("getEffectiveSchemaUrl", () => {
 describe("migrateSchemaResolverSettings", () => {
     it("should seed the defaults when nothing is persisted", () => {
         const result = migrateSchemaResolverSettings(null, 0)
-        expect(result.knownSchemas?.map((s) => s.id)).toEqual(DEFAULT_KNOWN_SCHEMAS.map((s) => s.id))
+        expect(result.knownSchemas?.map((s) => s.displayName)).toEqual(
+            DEFAULT_KNOWN_SCHEMAS.map((s) => s.displayName)
+        )
+        expect(result.knownSchemas?.every((s) => s.builtIn)).toBe(true)
     })
 
     it("should map v2 registeredSchemas into knownSchemas", () => {
@@ -221,10 +266,11 @@ describe("migrateSchemaResolverSettings", () => {
             },
             2
         )
-        const schema = result.knownSchemas?.find((s) => s.id === "schema")
+        const schema = result.knownSchemas?.find((s) => s.displayName === "Schema.org")
         expect(schema?.url).toBe(SCHEMA_ORG.url)
         expect(schema?.overrideUrl).toBe("")
         expect(schema?.restrictTo).toEqual([RO_CRATE_VERSION.V1_2_0])
+        expect(schema?.builtIn).toBe(true)
     })
 
     it("should store a customized download URL in overrideUrl", () => {
@@ -243,7 +289,7 @@ describe("migrateSchemaResolverSettings", () => {
             },
             2
         )
-        const schema = result.knownSchemas?.find((s) => s.id === "schema")
+        const schema = result.knownSchemas?.find((s) => s.displayName === "Schema.org")
         expect(schema?.url).toBe(SCHEMA_ORG.url)
         expect(schema?.overrideUrl).toBe(custom)
     })
@@ -262,9 +308,10 @@ describe("migrateSchemaResolverSettings", () => {
             },
             1
         )
-        const schema = result.knownSchemas?.find((s) => s.id === "custom")
+        const schema = result.knownSchemas?.find((s) => s.displayName === "Custom")
         expect(schema?.url).toBe("https://custom.example/terms.ttl")
         expect(schema?.overrideUrl).toBe("")
+        expect(schema?.builtIn).toBe(false)
         expect(schema?.restrictTo).toEqual([
             RO_CRATE_VERSION.V1_1_3,
             RO_CRATE_VERSION.V1_2_0,
@@ -286,15 +333,50 @@ describe("migrateSchemaResolverSettings", () => {
             },
             1
         )
-        const ids = result.knownSchemas?.map((s) => s.id) ?? []
+        const names = result.knownSchemas?.map((s) => s.displayName) ?? []
         for (const defaultSchema of DEFAULT_KNOWN_SCHEMAS) {
-            expect(ids).toContain(defaultSchema.id)
+            expect(names).toContain(defaultSchema.displayName)
         }
     })
 
-    it("should pass through an already-migrated v3 payload", () => {
-        const knownSchemas = [schemaWith("custom")]
-        const result = migrateSchemaResolverSettings({ knownSchemas }, 3)
-        expect(result.knownSchemas).toEqual(knownSchemas)
+    it("should drop the id from a version 3 payload", () => {
+        const result = migrateSchemaResolverSettings(
+            {
+                knownSchemas: [
+                    {
+                        id: "custom",
+                        displayName: "Custom",
+                        matchesUrls: ["https://custom.example/"],
+                        url: "https://custom.example/terms.jsonld",
+                        overrideUrl: "",
+                        restrictTo: [RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_2_0]
+                    }
+                ]
+            },
+            3
+        )
+        const schema = result.knownSchemas?.[0]
+        expect(schema?.displayName).toBe("Custom")
+        expect(schema?.builtIn).toBe(false)
+        expect(Object.keys(schema ?? {})).not.toContain("id")
+    })
+
+    it("should keep the built-in marker when a default was customized", () => {
+        const result = migrateSchemaResolverSettings(
+            {
+                knownSchemas: [
+                    {
+                        id: "schema",
+                        displayName: "Schema.org",
+                        matchesUrls: ["https://schema.org/"],
+                        url: SCHEMA_ORG.url,
+                        overrideUrl: "https://mirror.example/schemaorg.jsonld",
+                        restrictTo: SCHEMA_ORG.restrictTo
+                    }
+                ]
+            },
+            3
+        )
+        expect(result.knownSchemas?.[0].builtIn).toBe(true)
     })
 })

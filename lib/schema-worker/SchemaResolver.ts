@@ -1,7 +1,7 @@
 import { FetchFailure, SchemaFetchResult, SchemaFile, schemaFileSchema } from "./types"
 import { parse as parseTtl } from "@frogcat/ttl2jsonld"
 import { RO_CRATE_VERSION } from "@/lib/constants"
-import { toArray, prependBasePath } from "@/lib/utils"
+import { toArray, prependBasePath, isValidUrl } from "@/lib/utils"
 import {
     findKnownSchemas,
     getEffectiveSchemaUrl,
@@ -16,7 +16,7 @@ type DedupedSymbol = typeof DedupedSymbol
 type UnknownSchema = string
 
 /** How long term fetches are collected before they are grouped by prefix and requested. */
-const TERM_FETCH_DEBOUNCE_MS = 40
+const TERM_FETCH_DEBOUNCE_MS = 100
 
 /**
  * The URL base shared by terms of one vocabulary: everything up to and
@@ -36,7 +36,10 @@ function toSecureFetchUrl(url: string): string {
 }
 
 function looksLikeTurtle(text: string): boolean {
-    const start = text.replace(/^\uFEFF/, "").trimStart().slice(0, 500)
+    const start = text
+        .replace(/^\uFEFF/, "")
+        .trimStart()
+        .slice(0, 500)
     return start.startsWith("@prefix") || start.startsWith("@base") || /<https?:\/\//.test(start)
 }
 
@@ -76,19 +79,29 @@ export class SchemaResolver {
 
         const matched = findKnownSchemas(this.settings.knownSchemas, nodeId, this.spec ?? undefined)
         const knownWithUrl = matched.filter((schema) => getEffectiveSchemaUrl(schema) !== "")
-        const knownWithoutUrl = matched.filter((schema) => getEffectiveSchemaUrl(schema) === "")
+        const knownWithoutUrl = matched.filter(
+            (schema) => getEffectiveSchemaUrl(schema) === "" && schema.matchesUrls.every(isValidUrl)
+        )
 
+        let successfulSchemaFetches = 0
         for (const registeredSchema of knownWithUrl) {
-            if (exclude.includes(registeredSchema.id)) continue
+            if (exclude.includes(registeredSchema.displayName)) continue
 
             try {
                 const schema = await this.fetchSchema(registeredSchema)
                 if (schema === DedupedSymbol) continue // schema is already being fetched elsewhere in parallel
-                loadedSchemas.set(registeredSchema.id, { schema })
+                loadedSchemas.set(registeredSchema.displayName, { schema })
+                successfulSchemaFetches++
             } catch (e) {
-                console.error(`Failed to get schema with key ${registeredSchema.id}:`, e)
-                loadedSchemas.set(registeredSchema.id, { error: e })
+                console.error(`Failed to get schema with key ${registeredSchema.displayName}:`, e)
+                loadedSchemas.set(registeredSchema.displayName, { error: e })
             }
+        }
+
+        if (successfulSchemaFetches > 0) {
+            // Abort here, don't go into term fetching. Schema fetching should already cover the required term
+            // Otherwise the schema configuration is invalid, in which case a term load failure is expected.
+            return loadedSchemas
         }
 
         const needsTermFetch =
@@ -96,7 +109,7 @@ export class SchemaResolver {
             (matched.length === 0 && this.settings.allowUnknownSchemas)
         if (needsTermFetch) {
             const knownSchemaId =
-                knownWithoutUrl.length > 0 ? knownWithoutUrl[0].id : undefined
+                knownWithoutUrl.length > 0 ? knownWithoutUrl[0].displayName : undefined
             const outcome = await this.termFetch(nodeId, knownSchemaId, exclude)
             if (outcome?.schema) {
                 loadedSchemas.set(outcome.key, { schema: outcome.schema })
@@ -166,7 +179,10 @@ export class SchemaResolver {
         }
 
         const promise = this.doFetchTerms(base, requests)
-        this.runningTermFetches.set(base, promise.catch(() => undefined))
+        this.runningTermFetches.set(
+            base,
+            promise.catch(() => undefined)
+        )
         await promise
         this.runningTermFetches.delete(base)
     }
@@ -237,7 +253,7 @@ export class SchemaResolver {
     }
 
     async forceLoad(schemaId: string) {
-        const schema = this.settings.knownSchemas.find((schema) => schema.id === schemaId)
+        const schema = this.settings.knownSchemas.find((schema) => schema.displayName === schemaId)
         if (!schema) return
         // Schemas without a download URL can only be loaded per term.
         if (getEffectiveSchemaUrl(schema) === "") return
@@ -253,7 +269,7 @@ export class SchemaResolver {
     loadAll(exclude: string[]) {
         const schemas = this.settings.knownSchemas
             .filter((schema) => getEffectiveSchemaUrl(schema) !== "")
-            .filter((schema) => !exclude.includes(schema.id))
+            .filter((schema) => !exclude.includes(schema.displayName))
             .filter((schema) =>
                 this.spec
                     ? schema.restrictTo.includes(this.spec) || schema.restrictTo.length === 0
@@ -294,8 +310,12 @@ export class SchemaResolver {
     }
 
     private async executeFetch(url: string): Promise<SchemaFile> {
-        const res = await fetch(prependBasePath("/api/schemas/fetch?url=" + encodeURIComponent(url)))
-        const body = (await res.json()) as SchemaFetchResult | { error: string; attempts?: FetchFailure[] }
+        console.log("Fetching terms from " + url)
+        const res = await fetch(
+            prependBasePath("/api/schemas/fetch?url=" + encodeURIComponent(url))
+        )
+        const body = (await res.json()) as
+            SchemaFetchResult | { error: string; attempts?: FetchFailure[] }
 
         if ("error" in body) {
             throw new Error(
@@ -306,6 +326,9 @@ export class SchemaResolver {
 
         const schema = this.parseSchemaBody(body)
         this.runningFetches.delete(url)
+        console.log(
+            `Successfully loaded terms from ${url} (content-type: ${res.headers?.get("content-type")}, status: ${res.status})`
+        )
         return schema
     }
 

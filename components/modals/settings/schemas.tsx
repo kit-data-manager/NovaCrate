@@ -1,5 +1,9 @@
-import { useStore } from "zustand/index"
-import { KnownSchema, useSchemaResolverSettings } from "@/lib/state/schema-resolver-settings"
+import { useStore } from "zustand"
+import {
+    DEFAULT_KNOWN_SCHEMAS,
+    KnownSchema,
+    useSchemaResolverSettings
+} from "@/lib/state/schema-resolver-settings"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -25,6 +29,15 @@ import HelpTooltip from "@/components/help-tooltip"
 import { RO_CRATE_VERSION } from "@/lib/constants"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+const SCHEMA_TABS = [
+    { value: "all", label: "All" },
+    { value: "builtin", label: "Built-in" },
+    { value: "custom", label: "Custom" }
+] as const
+
+type SchemaFilter = (typeof SCHEMA_TABS)[number]["value"]
 
 export function SchemaSettingsPage() {
     const registeredSchemas = useStore(useSchemaResolverSettings, (s) => s.knownSchemas)
@@ -40,36 +53,45 @@ export function SchemaSettingsPage() {
         (s) => s.setAllowUnknownSchemas
     )
 
-    const [newSchemaID, setNewSchemaID] = useState("")
+    const [schemaFilter, setSchemaFilter] = useState<SchemaFilter>("all")
     const [newSchemaDisplayName, setNewSchemaDisplayName] = useState("")
 
     const canCreateNewSchema = useMemo(() => {
-        return newSchemaID.trim() !== "" && newSchemaDisplayName.trim() !== ""
-    }, [newSchemaDisplayName, newSchemaID])
+        return newSchemaDisplayName.trim() !== ""
+    }, [newSchemaDisplayName])
 
     const createNewSchema = useCallback(() => {
         addSchema({
-            id: newSchemaID.trim(),
             displayName: newSchemaDisplayName.trim(),
             url: "",
             overrideUrl: "",
             matchesUrls: [""],
-            restrictTo: [
-                RO_CRATE_VERSION.V1_3_0,
-                RO_CRATE_VERSION.V1_2_0,
-                RO_CRATE_VERSION.V1_1_3
-            ]
+            restrictTo: [RO_CRATE_VERSION.V1_3_0, RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_1_3],
+            builtIn: false
         })
-        setNewSchemaID("")
         setNewSchemaDisplayName("")
-    }, [addSchema, newSchemaDisplayName, newSchemaID])
+        setSchemaFilter("custom")
+    }, [addSchema, newSchemaDisplayName])
 
-    const newSchemaIDAlreadyTaken = useMemo(() => {
+    const newSchemaDisplayNameAlreadyTaken = useMemo(() => {
         return (
-            registeredSchemas.find((s) => s.id === newSchemaID) !== undefined ||
-            registeredSchemas.find((s) => s.id === newSchemaID.trim()) !== undefined
+            registeredSchemas.find((s) => s.displayName === newSchemaDisplayName.trim()) !==
+            undefined
         )
-    }, [newSchemaID, registeredSchemas])
+    }, [newSchemaDisplayName, registeredSchemas])
+
+    const filteredSchemas = useMemo(() => {
+        return registeredSchemas.filter((schema) => {
+            switch (schemaFilter) {
+                case "builtin":
+                    return schema.builtIn
+                case "custom":
+                    return !schema.builtIn
+                default:
+                    return true
+            }
+        })
+    }, [schemaFilter, registeredSchemas])
 
     return (
         <div className={"flex flex-col max-h-full"}>
@@ -110,11 +132,30 @@ export function SchemaSettingsPage() {
                 </div>
             </div>
 
-            <div className="overflow-auto min-h-0 shrink my-2">
-                {registeredSchemas.map((name) => (
-                    <RegisteredSchemaDisplay key={name.id} schema={name} />
+            <Tabs
+                className="min-h-0 flex-1"
+                value={schemaFilter}
+                onValueChange={(value) => setSchemaFilter(value as SchemaFilter)}
+            >
+                <TabsList>
+                    {SCHEMA_TABS.map((tab) => (
+                        <TabsTrigger key={tab.value} value={tab.value}>
+                            {tab.label}
+                        </TabsTrigger>
+                    ))}
+                </TabsList>
+                {SCHEMA_TABS.map((tab) => (
+                    <TabsContent
+                        key={tab.value}
+                        value={tab.value}
+                        className="min-h-0 overflow-auto pt-2"
+                    >
+                        {filteredSchemas.map((name) => (
+                            <RegisteredSchemaDisplay key={name.displayName} schema={name} />
+                        ))}
+                    </TabsContent>
                 ))}
-            </div>
+            </Tabs>
 
             <div className="flex justify-end">
                 <Popover>
@@ -128,40 +169,29 @@ export function SchemaSettingsPage() {
                         <div className="font-bold">New Schema</div>
 
                         <div>
-                            <div className="text-sm">
-                                Identifier{" "}
-                                <HelpTooltip>
-                                    Must be unique, but can be any value. Does not have to be
-                                    related to the schema name or the representation in the crate
-                                    context.
+                            <div className="text-sm flex items-center gap-1">
+                                <Label htmlFor={"new-schema-name"}>Display Name</Label>
+                                <HelpTooltip className="mb-2">
+                                    How the schema will appear in NovaCrate. Must be unique and not
+                                    be in use already.
                                 </HelpTooltip>
                             </div>
                             <Input
-                                value={newSchemaID}
-                                onChange={(event) => setNewSchemaID(event.target.value)}
-                            />
-                            {newSchemaIDAlreadyTaken && (
-                                <div className="text-xs text-error mt-1">
-                                    This Identifier is already in use
-                                </div>
-                            )}
-                        </div>
-
-                        <div>
-                            <div className="text-sm">
-                                Display Name
-                                <HelpTooltip>How the schema will appear in NovaCrate.</HelpTooltip>
-                            </div>
-                            <Input
+                                id={"new-schema-name"}
                                 value={newSchemaDisplayName}
                                 onChange={(event) => setNewSchemaDisplayName(event.target.value)}
                             />
+                            {newSchemaDisplayNameAlreadyTaken && (
+                                <div className="text-xs text-error mt-1">
+                                    This Display Name is already in use
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex justify-end">
                             <Button
                                 onClick={createNewSchema}
-                                disabled={!canCreateNewSchema || newSchemaIDAlreadyTaken}
+                                disabled={!canCreateNewSchema || newSchemaDisplayNameAlreadyTaken}
                             >
                                 Done
                             </Button>
@@ -176,6 +206,7 @@ export function SchemaSettingsPage() {
 function RegisteredSchemaDisplay({ schema }: { schema: KnownSchema }) {
     const deleteSchema = useStore(useSchemaResolverSettings, (s) => s.deleteSchema)
     const updateSchema = useStore(useSchemaResolverSettings, (s) => s.updateSchema)
+    const resetSchemaToDefault = useStore(useSchemaResolverSettings, (s) => s.resetSchemaToDefault)
     const registeredSchemas = useStore(useSchemaResolverSettings, (s) => s.knownSchemas)
 
     const [matchesPrefixes, setMatchesPrefixes] = useState(schema.matchesUrls)
@@ -190,8 +221,12 @@ function RegisteredSchemaDisplay({ schema }: { schema: KnownSchema }) {
         schema.restrictTo.includes(RO_CRATE_VERSION.V1_1_3)
     )
 
-    const [newID, setNewID] = useState(schema.id)
     const [newName, setNewName] = useState(schema.displayName)
+
+    const defaultSchema = useMemo(
+        () => DEFAULT_KNOWN_SCHEMAS.find((d) => d.displayName === schema.displayName),
+        [schema.displayName]
+    )
 
     const schemaWorker = useContext(SchemaWorker)
     const [schemaLoading, setSchemaLoading] = useState(false)
@@ -203,29 +238,29 @@ function RegisteredSchemaDisplay({ schema }: { schema: KnownSchema }) {
 
     const getSchemaStatus = useCallback(async () => {
         const status = await schemaWorker.worker.executeUncached("getWorkerStatus")
-        if (status.schemaStatus.loadedSchemas.has(schema.id)) {
+        if (status.schemaStatus.loadedSchemas.has(schema.displayName)) {
             setSchemaStatus("loaded")
             setSchemaError(undefined)
-            setSchemaInfos(status.schemaStatus.loadedSchemas.get(schema.id))
-        } else if (status.schemaStatus.schemaIssues.get(schema.id)) {
+            setSchemaInfos(status.schemaStatus.loadedSchemas.get(schema.displayName))
+        } else if (status.schemaStatus.schemaIssues.get(schema.displayName)) {
             setSchemaStatus("error")
-            setSchemaError(status.schemaStatus.schemaIssues.get(schema.id))
+            setSchemaError(status.schemaStatus.schemaIssues.get(schema.displayName))
             setSchemaInfos(undefined)
         } else {
             setSchemaStatus("not loaded")
             setSchemaError(undefined)
             setSchemaInfos(undefined)
         }
-    }, [schema.id, schemaWorker.worker])
+    }, [schema.displayName, schemaWorker.worker])
 
     const forceSchemaLoad = useCallback(async () => {
         setSchemaLoading(true)
         setSchemaError(undefined)
-        await schemaWorker.worker.executeUncached("unloadSchema", schema.id)
-        await schemaWorker.worker.executeUncached("forceSchemaLoad", schema.id)
+        await schemaWorker.worker.executeUncached("unloadSchema", schema.displayName)
+        await schemaWorker.worker.executeUncached("forceSchemaLoad", schema.displayName)
         setSchemaLoading(false)
         getSchemaStatus().then()
-    }, [getSchemaStatus, schema.id, schemaWorker.worker])
+    }, [getSchemaStatus, schema.displayName, schemaWorker.worker])
 
     const onMatchesPrefixesChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>, i: number) => {
@@ -249,8 +284,8 @@ function RegisteredSchemaDisplay({ schema }: { schema: KnownSchema }) {
     }, [matchesPrefixes.length])
 
     const deleteSelf = useCallback(() => {
-        deleteSchema(schema.id)
-    }, [deleteSchema, schema.id])
+        deleteSchema(schema.displayName)
+    }, [deleteSchema, schema.displayName])
 
     const changedRestrictTo = useMemo(() => {
         const restrictTo: RO_CRATE_VERSION[] = []
@@ -261,7 +296,7 @@ function RegisteredSchemaDisplay({ schema }: { schema: KnownSchema }) {
     }, [activeOnROCrateV1_1_3, activeOnROCrateV1_2_0, activeOnROCrateV1_3_0])
 
     const saveSelf = useCallback(() => {
-        updateSchema(schema.id, {
+        updateSchema(schema.displayName, {
             ...schema,
             overrideUrl: downloadURL.trim(),
             matchesUrls: matchesPrefixes.map((s) => s.trim()),
@@ -278,21 +313,32 @@ function RegisteredSchemaDisplay({ schema }: { schema: KnownSchema }) {
         setActiveOnROCrateV1_3_0(schema.restrictTo.includes(RO_CRATE_VERSION.V1_3_0))
     }, [schema.matchesUrls, schema.overrideUrl, schema.restrictTo])
 
-    const changeName = useCallback(() => {
-        updateSchema(schema.id, {
-            ...schema,
-            displayName: newName.trim(),
-            id: newID.trim()
-        })
-    }, [newID, newName, schema, updateSchema])
+    const resetSelf = useCallback(() => {
+        if (!defaultSchema) return
+        resetSchemaToDefault(schema.displayName)
+        setDownloadURL(defaultSchema.overrideUrl)
+        setMatchesPrefixes(defaultSchema.matchesUrls)
+        setActiveOnROCrateV1_1_3(defaultSchema.restrictTo.includes(RO_CRATE_VERSION.V1_1_3))
+        setActiveOnROCrateV1_2_0(defaultSchema.restrictTo.includes(RO_CRATE_VERSION.V1_2_0))
+        setActiveOnROCrateV1_3_0(defaultSchema.restrictTo.includes(RO_CRATE_VERSION.V1_3_0))
+    }, [defaultSchema, resetSchemaToDefault, schema.displayName])
 
-    const newIDAlreadyTaken = useMemo(() => {
+    const changeName = useCallback(() => {
+        updateSchema(schema.displayName, {
+            ...schema,
+            displayName: newName.trim()
+        })
+    }, [newName, schema, updateSchema])
+
+    const newNameAlreadyTaken = useMemo(() => {
+        const trimmed = newName.trim()
         return (
-            (registeredSchemas.find((s) => s.id === newID) !== undefined ||
-                registeredSchemas.find((s) => s.id === newID.trim()) !== undefined) &&
-            newID !== schema.id
+            trimmed !== "" &&
+            registeredSchemas.some(
+                (s) => s.displayName === trimmed && s.displayName !== schema.displayName
+            )
         )
-    }, [newID, registeredSchemas, schema.id])
+    }, [newName, registeredSchemas, schema.displayName])
 
     const hasChanges = useMemo(() => {
         return (
@@ -314,12 +360,14 @@ function RegisteredSchemaDisplay({ schema }: { schema: KnownSchema }) {
         <div className="p-4 border rounded mb-4">
             <div className={"mb-2 flex items-center"}>
                 <span className="font-bold">{schema.displayName}</span>{" "}
-                <span className="text-sm ml-2 mr-2 bg-muted p-1 rounded font-mono">
-                    {schema.id}
-                </span>
+                {schema.builtIn && (
+                    <Badge className="ml-1" variant="secondary">
+                        Built-in
+                    </Badge>
+                )}
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" className="ml-1" size="sm">
                             <PencilIcon className="size-3" />
                         </Button>
                     </PopoverTrigger>
@@ -327,22 +375,31 @@ function RegisteredSchemaDisplay({ schema }: { schema: KnownSchema }) {
                         <div className="font-bold">Change Name</div>
 
                         <div>
-                            <div className="text-sm">Identifier</div>
-                            <Input value={newID} onChange={(e) => setNewID(e.target.value)} />
-                            {newIDAlreadyTaken && (
+                            <div className="text-sm flex gap-1 items-center">
+                                <Label htmlFor={"change-schema-name" + schema.displayName}>
+                                    Display Name
+                                </Label>
+                                <HelpTooltip className="mb-2">
+                                    Must be unique and not be in use already.
+                                </HelpTooltip>
+                            </div>
+                            <Input
+                                id={"change-schema-name" + schema.displayName}
+                                value={newName}
+                                onChange={(e) => setNewName(e.target.value)}
+                            />
+                            {newNameAlreadyTaken && (
                                 <div className="text-xs text-error mt-1">
-                                    This Identifier is already in use
+                                    This Display Name is already in use
                                 </div>
                             )}
                         </div>
 
-                        <div>
-                            <div className="text-sm">Display Name</div>
-                            <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
-                        </div>
-
                         <div className="flex justify-end">
-                            <Button onClick={changeName} disabled={newIDAlreadyTaken}>
+                            <Button
+                                onClick={changeName}
+                                disabled={newName.trim() === "" || newNameAlreadyTaken}
+                            >
                                 Done
                             </Button>
                         </div>
@@ -365,6 +422,31 @@ function RegisteredSchemaDisplay({ schema }: { schema: KnownSchema }) {
                         </div>
                     </PopoverContent>
                 </Popover>
+                {schema.builtIn && (
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="ml-1"
+                                title="Reset to factory settings"
+                            >
+                                <RotateCw className="size-3" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                            <div className="text-sm mb-4">
+                                Reset this schema to the factory default settings? This replaces all
+                                of your changes.
+                            </div>
+                            <div className="flex justify-center">
+                                <Button onClick={resetSelf} variant="outline">
+                                    Reset to Factory
+                                </Button>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                )}
             </div>
 
             <div className={"grid grid-cols-2 gap-4"}>
@@ -436,9 +518,12 @@ function RegisteredSchemaDisplay({ schema }: { schema: KnownSchema }) {
                             onCheckedChange={(s) =>
                                 setActiveOnROCrateV1_3_0(s === "indeterminate" ? true : s)
                             }
-                            id={`ro-crate-v1.3.0-${schema.id}`}
+                            id={`ro-crate-v1.3.0-${schema.displayName}`}
                         />
-                        <Label className="mb-0 pb-0" htmlFor={`ro-crate-v1.3.0-${schema.id}`}>
+                        <Label
+                            className="mb-0 pb-0"
+                            htmlFor={`ro-crate-v1.3.0-${schema.displayName}`}
+                        >
                             RO-Crate v1.3.0
                         </Label>
                     </div>
@@ -448,9 +533,12 @@ function RegisteredSchemaDisplay({ schema }: { schema: KnownSchema }) {
                             onCheckedChange={(s) =>
                                 setActiveOnROCrateV1_2_0(s === "indeterminate" ? true : s)
                             }
-                            id={`ro-crate-v1.2.0-${schema.id}`}
+                            id={`ro-crate-v1.2.0-${schema.displayName}`}
                         />
-                        <Label className="mb-0 pb-0" htmlFor={`ro-crate-v1.2.0-${schema.id}`}>
+                        <Label
+                            className="mb-0 pb-0"
+                            htmlFor={`ro-crate-v1.2.0-${schema.displayName}`}
+                        >
                             RO-Crate v1.2.0
                         </Label>
                     </div>
@@ -460,9 +548,12 @@ function RegisteredSchemaDisplay({ schema }: { schema: KnownSchema }) {
                             onCheckedChange={(s) =>
                                 setActiveOnROCrateV1_1_3(s === "indeterminate" ? true : s)
                             }
-                            id={`ro-crate-v1.1.3-${schema.id}`}
+                            id={`ro-crate-v1.1.3-${schema.displayName}`}
                         />
-                        <Label className="mb-0 pb-0" htmlFor={`ro-crate-v1.1.3-${schema.id}`}>
+                        <Label
+                            className="mb-0 pb-0"
+                            htmlFor={`ro-crate-v1.1.3-${schema.displayName}`}
+                        >
                             RO-Crate v1.1.3
                         </Label>
                     </div>

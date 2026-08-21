@@ -8,14 +8,14 @@ import { KnownSchema, SchemaResolverSettingsData } from "@/lib/state/schema-reso
 
 const SPEC = RO_CRATE_VERSION.V1_2_0
 
-function knownSchema(id: string, url: string): KnownSchema {
+function knownSchema(id: string, url: string, matchesPrefix?: string[]): KnownSchema {
     return {
-        id,
         displayName: id,
-        matchesUrls: ["https://vocab.example/"],
+        matchesUrls: matchesPrefix || ["https://vocab.example/"],
         url,
         overrideUrl: "",
-        restrictTo: [SPEC]
+        restrictTo: [SPEC],
+        builtIn: false
     }
 }
 
@@ -50,9 +50,7 @@ function mockFetchForUrls(map: Record<string, { status?: number; body?: string }
     return global.fetch as jest.Mock
 }
 
-function makeResolver(
-    data: Partial<SchemaResolverSettingsData> = {}
-): {
+function makeResolver(data: Partial<SchemaResolverSettingsData> = {}): {
     resolver: SchemaResolver
     knownSchemas: KnownSchema[]
 } {
@@ -107,6 +105,24 @@ describe("autoload with known schemas that have a download URL", () => {
         const result = await resolver.autoload("https://vocab.example/Person", [])
 
         expect(result.get("vocab")?.schema).toBeDefined()
+        expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+
+    it("deduplicates multiple requests to the same schema", async () => {
+        const schema = knownSchema("vocab", "https://vocab.example/all.jsonld")
+        const { resolver } = makeResolver({ knownSchemas: [schema] })
+        const terms = ["https://vocab.example/Person", "https://vocab.example/Organization"]
+        const fetchMock = mockFetchForUrls({
+            "https://vocab.example/all.jsonld": {
+                body: jsonSchemaFor(terms)
+            }
+        })
+
+        const r1 = await resolver.autoload(terms[0], [])
+        const r2 = await resolver.autoload(terms[1], [])
+
+        expect(r1.get("vocab")?.schema).toBeDefined()
+        expect(r2.get("vocab")?.schema).toBeDefined()
         expect(fetchMock).toHaveBeenCalledTimes(1)
     })
 })
@@ -192,7 +208,7 @@ describe("autoload with unknown schemas", () => {
         })
 
         const promise = resolver.autoload("http://vocab.example/Person", [])
-        await jest.advanceTimersByTimeAsync(100)
+        await jest.advanceTimersByTimeAsync(200)
         await promise
 
         const requestedUrl =
@@ -212,6 +228,38 @@ describe("loadAll", () => {
 
         const all = resolver.loadAll([])
 
-        expect(all.map((entry) => entry.schema.id)).toEqual(["with-url"])
+        expect(all.map((entry) => entry.schema.displayName)).toEqual(["with-url"])
+    })
+})
+
+describe("autoload with terms that match both schemas with a download URL and without", () => {
+    it("only loads schemas with URLs if any exist", async () => {
+        const withUrl = knownSchema("with-url", "https://vocab.example/all.jsonld")
+        const withoutUrl = knownSchema("without-url", "", [""])
+        const { resolver } = makeResolver({ knownSchemas: [withUrl, withoutUrl] })
+        const terms = [
+            "https://vocab.example/Person",
+            "https://vocab.example/Organization",
+            "https://vocab.example/name"
+        ]
+        const fetchMock = mockFetchForUrls({
+            "https://vocab.example/all.jsonld": { body: jsonSchemaFor(terms) }
+        })
+
+        const pending = [
+            resolver.autoload(terms[0], []),
+            resolver.autoload(terms[1], []),
+            resolver.autoload(terms[2], [])
+        ]
+
+        await jest.advanceTimersByTimeAsync(100)
+        const [r1, r2, r3] = await Promise.all(pending)
+
+        for (const result of [r1, r2, r3]) {
+            console.log(result)
+            expect(result.get("with-url")?.schema).toBeDefined()
+        }
+        expect(fetchMock).toHaveBeenCalledTimes(1)
+        expect(fetchMock.mock.calls[0][0]).toContain(encodeURIComponent("https://vocab.example/"))
     })
 })

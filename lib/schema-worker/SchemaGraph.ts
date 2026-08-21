@@ -72,9 +72,9 @@ export class SchemaGraph {
             try {
                 const data = await result.data
                 if (data === DedupedSymbol) continue
-                this.addSchemaFromFile(result.schema.id, data)
+                this.addSchemaFromFile(result.schema.displayName, data)
             } catch (err) {
-                this.schemaIssues.set(result.schema.id, err)
+                this.schemaIssues.set(result.schema.displayName, err)
             }
         }
     }
