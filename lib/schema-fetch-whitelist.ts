@@ -6,9 +6,22 @@
  * glob patterns matched against the full URL (case-insensitively). When the
  * variable is not set, a secure default allowlist covering the built-in
  * registered schemas is used, so existing deployments keep working.
+ *
+ * Special values:
+ * - unset: the secure default allowlist is used
+ * - empty string: no URL is allowed (all external fetches are rejected)
+ * - `all`: every URL is allowed, subject to the URL shape checks in
+ *   `validateSchemaUrl`
  */
 
 export const SCHEMA_FETCH_ALLOWED_URLS_ENV = "SCHEMA_FETCH_ALLOWED_URLS"
+
+/**
+ * Special allowlist value that permits every schema URL. The URL shape checks
+ * in `validateSchemaUrl` (https, no credentials, no localhost, no IP
+ * literals) still apply.
+ */
+export const SCHEMA_FETCH_ALLOW_ALL = "all"
 
 /**
  * Allowlist used when `SCHEMA_FETCH_ALLOWED_URLS` is not set. Covers the
@@ -51,15 +64,23 @@ export function globToRegExp(glob: string): RegExp {
 
 /**
  * Returns the effective allowlist globs, split and trimmed. Falls back to the
- * secure default allowlist when the environment variable is not set.
+ * secure default allowlist when the environment variable is not set, and
+ * returns an empty allowlist (allow nothing) when it is explicitly empty.
  */
 export function getSchemaFetchAllowedGlobs(): string[] {
     const raw = process.env[SCHEMA_FETCH_ALLOWED_URLS_ENV]
-    return splitGlobs(raw?.trim() ? raw : DEFAULT_SCHEMA_FETCH_ALLOWED_URLS)
+    if (raw === undefined) return splitGlobs(DEFAULT_SCHEMA_FETCH_ALLOWED_URLS)
+
+    const trimmed = raw.trim()
+    if (trimmed === "") return []
+    return splitGlobs(trimmed)
 }
 
 export function isSchemaFetchUrlAllowed(url: URL): boolean {
-    return getSchemaFetchAllowedGlobs().some((glob) => globToRegExp(glob).test(url.toString()))
+    return getSchemaFetchAllowedGlobs().some(
+        (glob) =>
+            glob.toLowerCase() === SCHEMA_FETCH_ALLOW_ALL || globToRegExp(glob).test(url.toString())
+    )
 }
 
 /**

@@ -77,6 +77,16 @@ describe("getSchemaFetchAllowedGlobs", () => {
             "https://example.com/**"
         ])
     })
+
+    it("returns an empty allowlist when explicitly set to an empty string", () => {
+        setAllowedSchemaUrls("")
+        expect(getSchemaFetchAllowedGlobs()).toEqual([])
+    })
+
+    it("returns an empty allowlist for whitespace-only values", () => {
+        setAllowedSchemaUrls("   ")
+        expect(getSchemaFetchAllowedGlobs()).toEqual([])
+    })
 })
 
 describe("isSchemaFetchUrlAllowed", () => {
@@ -98,6 +108,26 @@ describe("isSchemaFetchUrlAllowed", () => {
     it("rejects URLs that match no glob", () => {
         expect(isSchemaFetchUrlAllowed(new URL("https://evil.example/x"))).toBe(false)
         expect(isSchemaFetchUrlAllowed(new URL("https://www.example.org/other/x"))).toBe(false)
+    })
+
+    it("allows every URL when the allowlist is set to 'all'", () => {
+        setAllowedSchemaUrls("all")
+        expect(isSchemaFetchUrlAllowed(new URL("https://schema.org/Person"))).toBe(true)
+        expect(isSchemaFetchUrlAllowed(new URL("https://evil.example/x"))).toBe(true)
+        expect(isSchemaFetchUrlAllowed(new URL("https://example.com/a/b.jsonld"))).toBe(true)
+    })
+
+    it("treats the 'all' value case-insensitively", () => {
+        setAllowedSchemaUrls("ALL")
+        expect(isSchemaFetchUrlAllowed(new URL("https://evil.example/x"))).toBe(true)
+    })
+
+    it("rejects every URL when the allowlist is explicitly empty", () => {
+        setAllowedSchemaUrls("")
+        expect(isSchemaFetchUrlAllowed(new URL("https://schema.org/Person"))).toBe(false)
+        expect(isSchemaFetchUrlAllowed(new URL("https://www.example.org/terms/onto.jsonld"))).toBe(
+            false
+        )
     })
 })
 

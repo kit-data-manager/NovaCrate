@@ -189,6 +189,31 @@ describe("schema fetch API", () => {
             expect(body.error).toContain("not allowed on this deployment")
         })
 
+        it("rejects every URL when the allowlist is empty", async () => {
+            setAllowedSchemaUrls("")
+
+            const response = await GET(schemaRequest("https://schema.org/NewsArticle"))
+
+            expect(response.status).toBe(403)
+        })
+
+        it("fetches any URL when the allowlist is set to 'all'", async () => {
+            setAllowedSchemaUrls("all")
+            const fetchMock = mockFetch(
+                new Response('{"@context":{},"@graph":[]}', {
+                    status: 200,
+                    headers: { "Content-Type": "application/ld+json" }
+                })
+            )
+
+            const response = await GET(schemaRequest("https://evil.example/terms.ttl"))
+            const body = await response.json()
+
+            expect(response.status).toBe(200)
+            expect(body.format).toBe("jsonld")
+            expect(fetchMock).toHaveBeenCalledTimes(1)
+        })
+
         it("rejects URLs not covered by the default allowlist when unset", async () => {
             setAllowedSchemaUrls(undefined)
 

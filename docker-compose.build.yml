@@ -4,6 +4,6 @@ services:
       context: .
 #      args:
 #        IFRAME_TARGET_ORIGIN: https://novacrate.datamanager.kit.edu
-#        AI_ASSISTANT_ENABLED: true
+#        AI_ASSISTANT_ENABLED: false
 #        AI_ASSISTANT_BASE_URL_REGEX: "^(?:ki-toolbox\\.scc\\.kit\\.edu|(?!(?:[a-z0-9-]+\\.)*kit\\.edu$)(?:[a-z0-9-]+\\.)*[a-z0-9-]+)$"
-#        SCHEMA_FETCH_ALLOWED_URLS: "https://schema.org/** https://bioschemas.org/** https://www.dublincore.org/** https://www.w3.org/TR/dx-prof/** https://opengeospatial.github.io/** http://pcdm.org/models#**"
+#        SCHEMA_FETCH_ALLOWED_URLS: "" # Leave as empty string to use recommended defaults
