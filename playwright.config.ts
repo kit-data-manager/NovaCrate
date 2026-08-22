@@ -24,11 +24,9 @@ export default defineConfig({
             use: { ...devices["Desktop Chrome"] }
         }
     ],
-    webServer: process.env.CI
-        ? {
-              command: `npm run test:serve`,
-              url: "http://localhost:3000/",
-              timeout: 120 * 1000
-          }
-        : undefined
+    webServer: {
+        command: `npm run serve`,
+        url: "http://localhost:3000/",
+        timeout: 120 * 1000
+    }
 })
