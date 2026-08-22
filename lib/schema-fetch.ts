@@ -2,6 +2,7 @@ import { promises as fs } from "fs"
 import path from "path"
 import type { FetchFailure, SchemaFetchResult, SchemaFormat } from "@/lib/schema-worker/types"
 import { assertSchemaFetchUrlAllowed } from "@/lib/schema-fetch-whitelist"
+import { SchemaFetchCache } from "@/lib/schema-fetch-cache"
 
 export type { FetchFailure, SchemaFetchResult }
 
@@ -9,6 +10,9 @@ export const SCHEMA_FETCH_CACHE_CONTROL = "public, max-age=86400, s-maxage=86400
 export const SCHEMA_FETCH_REVALIDATE_SECONDS = 86400
 
 const MAX_SCHEMA_BYTES = 10 * 1024 * 1024
+
+/** Local cache for externally fetched schemas (24h TTL, at most 100 entries). */
+export const schemaFetchCache = new SchemaFetchCache({ maxBytes: MAX_SCHEMA_BYTES })
 
 interface FetchAttempt {
     accept: string
@@ -56,6 +60,16 @@ export async function GET(req: Request) {
         )
     }
 
+    const cacheKey = url.toString()
+    const cached = schemaFetchCache.get(cacheKey)
+    if (cached) {
+        return Response.json(cached, {
+            headers: {
+                "Cache-Control": SCHEMA_FETCH_CACHE_CONTROL
+            }
+        })
+    }
+
     const result = await fetchSchemaWithNegotiation(url)
     if (!result.ok) {
         return Response.json(
@@ -66,6 +80,8 @@ export async function GET(req: Request) {
             { status: 502 }
         )
     }
+
+    schemaFetchCache.set(cacheKey, result.schema)
 
     return Response.json(result.schema, {
         headers: {

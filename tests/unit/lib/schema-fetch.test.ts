@@ -2,7 +2,7 @@ jest.mock("next/cache", () => ({
     unstable_cache: (callback: unknown) => callback
 }))
 
-import { GET, SCHEMA_FETCH_CACHE_CONTROL, validateSchemaUrl } from "@/lib/schema-fetch"
+import { GET, SCHEMA_FETCH_CACHE_CONTROL, schemaFetchCache, validateSchemaUrl } from "@/lib/schema-fetch"
 
 const originalFetch = global.fetch
 const ORIGINAL_ALLOWED_URLS = process.env.SCHEMA_FETCH_ALLOWED_URLS
@@ -44,6 +44,7 @@ describe("schema fetch API", () => {
 
     afterEach(() => {
         global.fetch = originalFetch
+        schemaFetchCache.clear()
     })
 
     afterAll(() => {
@@ -215,6 +216,50 @@ describe("schema fetch API", () => {
             expect(response.status).toBe(200)
             expect(body.format).toBe("jsonld")
             expect(fetchMock).toHaveBeenCalledTimes(1)
+        })
+    })
+
+    describe("local schema cache", () => {
+        it("serves repeated fetches of the same URL from the cache", async () => {
+            const fetchMock = mockFetch(
+                new Response('{"@context":{},"@graph":[]}', {
+                    status: 200,
+                    headers: { "Content-Type": "application/ld+json" }
+                })
+            )
+
+            const first = await GET(schemaRequest("https://schema.example/terms.ttl"))
+            const second = await GET(schemaRequest("https://schema.example/terms.ttl"))
+            const body = await second.json()
+
+            expect(first.status).toBe(200)
+            expect(second.status).toBe(200)
+            expect(body).toMatchObject({
+                url: "https://schema.example/terms.ttl",
+                format: "jsonld",
+                content: '{"@context":{},"@graph":[]}'
+            })
+            expect(schemaFetchCache.get("https://schema.example/terms.ttl")).toBeDefined()
+            expect(fetchMock).toHaveBeenCalledTimes(1)
+        })
+
+        it("does not cache failed fetches", async () => {
+            mockFetch(
+                new Response("Not Found", { status: 404, statusText: "Not Found" }),
+                new Response("Not Found", { status: 404, statusText: "Not Found" })
+            )
+
+            const response = await GET(schemaRequest("https://schema.example/terms.ttl"))
+
+            expect(response.status).toBe(502)
+            expect(schemaFetchCache.get("https://schema.example/terms.ttl")).toBeNull()
+        })
+
+        it("does not cache bundled schemas", async () => {
+            const response = await GET(schemaRequest("schema/codemeta-3.0-terms.jsonld"))
+
+            expect(response.status).toBe(200)
+            expect(schemaFetchCache.size).toBe(0)
         })
     })
 
