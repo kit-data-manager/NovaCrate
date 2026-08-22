@@ -102,7 +102,7 @@ describe("autoload with known schemas that have a download URL", () => {
             }
         })
 
-        const result = await resolver.autoload("https://vocab.example/Person", [])
+        const result = await resolver.autoload("https://vocab.example/Person")
 
         expect(result.get("vocab")?.schema).toBeDefined()
         expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -118,8 +118,8 @@ describe("autoload with known schemas that have a download URL", () => {
             }
         })
 
-        const r1 = await resolver.autoload(terms[0], [])
-        const r2 = await resolver.autoload(terms[1], [])
+        const r1 = await resolver.autoload(terms[0])
+        const r2 = await resolver.autoload(terms[1])
 
         expect(r1.get("vocab")?.schema).toBeDefined()
         expect(r2.get("vocab")?.schema).toBeDefined()
@@ -141,9 +141,9 @@ describe("autoload with known schemas without a download URL", () => {
         })
 
         const pending = [
-            resolver.autoload(terms[0], []),
-            resolver.autoload(terms[1], []),
-            resolver.autoload(terms[2], [])
+            resolver.autoload(terms[0]),
+            resolver.autoload(terms[1]),
+            resolver.autoload(terms[2])
         ]
         await jest.advanceTimersByTimeAsync(100)
         const [r1, r2, r3] = await Promise.all(pending)
@@ -165,7 +165,7 @@ describe("autoload with known schemas without a download URL", () => {
             }
         })
 
-        const promise = resolver.autoload("https://vocab.example/Person", [])
+        const promise = resolver.autoload("https://vocab.example/Person")
         await jest.advanceTimersByTimeAsync(100)
         const result = await promise
 
@@ -182,7 +182,7 @@ describe("autoload with unknown schemas", () => {
             "https://vocab.example/": { body: jsonSchemaFor(terms) }
         })
 
-        const pending = [resolver.autoload(terms[0], []), resolver.autoload(terms[1], [])]
+        const pending = [resolver.autoload(terms[0]), resolver.autoload(terms[1])]
         await jest.advanceTimersByTimeAsync(100)
         const [r1, r2] = await Promise.all(pending)
 
@@ -195,7 +195,7 @@ describe("autoload with unknown schemas", () => {
         const { resolver } = makeResolver()
         const fetchMock = mockFetchForUrls({})
 
-        const result = await resolver.autoload("https://vocab.example/Person", [])
+        const result = await resolver.autoload("https://vocab.example/Person")
 
         expect(result.size).toBe(0)
         expect(fetchMock).not.toHaveBeenCalled()
@@ -207,7 +207,7 @@ describe("autoload with unknown schemas", () => {
             "https://vocab.example/": { body: jsonSchemaFor(["http://vocab.example/Person"]) }
         })
 
-        const promise = resolver.autoload("http://vocab.example/Person", [])
+        const promise = resolver.autoload("http://vocab.example/Person")
         await jest.advanceTimersByTimeAsync(200)
         await promise
 
@@ -226,7 +226,9 @@ describe("loadAll", () => {
         const withoutUrl = knownSchema("without-url", "")
         const { resolver } = makeResolver({ knownSchemas: [withUrl, withoutUrl] })
 
-        const all = resolver.loadAll([])
+        const all = resolver.loadAll()
+        // Drain the fetch promises; no server is mocked here, so they reject.
+        await Promise.allSettled(all.map((entry) => entry.data))
 
         expect(all.map((entry) => entry.schema.displayName)).toEqual(["with-url"])
     })
@@ -247,9 +249,9 @@ describe("autoload with terms that match both schemas with a download URL and wi
         })
 
         const pending = [
-            resolver.autoload(terms[0], []),
-            resolver.autoload(terms[1], []),
-            resolver.autoload(terms[2], [])
+            resolver.autoload(terms[0]),
+            resolver.autoload(terms[1]),
+            resolver.autoload(terms[2])
         ]
 
         await jest.advanceTimersByTimeAsync(100)

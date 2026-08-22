@@ -1,15 +1,10 @@
 "use client"
 
 import { ISchemaNode, SchemaNode } from "./SchemaNode"
-import { DedupedSymbol, SchemaResolver } from "./SchemaResolver"
+import { SchemaResolver } from "./SchemaResolver"
 import { SchemaFile } from "./types"
 
 // ! currently only works on rdf:Property and rdfs:Class but not on class/property instances
-
-export interface LoadedSchemaInfos {
-    contextEntries: number
-    nodes: number
-}
 
 export class SchemaGraph {
     private graph: Map<string, SchemaNode> = new Map<string, SchemaNode>()
@@ -18,8 +13,9 @@ export class SchemaGraph {
     // Maps schema id to node ids.
     private graphNodeSourceMap: Map<string, string[]> = new Map<string, string[]>()
 
-    private loadedSchemas: Map<string, LoadedSchemaInfos> = new Map()
-    private schemaIssues: Map<string, unknown> = new Map()
+    // Schema ids whose terms have already been merged into the graph, so
+    // addSchemaFromFile is only called once per schema id.
+    private loadedSchemaIds: Set<string> = new Set()
 
     constructor(private schemaResolver: SchemaResolver) {}
 
@@ -30,17 +26,11 @@ export class SchemaGraph {
             return firstAttempt
         } else {
             // Try autoloading required schemas to get this node
-            const result = await this.schemaResolver.autoload(
-                id,
-                this.getExcludedSchemasForAutoload()
-            )
+            const result = await this.schemaResolver.autoload(id)
 
             for (const [key, schema] of result) {
                 if (schema.schema) {
                     this.addSchemaFromFile(key, schema.schema)
-                } else {
-                    console.error("Encountered error while loading schema:", key, schema.error)
-                    this.schemaIssues.set(key, schema.error)
                 }
             }
 
@@ -49,32 +39,20 @@ export class SchemaGraph {
         }
     }
 
-    /**
-     * Exclude all already loaded and all failed schemas from the next autoload
-     * @private
-     */
-    private getExcludedSchemasForAutoload() {
-        return [...this.loadedSchemas.keys(), ...this.schemaIssues.keys()]
-    }
-
     async forceSchemaLoad(schemaId: string) {
-        try {
-            const schema = await this.schemaResolver.forceLoad(schemaId)
-            if (schema) this.addSchemaFromFile(schemaId, schema)
-        } catch (err) {
-            this.schemaIssues.set(schemaId, err)
-        }
+        const schema = await this.schemaResolver.forceLoad(schemaId)
+        if (schema) this.addSchemaFromFile(schemaId, schema)
     }
 
     async loadAllSchemas() {
-        const results = this.schemaResolver.loadAll(this.getExcludedSchemasForAutoload())
+        const results = this.schemaResolver.loadAll()
         for (const result of results) {
             try {
                 const data = await result.data
-                if (data === DedupedSymbol) continue
-                this.addSchemaFromFile(result.schema.displayName, data)
+                if (data) this.addSchemaFromFile(result.schema.displayName, data)
             } catch (err) {
-                this.schemaIssues.set(result.schema.displayName, err)
+                // Fallback path in case the nested promise handling goes wrong
+                this.schemaResolver.recordSchemaFailure(result.schema.displayName, err)
             }
         }
     }
@@ -220,8 +198,8 @@ export class SchemaGraph {
     }
 
     addSchemaFromFile(id: string, schema: SchemaFile) {
-        let loadedContextEntries = 0
-        let loadedNodes = 0
+        if (this.loadedSchemaIds.has(id)) return
+        this.loadedSchemaIds.add(id)
 
         const sourceMapSchemaNodes: string[] = []
         const context = new Map<string, string>()
@@ -230,8 +208,6 @@ export class SchemaGraph {
             for (const [key, value] of Object.entries(schema["@context"])) {
                 if (typeof value === "string") {
                     context.set(key, value)
-
-                    loadedContextEntries += 1
                 }
             }
         }
@@ -242,14 +218,9 @@ export class SchemaGraph {
                 this.addNode(schemaNode)
 
                 sourceMapSchemaNodes.push(schemaNode["@id"])
-                loadedNodes += 1
             }
         }
 
-        this.loadedSchemas.set(id, {
-            contextEntries: loadedContextEntries,
-            nodes: loadedNodes
-        })
         this.graphNodeSourceMap.set(id, sourceMapSchemaNodes)
     }
 
@@ -262,8 +233,8 @@ export class SchemaGraph {
             }
         }
 
-        this.loadedSchemas.delete(id)
-        this.schemaIssues.delete(id)
+        this.loadedSchemaIds.delete(id)
+        this.schemaResolver.removeSchemaState(id)
     }
 
     addNode(entry: SchemaNode) {
@@ -274,7 +245,10 @@ export class SchemaGraph {
      * For the user interface
      */
     getSchemaStatus() {
-        return { loadedSchemas: this.loadedSchemas, schemaIssues: this.schemaIssues }
+        return {
+            loadedSchemas: this.schemaResolver.getLoadedSchemaStatus(),
+            schemaIssues: this.schemaResolver.getSchemaIssues()
+        }
     }
 }
 

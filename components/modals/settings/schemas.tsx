@@ -23,7 +23,7 @@ import { ChangeEvent, useCallback, useContext, useEffect, useMemo, useState } fr
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { Error } from "@/components/error"
-import { LoadedSchemaInfos } from "@/lib/schema-worker/SchemaGraph"
+import { LoadedSchemaInfos } from "@/lib/schema-worker/SchemaResolver"
 import { Badge } from "@/components/ui/badge"
 import HelpTooltip from "@/components/help-tooltip"
 import { RO_CRATE_VERSION } from "@/lib/constants"
@@ -486,8 +486,10 @@ function RegisteredSchemaDisplay({ schema }: { schema: KnownSchema }) {
                         Download URL{" "}
                         <HelpTooltip>
                             Endpoint that responds with a JSON-LD file or Turtle file, containing
-                            the schema. Requests will always be sent with &#34;Accept:
-                            application/ld+json&#34;. Leave empty to use the default download URL.
+                            the schema.{" "}
+                            {schema.url ? "Leave empty to use the default download URL." : ""} If
+                            one of the prefixes is a valid URL, you can leave this field empty to
+                            automatically fetch terms via their URL.
                         </HelpTooltip>
                     </div>
                     <Input

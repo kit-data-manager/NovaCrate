@@ -15,7 +15,9 @@ import { immer } from "zustand/middleware/immer"
 export interface KnownSchema {
     displayName: string
     matchesUrls: string[]
+    /** Only given for built-in schemas */
     url: string
+    /** User-defined URL, overrides {@link url} */
     overrideUrl: string
     restrictTo: RO_CRATE_VERSION[]
     /** True for schemas that ship with NovaCrate (factory defaults). */

@@ -7,3 +7,5 @@ GET http://localhost:3000/api/schemas/fetch?url=schema%2Fcodemeta-3.0-terms.json
 Accept: application/ld+json
 
 ###
+GET https://www.w3.org/ns/dx/prof
+Accept: application/ld+json

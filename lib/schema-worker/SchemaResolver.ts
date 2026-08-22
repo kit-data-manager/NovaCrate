@@ -9,14 +9,21 @@ import {
     SchemaResolverSettingsData
 } from "@/lib/state/schema-resolver-settings"
 
-export const DedupedSymbol = Symbol(
-    "return value for fetch operations that are deduped and therefore aborted"
-)
-type DedupedSymbol = typeof DedupedSymbol
 type UnknownSchema = string
 
 /** How long term fetches are collected before they are grouped by prefix and requested. */
 const TERM_FETCH_DEBOUNCE_MS = 100
+
+/** Node/context counts presented for a loaded schema in the user interface. */
+export interface LoadedSchemaInfos {
+    contextEntries: number
+    nodes: number
+}
+
+/** Everything the resolver keeps about a loaded schema. */
+interface LoadedSchemaEntry extends LoadedSchemaInfos {
+    schema: SchemaFile
+}
 
 /**
  * The URL base shared by terms of one vocabulary: everything up to and
@@ -61,16 +68,28 @@ export class SchemaResolver {
     private runningFetches: Map<string, Promise<SchemaFile>> = new Map()
     private spec: RO_CRATE_VERSION | null = null
 
+    // Schemas whose terms have been resolved and can be served without a new
+    // fetch. Keys are the schema display name for URL-based schemas, the
+    // vocabulary base URL for term-resolved vocabularies, and the full term
+    // URL for per-term fallback loads.
+    private loadedSchemas: Map<string, LoadedSchemaEntry> = new Map()
+
+    // Schemas that were requested but could not be resolved.
+    private schemaIssues: Map<string, unknown> = new Map()
+
+    private isExcluded(id: string): boolean {
+        return this.loadedSchemas.has(id) || this.schemaIssues.has(id)
+    }
+
     // Term-fetch batching: terms of the same vocabulary are collected for a
     // short debounce window and then fetched once by base URL.
     private termQueue: Map<string, TermRequest[]> = new Map()
     private termFlushTimer: ReturnType<typeof setTimeout> | null = null
     private runningTermFetches: Map<string, Promise<void>> = new Map()
-    private loadedTermBases: Set<string> = new Set()
 
     constructor(private settings: SchemaResolverSettingsData) {}
 
-    async autoload(nodeId: string, exclude: string[]) {
+    async autoload(nodeId: string) {
         // Map key is schema id or, for term fetches, the vocabulary base/term.
         const loadedSchemas: Map<string, { schema?: SchemaFile; error?: unknown }> = new Map()
 
@@ -85,15 +104,25 @@ export class SchemaResolver {
 
         let successfulSchemaFetches = 0
         for (const registeredSchema of knownWithUrl) {
-            if (exclude.includes(registeredSchema.displayName)) continue
+            if (this.isExcluded(registeredSchema.displayName)) {
+                const alreadyLoaded = this.loadedSchemas.get(registeredSchema.displayName)
+                if (alreadyLoaded) {
+                    loadedSchemas.set(registeredSchema.displayName, {
+                        schema: alreadyLoaded.schema
+                    })
+                    successfulSchemaFetches++
+                }
+                continue
+            }
 
             try {
                 const schema = await this.fetchSchema(registeredSchema)
-                if (schema === DedupedSymbol) continue // schema is already being fetched elsewhere in parallel
+                this.markLoaded(registeredSchema.displayName, schema)
                 loadedSchemas.set(registeredSchema.displayName, { schema })
                 successfulSchemaFetches++
             } catch (e) {
                 console.error(`Failed to get schema with key ${registeredSchema.displayName}:`, e)
+                this.recordSchemaFailure(registeredSchema.displayName, e)
                 loadedSchemas.set(registeredSchema.displayName, { error: e })
             }
         }
@@ -110,7 +139,7 @@ export class SchemaResolver {
         if (needsTermFetch) {
             const knownSchemaId =
                 knownWithoutUrl.length > 0 ? knownWithoutUrl[0].displayName : undefined
-            const outcome = await this.termFetch(nodeId, knownSchemaId, exclude)
+            const outcome = await this.termFetch(nodeId, knownSchemaId)
             if (outcome?.schema) {
                 loadedSchemas.set(outcome.key, { schema: outcome.schema })
             } else if (outcome?.error) {
@@ -123,12 +152,11 @@ export class SchemaResolver {
 
     private async termFetch(
         nodeId: string,
-        knownSchemaId: string | undefined,
-        exclude: string[]
+        knownSchemaId: string | undefined
     ): Promise<TermFetchOutcome | null> {
-        if (knownSchemaId !== undefined && exclude.includes(knownSchemaId)) return null
+        if (knownSchemaId !== undefined && this.isExcluded(knownSchemaId)) return null
         const base = getTermBase(nodeId)
-        if (this.loadedTermBases.has(base)) return null
+        if (this.loadedSchemas.has(base)) return null
 
         return new Promise<TermFetchOutcome | null>((resolve) => {
             let group = this.termQueue.get(base)
@@ -161,7 +189,7 @@ export class SchemaResolver {
         const running = this.runningTermFetches.get(base)
         if (running) {
             await running
-            if (this.loadedTermBases.has(base)) {
+            if (this.loadedSchemas.has(base)) {
                 for (const request of requests) request.resolve(null)
             } else {
                 // The previous attempt failed; retry for these late requests.
@@ -173,7 +201,7 @@ export class SchemaResolver {
     }
 
     private async resolveTermBase(base: string, requests: TermRequest[]) {
-        if (this.loadedTermBases.has(base)) {
+        if (this.loadedSchemas.has(base)) {
             for (const request of requests) request.resolve(null)
             return
         }
@@ -190,13 +218,7 @@ export class SchemaResolver {
     private async doFetchTerms(base: string, requests: TermRequest[]) {
         try {
             const schema = await this.fetchSchemaUrl(base)
-            if (schema === DedupedSymbol) {
-                // Another fetch of this exact base URL is in progress and will
-                // populate the graph; nothing to add here.
-                for (const request of requests) request.resolve(null)
-                return
-            }
-            this.loadedTermBases.add(base)
+            this.markLoaded(base, schema)
             for (const request of requests) request.resolve({ key: base, schema })
         } catch (e) {
             console.error(`Failed to fetch term base ${base}:`, e)
@@ -205,10 +227,10 @@ export class SchemaResolver {
                 requests.map(async (request) => {
                     try {
                         const schema = await this.fetchSchemaUrl(request.nodeId)
-                        request.resolve(
-                            schema === DedupedSymbol ? null : { key: request.nodeId, schema }
-                        )
+                        this.markLoaded(request.nodeId, schema)
+                        request.resolve({ key: request.nodeId, schema })
                     } catch (termError) {
+                        this.recordSchemaFailure(request.nodeId, termError)
                         request.resolve({ key: request.nodeId, error: termError })
                     }
                 })
@@ -255,58 +277,110 @@ export class SchemaResolver {
     async forceLoad(schemaId: string) {
         const schema = this.settings.knownSchemas.find((schema) => schema.displayName === schemaId)
         if (!schema) return
-        // Schemas without a download URL can only be loaded per term.
-        if (getEffectiveSchemaUrl(schema) === "") return
-        const fetched = await this.fetchSchema(schema)
-        if (fetched === DedupedSymbol) return
-        return fetched
+
+        try {
+            const fetched = await this.fetchSchema(schema)
+            if (fetched) this.markLoaded(schemaId, fetched)
+            return fetched
+        } catch (e) {
+            this.recordSchemaFailure(schemaId, e)
+            return undefined
+        }
     }
 
     /**
      * Returns fetch operations for all known schemas that have a download URL.
      * Schemas without a URL (term-resolved vocabularies) are loaded on demand.
      */
-    loadAll(exclude: string[]) {
-        const schemas = this.settings.knownSchemas
+    loadAll() {
+        return this.settings.knownSchemas
             .filter((schema) => getEffectiveSchemaUrl(schema) !== "")
-            .filter((schema) => !exclude.includes(schema.displayName))
+            .filter((schema) => !this.isExcluded(schema.displayName))
             .filter((schema) =>
                 this.spec
                     ? schema.restrictTo.includes(this.spec) || schema.restrictTo.length === 0
                     : true
             )
-        return schemas.map((schema) => ({
-            schema: schema,
-            data: this.fetchSchema(schema)
-        }))
+            .map((schema) => ({
+                schema: schema,
+                data: this.fetchSchema(schema)
+                    .then((fetched) => {
+                        this.markLoaded(schema.displayName, fetched)
+                        return fetched
+                    })
+                    .catch((e) => this.recordSchemaFailure(schema.displayName, e))
+            }))
     }
 
-    private async fetchSchema(
-        schema: KnownSchema | UnknownSchema
-    ): Promise<SchemaFile | DedupedSymbol> {
+    private async fetchSchema(schema: KnownSchema | UnknownSchema): Promise<SchemaFile> {
         if (typeof schema === "string" && !this.settings.allowUnknownSchemas) {
             throw new Error(
                 `No schema known for ${schema}. If you want to allow unknown schemas, allow them in the settings.`
             )
         }
 
-        const url = typeof schema === "string" ? schema : getEffectiveSchemaUrl(schema)
+        const url =
+            typeof schema === "string"
+                ? schema
+                : getEffectiveSchemaUrl(schema) ||
+                  schema.matchesUrls.find((prefix) => isValidUrl(prefix))
+        if (!url)
+            throw new Error(
+                "Could not determine the download URL of this schema. Please specify a valid download URL"
+            )
         return this.fetchSchemaUrl(url)
     }
 
-    private async fetchSchemaUrl(url: string): Promise<SchemaFile | DedupedSymbol> {
+    private async fetchSchemaUrl(url: string): Promise<SchemaFile> {
         const secureUrl = toSecureFetchUrl(url)
         const existing = this.runningFetches.get(secureUrl)
         if (existing) {
-            // After the existing fetch is done, return with DedupedSymbol.
-            // The existing fetch will add the schema to the editor store, so we
-            // just wait until it is done.
-            return existing.then(() => DedupedSymbol)
+            // Another fetch of this exact URL is already running; share its result.
+            return existing
         }
 
         const promise = this.executeFetch(secureUrl)
         this.runningFetches.set(secureUrl, promise)
         return promise
+    }
+
+    private markLoaded(id: string, schema: SchemaFile) {
+        this.schemaIssues.delete(id)
+        let contextEntries = 0
+        if ("@context" in schema) {
+            for (const value of Object.values(schema["@context"])) {
+                if (typeof value === "string") contextEntries += 1
+            }
+        }
+        this.loadedSchemas.set(id, {
+            schema,
+            contextEntries,
+            nodes: schema["@graph"]?.length ?? 0
+        })
+    }
+
+    /** Loaded-schema counts for the user interface. */
+    getLoadedSchemaStatus(): Map<string, LoadedSchemaInfos> {
+        const status = new Map<string, LoadedSchemaInfos>()
+        for (const [id, entry] of this.loadedSchemas) {
+            status.set(id, { contextEntries: entry.contextEntries, nodes: entry.nodes })
+        }
+        return status
+    }
+
+    /** Schemas that could not be loaded, for the user interface. */
+    getSchemaIssues(): Map<string, unknown> {
+        return this.schemaIssues
+    }
+
+    recordSchemaFailure(id: string, error: unknown) {
+        this.schemaIssues.set(id, error)
+    }
+
+    /** Forget all resolver state for a schema, so it can be loaded again. */
+    removeSchemaState(id: string) {
+        this.loadedSchemas.delete(id)
+        this.schemaIssues.delete(id)
     }
 
     private async executeFetch(url: string): Promise<SchemaFile> {
