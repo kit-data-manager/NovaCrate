@@ -56,7 +56,7 @@
   --animate-slide-left-reverse: slide-left-reverse 0.5s ease;
   --animate-fade-out: fade-out 0.5s ease;
   --animate-fade-in: fade-in 0.5s ease;
-  --animate-destructive-ping: destructive-ping 2s ease infinite;
+  --animate-destructive-ping: destructive-ping 2s ease 3;
 
   --radix-accordion-content-height: auto;
 

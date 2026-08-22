@@ -2,7 +2,6 @@
 
 import {
     ChevronDown,
-    CircleAlert,
     Download,
     File,
     FileUp,
@@ -26,26 +25,21 @@ import {
     MenubarTrigger
 } from "@/components/ui/menubar"
 import { useTheme } from "next-themes"
-import React, { useCallback, useContext, useMemo, useState } from "react"
+import React, { useCallback, useContext, useMemo } from "react"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { useOperationState } from "@/lib/state/operation-state"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { downloadCrateAs } from "@/lib/core/util"
 import { useAction, useCrateName, useCurrentEntity, useIsEmbedded } from "@/lib/hooks/hooks"
-import { editorState, useEditorState } from "@/lib/state/editor-state"
-import { useInterval } from "usehooks-ts"
+import { useEditorState } from "@/lib/state/editor-state"
 import { getEntityDisplayName } from "@/lib/utils"
 import { ActionButton, ActionMenubarItem } from "@/components/actions/action-buttons"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { KeyboardShortcut } from "@/components/actions/action-keyboard-shortcuts"
-import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Error } from "@/components/error"
 import { ValidationOverview } from "@/components/editor/validation/validation-overview"
-import { SchemaWorker } from "@/components/providers/schema-worker-provider"
-import { useStore } from "zustand"
 import { toast } from "sonner"
+import { InternalErrorLog } from "@/components/internal-error-log"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -56,7 +50,7 @@ function EntityMenu() {
 
     return currentEntity !== undefined ? (
         <MenubarMenu>
-            <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
+            <MenubarTrigger>
                 Entity
                 <ChevronDown className="size-4 ml-1 text-muted-foreground" />
             </MenubarTrigger>
@@ -83,30 +77,7 @@ export function NavHeader() {
     const { showCreateEntityModal, showCrateExportedModal } = useContext(GlobalModalContext)
     const persistence = usePersistence()
     const isSaving = useOperationState((s) => s.isSaving)
-    const saveErrors = useOperationState((s) => s.saveErrors)
-    const clearSaveError = useOperationState((s) => s.clearSaveError)
-    const healthTestError = useOperationState((s) => s.healthError)
-    const loadError = useOperationState((s) => s.loadError)
-    // const { undo, redo } = useEditorState.temporal.getState()
-    const crateContext = useStore(editorState, (s) => s.crateContext)
-    const [schemaIssues, setSchemaIssues] = useState<Map<string, unknown>>(new Map())
     const isEmbedded = useIsEmbedded()
-
-    const schemaWorker = useContext(SchemaWorker)
-
-    const updateSchemaWorkerIssues = useCallback(async () => {
-        const status = await schemaWorker.worker.executeUncached("getWorkerStatus")
-        setSchemaIssues((current) => {
-            if (
-                JSON.stringify(Array.from(current.entries())) !==
-                JSON.stringify(Array.from(status.schemaStatus.schemaIssues.entries()))
-            ) {
-                return status.schemaStatus.schemaIssues
-            } else return current
-        })
-    }, [schemaWorker.worker])
-
-    useInterval(updateSchemaWorkerIssues, 2000)
 
     const showUploadFolderModal = useCallback(() => {
         showCreateEntityModal({
@@ -186,7 +157,7 @@ export function NavHeader() {
         return (
             <Menubar className="bg-transparent">
                 <MenubarMenu>
-                    <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
+                    <MenubarTrigger>
                         Editor <ChevronDown className="size-4 ml-1 text-muted-foreground" />
                     </MenubarTrigger>
                     <MenubarContent>
@@ -230,7 +201,7 @@ export function NavHeader() {
                     </MenubarContent>
                 </MenubarMenu>
                 <MenubarMenu>
-                    <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
+                    <MenubarTrigger>
                         Crate <ChevronDown className="size-4 ml-1 text-muted-foreground" />
                     </MenubarTrigger>
                     <MenubarContent>
@@ -320,50 +291,7 @@ export function NavHeader() {
 
             <div className="flex justify-end items-center gap-2" id={"header-right-side"}>
                 <ValidationOverview />
-                {loadError ||
-                saveErrors.size > 0 ||
-                healthTestError ||
-                schemaIssues.size > 0 ||
-                crateContext.errors.length > 0 ? (
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button
-                                size="icon"
-                                className="animate-destructive-ping"
-                                variant="outline"
-                            >
-                                <CircleAlert className="size-4" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-100 flex flex-col gap-2">
-                            <div className="text-sm font-bold">Internal Error Log</div>
-                            <Error title="Crate service is not reachable" error={healthTestError} />
-                            <Error title="Error while loading crate data" error={loadError} />
-                            {Array.from(saveErrors.entries()).map(([key, value]) => (
-                                <Error
-                                    title={`Error while saving entity "${key}"`}
-                                    key={key}
-                                    error={value}
-                                    onClear={() => clearSaveError(key)}
-                                />
-                            ))}
-                            {Array.from(schemaIssues.entries()).map(([key, value]) => (
-                                <Error
-                                    title={`Error while loading schema "${key}"`}
-                                    key={key}
-                                    error={value}
-                                />
-                            ))}
-                            {crateContext.errors.map((error, i) => (
-                                <Error
-                                    title={"Error while parsing crate context"}
-                                    error={error}
-                                    key={i}
-                                />
-                            ))}
-                        </PopoverContent>
-                    </Popover>
-                ) : null}
+                <InternalErrorLog />
                 <ActionButton
                     variant="outline"
                     actionId={"editor.global-search"}
