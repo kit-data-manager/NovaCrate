@@ -21,10 +21,17 @@ export interface ISchemaNode {
     }
     [key: string]: unknown
     [key: `${string}:${"rangeIncludes" | "domainIncludes" | "range" | "domain"}`]:
-        | IReference
-        | IReference[]
-        | undefined
+        IReference | IReference[] | undefined
 }
+
+const MUST_BE_REFERENCES = [
+    "rangeIncludes",
+    "domainIncludes",
+    "range",
+    "domain",
+    "rdfs:subClassOf",
+    "rdfs:subPropertyOf"
+]
 
 /**
  * Represents an entry in the @graph array of a JSON-LD schema file used in the context of a RO-Crates.
@@ -55,8 +62,7 @@ export class SchemaNode {
 
     get domain() {
         const key = Object.keys(this.node).find((key) => key.endsWith(":domainIncludes")) as
-            | `${string}:${"domainIncludes"}`
-            | undefined
+            `${string}:${"domainIncludes"}` | undefined
         const keyFallback = Object.keys(this.node).find((key) =>
             key.endsWith(":domain")
         ) as `${string}:${"domain"}`
@@ -69,8 +75,7 @@ export class SchemaNode {
 
     get range() {
         const key = Object.keys(this.node).find((key) => key.endsWith(":rangeIncludes")) as
-            | `${string}:${"rangeIncludes"}`
-            | undefined
+            `${string}:${"rangeIncludes"}` | undefined
         const keyFallback = Object.keys(this.node).find((key) =>
             key.endsWith(":range")
         ) as `${string}:${"range"}`
@@ -170,6 +175,21 @@ export class SchemaNode {
         }
 
         const handled = handleObject(structuredClone(node))
+
+        for (const [key, value] of Object.entries(handled)) {
+            if (MUST_BE_REFERENCES.find((k) => key.endsWith(k))) {
+                if (typeof value === "string") {
+                    handled[key] = { "@id": value }
+                } else if (Array.isArray(value)) {
+                    handled[key] = value.map((v) => {
+                        if (typeof v === "string") {
+                            return { "@id": v }
+                        } else return v
+                    })
+                }
+            }
+        }
+
         return new SchemaNode(handled as ISchemaNode)
     }
 }

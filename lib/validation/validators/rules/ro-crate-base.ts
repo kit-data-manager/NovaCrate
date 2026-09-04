@@ -99,7 +99,7 @@ export const RoCrateBase = {
                     )
                     const results: PropertyValidationResult[] = []
                     for (const [type, resolvedType, i] of resolved) {
-                        if (resolvedType === null) {
+                        if (!isValidUrl(type) && resolvedType === null) {
                             results.push(
                                 builder.rule("unknownType").error({
                                     resultTitle: `Unknown type \`${type}\``,
@@ -112,13 +112,13 @@ export const RoCrateBase = {
                         } else {
                             const node = await ctx.schemaWorker.worker.execute(
                                 "getNode",
-                                resolvedType
+                                resolvedType || type
                             )
                             if (!node) {
                                 results.push(
                                     builder.rule("missingSchemaForType").error({
                                         resultTitle: `Missing schema for type \`${type}\``,
-                                        resultDescription: `The type \`${type}\` is defined in the context of this crate (resolved to \`${resolvedType}\`), but the corresponding schema could not be found. Validation is not available for this type.`,
+                                        resultDescription: `The schema for the type \`${type}\` (resolved to \`${resolvedType}\`) could not be found. Validation is not available for this type.`,
                                         entityId: entity["@id"],
                                         propertyName: "@type",
                                         propertyIndex: i

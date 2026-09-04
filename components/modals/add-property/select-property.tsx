@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Checkbox } from "@/components/ui/checkbox"
 import { PossibleProperty } from "@/components/modals/add-property/add-property-modal"
 import { propertyCanBe, usePropertyCanBe } from "@/lib/hooks/property-can-be"
-import { camelCaseReadable } from "@/lib/utils"
+import { camelCaseReadable, isValidUrl } from "@/lib/utils"
 import { MarkdownComment } from "@/components/markdown-comment"
 import HelpTooltip from "@/components/help-tooltip"
 import useSWR from "swr"
@@ -120,9 +120,9 @@ export function SelectProperty({
                 ? await worker.execute("getAllProperties", { onlyReferences })
                 : await worker.execute(
                       "getPossibleEntityProperties",
-                      types
-                          .map((type) => resolver.resolve(type))
-                          .filter((s) => typeof s === "string"),
+                      types.map((type) =>
+                          isValidUrl(type) ? type : resolver.resolve(type) || type
+                      ),
                       { onlyReferences }
                   )
             return data

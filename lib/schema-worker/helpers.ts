@@ -191,6 +191,10 @@ export function getNode(id: string) {
     return schemaGraph.getNode(id)
 }
 
+export function getGraph() {
+    return schemaGraph.getGraph()
+}
+
 export const schemaWorkerFunctions = {
     getAllClasses,
     getPropertyRange,
@@ -203,5 +207,6 @@ export const schemaWorkerFunctions = {
     updateRegisteredSchemas,
     forceSchemaLoad,
     unloadSchema,
-    getNode
+    getNode,
+    getGraph
 }

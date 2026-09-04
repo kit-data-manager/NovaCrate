@@ -29,7 +29,7 @@ export const SCHEMA_FETCH_ALLOW_ALL = "all"
  */
 export const DEFAULT_SCHEMA_FETCH_ALLOWED_URLS =
     "https://schema.org/** https://bioschemas.org/** https://www.dublincore.org/** " +
-    "https://www.w3.org/ns/dx/prof/** https://raw.githubusercontent.com/opengeospatial/** " +
+    "https://www.w3.org/** http://www.w3.org/** https://raw.githubusercontent.com/opengeospatial/** " +
     "http://pcdm.org/models#**"
 
 /**

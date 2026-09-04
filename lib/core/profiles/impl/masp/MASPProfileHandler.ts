@@ -386,14 +386,15 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                         propertyRule.options.length === 1 &&
                         propertyRule.options[0] === "ro-crate-metadata.json"
                     )
-                } else if (propertyRule.rangeIncludes && propertyRule.rangeIncludes.length === 1) {
+                } else if (propertyRule.rangeIncludes && propertyRule.rangeIncludes.length > 0) {
                     // Find @id = ro-crate-metadata.json rule
-                    const propertyValueRule = def.propertyValueRules.find(
-                        (propertyValueRule) =>
-                            propertyValueRule["@id"] === propertyRule.rangeIncludes![0]
+                    const propertyValueRule = def.propertyValueRules.filter((propertyValueRule) =>
+                        propertyRule.rangeIncludes?.includes(propertyValueRule["@id"])
                     )
-                    return !!(
-                        propertyValueRule && propertyValueRule.value === "ro-crate-metadata.json"
+
+                    return (
+                        propertyValueRule.length === 1 &&
+                        propertyValueRule[0].value === "ro-crate-metadata.json"
                     )
                 }
                 return false

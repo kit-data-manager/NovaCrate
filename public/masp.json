@@ -1,0 +1,1039 @@
+{
+  "@context": [
+    "https://w3id.org/ro/crate/1.2/context",
+    {
+      "@vocab": "http://schema.org/"
+    }
+  ],
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "identifier": "ro-crate-metadata.json",
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      },
+      "about": {
+        "@id": "https://language-research-technology.github.io/ro-crate-masp/profiles/ro-crate-masp/profile-crate/"
+      }
+    },
+    {
+      "@id": "https://w3id.org/ro/crate/1.2",
+      "@type": [
+        "CreativeWork",
+        "Profile"
+      ],
+      "name": "RO-Crate Metadata Specification 1.2"
+    },
+    {
+      "@id": "https://language-research-technology.github.io/ro-crate-masp/profiles/ro-crate-masp/profile-crate/",
+      "@type": [
+        "Dataset",
+        "Profile"
+      ],
+      "name": "RO-Crate MASP Profile",
+      "description": "Profile for RO-Crate Machine Actionable Profiles and Schemas (MASP). Defines what a valid MASP profile crate must contain.",
+      "version": "0.1.0",
+      "isProfileOf": [
+        {
+          "@id": "https://w3id.org/ro/crate/1.2"
+        }
+      ],
+      "author": {
+        "@id": "#author"
+      },
+      "license": "Apache-2.0",
+      "hasResource": [
+        {
+          "@id": "#hasSpecializedSchema"
+        },
+        {
+          "@id": "#hasSpecification"
+        },
+        {
+          "@id": "#hasGuidance"
+        },
+        {
+          "@id": "#hasExampleMASPProfile"
+        },
+        {
+          "@id": "#hasEditorMode"
+        },
+        {
+          "@id": "#hasConformanceIndicators"
+        }
+      ],
+      "hasPart": [
+        {
+          "@id": "index.html"
+        },
+        {
+          "@id": "profile-documentation.md"
+        }
+      ],
+      "datePublished": [
+        "2026-05-08"
+      ],
+      "conformsTo": [
+        {
+          "@id": "https://language-research-technology.github.io/ro-crate-masp/profiles/ro-crate-masp/profile-crate/#profile"
+        }
+      ]
+    },
+    {
+      "@id": "https://language-research-technology.github.io/ro-crate-masp/profiles/ro-crate-masp/profile-crate/#profile",
+      "@type": [
+        "CreativeWork",
+        "Profile"
+      ],
+      "name": "RO-Crate MASP Profile",
+      "url": "https://language-research-technology.github.io/ro-crate-masp/profiles/ro-crate-masp/profile-crate/"
+    },
+    {
+      "@id": "#author",
+      "@type": "Organization",
+      "name": "University of Queensland"
+    },
+    {
+      "@id": "#hasSpecializedSchema",
+      "@type": "ResourceDescriptor",
+      "name": "Specialized Schema Terms",
+      "hasRole": {
+        "@id": "http://www.w3.org/ns/dx/prof/role/schema"
+      },
+      "hasPart": [
+        {
+          "@id": "#class_MetadataDescriptor"
+        },
+        {
+          "@id": "#class_ProfileDataset"
+        },
+        {
+          "@id": "#class_ResourceDescriptor"
+        },
+        {
+          "@id": "#class_rdfsClass"
+        },
+        {
+          "@id": "#class_rdfProperty"
+        },
+        {
+          "@id": "#class_ItemList"
+        },
+        {
+          "@id": "#class_DefinedTermSet"
+        },
+        {
+          "@id": "#class_DefinedTerm"
+        },
+        {
+          "@id": "#class_Person"
+        },
+        {
+          "@id": "#class_Organization"
+        },
+        {
+          "@id": "#class_File"
+        },
+        {
+          "@id": "#class_CreativeWork"
+        },
+        {
+          "@id": "#prop_id_MetadataDescriptor"
+        },
+        {
+          "@id": "#prop_conformsTo_MetadataDescriptor"
+        },
+        {
+          "@id": "#prop_about_MetadataDescriptor"
+        },
+        {
+          "@id": "#prop_name_ProfileDataset"
+        },
+        {
+          "@id": "#prop_description_ProfileDataset"
+        },
+        {
+          "@id": "#prop_version_ProfileDataset"
+        },
+        {
+          "@id": "#prop_isProfileOf_ProfileDataset"
+        },
+        {
+          "@id": "#prop_author_ProfileDataset"
+        },
+        {
+          "@id": "#prop_license_ProfileDataset"
+        },
+        {
+          "@id": "#prop_hasResource_ProfileDataset"
+        },
+        {
+          "@id": "#prop_hasPart_ProfileDataset"
+        },
+        {
+          "@id": "#prop_hasRole_ResourceDescriptor"
+        },
+        {
+          "@id": "#prop_hasArtifact_ResourceDescriptor"
+        },
+        {
+          "@id": "#prop_hasPart_ResourceDescriptor"
+        },
+        {
+          "@id": "#prop_label_rdfsClass"
+        },
+        {
+          "@id": "#prop_specializationOf_rdfsClass"
+        },
+        {
+          "@id": "#prop_minCount_rdfsClass"
+        },
+        {
+          "@id": "#prop_maxCount_rdfsClass"
+        },
+        {
+          "@id": "#prop_label_rdfProperty"
+        },
+        {
+          "@id": "#prop_domainIncludes_rdfProperty"
+        },
+        {
+          "@id": "#prop_rangeIncludes_rdfProperty"
+        },
+        {
+          "@id": "#prop_specializationOf_rdfProperty"
+        },
+        {
+          "@id": "#prop_minCount_rdfProperty"
+        },
+        {
+          "@id": "#prop_maxCount_rdfProperty"
+        },
+        {
+          "@id": "#prop_value_rdfProperty"
+        },
+        {
+          "@id": "#prop_itemListElement_ItemList"
+        },
+        {
+          "@id": "#prop_name_DefinedTermSet"
+        },
+        {
+          "@id": "#prop_name_DefinedTerm"
+        },
+        {
+          "@id": "#prop_inDefinedTermSet_DefinedTerm"
+        },
+        {
+          "@id": "#class_ResourceRole"
+        },
+        {
+          "@id": "#propertyValue_prop_id_MetadataDescriptor"
+        }
+      ]
+    },
+    {
+      "@id": "#hasSpecification",
+      "@type": "ResourceDescriptor",
+      "name": "Profile Description",
+      "hasRole": {
+        "@id": "http://www.w3.org/ns/dx/prof/role/specification"
+      },
+      "hasArtifact": {
+        "@id": "index.html"
+      }
+    },
+    {
+      "@id": "#hasGuidance",
+      "@type": "ResourceDescriptor",
+      "name": "Profile Documentation (Markdown source)",
+      "hasRole": {
+        "@id": "http://www.w3.org/ns/dx/prof/role/guidance"
+      },
+      "hasArtifact": {
+        "@id": "profile-documentation.md"
+      }
+    },
+    {
+      "@id": "#hasExampleMASPProfile",
+      "@type": "ResourceDescriptor",
+      "name": "Example: A minimal MASP profile crate",
+      "hasRole": {
+        "@id": "http://www.w3.org/ns/dx/prof/role/example"
+      },
+      "hasArtifact": {
+        "@id": "#MASPProfileExample"
+      }
+    },
+    {
+      "@id": "#hasEditorMode",
+      "@type": "ResourceDescriptor",
+      "name": "Crate-O Editor Mode",
+      "hasRole": {
+        "@id": "https://w3id.org/ro/mode"
+      },
+      "hasArtifact": {
+        "@id": "crate-o-mode.json"
+      }
+    },
+    {
+      "@id": "#hasConformanceIndicators",
+      "@type": "ResourceDescriptor",
+      "name": "Conformance Indicators",
+      "hasRole": {
+        "@id": "https://w3id.org/ro/conformance-indicators"
+      },
+      "hasArtifact": {
+        "@id": "#conformanceIndicators"
+      }
+    },
+    {
+      "@id": "index.html",
+      "@type": "File",
+      "name": "RO-Crate MASP Profile description",
+      "encodingFormat": [
+        {
+          "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/471"
+        },
+        "text/html"
+      ],
+      "about": {
+        "@id": "https://language-research-technology.github.io/ro-crate-masp/profiles/ro-crate-masp/profile-crate/"
+      },
+      "dateModified": "2026-07-22T15:37:00+10:00"
+    },
+    {
+      "@id": "profile-documentation.md",
+      "@type": "File",
+      "name": "profile-documentation.md",
+      "encodingFormat": [
+        {
+          "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/1149"
+        },
+        "text/markdown"
+      ],
+      "about": {
+        "@id": "https://language-research-technology.github.io/ro-crate-masp/profiles/ro-crate-masp/profile-crate/"
+      },
+      "isPartOf": {
+        "@id": "https://language-research-technology.github.io/ro-crate-masp/profiles/ro-crate-masp/profile-crate/"
+      },
+      "dateModified": "2026-07-22T15:37:00+10:00"
+    },
+    {
+      "@id": "#class_MetadataDescriptor",
+      "@type": "rdfs:Class",
+      "name": "RO-Crate Metadata Descriptor",
+      "description": "The ro-crate-metadata.json file entity that describes the profile crate.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/CreativeWork"
+      },
+      "sh:minCount": 1,
+      "sh:maxCount": 1
+    },
+    {
+      "@id": "#class_ProfileDataset",
+      "@type": "rdfs:Class",
+      "name": "Profile Dataset",
+      "description": "The root entity of a MASP profile crate. Must have @type [Dataset, Profile].",
+      "prov:specializationOf": [
+        {
+          "@id": "http://schema.org/Dataset"
+        },
+        {
+          "@id": "http://www.w3.org/ns/dx/prof/Profile"
+        }
+      ],
+      "sh:minCount": 1,
+      "sh:maxCount": 1
+    },
+    {
+      "@id": "#class_ResourceDescriptor",
+      "@type": "rdfs:Class",
+      "name": "ResourceDescriptor",
+      "description": "Describes a resource that is part of a profile, using the W3C Profiles Vocabulary.",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/ns/dx/prof/ResourceDescriptor"
+      }
+    },
+    {
+      "@id": "#class_rdfsClass",
+      "@type": "rdfs:Class",
+      "name": "rdfs:Class",
+      "description": "A class definition in a MASP schema. Defines a type of entity and its cardinality constraints.",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/2000/01/rdf-schema#Class"
+      }
+    },
+    {
+      "@id": "#class_rdfProperty",
+      "@type": "rdfs:Class",
+      "name": "rdf:Property",
+      "description": "A property definition in a MASP schema. Defines a property, its domain class, range, and cardinality constraints.",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
+      }
+    },
+    {
+      "@id": "#class_ItemList",
+      "@type": "rdfs:Class",
+      "name": "ItemList",
+      "description": "A list of allowed values for a property. When a property's rangeIncludes is an ItemList, values MUST be drawn from the list.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/ItemList"
+      }
+    },
+    {
+      "@id": "#class_DefinedTermSet",
+      "@type": "rdfs:Class",
+      "name": "DefinedTermSet",
+      "description": "A set of defined vocabulary terms.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/DefinedTermSet"
+      }
+    },
+    {
+      "@id": "#class_DefinedTerm",
+      "@type": "rdfs:Class",
+      "name": "DefinedTerm",
+      "description": "A single vocabulary term within a DefinedTermSet.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/DefinedTerm"
+      }
+    },
+    {
+      "@id": "#class_Person",
+      "@type": "rdfs:Class",
+      "name": "Person",
+      "description": "A person, used as an author or contributor.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/Person"
+      }
+    },
+    {
+      "@id": "#class_Organization",
+      "@type": "rdfs:Class",
+      "name": "Organization",
+      "description": "An organization, used as an author, publisher, or contributor.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/Organization"
+      }
+    },
+    {
+      "@id": "#class_File",
+      "@type": "rdfs:Class",
+      "name": "File",
+      "description": "A file that is part of a profile crate.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/MediaObject"
+      }
+    },
+    {
+      "@id": "#class_CreativeWork",
+      "@type": "rdfs:Class",
+      "name": "CreativeWork",
+      "description": "A creative work, used for licenses and specification references.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/CreativeWork"
+      }
+    },
+    {
+      "@id": "#prop_id_MetadataDescriptor",
+      "@type": "rdf:Property",
+      "name": "@id",
+      "rdfs:label": "@id",
+      "domainIncludes": {
+        "@id": "#class_MetadataDescriptor"
+      },
+      "rangeIncludes": [
+        {
+          "@id": "Text"
+        },
+        {
+          "@id": "#propertyValue_prop_id_MetadataDescriptor"
+        }
+      ],
+      "sh:minCount": 1,
+      "sh:maxCount": 1
+    },
+    {
+      "@id": "#prop_conformsTo_MetadataDescriptor",
+      "@type": "rdf:Property",
+      "name": "conformsTo",
+      "rdfs:label": "conformsTo",
+      "description": "MUST reference the RO-Crate specification the crate conforms to.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/conformsTo"
+      },
+      "domainIncludes": {
+        "@id": "#class_MetadataDescriptor"
+      },
+      "rangeIncludes": {
+        "@id": "#class_CreativeWork"
+      },
+      "sh:minCount": 1,
+      "sh:maxCount": 1
+    },
+    {
+      "@id": "#prop_about_MetadataDescriptor",
+      "@type": "rdf:Property",
+      "name": "about",
+      "rdfs:label": "about",
+      "description": "MUST reference the root profile Dataset entity.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/about"
+      },
+      "domainIncludes": {
+        "@id": "#class_MetadataDescriptor"
+      },
+      "rangeIncludes": {
+        "@id": "#class_ProfileDataset"
+      },
+      "sh:minCount": 1,
+      "sh:maxCount": 1
+    },
+    {
+      "@id": "#prop_name_ProfileDataset",
+      "@type": "rdf:Property",
+      "name": "name",
+      "rdfs:label": "name",
+      "description": "A human-readable name for the profile.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/name"
+      },
+      "domainIncludes": {
+        "@id": "#class_ProfileDataset"
+      },
+      "rangeIncludes": {
+        "@id": "Text"
+      },
+      "sh:minCount": 1,
+      "sh:maxCount": 1
+    },
+    {
+      "@id": "#prop_description_ProfileDataset",
+      "@type": "rdf:Property",
+      "name": "description",
+      "rdfs:label": "description",
+      "description": "A description of the profile and its intended use.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/description"
+      },
+      "domainIncludes": {
+        "@id": "#class_ProfileDataset"
+      },
+      "rangeIncludes": {
+        "@id": "Text"
+      },
+      "sh:maxCount": 1
+    },
+    {
+      "@id": "#prop_version_ProfileDataset",
+      "@type": "rdf:Property",
+      "name": "version",
+      "rdfs:label": "version",
+      "description": "The version of this profile using semantic versioning (MAJOR.MINOR.PATCH).",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/version"
+      },
+      "domainIncludes": {
+        "@id": "#class_ProfileDataset"
+      },
+      "rangeIncludes": {
+        "@id": "Text"
+      },
+      "sh:maxCount": 1
+    },
+    {
+      "@id": "#prop_isProfileOf_ProfileDataset",
+      "@type": "rdf:Property",
+      "name": "isProfileOf",
+      "rdfs:label": "isProfileOf",
+      "description": "MUST reference the base RO-Crate specification this profile extends.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/isProfileOf"
+      },
+      "domainIncludes": {
+        "@id": "#class_ProfileDataset"
+      },
+      "rangeIncludes": {
+        "@id": "#class_CreativeWork"
+      },
+      "sh:minCount": 1
+    },
+    {
+      "@id": "#prop_author_ProfileDataset",
+      "@type": "rdf:Property",
+      "name": "author",
+      "rdfs:label": "author",
+      "description": "The person or organization responsible for creating this profile.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/author"
+      },
+      "domainIncludes": {
+        "@id": "#class_ProfileDataset"
+      },
+      "rangeIncludes": [
+        {
+          "@id": "#class_Person"
+        },
+        {
+          "@id": "#class_Organization"
+        }
+      ]
+    },
+    {
+      "@id": "#prop_license_ProfileDataset",
+      "@type": "rdf:Property",
+      "name": "license",
+      "rdfs:label": "license",
+      "description": "License for this profile.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/license"
+      },
+      "domainIncludes": {
+        "@id": "#class_ProfileDataset"
+      },
+      "rangeIncludes": [
+        {
+          "@id": "#class_CreativeWork"
+        },
+        {
+          "@id": "Text"
+        }
+      ],
+      "sh:minCount": 1
+    },
+    {
+      "@id": "#prop_hasResource_ProfileDataset",
+      "@type": "rdf:Property",
+      "name": "hasResource",
+      "rdfs:label": "hasResource",
+      "description": "Links to ResourceDescriptor entities that describe the profile's resources. MUST include at least one descriptor with role/specification.",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/ns/dx/prof/hasResource"
+      },
+      "domainIncludes": {
+        "@id": "#class_ProfileDataset"
+      },
+      "rangeIncludes": {
+        "@id": "#class_ResourceDescriptor"
+      },
+      "sh:minCount": 1
+    },
+    {
+      "@id": "#prop_hasPart_ProfileDataset",
+      "@type": "rdf:Property",
+      "name": "hasPart",
+      "rdfs:label": "hasPart",
+      "description": "Files that are part of this profile crate.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/hasPart"
+      },
+      "domainIncludes": {
+        "@id": "#class_ProfileDataset"
+      },
+      "rangeIncludes": {
+        "@id": "#class_File"
+      }
+    },
+    {
+      "@id": "#prop_hasRole_ResourceDescriptor",
+      "@type": "rdf:Property",
+      "name": "hasRole",
+      "rdfs:label": "hasRole",
+      "description": "The role of this resource within the profile (e.g. role/specification, role/schema, role/guidance). Value is a URI from the W3C PROF vocabulary.",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/ns/dx/prof/hasRole"
+      },
+      "domainIncludes": {
+        "@id": "#class_ResourceDescriptor"
+      },
+      "sh:minCount": 1,
+      "sh:maxCount": 1
+    },
+    {
+      "@id": "#prop_hasArtifact_ResourceDescriptor",
+      "@type": "rdf:Property",
+      "name": "hasArtifact",
+      "rdfs:label": "hasArtifact",
+      "description": "The artifact for this resource descriptor — a File, LearningResource, or other entity. Range validation intentionally omitted as artifacts can be any type.",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/ns/dx/prof/hasArtifact"
+      },
+      "domainIncludes": {
+        "@id": "#class_ResourceDescriptor"
+      }
+    },
+    {
+      "@id": "#prop_hasPart_ResourceDescriptor",
+      "@type": "rdf:Property",
+      "name": "hasPart",
+      "rdfs:label": "hasPart",
+      "description": "For schema ResourceDescriptors: the individual schema entities (classes, properties, item lists) that make up the schema.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/hasPart"
+      },
+      "domainIncludes": {
+        "@id": "#class_ResourceDescriptor"
+      }
+    },
+    {
+      "@id": "#prop_label_rdfsClass",
+      "@type": "rdf:Property",
+      "name": "rdfs:label",
+      "rdfs:label": "rdfs:label",
+      "description": "An optional rdfs:label for the class. In practice, class entities typically use 'name' as their human-readable label.",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/2000/01/rdf-schema#label"
+      },
+      "domainIncludes": {
+        "@id": "#class_rdfsClass"
+      },
+      "rangeIncludes": {
+        "@id": "Text"
+      }
+    },
+    {
+      "@id": "#prop_specializationOf_rdfsClass",
+      "@type": "rdf:Property",
+      "name": "prov:specializationOf",
+      "rdfs:label": "prov:specializationOf",
+      "description": "The base schema.org (or other vocabulary) type this class specializes. Value is a URI reference; range validation is intentionally omitted as these are external vocab URIs.",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/ns/prov#specializationOf"
+      },
+      "domainIncludes": {
+        "@id": "#class_rdfsClass"
+      }
+    },
+    {
+      "@id": "#prop_minCount_rdfsClass",
+      "@type": "rdf:Property",
+      "name": "sh:minCount",
+      "rdfs:label": "sh:minCount",
+      "description": "Minimum number of instances of this class that MUST appear in a conforming crate.",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/ns/shacl#minCount"
+      },
+      "domainIncludes": {
+        "@id": "#class_rdfsClass"
+      },
+      "rangeIncludes": {
+        "@id": "Integer"
+      }
+    },
+    {
+      "@id": "#prop_maxCount_rdfsClass",
+      "@type": "rdf:Property",
+      "name": "sh:maxCount",
+      "rdfs:label": "sh:maxCount",
+      "description": "Maximum number of instances of this class allowed in a conforming crate.",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/ns/shacl#maxCount"
+      },
+      "domainIncludes": {
+        "@id": "#class_rdfsClass"
+      },
+      "rangeIncludes": {
+        "@id": "Integer"
+      }
+    },
+    {
+      "@id": "#prop_label_rdfProperty",
+      "@type": "rdf:Property",
+      "name": "rdfs:label",
+      "rdfs:label": "rdfs:label",
+      "description": "A human-readable label for the property, usually matching the property name.",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/2000/01/rdf-schema#label"
+      },
+      "domainIncludes": {
+        "@id": "#class_rdfProperty"
+      },
+      "rangeIncludes": {
+        "@id": "Text"
+      },
+      "sh:minCount": 1,
+      "sh:maxCount": 1
+    },
+    {
+      "@id": "#prop_domainIncludes_rdfProperty",
+      "@type": "rdf:Property",
+      "name": "domainIncludes",
+      "rdfs:label": "domainIncludes",
+      "description": "The class(es) that this property applies to.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/domainIncludes"
+      },
+      "domainIncludes": {
+        "@id": "#class_rdfProperty"
+      },
+      "rangeIncludes": {
+        "@id": "#class_rdfsClass"
+      },
+      "sh:minCount": 1
+    },
+    {
+      "@id": "#prop_rangeIncludes_rdfProperty",
+      "@type": "rdf:Property",
+      "name": "rangeIncludes",
+      "rdfs:label": "rangeIncludes",
+      "description": "The expected value type(s) for this property. Range validation is intentionally omitted because these reference external schema types (Text, URL, Integer, etc.) that are not entities in the crate.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/rangeIncludes"
+      },
+      "domainIncludes": {
+        "@id": "#class_rdfProperty"
+      }
+    },
+    {
+      "@id": "#prop_specializationOf_rdfProperty",
+      "@type": "rdf:Property",
+      "name": "prov:specializationOf",
+      "rdfs:label": "prov:specializationOf",
+      "description": "The base vocabulary property this property specializes. Value is an external URI reference; range validation intentionally omitted.",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/ns/prov#specializationOf"
+      },
+      "domainIncludes": {
+        "@id": "#class_rdfProperty"
+      }
+    },
+    {
+      "@id": "#prop_minCount_rdfProperty",
+      "@type": "rdf:Property",
+      "name": "sh:minCount",
+      "rdfs:label": "sh:minCount",
+      "description": "Minimum number of times this property MUST appear on entities of the domain class.",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/ns/shacl#minCount"
+      },
+      "domainIncludes": {
+        "@id": "#class_rdfProperty"
+      },
+      "rangeIncludes": {
+        "@id": "Integer"
+      }
+    },
+    {
+      "@id": "#prop_maxCount_rdfProperty",
+      "@type": "rdf:Property",
+      "name": "sh:maxCount",
+      "rdfs:label": "sh:maxCount",
+      "description": "Maximum number of times this property MAY appear on entities of the domain class.",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/ns/shacl#maxCount"
+      },
+      "domainIncludes": {
+        "@id": "#class_rdfProperty"
+      },
+      "rangeIncludes": {
+        "@id": "Integer"
+      }
+    },
+    {
+      "@id": "#prop_value_rdfProperty",
+      "@type": "rdf:Property",
+      "name": "value",
+      "rdfs:label": "value",
+      "description": "Constraint content carried by a PropertyValue entity. Property rules SHOULD reference PropertyValue via rangeIncludes rather than storing literal constraints directly on rdf:Property.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/value"
+      },
+      "domainIncludes": {
+        "@id": "#class_rdfProperty"
+      },
+      "rangeIncludes": {
+        "@id": "Text"
+      }
+    },
+    {
+      "@id": "#prop_itemListElement_ItemList",
+      "@type": "rdf:Property",
+      "name": "itemListElement",
+      "rdfs:label": "itemListElement",
+      "description": "The items in this list. Each item is an entity whose @id is an allowed value.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/itemListElement"
+      },
+      "domainIncludes": {
+        "@id": "#class_ItemList"
+      },
+      "sh:minCount": 1
+    },
+    {
+      "@id": "#prop_name_DefinedTermSet",
+      "@type": "rdf:Property",
+      "name": "name",
+      "rdfs:label": "name",
+      "description": "The name of this term set.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/name"
+      },
+      "domainIncludes": {
+        "@id": "#class_DefinedTermSet"
+      },
+      "rangeIncludes": {
+        "@id": "Text"
+      },
+      "sh:minCount": 1,
+      "sh:maxCount": 1
+    },
+    {
+      "@id": "#prop_name_DefinedTerm",
+      "@type": "rdf:Property",
+      "name": "name",
+      "rdfs:label": "name",
+      "description": "The name of this term.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/name"
+      },
+      "domainIncludes": {
+        "@id": "#class_DefinedTerm"
+      },
+      "rangeIncludes": {
+        "@id": "Text"
+      },
+      "sh:minCount": 1,
+      "sh:maxCount": 1
+    },
+    {
+      "@id": "#prop_inDefinedTermSet_DefinedTerm",
+      "@type": "rdf:Property",
+      "name": "inDefinedTermSet",
+      "rdfs:label": "inDefinedTermSet",
+      "description": "The DefinedTermSet this term belongs to.",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/inDefinedTermSet"
+      },
+      "domainIncludes": {
+        "@id": "#class_DefinedTerm"
+      },
+      "rangeIncludes": {
+        "@id": "#class_DefinedTermSet"
+      },
+      "sh:minCount": [],
+      "sh:maxCount": []
+    },
+    {
+      "@id": "#class_ResourceRole",
+      "@type": "rdfs:Class",
+      "name": "ResourceRole",
+      "description": "A role URI from the W3C Profiles Vocabulary (http://www.w3.org/ns/dx/prof/role/).",
+      "prov:specializationOf": {
+        "@id": "http://www.w3.org/ns/dx/prof/ResourceRole"
+      }
+    },
+    {
+      "@id": "#propertyValue_prop_id_MetadataDescriptor",
+      "@type": "PropertyValue",
+      "name": "RO-Crate Metadata Descriptor Identifier Constraint",
+      "description": "Allowed identifier value constraint for RO-Crate Metadata Descriptor.",
+      "value": "ro-crate-metadata.json",
+      "sh:minCount": 1,
+      "sh:maxCount": 1
+    },
+    {
+      "@id": "#MASPProfileExample",
+      "@type": "LearningResource",
+      "name": "A minimal MASP profile crate",
+      "description": "Key entities from this profile crate, showing what a valid MASP profile crate looks like. This profile is self-describing so its own entities serve as the canonical example.",
+      "hasPart": [
+        {
+          "@id": "ro-crate-metadata.json"
+        },
+        {
+          "@id": "https://language-research-technology.github.io/ro-crate-masp/profiles/ro-crate-masp/profile-crate/"
+        },
+        {
+          "@id": "#hasSpecializedSchema"
+        },
+        {
+          "@id": "#class_ProfileDataset"
+        },
+        {
+          "@id": "#prop_name_ProfileDataset"
+        },
+        {
+          "@id": "#prop_isProfileOf_ProfileDataset"
+        },
+        {
+          "@id": "#class_MetadataDescriptor"
+        },
+        {
+          "@id": "#prop_id_MetadataDescriptor"
+        }
+      ]
+    },
+    {
+      "@id": "https://w3id.org/ro/mode",
+      "@type": "DefinedTerm",
+      "name": "Editor Mode",
+      "description": "Role indicating a resource is an editor configuration mode file."
+    },
+    {
+      "@id": "crate-o-mode.json",
+      "@type": "File",
+      "name": "Crate-O Editor Mode File",
+      "encodingFormat": [
+        {
+          "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/817"
+        },
+        "application/json"
+      ],
+      "description": "Mini Crate-O mode file for this profile (metadata, input groups, lookup and enabled classes — the schema/grammar is provided by the MASP profile crate itself).",
+      "dateModified": "2026-05-22T08:29:17+10:00"
+    },
+    {
+      "@id": "https://w3id.org/ro/conformance-indicators",
+      "@type": "DefinedTerm",
+      "name": "Conformance Indicators",
+      "description": "Role indicating a resource enumerates identifiers that are accepted as conformance indicators for the profile."
+    },
+    {
+      "@id": "#conformanceIndicators",
+      "@type": "ItemList",
+      "name": "Supported conformsTo identifiers",
+      "description": "Canonical identifiers that indicate conformance to this profile.",
+      "itemListElement": [
+        {
+          "@id": "https://language-research-technology.github.io/ro-crate-masp/profiles/ro-crate-masp/profile-crate/#profile"
+        }
+      ]
+    },
+    {
+      "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/1149",
+      "@type": "DigitalFormat",
+      "name": "Markdown"
+    },
+    {
+      "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/817",
+      "@type": "DigitalFormat",
+      "name": "JSON Data Interchange Format"
+    },
+    {
+      "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/471",
+      "@type": "DigitalFormat",
+      "name": "Hypertext Markup Language"
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": ".",
+      "description": "",
+      "hasPart": [
+        {
+          "@id": "crate-o-mode.json"
+        },
+        {
+          "@id": "index.html"
+        },
+        {
+          "@id": "profile-documentation.md"
+        }
+      ]
+    }
+  ]
+}

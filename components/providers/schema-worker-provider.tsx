@@ -41,6 +41,10 @@ export function SchemaWorkerProvider(props: PropsWithChildren) {
                 )
                 .then()
 
+            ;(window as any).showSchemaGraph = async function showSchemaGraph() {
+                console.log(await worker.executeUncached("getGraph"))
+            }
+
             return useSchemaResolverSettings.subscribe((newState) => {
                 if (context.specification)
                     worker
