@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.13.2] - 2026-09-04
+
+The next release 1.14 will include support for RO-Crate profiles. 
+Some more work will be necessary until the release is ready.
+Note that there will be no new updates until 2026-10-05.
+
+### Changed
+- Dependency updates
+
 ## [1.13.1] - 2026-08-04
 
 ### Changed
