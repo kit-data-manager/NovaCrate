@@ -123,9 +123,10 @@ export class BaseContextService implements IContextService, IContextResolverServ
             if (prefixContext) {
                 return prefixContext + suffix
             } else {
-                console.warn(
-                    `Found node with id ${id}, but prefix ${prefix} is not defined in the context`
-                )
+                if (prefix !== "http" && prefix !== "https")
+                    console.warn(
+                        `Found node with id ${id}, but prefix ${prefix} is not defined in the context`
+                    )
                 return null
             }
         } else return null

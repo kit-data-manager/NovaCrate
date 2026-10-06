@@ -98,6 +98,21 @@ const defaultSchemas = [
         matchesUrls: ["https://bioschemas.org/terms/"],
         schemaUrl: "https://bioschemas.org/types/bioschemas_types.jsonld",
         activeOnSpec: [RO_CRATE_VERSION.V1_3_0]
+    },
+    /* Added in store version 4 */
+    {
+        id: "rfd-schema",
+        displayName: "RFD Schema",
+        matchesUrls: ["http://www.w3.org/2000/01/rdf-schema#"],
+        schemaUrl: "https://www.w3.org/2000/01/rdf-schema#",
+        activeOnSpec: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_3_0]
+    },
+    {
+        id: "rfd-syntax",
+        displayName: "RFD Syntax",
+        matchesUrls: ["http://www.w3.org/1999/02/22-rdf-syntax-ns#"],
+        schemaUrl: "https://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        activeOnSpec: [RO_CRATE_VERSION.V1_2_0, RO_CRATE_VERSION.V1_1_3, RO_CRATE_VERSION.V1_3_0]
     }
 ]
 
@@ -135,7 +150,7 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
             })),
             {
                 name: "schema-resolver",
-                version: 3,
+                version: 4,
                 migrate: (_persisted: unknown, persistedVersion) => {
                     if (!_persisted) return { registeredSchemas: [...defaultSchemas] }
                     const persisted = _persisted as Partial<SchemaResolverStore>
@@ -188,6 +203,13 @@ export const schemaResolverStore = create<SchemaResolverStore>()(
                             merged.push(
                                 defaultSchemas.find((d) => d.id === "bioschemas_types_1.3.0")!
                             )
+                    }
+
+                    if (persistedVersion < 4) {
+                        if (!merged.find((s) => s.id === "rdf-schema"))
+                            merged.push(defaultSchemas.find((d) => d.id === "rdf-schema")!)
+                        if (!merged.find((s) => s.id === "rdf-syntax"))
+                            merged.push(defaultSchemas.find((d) => d.id === "rdf-syntax")!)
                     }
 
                     return { registeredSchemas: merged }
