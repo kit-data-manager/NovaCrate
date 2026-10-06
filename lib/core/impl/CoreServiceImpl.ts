@@ -113,6 +113,8 @@ export class CoreServiceImpl implements ICoreService {
         let deleted = [id]
         if (deleteData && this.fileService) {
             deleted = await this.fileService.delete(id)
+            if (deleted.length === 0)
+                throw new Error(`Failed to delete any data corresponding to path ${id}, aborting`)
         }
 
         for (const deletedItem of deleted) {
