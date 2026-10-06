@@ -1,10 +1,10 @@
 [project]
 name = "novacrate"
-version = "1.13.1"
-description = "Web-based interactive editor for creating, editing and visualising research object crates."
+version = "1.13.2"
+description = "A modern editor for RO-Crates. Web-based interactive editor for creating, editing and visualising research object crates."
 license = "Apache-2.0"
 repository = "https://github.com/kit-data-manager/NovaCrate"
-homepage = "https://kit-data-manager.github.io/NovaCrate/"
+homepage = "https://novacrate.datamanager.kit.edu/"
 documentation = "https://github.com/kit-data-manager/NovaCrate"
 keywords = [
     "ro-crate",

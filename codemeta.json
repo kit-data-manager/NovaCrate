@@ -19,8 +19,8 @@
     }
   ],
   "name": "novacrate",
-  "description": "Web-based interactive editor for creating, editing and visualising research object crates.",
-  "version": "1.13.1",
+  "description": "A modern editor for RO-Crates. Web-based interactive editor for creating, editing and visualising research object crates.",
+  "version": "1.13.2",
   "keywords": [
     "ro-crate",
     "ro",
@@ -54,8 +54,8 @@
   "license": [
     "https://spdx.org/licenses/Apache-2.0"
   ],
-  "softwareHelp": "https://kit-data-manager.github.io/NovaCrate/",
+  "softwareHelp": "https://novacrate.datamanager.kit.edu/",
   "codeRepository": "https://github.com/kit-data-manager/NovaCrate",
   "buildInstructions": "https://github.com/kit-data-manager/NovaCrate",
-  "url": "https://kit-data-manager.github.io/NovaCrate/"
+  "url": "https://novacrate.datamanager.kit.edu/"
 }
