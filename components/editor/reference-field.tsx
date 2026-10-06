@@ -115,7 +115,7 @@ export const ReferenceField = memo(function ReferenceField({
                 open={selectModalOpen}
                 onSelect={onSelect}
                 onOpenChange={setSelectModalOpen}
-                propertyRange={undefinedIfEmpty(propertyRange)}
+                restrictToClasses={undefinedIfEmpty(propertyRange)}
             />
 
             {isEmpty ? (

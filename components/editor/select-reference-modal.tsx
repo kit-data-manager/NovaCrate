@@ -9,7 +9,7 @@ import {
     CommandList
 } from "@/components/ui/command"
 import { Checkbox } from "@/components/ui/checkbox"
-import { getEntityDisplayName, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
+import { getEntityDisplayName, isRoCrateMetadataEntity, isValidUrl, toArray } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { SlimClass } from "@/lib/schema-worker/helpers"
@@ -63,12 +63,12 @@ export function SelectReferenceModal({
     open,
     onSelect,
     onOpenChange,
-    propertyRange
+    restrictToClasses
 }: {
     open: boolean
     onSelect: (ref: IReference) => void
     onOpenChange: (open: boolean) => void
-    propertyRange?: SlimClass[]
+    restrictToClasses?: SlimClass[]
 }) {
     const entities = useEditorState((store) => store.entities)
     const resolver = useContextResolver()
@@ -96,24 +96,24 @@ export function SelectReferenceModal({
         setIsReferenceUrl(typeof state === "string" ? true : state)
     }, [])
 
-    const propertyRangeIds = useMemo(() => {
-        return propertyRange?.map((p) => p["@id"])
-    }, [propertyRange])
+    const restrictToClassTypes = useMemo(() => {
+        return restrictToClasses?.map((p) => p["@id"])
+    }, [restrictToClasses])
 
     const possibleEntities = useMemo(() => {
         if (!open || entities.size === 0) return []
 
         const allEntities = Array.from(entities.values())
 
-        if (onlyShowAllowed && propertyRangeIds) {
+        if (onlyShowAllowed && restrictToClassTypes) {
             return allEntities
                 .filter((e) => e["@id"] !== rootEntityId)
                 .filter((e) => !isRoCrateMetadataEntity(e))
                 .filter((entity) => {
                     for (const type of toArray(entity["@type"])) {
-                        const resolved = resolver.resolve(type)
+                        const resolved = isValidUrl(type) ? type : resolver.resolve(type)
                         if (!resolved) continue
-                        if (propertyRangeIds.includes(resolved)) return true
+                        if (restrictToClassTypes.includes(resolved)) return true
                     }
 
                     return false
@@ -121,7 +121,7 @@ export function SelectReferenceModal({
         } else {
             return allEntities
         }
-    }, [resolver, entities, onlyShowAllowed, open, propertyRangeIds, rootEntityId])
+    }, [resolver, entities, onlyShowAllowed, open, restrictToClassTypes, rootEntityId])
 
     const onSelectAndClose = useCallback(
         (ref: IReference) => {
@@ -216,7 +216,7 @@ export function SelectReferenceModal({
                         </label>
                     </div>
 
-                    {propertyRangeIds && (
+                    {restrictToClassTypes && (
                         <div className="flex gap-2 items-center">
                             <Checkbox
                                 checked={onlyShowAllowed}
