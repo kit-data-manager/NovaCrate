@@ -8,7 +8,7 @@ import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { Observable } from "@/lib/core/impl/Observable"
 import { ProfileFactory, isKnownProfileURI } from "@/lib/core/profiles/impl/ProfileFactory"
 import { IMetadataService } from "@/lib/core/IMetadataService"
-import { getRootEntityID, toArray } from "@/lib/utils"
+import { getRootEntityID, isValidUrl, toArray } from "@/lib/utils"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { ProfileEntityMapping } from "@/lib/core/profiles/types/ProfileEntityMapping"
@@ -56,6 +56,7 @@ export class ProfileService implements IProfileService {
                 toArray(root.conformsTo)
                     .filter((v) => typeof v === "object")
                     .map((r) => r["@id"])
+                    .filter((s) => isValidUrl(s))
             ).then() // The promise is intentionally ignored, this class manages itself automatically
         } else this.setProfileURIs([]).then()
     }
