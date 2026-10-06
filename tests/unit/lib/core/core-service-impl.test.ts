@@ -41,7 +41,7 @@ function createMockFileService(): IFileService {
         addFolder: jest.fn(async () => {}),
         updateFile: jest.fn(async () => {}),
         move: jest.fn(async () => []),
-        delete: jest.fn(async () => []),
+        delete: jest.fn(async (path: string) => [path]),
         getStorageQuota: jest.fn(async () => ({ usedSpace: 0, totalSpace: 0, persistent: false }))
     }
 }
