@@ -6,6 +6,7 @@ import { AbstractProfileHandler } from "@/lib/core/profiles/impl/AbstractProfile
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
 import { ProfileHandlerError } from "@/lib/core/profiles/impl/ProfileHandlerError"
+import { sortEntityRules } from "@/lib/core/profiles/impl/util/sort-entity-rules"
 
 const MASPClass = z.object({
     "@id": z.string(),
@@ -303,9 +304,13 @@ export class MASPProfileHandler extends AbstractProfileHandler {
             for (const propRule of propertyRulesForClass) {
                 if (!propRule.rangeIncludes) continue
 
-                const targetClassRule = def.entityRules.filter((c) =>
-                    propRule.rangeIncludes?.find((targetElementId) => targetElementId === c["@id"])
-                )
+                const targetClassRule = def.entityRules
+                    .filter((c) =>
+                        propRule.rangeIncludes?.find(
+                            (targetElementId) => targetElementId === c["@id"]
+                        )
+                    )
+                    .sort((a, b) => sortEntityRules(a, b, this))
 
                 const propertyValueRuleIds = def.propertyValueRules
                     .filter((c) =>
