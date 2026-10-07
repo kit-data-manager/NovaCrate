@@ -229,9 +229,12 @@ export function ManageProfilesModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="w-200! max-w-screen!">
                 <DialogHeader>
-                    <DialogTitle>Manage Profiles</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2">
+                        Manage Profiles <Badge>Experimental</Badge>
+                    </DialogTitle>
                     <DialogDescription>
-                        Manage the profiles that are active for this RO-Crate
+                        Manage the profiles that are active for this RO-Crate. This is an
+                        experimental feature and might not behave as expected.
                     </DialogDescription>
                 </DialogHeader>
 

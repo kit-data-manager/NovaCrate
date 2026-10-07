@@ -101,7 +101,9 @@ export function ProfilesSettings() {
 
     return (
         <div className="flex flex-col gap-4 pr-2 max-h-full overflow-y-auto">
-            <h3 className="font-semibold text-2xl leading-none p-2 pl-0 pt-0 mb-2">Profiles</h3>
+            <h3 className="font-semibold text-2xl leading-none p-2 pl-0 pt-0 mb-2">
+                Profiles <Badge className="-translate-y-1">Experimental</Badge>
+            </h3>
 
             <p className="text-sm text-muted-foreground">
                 NovaCrate only fetches profile crates from profile URLs that you have approved.

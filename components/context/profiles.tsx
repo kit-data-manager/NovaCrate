@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Error } from "@/components/error"
 import { ActionButton } from "@/components/actions/action-buttons"
+import { Badge } from "@/components/ui/badge"
 
 export function Profiles() {
     const core = useCore()
@@ -37,9 +38,9 @@ export function Profiles() {
 
     return (
         <div className="space-y-2">
-            <div className="font-bold">Profiles</div>
-
-            <ActionButton actionId={"crate.manage-profiles"} variant="secondary" />
+            <div className="font-bold flex items-center gap-2">
+                Profiles <Badge>Experimental</Badge>
+            </div>
 
             {profiles.length === 0 && (
                 <div className="text-sm text-muted-foreground">No profiles are active</div>
@@ -72,6 +73,8 @@ export function Profiles() {
                     </DialogContent>
                 </Dialog>
             )}
+
+            <ActionButton actionId={"crate.manage-profiles"} variant="secondary" />
         </div>
     )
 }
