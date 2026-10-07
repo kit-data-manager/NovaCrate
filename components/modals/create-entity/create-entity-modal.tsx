@@ -95,6 +95,7 @@ export function CreateEntityModal({
     const onCreateSimpleEntity = useCallback(
         async (id: string, name: string) => {
             const entityFromEntityRule = await createEntityFromRule(id)
+            console.log("entityFromEntityRule", entityFromEntityRule)
 
             const entityToBeCreated: IEntity = entityFromEntityRule
                 ? {

@@ -8,7 +8,7 @@ import { editorState } from "@/lib/state/editor-state"
 import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { PropertyValueRule } from "@/lib/core/profiles/types/PropertyValueRule"
-import { getDefaultValue } from "@/lib/core/profiles/impl/util/entity-rule-to-entity"
+import { getDefaultValue } from "@/lib/core/profiles/impl/util/create-minimum-viable-entity"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 
 export class ProfileValidator extends Validator {
@@ -112,7 +112,9 @@ export class ProfileValidator extends Validator {
                     this.getContext().schemaWorker.worker
                 )
                 for (let i = 0; i < missingCount; i++) {
-                    editorState.getState().addPropertyEntry(entity["@id"], propertyRule.label, value)
+                    editorState
+                        .getState()
+                        .addPropertyEntry(entity["@id"], propertyRule.label, value)
                 }
                 setTimeout(
                     () =>

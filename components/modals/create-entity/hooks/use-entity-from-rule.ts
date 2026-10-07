@@ -1,12 +1,12 @@
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
-import { createEntityForRule } from "@/lib/core/profiles/impl/util/entity-rule-to-entity"
+import { createMinimumViableEntity } from "@/lib/core/profiles/impl/util/create-minimum-viable-entity"
 import { useCallback, useContext } from "react"
 import { useProfileService } from "@/lib/hooks/use-profile-service"
 import { useContextResolver } from "@/lib/hooks/hooks"
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 
 /**
- * Creates a minimal entity based on the given {@link EntityRule}. If no entity is given, the create function returns undefined
+ * Creates a minimal entity based on the given {@link EntityRule}. If no rule is given, the create function returns undefined
  * @param entityRule The entity rule to create minimal entities for. If left undefined, then the create function does not create an entity and returns undefined
  */
 export function useEntityFromRule(entityRule?: EntityRule) {
@@ -21,7 +21,7 @@ export function useEntityFromRule(entityRule?: EntityRule) {
                 const handler = profileService.getProfileHandler(entityRule.onHandler)
                 if (handler) {
                     try {
-                        entityFromEntityRule = await createEntityForRule(
+                        entityFromEntityRule = await createMinimumViableEntity(
                             handler,
                             id,
                             entityRule,

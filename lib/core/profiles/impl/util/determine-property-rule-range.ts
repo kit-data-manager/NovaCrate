@@ -3,6 +3,7 @@ import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { ISchemaWorkerContext } from "@/components/providers/schema-worker-provider"
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { isValidUrl } from "@/lib/utils"
+import { SlimClass } from "@/lib/schema-worker/helpers"
 
 export async function determinePropertyRuleRange(
     profileHandler: IProfileHandler,
@@ -10,9 +11,20 @@ export async function determinePropertyRuleRange(
     resolver: IContextResolverService,
     schemaWorker: ISchemaWorkerContext["worker"]
 ) {
-    const baseTypes = propertyRule.specializationOf
-        ? await schemaWorker.execute("getPropertyRange", propertyRule.specializationOf)
-        : undefined
+    let baseTypes: SlimClass[] | undefined
+    let mandatoryValue: EntitySinglePropertyTypes | undefined
+
+    try {
+        baseTypes = propertyRule.specializationOf
+            ? await schemaWorker.execute("getPropertyRange", propertyRule.specializationOf)
+            : undefined
+    } catch (e) {
+        console.warn(
+            `Unable to determine property rule range for base class ${propertyRule.specializationOf}`,
+            e
+        )
+    }
+
     const rangeIncludesTypes: string[] = []
 
     if (propertyRule.options !== undefined) {
@@ -33,6 +45,10 @@ export async function determinePropertyRuleRange(
                 )
             } else if (profileHandler.getPropertyValueRule(rangeItem)) {
                 const valueRule = profileHandler.getPropertyValueRule(rangeItem)!
+
+                // This property value rule is the only possible value of the target property, thus the value of the property value rule must be the value of the property
+                if (propertyRule.rangeIncludes.length === 1) mandatoryValue = valueRule.value
+
                 if (typeof valueRule.value === "object") {
                     rangeIncludesTypes.push(resolver.resolve("Thing") ?? "Thing")
                 } else if (typeof valueRule.value === "number") {
@@ -51,5 +67,5 @@ export async function determinePropertyRuleRange(
         }
     }
 
-    return { baseTypes: baseTypes, rangeIncludesTypes }
+    return { baseTypes: baseTypes, rangeIncludesTypes, mandatoryValue }
 }

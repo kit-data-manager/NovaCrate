@@ -8,7 +8,7 @@ import { determinePropertyRuleRange } from "@/lib/core/profiles/impl/util/determ
 import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
 import { hasAtLeastOneValue, pickFirst } from "@/lib/utils"
 
-export async function createEntityForRule(
+export async function createMinimumViableEntity(
     handler: IProfileHandler,
     id: string,
     rule: EntityRule,
@@ -26,8 +26,11 @@ export async function createEntityForRule(
         "@type": resolvedTypes.length > 0 ? resolvedTypes : fallbackType
     }
 
+    console.log(properties)
+
     for (const property of properties) {
         base[property.label] = await getDefaultValue(handler, property, resolver, schemaWorker)
+        console.log(property.label, base[property.label])
     }
 
     return base
@@ -39,23 +42,34 @@ export async function getDefaultValue(
     resolver: IContextResolverService,
     schemaWorker: ISchemaWorkerContext["worker"]
 ) {
-    const propertyRuleRange = await determinePropertyRuleRange(
-        profileHandler,
-        propertyRule,
-        resolver,
-        schemaWorker
-    )
-    const range =
-        propertyRuleRange.rangeIncludesTypes.length > 0
-            ? propertyRuleRange.rangeIncludesTypes
-            : propertyRuleRange.baseTypes || []
-    const canBe = propertyCanBe(range)
+    try {
+        const propertyRuleRange = await determinePropertyRuleRange(
+            profileHandler,
+            propertyRule,
+            resolver,
+            schemaWorker
+        )
 
-    return getPropertyTypeDefaultValue(
-        hasAtLeastOneValue(canBe.possiblePropertyTypes)
-            ? pickFirst(canBe.possiblePropertyTypes)
-            : PropertyType.Text
-    )
+        if (propertyRuleRange.mandatoryValue) return propertyRuleRange.mandatoryValue
+
+        const range =
+            propertyRuleRange.rangeIncludesTypes.length > 0
+                ? propertyRuleRange.rangeIncludesTypes
+                : propertyRuleRange.baseTypes || []
+        const canBe = propertyCanBe(range)
+
+        return getPropertyTypeDefaultValue(
+            hasAtLeastOneValue(canBe.possiblePropertyTypes)
+                ? pickFirst(canBe.possiblePropertyTypes)
+                : PropertyType.Text
+        )
+    } catch (e) {
+        console.warn(
+            `Could not determine default value of properties corresponding to rule ${propertyRule.label}, falling back to default`,
+            e
+        )
+        return getPropertyTypeDefaultValue(PropertyType.Text)
+    }
 }
 
 function getMandatoryProperties(handler: IProfileHandler, rule: EntityRule) {
