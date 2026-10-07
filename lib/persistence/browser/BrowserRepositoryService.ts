@@ -44,6 +44,11 @@ export class BrowserRepositoryService implements IRepositoryService {
         this._events.emit("crates-list-changed")
     }
 
+    async deleteAllCrates(): Promise<void> {
+        await this.worker.execute("deleteEverything")
+        this._events.emit("crates-list-changed")
+    }
+
     async getCrateAs(
         crateId: string,
         format: "zip" | "eln" | "standalone-json",

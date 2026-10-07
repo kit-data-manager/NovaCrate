@@ -29,6 +29,11 @@ async function deleteCrateDir(id: string) {
     if (!result.isOk()) throw result.unwrapErr()
 }
 
+async function deleteEverything() {
+    const result = await fs.remove("/" + CRATE_STORAGE)
+    if (!result.isOk()) throw result.unwrapErr()
+}
+
 export async function writeFile(crateId: string, filePath: string, data: Uint8Array | Blob) {
     const result = await fs.writeFile(
         resolveCratePath(crateId, filePath),
@@ -268,6 +273,7 @@ export const opfsFunctions = {
     readFile,
     getCrates,
     deleteCrateDir,
+    deleteEverything,
     getCrateDirContents,
     getFileInfo,
     getStorageInfo,
