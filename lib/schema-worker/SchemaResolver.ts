@@ -119,7 +119,7 @@ export class SchemaResolver {
                     const data = await req.json()
                     this.runningFetches.delete(url)
                     return schemaFileSchema.parse(data)
-                } else if (req.headers.get("Content-Type")?.startsWith("text/turtle")) {
+                } else if (req.headers.get("Content-Type")?.includes("turtle")) {
                     const ttl = await req.text()
                     const rawJson = parseTtl(ttl)
 
