@@ -64,7 +64,8 @@ function createMockRepositoryService(): IRepositoryService {
         createCrateFromMetadata: jest.fn(async () => "meta-crate-id"),
         deleteCrate: jest.fn(),
         getCrateAs: jest.fn(),
-        getStorageQuota: jest.fn()
+        getStorageQuota: jest.fn(),
+        deleteAllCrates: jest.fn()
     }
 }
 

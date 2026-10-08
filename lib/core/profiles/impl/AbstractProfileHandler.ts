@@ -2,7 +2,7 @@ import { IProfileHandler, IProfileHandlerEvents } from "@/lib/core/profiles/IPro
 import { Observable } from "@/lib/core/impl/Observable"
 import { IObservable } from "@/lib/core/IObservable"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
-import { buildProfileDefinitionFromRootEntity } from "@/lib/core/profiles/impl/ProfileFactory"
+import { buildProfileDefinitionFromRootEntity } from "@/lib/core/profiles/impl/util/build-profile-definition"
 import { IMetadataService } from "@/lib/core/IMetadataService"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"

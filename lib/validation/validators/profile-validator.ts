@@ -1,11 +1,16 @@
 import { ValidationResultWithoutTrace } from "../validation-result"
 import { Validator } from "../validator"
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
-import { isValidUrl, toArray } from "@/lib/utils"
+import {
+    checkEntityConformance,
+    entityMatchesRuleTypes,
+    EntityConformanceIssue
+} from "@/lib/core/profiles/impl/util/entity-rule-conformance"
+import { sortEntityRules } from "@/lib/core/profiles/impl/util/sort-entity-rules"
 import { ValidationResultBuilder } from "@/lib/validation/validation-result-builder"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
+import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
 import { editorState } from "@/lib/state/editor-state"
-import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { PropertyValueRule } from "@/lib/core/profiles/types/PropertyValueRule"
 import { getDefaultValue } from "@/lib/core/profiles/impl/util/create-minimum-viable-entity"
@@ -31,69 +36,178 @@ export class ProfileValidator extends Validator {
     async validateEntity(entity: IEntity): Promise<ValidationResultWithoutTrace[]> {
         if (!this.profileHandler.getIsReady()) return []
 
-        const results: ValidationResultWithoutTrace[] = []
-        const mapping = this.profileHandler.getEntityMapping()
-        const classRuleId = mapping.get(entity["@id"])
+        const entityMapping = this.profileHandler.getEntityMapping()
+        const classRuleId = entityMapping.get(entity["@id"])
         if (!classRuleId) return []
         const classRule = this.profileHandler.getEntityRule(classRuleId)
         if (!classRule) return []
 
-        this.validateEntityType(entity, classRule, results)
-        this.validateAllEntityProperties(classRuleId, entity, results)
+        const issues = checkEntityConformance(entity, classRule, this.profileHandler, {
+            resolver: this.getContext().resolver,
+            getEntity: (id) => this.getContext().editorState.getEntities().get(id),
+            isEntityAssignedTo: (entityId, entityRuleId) =>
+                entityMapping.get(entityId) === entityRuleId
+        })
 
-        return results
+        return this.translateIssues(issues, entity, classRule)
     }
 
-    private validateAllEntityProperties(
-        classRuleId: string,
+    private translateIssues(
+        issues: EntityConformanceIssue[],
         entity: IEntity,
-        results: ValidationResultWithoutTrace[]
-    ) {
-        const propertyRules = this.profileHandler.getPropertyRulesFor(classRuleId)
-
-        for (const propertyRule of propertyRules) {
-            let propertyCount = 0
-            if (propertyRule.label in entity) {
-                const property = entity[propertyRule.label]
-
-                propertyCount = toArray(property).length
-
-                if (propertyRule.options) {
-                    this.validatePropertyOptions(property, propertyRule, results, entity)
-                } else if (propertyRule.rangeIncludes) {
-                    this.validatePropertyRange(property, propertyRule, results, entity)
-                }
-            }
-
-            this.validatePropertyCount(propertyRule, propertyCount, results, entity)
-        }
-    }
-
-    private validateEntityType(
-        entity: IEntity,
-        classRule: EntityRule,
-        results: ValidationResultWithoutTrace[]
-    ) {
-        const missingTypes = this.classRuleFindMissingTypes(entity, classRule)
-        if (missingTypes.length > 0) {
-            results.push(
-                this.resultBuilder.rule("entityTypeMismatch").error({
-                    resultTitle: "The type of this entity does not match its profile",
-                    propertyName: "@type",
-                    entityId: entity["@id"],
-                    resultDescription: `This entity is a \`${classRuleName(classRule)}\` entity, but its type does not match. The following types are missing: ${missingTypes.map((t) => "`" + t + "`").join(", ")}`,
-                    actions: [
-                        this.resultBuilder.action("fix", "Fix", () => {
-                            for (const missingType of missingTypes) {
-                                editorState
-                                    .getState()
-                                    .addPropertyEntry(entity["@id"], "@type", missingType)
-                            }
+        entityRule: EntityRule
+    ): ValidationResultWithoutTrace[] {
+        return issues.flatMap((issue) => {
+            switch (issue.kind) {
+                case "missingType":
+                    return [this.buildMissingTypeResult(issue, entity, entityRule)]
+                case "tooFewPropertyEntries":
+                    return [this.buildTooFewEntriesResult(issue, entity)]
+                case "tooManyPropertyEntries":
+                    return [
+                        this.resultBuilder.rule("tooManyPropertyEntries").error({
+                            resultTitle: `Property \`${issue.rule.label}\` has too many entries`,
+                            resultDescription: `The property \`${issue.rule.label}\` must not be present more than ${issue.rule.maxCount} times`,
+                            entityId: entity["@id"],
+                            propertyName: issue.rule.label,
+                            propertyIndex: 0
                         })
                     ]
+                case "invalidPropertyOption":
+                    return [
+                        this.resultBuilder.rule("invalidPropertyOption").error({
+                            resultTitle: "Invalid value",
+                            resultDescription: `The value of this property is not allowed under the ${this.profileHandler.getDefinition()!.name} profile. Possible options are: ${issue.rule.options!.map((o) => (typeof o === "object" ? "Reference to \`" + o["@id"] + "\`" : "\`" + o + "\`")).join(", ")}`,
+                            entityId: entity["@id"],
+                            propertyName: issue.rule.label,
+                            propertyIndex: issue.index
+                        })
+                    ]
+                case "tooFewPropertyValues":
+                    return [this.buildTooFewValuesResult(issue, entity)]
+                case "tooManyPropertyValues":
+                    return issue.indices.map((i) =>
+                        this.resultBuilder.rule("tooManyPropertyValues").error({
+                            resultTitle: "Too many values",
+                            resultDescription: `This property must contain ${describePropertyValueRule(issue.rule)} no more than ${issue.rule.maxCount} times`,
+                            entityId: entity["@id"],
+                            propertyName: issue.propertyRule.label,
+                            propertyIndex: i,
+                            actions: [
+                                this.resultBuilder.action("remove", "Remove Value", () => {
+                                    editorState
+                                        .getState()
+                                        .removePropertyEntry(
+                                            entity["@id"],
+                                            issue.propertyRule.label,
+                                            i
+                                        )
+                                })
+                            ]
+                        })
+                    )
+                case "mismatchingReferenceType":
+                    return [
+                        this.resultBuilder.rule("mismatchingEntityType").error({
+                            resultTitle:
+                                "The referenced entity does not match any of the required types",
+                            resultDescription: `The referenced entity is expected to be one of: ${issue.expectedRules.map((r) => "`" + classRuleName(r) + "`").join(", ")}`,
+                            entityId: entity["@id"],
+                            propertyName: issue.rule.label,
+                            propertyIndex: issue.index
+                        })
+                    ]
+            }
+        })
+    }
+
+    private buildMissingTypeResult(
+        issue: Extract<EntityConformanceIssue, { kind: "missingType" }>,
+        entity: IEntity,
+        entityRule: EntityRule
+    ): ValidationResultWithoutTrace {
+        return this.resultBuilder.rule("entityTypeMismatch").error({
+            resultTitle: "The type of this entity does not match its profile",
+            propertyName: "@type",
+            entityId: entity["@id"],
+            resultDescription: `This entity is a \`${classRuleName(entityRule)}\` entity, but its type does not match. The following types are missing: ${issue.missingTypes.map((t) => "`" + t + "`").join(", ")}`,
+            actions: [
+                this.resultBuilder.action("fix", "Fix", () => {
+                    for (const missingType of issue.missingTypes) {
+                        editorState.getState().addPropertyEntry(entity["@id"], "@type", missingType)
+                    }
                 })
-            )
+            ]
+        })
+    }
+
+    private buildTooFewEntriesResult(
+        issue: Extract<EntityConformanceIssue, { kind: "tooFewPropertyEntries" }>,
+        entity: IEntity
+    ): ValidationResultWithoutTrace {
+        const missingCount = issue.rule.minCount! - issue.count
+        const handler = this.getContext().profileService.getProfileHandler(issue.rule.onHandler)
+
+        if (issue.rule.minCount === 1) {
+            return this.resultBuilder.rule("missingMandatoryProperty").error({
+                resultTitle: `Missing \`${issue.rule.label}\` property`,
+                resultDescription: `The mandatory property \`${issue.rule.label}\` is missing from this entity`,
+                entityId: entity["@id"],
+                actions: this.buildAddPropertyAction(entity, issue.rule, handler, missingCount)
+            })
         }
+
+        return this.resultBuilder.rule("tooFewMandatoryProperties").error({
+            resultTitle: `Property \`${issue.rule.label}\` too few entries`,
+            resultDescription: `The mandatory property \`${issue.rule.label}\` must be present at least ${issue.rule.minCount} times`,
+            entityId: entity["@id"],
+            actions: this.buildAddPropertyAction(entity, issue.rule, handler, missingCount)
+        })
+    }
+
+    private buildTooFewValuesResult(
+        issue: Extract<EntityConformanceIssue, { kind: "tooFewPropertyValues" }>,
+        entity: IEntity
+    ): ValidationResultWithoutTrace {
+        if (issue.rule.minCount === 1) {
+            return this.resultBuilder.rule("missingMandatoryPropertyValue").error({
+                resultTitle: "Missing mandatory value",
+                resultDescription: `This property must contain ${describePropertyValueRule(issue.rule)}`,
+                entityId: entity["@id"],
+                propertyName: issue.propertyRule.label,
+                actions: [
+                    this.resultBuilder.action("add-missing", "Add Value", () => {
+                        editorState
+                            .getState()
+                            .addPropertyEntry(
+                                entity["@id"],
+                                issue.propertyRule.label,
+                                issue.rule.value
+                            )
+                    })
+                ]
+            })
+        }
+
+        return this.resultBuilder.rule("tooFewMandatoryPropertyValues").error({
+            resultTitle: "Too few mandatory values",
+            resultDescription: `This property must contain ${describePropertyValueRule(issue.rule)} at least ${issue.rule.minCount} times`,
+            entityId: entity["@id"],
+            propertyName: issue.propertyRule.label,
+            actions: [
+                this.resultBuilder.action("add-missing", "Add Values", () => {
+                    for (let i = issue.count; i < (issue.rule.minCount ?? 0); i++) {
+                        editorState
+                            .getState()
+                            .addPropertyEntry(
+                                entity["@id"],
+                                issue.propertyRule.label,
+                                issue.rule.value
+                            )
+                    }
+                })
+            ]
+        })
     }
 
     private buildAddPropertyAction(
@@ -125,284 +239,6 @@ export class ProfileValidator extends Validator {
                 )
             })
         ]
-    }
-
-    private validatePropertyCount(
-        propertyRule: PropertyRule,
-        propertyCount: number,
-        results: ValidationResultWithoutTrace[],
-        entity: IEntity
-    ) {
-        const handler = this.getContext().profileService.getProfileHandler(propertyRule.onHandler)
-        if (propertyRule.minCount !== undefined && propertyCount < propertyRule.minCount) {
-            const missingCount = propertyRule.minCount - propertyCount
-            if (propertyRule.minCount === 1) {
-                results.push(
-                    this.resultBuilder.rule("missingMandatoryProperty").error({
-                        resultTitle: `Missing \`${propertyRule.label}\` property`,
-                        resultDescription: `The mandatory property \`${propertyRule.label}\` is missing from this entity`,
-                        entityId: entity["@id"],
-                        actions: this.buildAddPropertyAction(
-                            entity,
-                            propertyRule,
-                            handler,
-                            missingCount
-                        )
-                    })
-                )
-            } else {
-                results.push(
-                    this.resultBuilder.rule("tooFewMandatoryProperties").error({
-                        resultTitle: `Property \`${propertyRule.label}\` too few entries`,
-                        resultDescription: `The mandatory property \`${propertyRule.label}\` must be present at least ${propertyRule.minCount} times`,
-                        entityId: entity["@id"],
-                        actions: this.buildAddPropertyAction(
-                            entity,
-                            propertyRule,
-                            handler,
-                            missingCount
-                        )
-                    })
-                )
-            }
-        }
-
-        if (propertyRule.maxCount !== undefined && propertyCount > propertyRule.maxCount) {
-            results.push(
-                this.resultBuilder.rule("tooManyPropertyEntries").error({
-                    resultTitle: `Property \`${propertyRule.label}\` has too many entries`,
-                    resultDescription: `The property \`${propertyRule.label}\` must not be present more than ${propertyRule.maxCount} times`,
-                    entityId: entity["@id"],
-                    propertyName: propertyRule.label,
-                    propertyIndex: 0
-                })
-            )
-        }
-    }
-
-    private validatePropertyRange(
-        property: string | IReference | (string | IReference)[],
-        propertyRule: PropertyRule,
-        results: ValidationResultWithoutTrace[],
-        entity: IEntity
-    ) {
-        if (!propertyRule.rangeIncludes) return
-
-        const entityRules: EntityRule[] = []
-        const propertyValueRules: PropertyValueRule[] = []
-
-        // Classify each entry into one of the categories above. Types is the fallback category
-        for (const targetElementId of propertyRule.rangeIncludes) {
-            const _classRule = this.profileHandler.getEntityRule(targetElementId)
-            if (_classRule) entityRules.push(_classRule)
-            else {
-                const _propertyValueRule = this.profileHandler.getPropertyValueRule(targetElementId)
-                if (_propertyValueRule) propertyValueRules.push(_propertyValueRule)
-            }
-        }
-
-        this.validatePropertyValueRules(entity, property, propertyRule, propertyValueRules, results)
-        this.validatePropertyTarget(entity, property, propertyRule, entityRules, results)
-    }
-
-    private validatePropertyTarget(
-        entity: IEntity,
-        property: string | IReference | (string | IReference)[],
-        propertyRule: PropertyRule,
-        entityRules: EntityRule[],
-        results: ValidationResultWithoutTrace[]
-    ) {
-        propertyValue(property).forEach((value, i) => {
-            if (PropertyValueUtils.isRef(value)) {
-                const target = this.getContext().editorState.getEntities().get(value["@id"])
-                if (!target) return
-
-                const existingMapping = this.profileHandler.getEntityMapping().get(target["@id"])
-
-                const resolved = toArray(target["@type"]).map(
-                    (type) => this.getContext().resolver.resolve(type) ?? type
-                )
-
-                let match = false
-                for (const entityRule of entityRules) {
-                    if (match) break
-
-                    if (!entityRule.specializationOf) {
-                        match = true
-                        continue
-                    }
-
-                    if (entityRule["@id"] === existingMapping) {
-                        match = true
-                        continue
-                    }
-
-                    const missingTypes = entityRule.specializationOf.filter(
-                        (type) => !resolved.includes(type)
-                    )
-                    if (missingTypes.length === 0) {
-                        match = true
-                    }
-                }
-
-                if (!match) {
-                    results.push(
-                        this.resultBuilder.rule("mismatchingEntityType").error({
-                            resultTitle:
-                                "The referenced entity does not match any of the required types",
-                            resultDescription: `The referenced entity is expected to be one of: ${entityRules.map((r) => "`" + classRuleName(r) + "`").join(", ")}`,
-                            entityId: entity["@id"],
-                            propertyName: propertyRule.label,
-                            propertyIndex: i
-                        })
-                    )
-                }
-            }
-        })
-    }
-
-    private validatePropertyValueRules(
-        entity: IEntity,
-        propertyVal: string | IReference | (string | IReference)[],
-        propertyRule: PropertyRule,
-        propertyValueRules: PropertyValueRule[],
-        results: ValidationResultWithoutTrace[]
-    ) {
-        for (const propertyValueRule of propertyValueRules) {
-            const matchingIndices: number[] = []
-            propertyValue(propertyVal).forEach((value, i) => {
-                let match = false
-                if (typeof propertyValueRule.value === "object" && typeof value === "object") {
-                    if (propertyValueRule.value["@id"] === value["@id"]) match = true
-                } else if (
-                    typeof propertyValueRule.value === "string" &&
-                    typeof value === "string"
-                ) {
-                    if (propertyValueRule.value === value) match = true
-                }
-
-                if (match) {
-                    matchingIndices.push(i)
-                }
-            })
-
-            const matches = matchingIndices.length
-
-            if (propertyValueRule.minCount !== undefined && matches < propertyValueRule.minCount) {
-                if (propertyValueRule.minCount === 1) {
-                    results.push(
-                        this.resultBuilder.rule("missingMandatoryPropertyValue").error({
-                            resultTitle: "Missing mandatory value",
-                            resultDescription: `This property must contain ${typeof propertyValueRule.value === "object" ? "a reference to `" + propertyValueRule.value["@id"] + "`" : "the value `" + propertyValueRule.value + "`"}`,
-                            entityId: entity["@id"],
-                            propertyName: propertyRule.label,
-                            actions: [
-                                this.resultBuilder.action("add-missing", "Add Value", () => {
-                                    editorState
-                                        .getState()
-                                        .addPropertyEntry(
-                                            entity["@id"],
-                                            propertyRule.label,
-                                            propertyValueRule.value
-                                        )
-                                })
-                            ]
-                        })
-                    )
-                } else {
-                    results.push(
-                        this.resultBuilder.rule("tooFewMandatoryPropertyValues").error({
-                            resultTitle: "Too few mandatory values",
-                            resultDescription: `This property must contain ${typeof propertyValueRule.value === "object" ? "a reference to `" + propertyValueRule.value["@id"] + "`" : "the value `" + propertyValueRule.value + "`"} at least ${propertyValueRule.minCount} times`,
-                            entityId: entity["@id"],
-                            propertyName: propertyRule.label,
-                            actions: [
-                                this.resultBuilder.action("add-missing", "Add Values", () => {
-                                    for (
-                                        let i = matches;
-                                        i < (propertyValueRule.minCount ?? 0);
-                                        i++
-                                    ) {
-                                        editorState
-                                            .getState()
-                                            .addPropertyEntry(
-                                                entity["@id"],
-                                                propertyRule.label,
-                                                propertyValueRule.value
-                                            )
-                                    }
-                                })
-                            ]
-                        })
-                    )
-                }
-            }
-
-            if (propertyValueRule.maxCount !== undefined && matches > propertyValueRule.maxCount) {
-                for (const i of matchingIndices) {
-                    results.push(
-                        this.resultBuilder.rule("tooManyPropertyValues").error({
-                            resultTitle: "Too many values",
-                            resultDescription: `This property must contain ${typeof propertyValueRule.value === "object" ? "a reference to `" + propertyValueRule.value["@id"] + "`" : "the value `" + propertyValueRule.value + "`"} no more than ${propertyValueRule.maxCount} times`,
-                            entityId: entity["@id"],
-                            propertyName: propertyRule.label,
-                            propertyIndex: i,
-                            actions: [
-                                this.resultBuilder.action("remove", "Remove Value", () => {
-                                    editorState
-                                        .getState()
-                                        .removePropertyEntry(entity["@id"], propertyRule.label, i)
-                                })
-                            ]
-                        })
-                    )
-                }
-            }
-        }
-    }
-
-    private validatePropertyOptions(
-        property: string | IReference | (string | IReference)[],
-        propertyRule: PropertyRule,
-        results: ValidationResultWithoutTrace[],
-        entity: IEntity
-    ) {
-        const invalidIndices: number[] = []
-        propertyValue(property).forEach((value, i) => {
-            const equiv = propertyRule.options!.find((option) => {
-                if (typeof value === "object" && typeof option === "object") {
-                    return value["@id"] === option["@id"]
-                } else if (typeof value === "string" && typeof option === "string") {
-                    return value === option
-                } else {
-                    return false
-                }
-            })
-            if (equiv === undefined) {
-                invalidIndices.push(i)
-            }
-        })
-
-        if (invalidIndices.length > 0) {
-            for (const i of invalidIndices) {
-                results.push(
-                    this.resultBuilder.rule("invalidPropertyOption").error({
-                        resultTitle: "Invalid value",
-                        resultDescription: `The value of this property is not allowed under the ${this.profileHandler.getDefinition()!.name} profile. Possible options are: ${propertyRule.options!.map((o) => (typeof o === "object" ? "Reference to `" + o["@id"] + "`" : "`" + o + "`")).join(", ")}`,
-                        entityId: entity["@id"],
-                        propertyName: propertyRule.label,
-                        propertyIndex: i
-                    })
-                )
-            }
-        }
-    }
-
-    private classRuleFindMissingTypes(entity: IEntity, classRule: EntityRule) {
-        const entityTypes = toArray(entity["@type"]).map((type) =>
-            isValidUrl(type) ? type : (this.getContext().resolver.resolve(type) ?? type)
-        )
-        return (classRule.specializationOf ?? []).filter((t) => !entityTypes.includes(t))
     }
 
     async validateCrate(crate: ICrate): Promise<ValidationResultWithoutTrace[]> {
@@ -448,10 +284,54 @@ export class ProfileValidator extends Validator {
             }
         }
 
+        results.push(...this.findUnassignedProfileEntities(def, mapping))
+
+        return results
+    }
+
+    /**
+     * Entities whose types match an entity rule of this profile but that are not present in the
+     * entity mapping. Entities are only mapped through references from other entities, so an
+     * entity without incoming references would silently be invisible to profile validation.
+     */
+    private findUnassignedProfileEntities(
+        def: ProfileDefinition,
+        mapping: Map<string, string>
+    ): ValidationResultWithoutTrace[] {
+        const results: ValidationResultWithoutTrace[] = []
+        const mappedIds = new Set(mapping.keys())
+
+        const sortedRules = [...def.entityRules].sort((a, b) =>
+            sortEntityRules(a, b, this.profileHandler)
+        )
+
+        for (const entity of this.getContext().editorState.getEntities().values()) {
+            if (mappedIds.has(entity["@id"])) continue
+
+            const matchingRule = sortedRules.find((rule) =>
+                entityMatchesRuleTypes(entity, rule, this.getContext().resolver)
+            )
+            if (!matchingRule) continue
+
+            results.push(
+                this.resultBuilder.rule("unassignedProfileEntity").softWarning({
+                    resultTitle: "This entity is not assigned to a profile rule",
+                    resultDescription: `The entity matches the entity rule \`${classRuleName(matchingRule)}\` of profile ${def.name}, but no property in this crate references it. Entities are assigned to profile rules through references, so this entity is currently not validated against the profile.`,
+                    entityId: entity["@id"]
+                })
+            )
+        }
+
         return results
     }
 }
 
 function classRuleName(c: EntityRule) {
     return c.name || c.label || c["@id"]
+}
+
+function describePropertyValueRule(c: PropertyValueRule) {
+    return typeof c.value === "object"
+        ? "a reference to `" + c.value["@id"] + "`"
+        : "the value `" + c.value + "`"
 }
