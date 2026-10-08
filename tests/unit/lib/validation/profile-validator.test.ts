@@ -139,6 +139,30 @@ describe("ProfileValidator unassigned profile entities", () => {
         expect(results.map((r) => r.entityId)).toEqual(["person-1", "person-2", "dataset-1"])
     })
 
+    it("does not warn for an entity that only matches a rule without specializationOf", async () => {
+        const openRule: EntityRule = {
+            "@id": "https://example.org/rules#Open",
+            onHandler: "handler-1",
+            onProfile: "https://example.org/profile",
+            name: "Open"
+        }
+        const definitionWithOpenRule: ProfileDefinition = {
+            ...definition,
+            entityRules: [personRule, datasetRule, openRule]
+        }
+        const validator = new ProfileValidator(
+            {
+                ...makeHandler(new Map()),
+                getDefinition: () => definitionWithOpenRule
+            },
+            makeContext([{ "@id": "file-1", "@type": ["https://schema.org/File"] }])
+        )
+
+        const results = await validator.validateCrate(crate)
+
+        expect(results).toEqual([])
+    })
+
     it("does not warn when the profile is not ready", async () => {
         const validator = makeValidator(
             [{ "@id": "person-1", "@type": ["Person"] }],

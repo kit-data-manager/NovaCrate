@@ -173,18 +173,37 @@ function checkPropertyRange(
     const entityRules: EntityRule[] = []
     const propertyValueRules: PropertyValueRule[] = []
 
-    // Classify each entry into one of the categories above. Types is the fallback category
+    // Classify each entry into one of the categories above. Types is the fallback category.
+    // Object-valued property value rules also reference an entity rule that the referenced entity
+    // must conform to, so those entity rules are collected alongside the direct rangeIncludes ones.
     for (const targetElementId of propertyRule.rangeIncludes!) {
         const entityRule = ruleLookup.getEntityRule(targetElementId)
         if (entityRule) entityRules.push(entityRule)
         else {
             const propertyValueRule = ruleLookup.getPropertyValueRule(targetElementId)
-            if (propertyValueRule) propertyValueRules.push(propertyValueRule)
+            if (propertyValueRule) {
+                propertyValueRules.push(propertyValueRule)
+                if (typeof propertyValueRule.value === "object") {
+                    const referencedEntityRule = ruleLookup.getEntityRule(
+                        (propertyValueRule.value as IReference)["@id"]
+                    )
+                    if (referencedEntityRule) entityRules.push(referencedEntityRule)
+                }
+            }
         }
     }
 
     checkPropertyValueRules(property, propertyRule, propertyValueRules, issues)
-    checkPropertyTargets(property, propertyRule, entityRules, ctx, issues)
+
+    // Avoid checking the same entity rule repeatedly when it is reachable both directly via
+    // rangeIncludes and indirectly via an object-valued property value rule. Only run the range
+    // target check when at least one entity rule is present.
+    const uniqueEntityRules = [
+        ...new Map(entityRules.map((rule) => [rule["@id"], rule])).values()
+    ]
+    if (uniqueEntityRules.length > 0) {
+        checkPropertyTargets(property, propertyRule, uniqueEntityRules, ctx, issues)
+    }
 }
 
 function checkPropertyValueRules(

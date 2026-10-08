@@ -440,4 +440,95 @@ describe("checkEntityConformance", () => {
             )
         ).toEqual([])
     })
+
+    it("reports a reference whose target type matches no entity rule referenced by an object-valued property value rule", () => {
+        const authorValueRule = makePropertyValueRule({
+            "@id": "value-author",
+            value: { "@id": personTargetRule["@id"] }
+        })
+        const authorRule = makePropertyRule({
+            "@id": "prop-author",
+            label: "author",
+            rangeIncludes: [authorValueRule["@id"]],
+            appliesToEntityRules: [thingRule["@id"]]
+        })
+        const entity: IEntity = {
+            "@id": "e1",
+            "@type": [CREATIVE_WORK],
+            author: [{ "@id": "org-1" }]
+        }
+        const org: IEntity = { "@id": "org-1", "@type": [ORGANIZATION] }
+
+        expect(
+            checkEntityConformance(
+                entity,
+                thingRule,
+                makeRuleLookup([thingRule, personTargetRule], [authorRule], [authorValueRule]),
+                makeCtx([org])
+            )
+        ).toEqual([
+            {
+                kind: "mismatchingReferenceType",
+                rule: authorRule,
+                index: 0,
+                expectedRules: [personTargetRule]
+            }
+        ])
+    })
+
+    it("accepts a reference whose target type matches an entity rule referenced by an object-valued property value rule", () => {
+        const authorValueRule = makePropertyValueRule({
+            "@id": "value-author",
+            value: { "@id": personTargetRule["@id"] }
+        })
+        const authorRule = makePropertyRule({
+            "@id": "prop-author",
+            label: "author",
+            rangeIncludes: [authorValueRule["@id"]],
+            appliesToEntityRules: [thingRule["@id"]]
+        })
+        const entity: IEntity = {
+            "@id": "e1",
+            "@type": [CREATIVE_WORK],
+            author: [{ "@id": "p-1" }]
+        }
+        const person: IEntity = { "@id": "p-1", "@type": ["Person"] }
+
+        expect(
+            checkEntityConformance(
+                entity,
+                thingRule,
+                makeRuleLookup([thingRule, personTargetRule], [authorRule], [authorValueRule]),
+                makeCtx([person])
+            )
+        ).toEqual([])
+    })
+
+    it("does not flag a mismatch when an object-valued property value rule references an unresolvable entity rule", () => {
+        const authorValueRule = makePropertyValueRule({
+            "@id": "value-author",
+            value: { "@id": "https://example.org/rules#Missing" }
+        })
+        const authorRule = makePropertyRule({
+            "@id": "prop-author",
+            label: "author",
+            rangeIncludes: [authorValueRule["@id"]],
+            appliesToEntityRules: [thingRule["@id"]]
+        })
+        const entity: IEntity = {
+            "@id": "e1",
+            "@type": [CREATIVE_WORK],
+            author: [{ "@id": "org-1" }]
+        }
+        const org: IEntity = { "@id": "org-1", "@type": [ORGANIZATION] }
+
+        expect(
+            checkEntityConformance(
+                entity,
+                thingRule,
+                makeRuleLookup([thingRule], [authorRule], [authorValueRule]),
+                makeCtx([org])
+            )
+        ).toEqual([])
+    })
 })

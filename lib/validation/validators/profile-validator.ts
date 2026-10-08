@@ -301,9 +301,11 @@ export class ProfileValidator extends Validator {
         const results: ValidationResultWithoutTrace[] = []
         const mappedIds = new Set(mapping.keys())
 
-        const sortedRules = [...def.entityRules].sort((a, b) =>
-            sortEntityRules(a, b, this.profileHandler)
-        )
+        // Only rules that declare at least one required type can trigger the unassigned-item
+        // warning; a rule without specializationOf would match every entity.
+        const sortedRules = [...def.entityRules]
+            .filter((rule) => (rule.specializationOf ?? []).length > 0)
+            .sort((a, b) => sortEntityRules(a, b, this.profileHandler))
 
         for (const entity of this.getContext().editorState.getEntities().values()) {
             if (mappedIds.has(entity["@id"])) continue
