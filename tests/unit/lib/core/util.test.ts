@@ -25,7 +25,8 @@ describe("downloadCrateAs", () => {
             createCrateFromMetadata: jest.fn(),
             deleteCrate: jest.fn(),
             getCrateAs: jest.fn().mockResolvedValue(blob),
-            getStorageQuota: jest.fn()
+            getStorageQuota: jest.fn(),
+            deleteAllCrates: jest.fn()
         }
 
         await downloadCrateAs(repo, "crate-1", "zip", "my-crate.zip")
@@ -43,7 +44,8 @@ describe("downloadCrateAs", () => {
             createCrateFromMetadata: jest.fn(),
             deleteCrate: jest.fn(),
             getCrateAs: jest.fn().mockResolvedValue(blob),
-            getStorageQuota: jest.fn()
+            getStorageQuota: jest.fn(),
+            deleteAllCrates: jest.fn()
         }
 
         await downloadCrateAs(repo, "crate-1", "zip", "my-crate.zip", { compressed: true })

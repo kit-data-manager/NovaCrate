@@ -24,11 +24,10 @@ export default defineConfig({
             use: { ...devices["Desktop Chrome"] }
         }
     ],
-    webServer: process.env.CI
-        ? {
-              command: `npm run test:serve`,
-              url: "http://localhost:3000/",
-              timeout: 120 * 1000
-          }
-        : undefined
+    webServer: {
+        command: `HOSTNAME=127.0.0.1 npm run serve`,
+        url: "http://127.0.0.1:3000/",
+        reuseExistingServer: !process.env.CI,
+        timeout: 120 * 1000
+    }
 })

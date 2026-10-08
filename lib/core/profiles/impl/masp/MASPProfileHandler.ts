@@ -5,8 +5,13 @@ import { hasAtLeastOneValue, isValidUrl, pickFirst, toArray } from "@/lib/utils"
 import { AbstractProfileHandler } from "@/lib/core/profiles/impl/AbstractProfileHandler"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { ProfileHandlerError } from "@/lib/core/profiles/impl/ProfileHandlerError"
 import { sortEntityRules } from "@/lib/core/profiles/impl/util/sort-entity-rules"
+import {
+    checkEntityConformance,
+    entityMatchesRuleTypes
+} from "@/lib/core/profiles/impl/util/entity-rule-conformance"
 
 const MASPClass = z.object({
     "@id": z.string(),
@@ -222,6 +227,7 @@ export class MASPProfileHandler extends AbstractProfileHandler {
         const classRuleMapping = new Map<string, string>()
         const done = new Set<string>()
         const queue: string[] = []
+        const entityIndex = new Map(entities.map((e) => [e["@id"], e]))
 
         const metadataDescriptorClassRule = this.findClassRuleWithMetadataDescriptorProperty(def)
         if (!metadataDescriptorClassRule) {
@@ -304,54 +310,42 @@ export class MASPProfileHandler extends AbstractProfileHandler {
             for (const propRule of propertyRulesForClass) {
                 if (!propRule.rangeIncludes) continue
 
-                const targetClassRule = def.entityRules
-                    .filter((c) =>
-                        propRule.rangeIncludes?.find(
-                            (targetElementId) => targetElementId === c["@id"]
-                        )
-                    )
-                    .sort((a, b) => sortEntityRules(a, b, this))
-
-                const propertyValueRuleIds = def.propertyValueRules
-                    .filter((c) =>
-                        propRule.rangeIncludes?.find(
-                            (targetElementId) => targetElementId === c["@id"]
-                        )
-                    )
-                    .filter((propertyValuerRule) => typeof propertyValuerRule.value === "object")
-
-                targetClassRule.push(
-                    ...propertyValueRuleIds
-                        .map((propertyValueRule) =>
-                            def.entityRules.find(
-                                (c) => c["@id"] === (propertyValueRule.value as IReference)["@id"]
-                            )
-                        )
-                        .filter((c) => c !== undefined)
+                const targetClassRules = this.findRangeEntityRules(def, propRule).sort((a, b) =>
+                    sortEntityRules(a, b, this)
                 )
 
-                if (targetClassRule.length === 0) continue
+                if (targetClassRules.length === 0) continue
 
                 const propValues = propertyValue(entity[propRule.label] ?? [])
                 propValues.forEach((value) => {
                     if (PropertyValueUtils.isRef(value) && !propertyValue(value).isEmpty()) {
                         const refId = (value as IReference)["@id"]
-                        const targetEntity = entities.find((e) => e["@id"] === refId)
-                        if (targetEntity) {
-                            const resolved = toArray(targetEntity["@type"]).map(
-                                (type) => this.context.resolve(type) ?? type
-                            )
-                            for (const classRule of targetClassRule) {
-                                const matches = classRule.specializationOf
-                                    ? classRule.specializationOf.every((type) =>
-                                          resolved.find((t) => t === type)
-                                      )
-                                    : true
-                                if (matches && refId && !classRuleMapping.has(refId)) {
-                                    classRuleMapping.set(refId, classRule["@id"])
-                                    queue.push(refId)
-                                }
-                            }
+                        const targetEntity = entityIndex.get(refId)
+                        if (!targetEntity) return
+
+                        const typeMatchingRules = targetClassRules.filter((rule) =>
+                            entityMatchesRuleTypes(targetEntity, rule, this.context)
+                        )
+                        if (typeMatchingRules.length === 0) return
+
+                        // Assign the most complex rule the entity fully conforms to. If no rule
+                        // is fully conformant, fall back to the least complex type-matching rule.
+                        // Entities whose types match no candidate rule are left unmapped.
+                        const conformantRule = typeMatchingRules.find(
+                            (rule) =>
+                                checkEntityConformance(targetEntity, rule, this, {
+                                    resolver: this.context,
+                                    getEntity: (id) => entityIndex.get(id),
+                                    isEntityAssignedTo: (entityId, entityRuleId) =>
+                                        classRuleMapping.get(entityId) === entityRuleId
+                                }).length === 0
+                        )
+                        const assignedRule =
+                            conformantRule ?? typeMatchingRules[typeMatchingRules.length - 1]
+
+                        if (refId && !classRuleMapping.has(refId)) {
+                            classRuleMapping.set(refId, assignedRule["@id"])
+                            queue.push(refId)
                         }
                     }
                 })
@@ -371,6 +365,30 @@ export class MASPProfileHandler extends AbstractProfileHandler {
             })
         )
         this._events.emit("error-emitted")
+    }
+
+    /**
+     * Collects all entity rules that a property value can be assigned to: entity rules referenced
+     * directly via `rangeIncludes` and entity rules referenced indirectly via property value rules.
+     */
+    private findRangeEntityRules(def: ProfileDefinition, propRule: PropertyRule): EntityRule[] {
+        const directRules = def.entityRules.filter((c) =>
+            propRule.rangeIncludes?.includes(c["@id"])
+        )
+
+        const rulesViaPropertyValueRules = def.propertyValueRules
+            .filter((c) => propRule.rangeIncludes?.includes(c["@id"]))
+            .filter((rule) => typeof rule.value === "object")
+            .map((rule) =>
+                def.entityRules.find((c) => c["@id"] === (rule.value as IReference)["@id"])
+            )
+            .filter((c) => c !== undefined)
+
+        return [
+            ...new Map(
+                [...directRules, ...rulesViaPropertyValueRules].map((c) => [c["@id"], c])
+            ).values()
+        ]
     }
 
     private findClassRuleWithMetadataDescriptorProperty(
