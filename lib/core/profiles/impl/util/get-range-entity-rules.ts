@@ -1,6 +1,11 @@
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { IProfileService } from "@/lib/core/profiles/IProfileService"
 
+/**
+ * Get all entity rules contained in the rangeIncludes of the given property rules
+ * @param profileService
+ * @param propertyRules
+ */
 export function getRangeEntityRules(
     profileService: IProfileService,
     propertyRules: PropertyRule[]
