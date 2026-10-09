@@ -21,7 +21,7 @@ export type EntityRule = {
 
     /**
      * A set of terms from the base schema or other vocabulary that conforming entities need to have as their @type.
-     * Each reference should be a full term URI. Non http links are automatically rewritten to https
+     * Each reference should be a full term URI.
      */
     specializationOf?: string[]
 

@@ -114,17 +114,17 @@ export class BaseContextService implements IContextService, IContextResolverServ
      * @returns Full ID of the specified ID (e.g. "Organization" becomes "https://schema.org/Organization"). Can be used to query the SchemaGraph. Returns null on failure
      */
     resolve(id: string) {
-        if (id in this._context) {
+        if (Object.hasOwn(this._context, id)) {
             return this._context[id]
         } else if (/^.+:.+$/.test(id)) {
             // Type has a prefix that we will try to resolve
             const prefix = id.split(":")[0]
-            const suffix = id.split(":")[1]
+            const suffix = id.split(":").slice(1).join(":")
             const prefixContext = this._customPairs[prefix] ?? this._context[prefix]
             if (prefixContext) {
                 return prefixContext + suffix
             } else {
-                if (prefix !== "http" && prefix !== "https")
+                if (prefix.toLowerCase() !== "http" && prefix.toLowerCase() !== "https")
                     console.warn(
                         `Found node with id ${id}, but prefix ${prefix} is not defined in the context`
                     )
@@ -146,6 +146,9 @@ export class BaseContextService implements IContextService, IContextResolverServ
      */
     reverse(URI: string): string | null {
         if (this._contextReversed[URI]) return this._contextReversed[URI]
+        for (const [key, value] of Object.entries(this._contextReversed)) {
+            if (URI.startsWith(key)) return value + ":" + URI.substring(key.length)
+        }
         for (const [key, value] of Object.entries(this._customPairs)) {
             if (URI.startsWith(value)) return key + ":" + URI.substring(value.length)
         }
@@ -185,7 +188,7 @@ export class BaseContextService implements IContextService, IContextResolverServ
                     const { specification, data } = await this.loadKnownContext(known)
                     tempSpecification = specification
                     tempSpecificationUrl = known["@id"]
-                    tempContext = { ...tempContext, ...data }
+                    tempContext = { ...data, ...tempContext }
                 } else {
                     const msg = `Cannot load schema ${entry} without prefix. Please specify the schema as a custom context entry with a prefix.`
                     console.error(msg)
@@ -199,7 +202,7 @@ export class BaseContextService implements IContextService, IContextResolverServ
                             const { specification, data } = await this.loadKnownContext(known)
                             tempSpecification = specification
                             tempSpecificationUrl = known["@id"]
-                            tempContext = { ...tempContext, ...data }
+                            tempContext = { ...data, ...tempContext }
                         } else {
                             const msg = `Cannot load schema ${value} as @vocab. Only known specifications are supported. Please specify the schema as a custom context entry with a prefix.`
                             console.error(msg)
@@ -218,7 +221,7 @@ export class BaseContextService implements IContextService, IContextResolverServ
             const { specification, data } = await this.loadKnownContext(fallback)
             tempSpecification = specification
             tempSpecificationUrl = fallback["@id"]
-            tempContext = { ...tempContext, ...data }
+            tempContext = { ...data, ...tempContext }
 
             const msg = `Could not determine the RO-Crate specification version. Using fallback context: ${fallback.version}`
             console.error(msg)

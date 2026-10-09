@@ -86,7 +86,7 @@ export function getEntityDisplayName(entity: IEntity, fallback: boolean = true) 
  * @param string String to check
  */
 export function isValidUrl(string: string) {
-    return string.match(/[a-z]:\/\/.*/) !== null
+    return string.match(/[a-z]:\/\/.*/i) !== null
 }
 
 /**
@@ -239,7 +239,7 @@ export function camelCaseReadable(str: string) {
     // If the string contains more than one :, we just use the first one as suffix and join everything else back together
     let split = suffix.join(":").replaceAll(/([a-z:])([A-Z])/g, "$1 $2")
     if (split.startsWith(" ")) split = split.slice(1)
-    return (prefix ? `[${prefix}] ` : "") + split.charAt(0).toUpperCase() + split.slice(1)
+    return (prefix ? `(${prefix}) ` : "") + split.charAt(0).toUpperCase() + split.slice(1)
 }
 
 /**
