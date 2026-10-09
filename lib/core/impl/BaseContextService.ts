@@ -3,6 +3,7 @@ import { IContextService, IContextServiceEvents } from "@/lib/core/IContextServi
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { Observable } from "@/lib/core/impl/Observable"
 import { IObservable } from "@/lib/core/IObservable"
+import { isValidUrl } from "@/lib/utils"
 
 const KNOWN_CONTEXTS = [
     {
@@ -127,8 +128,11 @@ export class BaseContextService implements IContextService, IContextResolverServ
                     console.warn(
                         `Found node with id ${id}, but prefix ${prefix} is not defined in the context`
                     )
+                if (isValidUrl(id)) return id
                 return null
             }
+        } else if (isValidUrl(id)) {
+            return id
         } else return null
     }
 
