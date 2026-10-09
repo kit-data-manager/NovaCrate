@@ -51,7 +51,11 @@ const MASPPropertyValue = z.object({
     description: z.optional(z.string()),
     "sh:maxCount": z.optional(z.coerce.number()),
     "sh:minCount": z.optional(z.coerce.number()),
-    value: z.union([z.string(), z.object({ "@id": z.string() })])
+    value: z.union([
+        z.string(),
+        z.object({ "@id": z.string() }),
+        z.tuple([z.object({ "@id": z.string() })])
+    ])
 })
 
 const MASPItemList = z.object({
@@ -193,7 +197,7 @@ export class MASPProfileHandler extends AbstractProfileHandler {
                     description: d.description,
                     maxCount: d["sh:maxCount"],
                     minCount: d["sh:minCount"],
-                    value: d.value
+                    value: pickFirst(d.value)
                 })
             } else {
                 this.errors.push(
