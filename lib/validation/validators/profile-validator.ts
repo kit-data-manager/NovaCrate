@@ -3,7 +3,6 @@ import { Validator } from "../validator"
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import {
     checkEntityConformance,
-    entityMatchesRuleTypes,
     EntityConformanceIssue
 } from "@/lib/core/profiles/impl/util/entity-rule-conformance"
 import { sortEntityRules } from "@/lib/core/profiles/impl/util/sort-entity-rules"
@@ -284,7 +283,7 @@ export class ProfileValidator extends Validator {
             }
         }
 
-        results.push(...this.findUnassignedProfileEntities(def, mapping))
+        results.push(...this.findUnassignedProfileEntities(def, mapping, classCounts))
 
         return results
     }
@@ -293,25 +292,44 @@ export class ProfileValidator extends Validator {
      * Entities whose types match an entity rule of this profile but that are not present in the
      * entity mapping. Entities are only mapped through references from other entities, so an
      * entity without incoming references would silently be invisible to profile validation.
+     *
+     * A rule is only recommended when the entity would immediately conform to it without any
+     * errors (mandatory properties present, valid values, correct reference types, ...), and when
+     * the rule has not yet reached its maxCount. If no such rule conforms, the entity is not
+     * reported.
      */
     private findUnassignedProfileEntities(
         def: ProfileDefinition,
-        mapping: Map<string, string>
+        mapping: Map<string, string>,
+        classCounts: Record<string, number>
     ): ValidationResultWithoutTrace[] {
         const results: ValidationResultWithoutTrace[] = []
         const mappedIds = new Set(mapping.keys())
 
         // Only rules that declare at least one required type can trigger the unassigned-item
-        // warning; a rule without specializationOf would match every entity.
+        // warning; a rule without specializationOf would match every entity. Rules whose
+        // maxCount is already exhausted are skipped, since assigning another entity to them
+        // would create a violation.
         const sortedRules = [...def.entityRules]
             .filter((rule) => (rule.specializationOf ?? []).length > 0)
+            .filter(
+                (rule) =>
+                    rule.maxCount === undefined ||
+                    (classCounts[rule["@id"]] ?? 0) < rule.maxCount
+            )
             .sort((a, b) => sortEntityRules(a, b, this.profileHandler))
 
         for (const entity of this.getContext().editorState.getEntities().values()) {
             if (mappedIds.has(entity["@id"])) continue
 
-            const matchingRule = sortedRules.find((rule) =>
-                entityMatchesRuleTypes(entity, rule, this.getContext().resolver)
+            const matchingRule = sortedRules.find(
+                (rule) =>
+                    checkEntityConformance(entity, rule, this.profileHandler, {
+                        resolver: this.getContext().resolver,
+                        getEntity: (id) => this.getContext().editorState.getEntities().get(id),
+                        isEntityAssignedTo: (entityId, entityRuleId) =>
+                            mapping.get(entityId) === entityRuleId
+                    }).length === 0
             )
             if (!matchingRule) continue
 
