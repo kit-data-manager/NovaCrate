@@ -79,7 +79,7 @@ export default function EntityNode({
                         <div className="flex flex-col gap-1 ml-2 text-right">
                             {handles.map((h) => {
                                 return (
-                                    <div key={h.id} className="text-xs">
+                                    <div key={h.id} className="text-xs line-clamp-1">
                                         {camelCaseReadable(h.name)}
                                     </div>
                                 )

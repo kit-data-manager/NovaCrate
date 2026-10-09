@@ -51,30 +51,32 @@ export function Profiles() {
                 ))}
             </div>
 
-            {errors.length > 0 && (
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="destructive">View {errors.length} Errors</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Profile System Errors</DialogTitle>
-                        </DialogHeader>
+            <div className="flex gap-2 items-center">
+                {errors.length > 0 && (
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="destructive">View {errors.length} Errors</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Profile System Errors</DialogTitle>
+                            </DialogHeader>
 
-                        <div className="max-h-[80vh] overflow-y-auto space-y-2">
-                            {errors.map((error, i) => (
-                                <Error
-                                    title={`An error occurred while parsing profile "${error.profileUri}"${error.handlerName ? " with handler " + error.handlerName : ""}`}
-                                    error={error}
-                                    key={i}
-                                />
-                            ))}
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            )}
+                            <div className="max-h-[80vh] overflow-y-auto space-y-2">
+                                {errors.map((error, i) => (
+                                    <Error
+                                        title={`An error occurred while parsing profile "${error.profileUri}"${error.handlerName ? " with handler " + error.handlerName : ""}`}
+                                        error={error}
+                                        key={i}
+                                    />
+                                ))}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                )}
 
-            <ActionButton actionId={"crate.manage-profiles"} variant="secondary" />
+                <ActionButton actionId={"crate.manage-profiles"} variant="secondary" />
+            </div>
         </div>
     )
 }
