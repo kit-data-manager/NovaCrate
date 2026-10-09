@@ -317,23 +317,31 @@ export function isNoneOf(value: string, of: string[]) {
 export function referenceCheck(propertyRange?: string[]) {
     return propertyRange
         ? propertyRange.length === 0 ||
-              propertyRange.filter((s) =>
-                  isNoneOf(
-                      s,
-                      [
-                          SCHEMA_ORG_TIME,
-                          SCHEMA_ORG_BOOLEAN,
-                          SCHEMA_ORG_DATE_TIME,
-                          SCHEMA_ORG_NUMBER,
-                          SCHEMA_ORG_DATE,
-                          SCHEMA_ORG_TEXT,
-                          SCHEMA_ORG_NUMBERLIKE,
-                          SCHEMA_ORG_TEXTLIKE
-                      ].flat()
-                  )
-              ).length > 0
+              propertyRange
+                  .map(normalizeTypeUrl)
+                  .filter((s) =>
+                      isNoneOf(
+                          s,
+                          [
+                              SCHEMA_ORG_TIME,
+                              SCHEMA_ORG_BOOLEAN,
+                              SCHEMA_ORG_DATE_TIME,
+                              SCHEMA_ORG_NUMBER,
+                              SCHEMA_ORG_DATE,
+                              SCHEMA_ORG_TEXT,
+                              SCHEMA_ORG_NUMBERLIKE,
+                              SCHEMA_ORG_TEXTLIKE
+                          ].flat()
+                      )
+                  ).length > 0
         : undefined
 }
+
+/**
+ * For use with propertyCanBe, textCheck and referenceCheck
+ * @param url
+ */
+export const normalizeTypeUrl = (url: string) => httpsifyUrl(url)
 
 /**
  * Check if a given property type range allows for its value to be a text.
@@ -342,8 +350,9 @@ export function referenceCheck(propertyRange?: string[]) {
 export function textCheck(propertyRange?: string[]) {
     return propertyRange
         ? propertyRange.length === 0 ||
-              propertyRange.includes(SCHEMA_ORG_TEXT) ||
-              SCHEMA_ORG_TEXTLIKE.find((s) => propertyRange.includes(s)) !== undefined // ||
+              propertyRange.map(normalizeTypeUrl).includes(SCHEMA_ORG_TEXT) ||
+              SCHEMA_ORG_TEXTLIKE.find((s) => propertyRange.map(normalizeTypeUrl).includes(s)) !==
+                  undefined // ||
         : // canBeTime ||
           // canBeBoolean ||
           // canBeDate ||
@@ -460,3 +469,21 @@ export const CrateSchema = z.object({
     ]),
     "@graph": z.array(EntitySchema)
 })
+
+/**
+ * Turns http urls into https urls where necessary
+ * This is only the case for schema.org urls, as they are rewritten to https in numerous
+ * places in novacrate.
+ * Non-valid urls are returned without changes.
+ * @param url
+ */
+export function httpsifyUrl(url: string) {
+    if (isValidUrl(url)) {
+        // Only httpsify schema.org terms, because they use the https protocol in NovaCrate
+        if (url.startsWith("http://schema.org")) {
+            return url.replace("http://", "https://")
+        }
+    }
+
+    return url
+}

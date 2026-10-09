@@ -125,9 +125,9 @@ export const PropertyEditor = memo(function PropertyEditor({
     const referenceTypeRangeResolver = useCallback(async () => {
         if (property.propertyName.startsWith("@")) return []
         if (schemaWorkerReady) {
+            if (profilePropertyRules.length > 0) return resolvePropertyRuleTypeRange()
             if (!resolvedPropertyName)
                 throw `Property ${property.propertyName} not defined in context`
-            if (profilePropertyRules.length > 0) return resolvePropertyRuleTypeRange()
             return await worker.execute("getPropertyRange", resolvedPropertyName)
         }
     }, [
@@ -156,9 +156,9 @@ export const PropertyEditor = memo(function PropertyEditor({
         if (property.propertyName === "@id") return "The unique identifier of the entity"
         if (property.propertyName === "@type")
             return "The type defines which properties can occur on the entity"
-        if (!resolvedPropertyName) throw `Property ${property.propertyName} not defined in context`
         if (profilePropertyRules.filter((r) => r.description).length > 0)
             return profilePropertyRules.map((r) => r.description).join("\n\n")
+        if (!resolvedPropertyName) throw `Property ${property.propertyName} not defined in context`
         const comment = await worker.execute("getPropertyComment", resolvedPropertyName)
         if (!comment) throw `Could not find comment for property ${resolvedPropertyName}`
         return comment

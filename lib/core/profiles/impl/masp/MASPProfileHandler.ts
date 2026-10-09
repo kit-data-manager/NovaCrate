@@ -1,7 +1,7 @@
 import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { z } from "zod/mini"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
-import { hasAtLeastOneValue, isValidUrl, pickFirst, toArray } from "@/lib/utils"
+import { hasAtLeastOneValue, httpsifyUrl, isValidUrl, pickFirst, toArray } from "@/lib/utils"
 import { AbstractProfileHandler } from "@/lib/core/profiles/impl/AbstractProfileHandler"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
@@ -477,15 +477,4 @@ function determineMASPPropertyOptions(
     }
 
     return options
-}
-
-function httpsifyUrl(url: string) {
-    if (isValidUrl(url)) {
-        // Only httpsify schema.org terms, because they use the https protocol in NovaCrate
-        if (url.startsWith("http://schema.org")) {
-            return url.replace("http://", "https://")
-        }
-    }
-
-    return url
 }

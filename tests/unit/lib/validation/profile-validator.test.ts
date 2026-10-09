@@ -6,6 +6,7 @@ import { ValidatorContext } from "@/lib/validation/validator"
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 import { ProfileDefinition } from "@/lib/core/profiles/types/ProfileDefinition"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
+import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { ValidationResultSeverity } from "@/lib/validation/validation-result"
 import { EditorState } from "@/lib/state/editor-state"
@@ -92,6 +93,32 @@ function makeValidator(
     return new ProfileValidator(makeHandler(mapping, isReady), makeContext(entities))
 }
 
+function makeValidatorWithPropertyRules(
+    entities: IEntity[],
+    propertyRules: PropertyRule[],
+    mapping: Map<string, string> = new Map()
+) {
+    const handler = {
+        ...makeHandler(mapping),
+        getDefinition: () => ({ ...definition, propertyRules }),
+        getPropertyRulesFor: (entityRuleId: string) =>
+            propertyRules.filter((rule) => rule.appliesToEntityRules.includes(entityRuleId))
+    } as unknown as IProfileHandler
+    return new ProfileValidator(handler, makeContext(entities))
+}
+
+function makeValidatorWithEntityRules(
+    entities: IEntity[],
+    entityRules: EntityRule[],
+    mapping: Map<string, string> = new Map()
+) {
+    const handler = {
+        ...makeHandler(mapping),
+        getDefinition: () => ({ ...definition, entityRules })
+    } as unknown as IProfileHandler
+    return new ProfileValidator(handler, makeContext(entities))
+}
+
 const crate = { "@context": [], "@graph": [] } as unknown as ICrate
 
 describe("ProfileValidator unassigned profile entities", () => {
@@ -173,5 +200,126 @@ describe("ProfileValidator unassigned profile entities", () => {
         const results = await validator.validateCrate(crate)
 
         expect(results).toEqual([])
+    })
+
+    describe("with property rules", () => {
+        const mandatoryNameRule: PropertyRule = {
+            "@id": "https://example.org/rules#PersonName",
+            onHandler: "handler-1",
+            onProfile: "https://example.org/profile",
+            specializationOf: "https://schema.org/name",
+            label: "name",
+            minCount: 1,
+            appliesToEntityRules: [PERSON]
+        }
+        const singleNameRule: PropertyRule = {
+            ...mandatoryNameRule,
+            "@id": "https://example.org/rules#PersonSingleName",
+            maxCount: 1
+        }
+        const optionNameRule: PropertyRule = {
+            ...mandatoryNameRule,
+            "@id": "https://example.org/rules#PersonOptionName",
+            minCount: undefined,
+            options: ["Alice"]
+        }
+
+        it("does not warn when a mandatory property of the matching rule is missing", async () => {
+            const validator = makeValidatorWithPropertyRules(
+                [{ "@id": "person-1", "@type": ["Person"] }],
+                [mandatoryNameRule]
+            )
+
+            const results = await validator.validateCrate(crate)
+
+            expect(results).toEqual([])
+        })
+
+        it("warns when the entity fully conforms to the matching rule", async () => {
+            const validator = makeValidatorWithPropertyRules(
+                [{ "@id": "person-1", "@type": ["Person"], name: "Alice" }],
+                [mandatoryNameRule]
+            )
+
+            const results = await validator.validateCrate(crate)
+
+            expect(results).toHaveLength(1)
+            expect(results[0].ruleName).toBe("unassignedProfileEntity")
+            expect(results[0].entityId).toBe("person-1")
+        })
+
+        it("does not warn when the entity violates a maxCount", async () => {
+            const validator = makeValidatorWithPropertyRules(
+                [{ "@id": "person-1", "@type": ["Person"], name: ["Alice", "Bob"] }],
+                [singleNameRule]
+            )
+
+            const results = await validator.validateCrate(crate)
+
+            expect(results).toEqual([])
+        })
+
+        it("does not warn when a property value is not an allowed option", async () => {
+            const validator = makeValidatorWithPropertyRules(
+                [{ "@id": "person-1", "@type": ["Person"], name: "Bob" }],
+                [optionNameRule]
+            )
+
+            const results = await validator.validateCrate(crate)
+
+            expect(results).toEqual([])
+        })
+
+        it("does not warn for a mapped entity even if it violates property rules", async () => {
+            const mapping = new Map([["person-1", PERSON]])
+            const validator = makeValidatorWithPropertyRules(
+                [{ "@id": "person-1", "@type": ["Person"] }],
+                [mandatoryNameRule],
+                mapping
+            )
+
+            const results = await validator.validateCrate(crate)
+
+            expect(results).toEqual([])
+        })
+    })
+
+    describe("with entity rule counts", () => {
+        const singlePersonRule: EntityRule = {
+            ...personRule,
+            "@id": "https://example.org/rules#SinglePerson",
+            name: "SinglePerson",
+            maxCount: 1
+        }
+
+        it("does not warn when the matching rule has reached its maxCount", async () => {
+            const mapping = new Map([["person-0", singlePersonRule["@id"]]])
+            const validator = makeValidatorWithEntityRules(
+                [
+                    { "@id": "person-0", "@type": ["Person"] },
+                    { "@id": "person-1", "@type": ["Person"] }
+                ],
+                [singlePersonRule],
+                mapping
+            )
+
+            const results = await validator.validateCrate(crate)
+
+            expect(results).toEqual([])
+        })
+
+        it("warns when the matching rule has not reached its maxCount", async () => {
+            const validator = makeValidatorWithEntityRules(
+                [{ "@id": "person-1", "@type": ["Person"] }],
+                [singlePersonRule]
+            )
+
+            const results = await validator.validateCrate(crate)
+
+            expect(results).toHaveLength(1)
+            expect(results[0].ruleName).toBe("unassignedProfileEntity")
+            expect(results[0].entityId).toBe("person-1")
+            expect(results[0].resultDescription).toContain("`SinglePerson`")
+        })
     })
 })
