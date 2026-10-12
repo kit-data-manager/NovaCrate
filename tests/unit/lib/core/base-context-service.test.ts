@@ -333,6 +333,12 @@ describe("BaseContextService", () => {
             })
             expect(service.reverse("https://bioschemas.org/terms/input")).toBe("input")
         })
+
+        it("should not reproduce issues from pr #465", async () => {
+            const service = await BaseContextService.newInstance(V1_1_CONTEXT)
+            expect(service.reverse("https://schema.org/DateRange")).toBe("schema:DateRange")
+            expect(service.reverse("https://schema.org/nameX")).toBe("schema:nameX")
+        })
     })
 
     describe("addCustomContextPair", () => {

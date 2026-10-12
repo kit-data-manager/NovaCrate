@@ -14,6 +14,7 @@ import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { PropertyValueRule } from "@/lib/core/profiles/types/PropertyValueRule"
 import { getDefaultValue } from "@/lib/core/profiles/impl/util/create-minimum-viable-entity"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
+import { findEntity } from "@/lib/utils"
 
 export class ProfileValidator extends Validator {
     name = "ProfileValidator"
@@ -43,7 +44,7 @@ export class ProfileValidator extends Validator {
 
         const issues = checkEntityConformance(entity, classRule, this.profileHandler, {
             resolver: this.getContext().resolver,
-            getEntity: (id) => this.getContext().editorState.getEntities().get(id),
+            getEntity: (id) => findEntity(this.getContext().editorState.getEntities(), id),
             isEntityAssignedTo: (entityId, entityRuleId) =>
                 entityMapping.get(entityId) === entityRuleId
         })
@@ -326,7 +327,7 @@ export class ProfileValidator extends Validator {
                 (rule) =>
                     checkEntityConformance(entity, rule, this.profileHandler, {
                         resolver: this.getContext().resolver,
-                        getEntity: (id) => this.getContext().editorState.getEntities().get(id),
+                        getEntity: (id) => findEntity(this.getContext().editorState.getEntities(), id),
                         isEntityAssignedTo: (entityId, entityRuleId) =>
                             mapping.get(entityId) === entityRuleId
                     }).length === 0

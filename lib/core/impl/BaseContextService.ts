@@ -146,9 +146,16 @@ export class BaseContextService implements IContextService, IContextResolverServ
      */
     reverse(URI: string): string | null {
         if (this._contextReversed[URI]) return this._contextReversed[URI]
-        for (const [key, value] of Object.entries(this._contextReversed)) {
+
+        // Find all entries in the context that end in # or /, and then pick the longest matching key
+        const contextReverseCandidates = Object.entries(this._contextReversed)
+            .filter(([key]) => URI.startsWith(key) && (key.endsWith("/") || key.endsWith("#")))
+            .sort(([keyA], [keyB]) => keyA.length - keyB.length)
+        if (contextReverseCandidates.length > 0) {
+            const [key, value] = contextReverseCandidates[0]
             if (URI.startsWith(key)) return value + ":" + URI.substring(key.length)
         }
+
         for (const [key, value] of Object.entries(this._customPairs)) {
             if (URI.startsWith(value)) return key + ":" + URI.substring(value.length)
         }
