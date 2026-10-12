@@ -479,9 +479,11 @@ export const CrateSchema = z.object({
  */
 export function httpsifyUrl(url: string) {
     if (isValidUrl(url)) {
+        const parsedUrl = new URL(url)
         // Only httpsify schema.org terms, because they use the https protocol in NovaCrate
-        if (url.startsWith("http://schema.org")) {
-            return url.replace("http://", "https://")
+        if (parsedUrl.protocol === "http:" && parsedUrl.hostname === "schema.org") {
+            parsedUrl.protocol = "https:"
+            return parsedUrl.toString()
         }
     }
 
