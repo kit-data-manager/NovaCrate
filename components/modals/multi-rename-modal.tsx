@@ -13,7 +13,7 @@ import useSWR from "swr"
 import { ArrowRightIcon, FileIcon, FolderIcon, LoaderCircleIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Error as ErrorDisplay } from "@/components/error"
-import { normalizeIdentifier } from "@/lib/utils"
+import { findEntity, normalizeIdentifier } from "@/lib/utils"
 
 /**
  * Multi for executing a multi-rename operation where the target identifier is already known.
@@ -94,7 +94,7 @@ export const MultiRenameModal = memo(function MultiRenameModal({
 
         for (const [from, to] of JSON.parse(data) as [string, string][]) {
             try {
-                const impactedEntity = entities.get(from) ?? entities.get("./" + from)
+                const impactedEntity = findEntity(entities, from)
 
                 // This will also rename the file if there is one
                 // If there is no impacted entity, then this is a file or folder in the filesystem
