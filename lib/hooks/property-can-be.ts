@@ -9,7 +9,7 @@ import {
 } from "@/lib/constants"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { DateTime } from "luxon"
-import { referenceCheck, textCheck } from "@/lib/utils"
+import { httpsifyUrl, normalizeTypeUrl, referenceCheck, textCheck } from "@/lib/utils"
 import { PropertyType } from "@/lib/property"
 import { useProfileEntityMapping, useProfileService } from "@/lib/hooks/use-profile-service"
 import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
@@ -44,15 +44,15 @@ export function propertyCanBe(
     const range = propertyRange?.map((p) => (typeof p === "object" ? p["@id"] : p))
 
     const canBeTime =
-        range?.includes(SCHEMA_ORG_TIME) &&
+        range?.map(normalizeTypeUrl).includes(SCHEMA_ORG_TIME) &&
         textValueGuard(value, (v) => DateTime.fromISO(v) != null && v[2] === ":", true)
 
     const canBeBoolean =
-        range?.includes(SCHEMA_ORG_BOOLEAN) &&
+        range?.map(normalizeTypeUrl).includes(SCHEMA_ORG_BOOLEAN) &&
         textValueGuard(value, (v) => v === "true" || v === "false", true)
 
     const canBeDateTime =
-        range?.includes(SCHEMA_ORG_DATE_TIME) &&
+        range?.map(normalizeTypeUrl).includes(SCHEMA_ORG_DATE_TIME) &&
         textValueGuard(
             value,
             (v) => DateTime.fromISO(v) != null && v[4] === "-" && v.includes("T"),
@@ -60,13 +60,14 @@ export function propertyCanBe(
         )
 
     const canBeNumber = range
-        ? (range.includes(SCHEMA_ORG_NUMBER) ||
-              SCHEMA_ORG_NUMBERLIKE.find((s) => range.includes(s)) !== undefined) &&
+        ? (range.map(normalizeTypeUrl).includes(SCHEMA_ORG_NUMBER) ||
+              SCHEMA_ORG_NUMBERLIKE.find((s) => range.map(normalizeTypeUrl).includes(s)) !==
+                  undefined) &&
           textValueGuard(value, (v) => !isNaN(parseFloat(v)) && parseFloat(v) + "" === v, true)
         : undefined
 
     const canBeDate =
-        range?.includes(SCHEMA_ORG_DATE) &&
+        range?.map(normalizeTypeUrl).includes(SCHEMA_ORG_DATE) &&
         textValueGuard(
             value,
             (v) => DateTime.fromISO(v) != null && v[4] === "-" && !v.includes("T"),
