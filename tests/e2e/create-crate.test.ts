@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test"
 
 test("Create Crate from Scratch", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "New RO-Crate" }).click()
     await page.getByRole("textbox", { name: "Name" }).click()
     await page.getByRole("textbox", { name: "Name" }).fill("Some Test Crate")
@@ -16,6 +17,7 @@ test("Create Crate from Scratch", async ({ page }) => {
 
 test("Quickstart", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "Quickstart" }).click()
     await page.getByRole("menuitem", { name: "RO-Crate Specification Crate" }).click()
     await expect(

@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test"
 
 test("file explorer should associate entities correctly", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "Import RO-Crate" }).click()
     await page
         .getByTestId("create-upload-input")
@@ -61,6 +62,7 @@ test("file explorer should associate entities correctly", async ({ page }) => {
 
 test("renaming works", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "Import RO-Crate" }).click()
     await page
         .getByTestId("create-upload-input")
@@ -95,6 +97,7 @@ test("renaming works", async ({ page }) => {
 
 test("uploading with tree picker works", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "Import RO-Crate" }).click()
     await page
         .getByTestId("create-upload-input")
@@ -195,6 +198,7 @@ test("uploading with tree picker works", async ({ page }) => {
 
 test("opening multiple files works", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "Import RO-Crate" }).click()
     await page.getByTestId("create-upload-input").setInputFiles("tests/data/elabFtw.eln")
     await page.getByRole("link", { name: "File Explorer" }).getByRole("button").click()

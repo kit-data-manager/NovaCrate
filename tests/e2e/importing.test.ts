@@ -116,6 +116,7 @@ async function testCrateContent(page: Page) {
 
 test("Import Crate .zip", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "Import RO-Crate" }).click()
     await page.getByTestId("create-upload-input").setInputFiles("tests/data/TestCrate.zip")
     await testCrateContent(page)
@@ -123,6 +124,7 @@ test("Import Crate .zip", async ({ page }) => {
 
 test("Import Crate .eln", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "Import RO-Crate" }).click()
     await page.getByTestId("create-upload-input").setInputFiles("tests/data/TestCrate.eln")
     await testCrateContent(page)
@@ -130,6 +132,7 @@ test("Import Crate .eln", async ({ page }) => {
 
 test("Import Folder", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "New RO-Crate" }).click()
     await page.getByRole("button", { name: "Select Folder" }).click()
     await page.getByTestId("create-folder-upload-input").setInputFiles("tests/data/TestFolder")
@@ -200,6 +203,7 @@ test("Import Folder", async ({ page }) => {
 
 test("Import Files", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "New RO-Crate" }).click()
     await page.getByRole("button", { name: "Select Folder" }).click()
     await page

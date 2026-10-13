@@ -138,7 +138,7 @@ export default function Entities() {
                     panelRef={entityBrowserPanel}
                     collapsible
                 >
-                    <div className="h-full w-full overflow-auto">
+                    <div className="h-full w-full overflow-auto" data-tour="entity-browser">
                         <EntityBrowser />
                     </div>
                 </ResizablePanel>

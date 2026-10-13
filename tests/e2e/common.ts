@@ -2,12 +2,14 @@ import { Page } from "@playwright/test"
 
 export async function loadTestFolder(page: Page) {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "Import RO-Crate" }).click()
     await page.getByTestId("create-upload-input").setInputFiles("tests/data/TestFolder.zip")
 }
 
 export async function loadTestCrate(page: Page) {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "Import RO-Crate" }).click()
     await page.getByTestId("create-upload-input").setInputFiles("tests/data/TestCrate.zip")
 }
