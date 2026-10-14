@@ -7,6 +7,7 @@ import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-e
 import { useShallow } from "zustand/react/shallow"
 import { usePathname, useRouter } from "next/navigation"
 import { useHash } from "@/lib/hooks/hooks"
+import { findEntity } from "@/lib/utils"
 
 /**
  * Maintains the state of entity editor tabs by opening tabs for changed or new entities
@@ -90,16 +91,15 @@ export function EntityEditorTabsSupervisor() {
         const entityId = decodeURIComponent(hash.slice(1))
         if (entityId === activeTabEntityIDRef.current) return
 
-        const entities = editorState.getState().entities
-        if (entities.has(entityId)) {
-            const tab = useEntityEditorTabs.getState().tabs.find((tab) => tab.entityId === entityId)
+        const entity = findEntity(editorState.getState().entities, entityId)
+        if (entity) {
+            const tab = useEntityEditorTabs
+                .getState()
+                .tabs.find((tab) => tab.entityId === entity["@id"])
             if (tab) {
                 openTab(tab, true)
             } else {
-                const entity = entities.get(entityId)
-                if (entity) {
-                    openTab(createEntityEditorTab(entity), true)
-                }
+                openTab(createEntityEditorTab(entity), true)
             }
         }
     }, [hash, openTab])

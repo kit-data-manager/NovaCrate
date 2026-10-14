@@ -9,6 +9,7 @@ import {
 import { findEntity, isValidUrl, toArray } from "@/lib/utils"
 import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { ValidationResultBuilder } from "@/lib/validation/validation-result-builder"
+import { getActiveEntityRulesForEntity } from "@/lib/core/profiles/impl/util/get-active-entity-rules-for-entity"
 
 const builder = new ValidationResultBuilder("spec-basics")
 const RO_CRATE_SPEC_VERSION_PATTERN = /https:\/\/w3id\.org\/ro\/crate\/(\d+\.\d+)(\/.*)?/
@@ -158,6 +159,15 @@ export const RoCrateBase = {
                     return results
                 }
 
+                const entityRules = getActiveEntityRulesForEntity(entity["@id"], ctx.profileService)
+                const propertyRules = ctx.profileService.getPropertiesFor(entityRules)
+
+                // Bail out if there are profiles with active property rules for this property.
+                // The profile validator will do the work in this case.
+                let hasActivePropertyRule = false
+                if (propertyRules.find((rule) => rule.label === propertyName))
+                    hasActivePropertyRule = true
+
                 propertyValue(entity[propertyName]).forEach((v, i) => {
                     if (PropertyValueUtils.isRef(v) && !propertyValue(v).isEmpty()) {
                         const target = findEntity(entities, v["@id"])
@@ -174,6 +184,7 @@ export const RoCrateBase = {
                             return
                         }
                         if (!target) return
+                        if (hasActivePropertyRule) return
 
                         const targetTypes = toArray(target["@type"])
                             .map((v) => ctx.resolver.resolve(v))
