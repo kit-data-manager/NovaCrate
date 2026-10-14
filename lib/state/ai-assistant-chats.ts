@@ -23,8 +23,9 @@ export const useAIAssistantChats = create<AIAssistantChats>()(
                 (set, get) => ({
                     chats: [],
                     updateChat(crateId, messages) {
-                        set((store) => {
-                            const match = store.chats.find((c) => c.crateId === crateId)
+                        // Unfortunately need any types here as the compiler will crash while trying to assert NC_UIMessage === NC_UIMessage
+                        set((store: any) => {
+                            const match = store.chats.find((c: any) => c.crateId === crateId)
                             if (match) {
                                 match.messages = messages
                             } else {
