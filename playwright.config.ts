@@ -4,12 +4,12 @@ export default defineConfig({
     testDir: "./tests/e2e",
     fullyParallel: true,
     workers: process.env.CI ? 1 : 4,
-    retries: process.env.CI ? 2 : 0,
+    retries: process.env.CI ? 2 : 1,
     forbidOnly: !!process.env.CI,
     reporter: "html",
     use: {
         baseURL: "http://localhost:3000/",
-        trace: "on-first-retry",
+        trace: "retain-on-failure-and-retries",
         launchOptions: {
             slowMo: 100
         }
