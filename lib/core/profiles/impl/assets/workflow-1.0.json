@@ -279,7 +279,7 @@
         {
             "@id": "#RO-Crate_Metadata_Descriptor",
             "@type": "rdfs:Class",
-            "name": "RO-Crate Metadadata Descriptor",
+            "name": "RO-Crate Metadata Descriptor",
             "prov:specializationOf": {
                 "@id": "http://schema.org/CreativeWork"
             },
