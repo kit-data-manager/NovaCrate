@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test"
 
-test("test", async ({ page }) => {
+test("guided tour through the editor", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
     await expect(page.getByText("New to NovaCrate? Take a look")).toBeVisible()
     await page.getByTestId("button-primary").click()
@@ -34,8 +34,13 @@ test("test", async ({ page }) => {
     await page.getByTestId("button-primary").click()
     await expect(page.getByText("NovaCrate continuously")).toBeVisible()
     await page.getByTestId("button-primary").click()
-    await expect(page.getByText("If you have an API key for")).toBeVisible()
-    await page.getByTestId("button-primary").click()
+
+    const hasAIAssistant = await page.getByText("If you have an API key for").isVisible()
+    if (hasAIAssistant) {
+        await expect(page.getByText("If you have an API key for")).toBeVisible()
+        await page.getByTestId("button-primary").click()
+    }
+
     await expect(page.getByText("All data stays on your device")).toBeVisible()
     await page.getByTestId("button-primary").click()
 })

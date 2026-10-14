@@ -8,9 +8,6 @@ import { useTourState } from "@/lib/state/tour-state"
 
 const AI_ASSISTANT_ENABLED = process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED === "true"
 
-const MENU_TARGET_WAIT_TIMEOUT = 1000
-const EDITOR_TARGET_WAIT_TIMEOUT = 15000
-
 /**
  * The main-menu segment ends at this step, which waits for the user to open
  * the Quickstart menu. Once the example item appears, the tour advances to
@@ -26,7 +23,8 @@ const sharedOptions: Partial<Options> = {
     arrowColor: "var(--primary)",
     backgroundColor: "var(--primary)",
     primaryColor: "var(--primary-foreground)",
-    textColor: "var(--primary-foreground)"
+    textColor: "var(--primary-foreground)",
+    targetWaitTimeout: 100
 }
 
 const centeredStep = (id: string, title: string, content: React.ReactNode): Step => ({
@@ -96,7 +94,8 @@ function buildEditorSteps(overview: boolean): Step[] {
             content:
                 "The name of the crate you are currently editing is always visible up here, next to the NovaCrate logo.",
             target: '[data-tour="crate-name"]',
-            placement: "bottom"
+            placement: "bottom",
+            targetWaitTimeout: 15000
         },
         {
             id: "editor-menu",
@@ -340,8 +339,7 @@ export function NovaTour() {
             options={{
                 ...sharedOptions,
                 showProgress: true,
-                closeButtonAction: "skip",
-                targetWaitTimeout: isEditor ? EDITOR_TARGET_WAIT_TIMEOUT : MENU_TARGET_WAIT_TIMEOUT
+                closeButtonAction: "skip"
             }}
             locale={{
                 back: "Back",
