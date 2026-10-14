@@ -1,8 +1,10 @@
 "use client"
 
 import {
+    BookOpenText,
     ChevronDown,
     CircleAlert,
+    CirclePlay,
     Download,
     File,
     FileUp,
@@ -32,8 +34,15 @@ import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { useOperationState } from "@/lib/state/operation-state"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { downloadCrateAs } from "@/lib/core/util"
-import { useAction, useCrateName, useCurrentEntity, useIsEmbedded } from "@/lib/hooks/hooks"
+import {
+    useAction,
+    useCrateName,
+    useCurrentEntity,
+    useGoToPage,
+    useIsEmbedded
+} from "@/lib/hooks/hooks"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
+import { useTourState } from "@/lib/state/tour-state"
 import { useInterval } from "usehooks-ts"
 import { getEntityDisplayName } from "@/lib/utils"
 import { ActionButton, ActionMenubarItem } from "@/components/actions/action-buttons"
@@ -56,7 +65,10 @@ function EntityMenu() {
 
     return currentEntity !== undefined ? (
         <MenubarMenu>
-            <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
+            <MenubarTrigger
+                data-tour="entity-menu"
+                className="hover:bg-background focus:bg-background data-[state=open]:bg-background"
+            >
                 Entity
                 <ChevronDown className="size-4 ml-1 text-muted-foreground" />
             </MenubarTrigger>
@@ -131,6 +143,13 @@ export function NavHeader() {
     }, [showCreateEntityModal])
 
     const crateName = useCrateName()
+    const startTour = useTourState((s) => s.startTour)
+    const goToEntitiesPage = useGoToPage("entities")
+
+    const showTour = useCallback(() => {
+        startTour("editor")
+        goToEntitiesPage()
+    }, [goToEntitiesPage, startTour])
 
     const downloadCrateZip = useCallback(
         async (compressed: boolean) => {
@@ -186,12 +205,18 @@ export function NavHeader() {
         return (
             <Menubar className="bg-transparent">
                 <MenubarMenu>
-                    <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
+                    <MenubarTrigger
+                        data-tour="editor-menu"
+                        className="hover:bg-background focus:bg-background data-[state=open]:bg-background"
+                    >
                         Editor <ChevronDown className="size-4 ml-1 text-muted-foreground" />
                     </MenubarTrigger>
                     <MenubarContent>
                         <ActionMenubarItem actionId="editor.global-search" />
                         <MenubarSeparator />
+                        <MenubarItem onClick={showTour}>
+                            <CirclePlay className="size-4" /> Take a Tour
+                        </MenubarItem>
                         <MenubarSub>
                             <MenubarSubTrigger>
                                 <Palette className="size-4" /> Theme
@@ -230,7 +255,10 @@ export function NavHeader() {
                     </MenubarContent>
                 </MenubarMenu>
                 <MenubarMenu>
-                    <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
+                    <MenubarTrigger
+                        data-tour="crate-menu"
+                        className="hover:bg-background focus:bg-background data-[state=open]:bg-background"
+                    >
                         Crate <ChevronDown className="size-4 ml-1 text-muted-foreground" />
                     </MenubarTrigger>
                     <MenubarContent>
@@ -290,6 +318,7 @@ export function NavHeader() {
         hasUnsavedChanges,
         isEmbedded,
         isSaving,
+        showTour,
         showUploadFileModal,
         showUploadFolderModal,
         theme
@@ -299,7 +328,7 @@ export function NavHeader() {
         <div className="p-4 py-2 pr-3 w-full grid grid-cols-[1fr_auto_1fr]">
             <div className="flex items-center">
                 <Package className="w-7 h-7 mr-2" />
-                <div className="mr-6 font-bold max-w-75 truncate animate-in">
+                <div className="mr-6 font-bold max-w-75 truncate animate-in" data-tour="crate-name">
                     <div className="text-xs font-normal">NovaCrate</div>
                     {crateName}
                 </div>
@@ -368,6 +397,7 @@ export function NavHeader() {
                     variant="outline"
                     actionId={"editor.global-search"}
                     name={"search"}
+                    data-tour="search"
                     noShortcut
                     hideName
                     className="text-muted-foreground font-normal hover:bg-background cursor-text"
@@ -389,6 +419,7 @@ export function NavHeader() {
                         <ActionButton
                             variant="outline"
                             name={"ai-assistant"}
+                            data-tour="ai-assistant"
                             actionId={"editor.toggle-ai-assistant"}
                             showTooltip
                             iconOnly

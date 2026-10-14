@@ -43,6 +43,7 @@ import { ChangelogModal } from "@/components/changelog-modal"
 import { Geist } from "next/font/google"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { usePersistence } from "@/components/providers/persistence-provider"
+import { useTourState } from "@/lib/state/tour-state"
 
 const geist = Geist({ subsets: ["latin"] })
 
@@ -59,6 +60,7 @@ export default function EditorLandingPage() {
     const createUploadInputRef = useRef<HTMLInputElement>(null)
     const { showAboutModal } = useContext(GlobalModalContext)
     const demoLoader = useDemoCrateLoader()
+    const startTour = useTourState((s) => s.startTour)
     const [demoLoaderError, setDemoLoaderError] = useState<unknown>()
     const [demoLoading, setDemoLoading] = useState(false)
 
@@ -276,6 +278,9 @@ export default function EditorLandingPage() {
                                     </DropdownMenuCheckboxItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
+                            <Button variant="outline" onClick={() => startTour("main-menu")}>
+                                <CirclePlay className="size-4" /> Tour
+                            </Button>
                             <Button variant="outline" onClick={showAboutModal}>
                                 <Info /> About
                             </Button>
@@ -300,7 +305,11 @@ export default function EditorLandingPage() {
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" disabled={demoLoading}>
+                            <Button
+                                variant="outline"
+                                disabled={demoLoading}
+                                data-tour="quickstart-button"
+                            >
                                 {demoLoading ? (
                                     <LoaderCircle className="animate-spin size-4" />
                                 ) : (
@@ -319,6 +328,7 @@ export default function EditorLandingPage() {
                                     Minimal Example
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
+                                    data-tour="quickstart-example"
                                     onClick={() => createCrateFromExample("air-quality-karlsruhe")}
                                 >
                                     <CirclePlay className="size-4 mr-2" />

@@ -71,7 +71,7 @@ function NavSidebarLink({
     return (
         <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
-                <Link href={href} title={name}>
+                <Link href={href} title={name} data-tour={`nav-${page}`}>
                     <NavSidebarButton isActive={isActive}>{children}</NavSidebarButton>
                 </Link>
             </TooltipTrigger>
@@ -140,6 +140,7 @@ export function NavSidebar({ children }: PropsWithChildren) {
                             <Tooltip delayDuration={0}>
                                 <TooltipTrigger asChild>
                                     <NavSidebarButton
+                                        data-tour="validation-drawer"
                                         isActive={showValidationDrawer}
                                         onClick={toggleShowValidationDrawer}
                                     >

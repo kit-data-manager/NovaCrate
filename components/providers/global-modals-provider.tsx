@@ -1,6 +1,12 @@
 "use client"
 
-import { createContext, PropsWithChildren, useCallback, useState } from "react"
+import {
+    createContext,
+    Fragment,
+    PropsWithChildren,
+    useCallback,
+    useState
+} from "react"
 import { CreateEntityModal } from "@/components/modals/create-entity/create-entity-modal"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { SaveEntityChangesModal } from "@/components/modals/save-entity-changes-modal"
@@ -303,8 +309,9 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 showManageProfilesModal
             }}
         >
-            <CoreGuard>
+            <CoreGuard key="core-guard">
                 <CreateEntityModal
+                    key="create-entity-modal"
                     open={createEntityModalState.open}
                     onOpenChange={onCreateEntityModalOpenChange}
                     restrictToClasses={createEntityModalState.restrictToClasses}
@@ -314,31 +321,37 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                     basePath={createEntityModalState.basePath}
                 />
                 <SaveEntityChangesModal
+                    key="save-entity-changes-modal"
                     open={saveEntityChangesModalState.open}
                     onOpenChange={onSaveEntityChangesModalOpenChange}
                     entityId={saveEntityChangesModalState.entityId}
                 />
                 <DeleteEntityModal
+                    key="delete-entity-modal"
                     open={deleteEntityModalState.open}
                     onOpenChange={onDeleteEntityModalOpenChange}
                     entityId={deleteEntityModalState.entityId}
                 />
                 <SaveAsModal
+                    key="save-as-modal"
                     open={saveAsModalState.open}
                     onOpenChange={onSaveAsModalOpenChange}
                     entityId={saveAsModalState.entityId}
                 />
                 <MultiRenameModal
+                    key="multi-rename-modal"
                     open={multiRenameModal.open}
                     onOpenChange={onRenameEntityOpenChange}
                     changes={multiRenameModal.changes}
                 />
                 <GlobalSearch
+                    key="global-search"
                     open={globalSearchState.open}
                     onOpenChange={onGlobalSearchModalOpenChange}
                 />
                 {addPropertyModalState !== undefined && (
                     <AddPropertyModal
+                        key="add-property-modal"
                         open={addPropertyModalState.open}
                         onPropertyAdd={addPropertyModalState.onPropertyAdd}
                         onOpenChange={onAddPropertyModalOpenChange}
@@ -347,33 +360,42 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                     />
                 )}
                 <FindReferencesModal
+                    key="find-references-modal"
                     open={findReferencesModalState.open}
                     onOpenChange={onFindReferencesModalOpenChange}
                     entityId={findReferencesModalState.entityId}
                 />
 
                 <ManageProfilesModal
+                    key="manage-profiles-modal"
                     open={manageProfilesModalState.open}
                     onOpenChange={onManageProfileOpenChange}
                 />
             </CoreGuard>
 
             <SettingsModal
+                key="settings-modal"
                 open={settingsModalState.open}
                 onOpenChange={onSettingsModalOpenChange}
                 defaultPage={settingsModalState.page}
             />
             <DocumentationModal
+                key="documentation-modal"
                 open={documentationModalState.open}
                 onOpenChange={onDocumentationModalOpenChange}
             />
-            <AboutModal open={aboutModalState.open} onOpenChange={onAboutModalOpenChange} />
+            <AboutModal
+                key="about-modal"
+                open={aboutModalState.open}
+                onOpenChange={onAboutModalOpenChange}
+            />
             <CrateExportedModal
+                key="crate-exported-modal"
                 open={crateExportedModalState.open}
                 onOpenChange={onCrateExportedModalOpenChange}
             />
 
-            {props.children}
+            <Fragment key="children">{props.children}</Fragment>
         </GlobalModalContext.Provider>
     )
 }

@@ -3,6 +3,7 @@
 import { PropsWithChildren } from "react"
 import { PersistenceProvider } from "@/components/providers/persistence-provider"
 import { GlobalModalProvider } from "@/components/providers/global-modals-provider"
+import { NovaTour } from "@/components/tour/nova-tour"
 import { usePathname } from "next/navigation"
 
 /**
@@ -24,6 +25,7 @@ export default function EditorLayout(props: PropsWithChildren) {
     return (
         <PersistenceProvider defaultMode={mode}>
             <GlobalModalProvider>{props.children}</GlobalModalProvider>
+            <NovaTour />
         </PersistenceProvider>
     )
 }
