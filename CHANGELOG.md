@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Adjusted the design around the header of the entity editor for better clarity and space efficiency
+- Improved the design of the landing page to inform about the core capabilities of RO-Crates and NovaCrate
 - Small design improvements throughout the editor
 
 ### Fixed
