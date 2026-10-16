@@ -107,11 +107,11 @@ function StickyNav({
                                         <Sun className="size-5" suppressHydrationWarning />
                                     )}
                                 </Button>
-                                <Link href="/editor" className="ml-1">
-                                    <Button size="sm">
+                                <Button size="sm" asChild>
+                                    <Link href="/editor" className="ml-1">
                                         Open NovaCrate <ArrowRight />
-                                    </Button>
-                                </Link>
+                                    </Link>
+                                </Button>
                             </nav>
                         </div>
                     </div>
@@ -190,22 +190,7 @@ export function Landing() {
             <StickyNav theme={theme} logoRef={heroLogoRef} />
             <LightRays />
             <div className="grid grid-cols-[1fr_minmax(400px,1600px)_1fr] max-w-full mb-16 lg:mx-16 mx-4">
-                <Button
-                    size="lg"
-                    variant="link"
-                    className="col-start-2 rounded-none border-r-0 h-12"
-                    onClick={() =>
-                        theme.setTheme(theme.resolvedTheme === "light" ? "dark" : "light")
-                    }
-                    suppressHydrationWarning
-                >
-                    {theme.resolvedTheme === "light" ? (
-                        <Sun className="w-6 h-6 mr-3 shrink-0" suppressHydrationWarning />
-                    ) : (
-                        <Moon className="w-6 h-6 mr-3 shrink-0" suppressHydrationWarning />
-                    )}
-                </Button>
-                <div className="relative col-start-2 h-[calc(100vh-3rem)] min-h-75 flex flex-col justify-center items-center gap-4">
+                <div className="relative col-start-2 h-screen min-h-75 flex flex-col justify-center items-center gap-4">
                     <h1
                         ref={heroLogoRef}
                         className="flex items-center gap-4 text-6xl font-extrabold"
@@ -220,11 +205,13 @@ export function Landing() {
                         />
                         Research Object Crates
                     </h2>
-                    <Link href={"/editor"}>
-                        <Button size="lg">
+
+                    <Button size="lg" asChild>
+                        <Link href={"/editor"}>
                             Open NovaCrate <ArrowRight />
-                        </Button>
-                    </Link>
+                        </Link>
+                    </Button>
+
                     <div className="text-muted-foreground text-sm">
                         NovaCrate is free and open-source (Apache-2.0 license)
                     </div>
@@ -340,11 +327,11 @@ export function Landing() {
                                 </p>
                             </ShowcaseBlock>
                             <div className="flex justify-center">
-                                <Link href={"/editor"}>
-                                    <Button size="lg">
+                                <Button size="lg" asChild>
+                                    <Link href={"/editor"}>
                                         Open NovaCrate <ArrowRight />
-                                    </Button>
-                                </Link>
+                                    </Link>
+                                </Button>
                             </div>
                             <ShowcaseBlock
                                 id={"ai-assistant"}
@@ -444,11 +431,11 @@ export function Landing() {
                     </div>
 
                     <div className="flex justify-center">
-                        <Link href={"/editor"}>
-                            <Button size="lg">
+                        <Button size="lg" asChild>
+                            <Link href={"/editor"}>
                                 Open NovaCrate <ArrowRight />
-                            </Button>
-                        </Link>
+                            </Link>
+                        </Button>
                     </div>
                     <div className="text-center text-muted-foreground text-sm">
                         RO-Crates used as examples on this page are{" "}

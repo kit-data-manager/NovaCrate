@@ -2,7 +2,6 @@
 
 import {
     ArrowLeft,
-    BookOpenText,
     ChevronDown,
     CircleAlert,
     CirclePlay,
@@ -58,6 +57,7 @@ import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { useStore } from "zustand"
 import { toast } from "sonner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import Link from "next/link"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -337,8 +337,9 @@ export function NavHeader() {
                         <Button
                             variant={"ghost"}
                             size="icon"
-                            className="relative group/nc-logo w-30"
+                            className="relative group/nc-logo w-30 disabled:opacity-100"
                             onClick={goToMainMenu}
+                            disabled={isEmbedded}
                         >
                             <Package className="left-3 size-5 absolute group-hover/nc-logo:opacity-0 transition-opacity" />
                             <ArrowLeft className="left-3 size-5 absolute opacity-0 group-hover/nc-logo:opacity-100 transition-opacity" />

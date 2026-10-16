@@ -254,7 +254,7 @@ export function CrateLifecycle({ phase }: { phase: number }) {
     const staticCaption = reducedMotion ? "Describe → Package → Exchange" : null
 
     return (
-        <div className="relative grow">
+        <div className="relative grow max-w-lg">
             <div ref={boxRef} aria-hidden className="relative aspect-4/3 w-full">
                 {size && (
                     <svg className="absolute inset-0 h-full w-full" width={size.w} height={size.h}>
@@ -549,9 +549,9 @@ export function PrinciplesSection() {
             </Reveal>
 
             <div className="mt-12 space-y-6">
-                <div className="flex gap-6 items-stretch">
+                <div className="flex lg:flex-row flex-col gap-6 items-stretch">
                     <Reveal>
-                        <div className="flex items-center justify-center rounded-3xl border bg-card/50 p-5 shadow-sm backdrop-blur-sm sm:p-6 w-full h-full min-w-md max-w-lg">
+                        <div className="flex items-center justify-center rounded-3xl border bg-card/50 p-5 shadow-sm backdrop-blur-sm sm:p-6 w-full h-full min-w-md">
                             <CrateLifecycle phase={phase} />
                         </div>
                     </Reveal>
