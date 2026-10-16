@@ -183,6 +183,7 @@ function FeatureCarousel() {
 
 export function Landing() {
     const theme = useTheme()
+    const reducedMotion = useReducedMotion()
     const heroLogoRef = useRef<HTMLHeadingElement>(null)
 
     return (
@@ -201,7 +202,11 @@ export function Landing() {
                         Web-based editor for{" "}
                         <RotatingText
                             containerClassName="hidden lg:block"
-                            text={["creating", "editing", "visualizing", "validating"]}
+                            text={
+                                reducedMotion
+                                    ? ["editing"]
+                                    : ["creating", "editing", "visualizing", "validating"]
+                            }
                         />
                         Research Object Crates
                     </h2>
@@ -216,7 +221,7 @@ export function Landing() {
                         NovaCrate is free and open-source (Apache-2.0 license)
                     </div>
                     <div className="absolute bottom-0 mb-12 text-primary">
-                        <ArrowDown className="size-12 animate-bounce" />
+                        <ArrowDown className="size-12 not-motion-reduce:animate-bounce" />
                     </div>
                 </div>
                 <div className="col-start-2 space-y-24">

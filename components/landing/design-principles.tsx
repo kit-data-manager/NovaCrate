@@ -128,12 +128,14 @@ function LifecycleChip({
     node,
     index,
     visible,
-    flyOffset
+    flyOffset,
+    reducedMotion
 }: {
     node: LifecycleNode
     index: number
     visible: boolean
     flyOffset: { x: number; y: number }
+    reducedMotion: boolean | null
 }) {
     const Icon = node.icon
     return (
@@ -143,7 +145,7 @@ function LifecycleChip({
         >
             <motion.div
                 className="flex items-center gap-2 rounded-lg border bg-card/90 py-1.5 pl-1.5 pr-2.5 shadow-sm backdrop-blur-sm"
-                initial={{ opacity: 0, scale: 0.5, x: 0, y: 0 }}
+                initial={reducedMotion ? false : { opacity: 0, scale: 0.5, x: 0, y: 0 }}
                 animate={
                     visible
                         ? { opacity: 1, scale: 1, x: 0, y: 0 }
@@ -271,7 +273,7 @@ export function CrateLifecycle({ phase }: { phase: number }) {
                                     stroke="var(--foreground)"
                                     strokeWidth={1.25}
                                     strokeLinecap="round"
-                                    initial={{ pathLength: 0, opacity: 0 }}
+                                    initial={reducedMotion ? false : { pathLength: 0, opacity: 0 }}
                                     animate={
                                         showNodes
                                             ? { pathLength: 1, opacity: 0.4 }
@@ -300,18 +302,23 @@ export function CrateLifecycle({ phase }: { phase: number }) {
                         index={i}
                         visible={showNodes}
                         flyOffset={flyOffset(node)}
+                        reducedMotion={reducedMotion}
                     />
                 ))}
 
                 <motion.div
                     className="absolute left-0 top-0 z-10"
                     style={{ width: crateSize, height: crateSize }}
-                    initial={{
-                        x: crateStart.x - crateSize / 2,
-                        y: crateStart.y - crateSize / 2,
-                        opacity: 0,
-                        scale: 0.3
-                    }}
+                    initial={
+                        reducedMotion
+                            ? false
+                            : {
+                                  x: crateStart.x - crateSize / 2,
+                                  y: crateStart.y - crateSize / 2,
+                                  opacity: 0,
+                                  scale: 0.3
+                              }
+                    }
                     animate={
                         showCrate
                             ? {
