@@ -40,14 +40,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Input } from "@/components/ui/input"
 import useSWR from "swr"
 import { Footer } from "@/components/footer"
-import Image from "next/image"
 import { ChangelogModal } from "@/components/changelog-modal"
-import { Geist } from "next/font/google"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { useTourState } from "@/lib/state/tour-state"
-
-const geist = Geist({ subsets: ["latin"] })
 
 export default function EditorLandingPage() {
     const router = useRouter()
