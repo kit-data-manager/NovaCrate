@@ -1,11 +1,8 @@
 "use client"
 
-import React, { useEffect, useRef, useState, type ReactNode, useCallback } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import type { LucideIcon } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
-import { addBasePath } from "next/dist/client/add-base-path"
 import {
     Archive,
     ArrowRight,
@@ -31,11 +28,15 @@ import {
     Waypoints,
     WrenchIcon
 } from "lucide-react"
+import Link from "next/link"
+import Image from "next/image"
+import { addBasePath } from "next/dist/client/add-base-path"
 import { Button } from "@/components/ui/button"
 import { Footer } from "@/components/footer"
 import { GITHUB_REPO } from "@/lib/legals"
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
+import { Reveal } from "@/components/landing/reveal"
 
 type AccentClass = {
     text: string
@@ -67,24 +68,6 @@ const CONTEXTUAL: AccentClass = {
     border: "border-contextual/30",
     dot: "bg-contextual",
     hover: "hover:border-contextual/40"
-}
-
-function Reveal({ children, className }: { children: ReactNode; className?: string }) {
-    const reducedMotion = useReducedMotion()
-    if (reducedMotion) {
-        return <div className={className}>{children}</div>
-    }
-    return (
-        <motion.div
-            className={className}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-        >
-            {children}
-        </motion.div>
-    )
 }
 
 function TopBar({ theme }: { theme: ReturnType<typeof useTheme> }) {
@@ -651,7 +634,7 @@ export function PrinciplesSection() {
             </Reveal>
 
             <div className="mt-12 space-y-6">
-                                <div className="flex items-center gap-6 items-stretch">
+                <div className="flex items-center gap-6 items-stretch">
                     <Reveal>
                         <div className="flex items-center justify-center rounded-3xl border bg-card/50 p-5 shadow-sm backdrop-blur-sm sm:p-6 w-full h-full min-w-md max-w-lg">
                             <CrateLifecycle phase={phase} />

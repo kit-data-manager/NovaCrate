@@ -5,6 +5,7 @@ import { addBasePath } from "next/dist/client/add-base-path"
 import { PropsWithChildren, useEffect, useState } from "react"
 import { useTheme } from "next-themes"
 import { Lightbulb } from "lucide-react"
+import { Reveal } from "@/components/landing/reveal"
 
 export function ShowcaseBlock({
     id,
@@ -47,19 +48,21 @@ export function ShowcaseBlock({
     )
 
     return (
-        <div
-            id={id}
-            className="grid md:grid-cols-2 gap-12 bg-card/50 backdrop-blur-sm border rounded-3xl p-12 overflow-hidden scroll-mt-20"
-        >
-            {rtl && text}
-            <Image
-                src={addBasePath(resolvedTheme === "dark" && mounted ? imgDark : imgLight)}
-                className="shadow-2xl dark:shadow-black rounded-md justify-self-center self-center"
-                alt={alt}
-                width={1000}
-                height={1000}
-            />
-            {!rtl && text}
-        </div>
+        <Reveal>
+            <div
+                id={id}
+                className="grid md:grid-cols-2 gap-12 bg-card/50 backdrop-blur-sm border rounded-3xl p-12 overflow-hidden scroll-mt-20"
+            >
+                {rtl && text}
+                <Image
+                    src={addBasePath(resolvedTheme === "dark" && mounted ? imgDark : imgLight)}
+                    className="shadow-2xl dark:shadow-black rounded-md justify-self-center self-center"
+                    alt={alt}
+                    width={1000}
+                    height={1000}
+                />
+                {!rtl && text}
+            </div>
+        </Reveal>
     )
 }

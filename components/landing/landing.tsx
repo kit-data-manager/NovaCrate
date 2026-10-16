@@ -34,6 +34,7 @@ import { FAQ } from "@/components/info/faq"
 import { ChangelogModal } from "@/components/changelog-modal"
 import { PrinciplesSection } from "@/components/landing/design-principles"
 import { GITHUB_REPO } from "@/lib/legals"
+import { Reveal } from "@/components/landing/reveal"
 
 function StickyNav({
     theme,
@@ -159,8 +160,8 @@ function FeatureCarousel() {
     }
 
     return (
-        <div className="group relative overflow-hidden py-4 [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
-            <div className="flex w-max animate-marquee group-hover:[animation-play-state:paused]">
+        <div className="group relative overflow-hidden py-4 mask-[linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
+            <div className="flex w-max animate-marquee group-hover:paused">
                 {[0, 1].map((half) => (
                     <div key={half} aria-hidden={half === 1} className="flex shrink-0 gap-8 pr-8">
                         {FEATURES.map((feature) => (
@@ -234,10 +235,12 @@ export function Landing() {
                 <div className="col-start-2 space-y-24">
                     <PrinciplesSection />
                     <div className="pt-12 space-y-8">
-                        <div className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-                            Feature Overview
-                        </div>
-                        <FeatureCarousel />
+                        <Reveal>
+                            <div className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+                                Feature Overview
+                            </div>
+                            <FeatureCarousel />
+                        </Reveal>
                     </div>
 
                     <div className="space-y-8">
