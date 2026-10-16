@@ -15,11 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - User approval must be given for unknown profile URLs, which can be done through a new section in the settings
   - Active profiles enhance the editor in many different places, such as the modal for creating entities and the modal for adding properties to entities
   - Added a profiles section to the context page to understand active profiles and their effects
-  - Added validation for profiles based on the [RO-Crate MASP proposal](https://github.com/Language-Research-Technology/ro-crate-masp)
+  - The only supported profile at the moment is the Workflow Profile. Work is in progress to allow creating and using custom profiles.
 - Added a guided tour through the main functions of the editor (start it through the Editor menu of in the main menu)
 
 ### Changed
 - Adjusted the design around the header of the entity editor for better clarity and space efficiency
+- Improved the design of the landing page to inform about the core capabilities of RO-Crates and NovaCrate
 - Small design improvements throughout the editor
 
 ### Fixed
