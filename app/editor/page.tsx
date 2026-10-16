@@ -3,10 +3,12 @@
 import {
     ChevronDown,
     CirclePlay,
+    HomeIcon,
     Info,
     LinkIcon,
     LoaderCircle,
     Package,
+    PackageIcon,
     PackageOpen,
     PackagePlus,
     Palette,
@@ -212,6 +214,10 @@ export default function EditorLandingPage() {
         return local
     }, [recentCrates, storedCrates])
 
+    const goToLandingPage = useCallback(() => {
+        router.push(addBasePath("/"))
+    }, [router])
+
     return (
         <div className="w-full h-full grid md:grid-cols-[1fr_2fr]">
             <DeleteCrateModal
@@ -236,18 +242,16 @@ export default function EditorLandingPage() {
                 >
                     <div />
                     <div className="flex flex-col items-center justify-center p-10">
-                        <Image
-                            src={addBasePath("/novacrate-nobg.svg")}
-                            alt={"NovaCrate Logo"}
-                            width={600}
-                            height={195}
-                            className={`dark:invert ${geist.className}`}
-                            loading={"eager"}
-                        />
+                        <h1 className="flex items-center gap-4 text-4xl xl:text-6xl font-extrabold">
+                            <PackageIcon className="h-full w-auto aspect-square" /> NovaCrate
+                        </h1>
                     </div>
 
                     <div className="content-end">
                         <div className="flex justify-center items-center gap-2 pb-4 flex-wrap">
+                            <Button variant="outline" onClick={goToLandingPage}>
+                                <HomeIcon /> Landing Page
+                            </Button>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline">

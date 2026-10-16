@@ -1,6 +1,7 @@
 "use client"
 
 import {
+    ArrowLeft,
     BookOpenText,
     ChevronDown,
     CircleAlert,
@@ -38,6 +39,7 @@ import {
     useAction,
     useCrateName,
     useCurrentEntity,
+    useGoToMainMenu,
     useGoToPage,
     useIsEmbedded
 } from "@/lib/hooks/hooks"
@@ -55,6 +57,7 @@ import { ValidationOverview } from "@/components/editor/validation/validation-ov
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { useStore } from "zustand"
 import { toast } from "sonner"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -324,12 +327,31 @@ export function NavHeader() {
         theme
     ])
 
+    const goToMainMenu = useGoToMainMenu()
+
     return (
-        <div className="p-4 py-2 pr-3 w-full grid grid-cols-[1fr_auto_1fr]">
+        <div className="pl-2 py-2 pr-3 w-full grid grid-cols-[1fr_auto_1fr]">
             <div className="flex items-center">
-                <Package className="w-7 h-7 mr-2" />
-                <div className="mr-6 font-bold max-w-75 truncate animate-in" data-tour="crate-name">
-                    <div className="text-xs font-normal">NovaCrate</div>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant={"ghost"}
+                            size="icon"
+                            className="relative group/nc-logo w-30"
+                            onClick={goToMainMenu}
+                        >
+                            <Package className="left-3 size-5 absolute group-hover/nc-logo:opacity-0 transition-opacity" />
+                            <ArrowLeft className="left-3 size-5 absolute opacity-0 group-hover/nc-logo:opacity-100 transition-opacity" />
+                            <div className="absolute right-3">NovaCrate</div>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side={"right"}>Back to Main Menu</TooltipContent>
+                </Tooltip>
+
+                <div
+                    className="mx-2 leading-tight max-w-75 truncate animate-in text-sm font-bold"
+                    data-tour="crate-name"
+                >
                     {crateName}
                 </div>
 

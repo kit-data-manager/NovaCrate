@@ -128,6 +128,7 @@ type LifecycleNode = {
     label: string
     icon: LucideIcon
     anchor: { x: number; y: number }
+    accent: AccentClass
 }
 
 const LIFECYCLE_NODES: LifecycleNode[] = [
@@ -135,31 +136,36 @@ const LIFECYCLE_NODES: LifecycleNode[] = [
         id: "dataset",
         label: "dataset.zip",
         icon: Database,
-        anchor: { x: 0.26, y: 0.24 }
+        anchor: { x: 0.26, y: 0.24 },
+        accent: DATA
     },
     {
         id: "csv",
         label: "readings.csv",
         icon: FileText,
-        anchor: { x: 0.74, y: 0.2 }
+        anchor: { x: 0.74, y: 0.2 },
+        accent: DATA
     },
     {
         id: "person",
         label: "J. Doe",
         icon: User,
-        anchor: { x: 0.16, y: 0.6 }
+        anchor: { x: 0.16, y: 0.6 },
+        accent: CONTEXTUAL
     },
     {
         id: "lab",
         label: "My Lab",
         icon: Building2,
-        anchor: { x: 0.72, y: 0.64 }
+        anchor: { x: 0.72, y: 0.64 },
+        accent: CONTEXTUAL
     },
     {
         id: "readme",
         label: "README.md",
         icon: Folder,
-        anchor: { x: 0.44, y: 0.86 }
+        anchor: { x: 0.44, y: 0.86 },
+        accent: DATA
     }
 ]
 
@@ -173,9 +179,9 @@ const LIFECYCLE_EDGES: [string, string][] = [
 ]
 
 const DESTINATIONS: { icon: LucideIcon; label: string; anchor: { x: number; y: number } }[] = [
-    { icon: Cloud, label: "Repository", anchor: { x: 0.88, y: 0.28 } },
-    { icon: Send, label: "Journal", anchor: { x: 0.88, y: 0.52 } },
-    { icon: Waypoints, label: "Collaborators", anchor: { x: 0.88, y: 0.76 } }
+    { icon: Cloud, label: "Repository", anchor: { x: 0.5, y: 0.18 } },
+    { icon: Send, label: "Journal", anchor: { x: 0.18, y: 0.8 } },
+    { icon: Waypoints, label: "Collaborators", anchor: { x: 0.82, y: 0.8 } }
 ]
 
 const DESCRIBE_MS = 3600
@@ -186,26 +192,28 @@ const CYCLE_MS = DESCRIBE_MS + PACKAGE_MS + EXCHANGE_MS
 const STEP_META = [
     {
         caption: "1 · Describe — add files, describe them, connect them",
-        dot: DATA.dot
+        dot: "bg-foreground"
     },
     {
         caption: "2 · Package — one crate, everything included",
-        dot: ROOT.dot
+        dot: "bg-foreground"
     },
     {
         caption: "3 · Exchange — export anywhere, share with anyone",
-        dot: CONTEXTUAL.dot
+        dot: "bg-foreground"
     }
 ]
 
 function LifecycleChip({
     node,
     index,
-    visible
+    visible,
+    flyOffset
 }: {
     node: LifecycleNode
     index: number
     visible: boolean
+    flyOffset: { x: number; y: number }
 }) {
     const Icon = node.icon
     return (
@@ -215,21 +223,39 @@ function LifecycleChip({
         >
             <motion.div
                 className="flex items-center gap-2 rounded-lg border bg-card/90 py-1.5 pl-1.5 pr-2.5 shadow-sm backdrop-blur-sm"
-                initial={{ opacity: 0, scale: 0.5, y: 10 }}
+                initial={{ opacity: 0, scale: 0.5, x: 0, y: 0 }}
                 animate={
-                    visible ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.4, y: -18 }
+                    visible
+                        ? { opacity: 1, scale: 1, x: 0, y: 0 }
+                        : { opacity: 0, scale: 0.25, x: flyOffset.x, y: flyOffset.y }
                 }
                 transition={{
-                    duration: 0.45,
-                    delay: visible ? 0.15 + index * 0.14 : 0,
-                    ease: "easeOut"
+                    x: {
+                        duration: 0.5,
+                        delay: visible ? 0 : 0.05 + index * 0.07,
+                        ease: "easeInOut"
+                    },
+                    y: {
+                        duration: 0.5,
+                        delay: visible ? 0 : 0.05 + index * 0.07,
+                        ease: "easeInOut"
+                    },
+                    scale: {
+                        duration: 0.5,
+                        delay: visible ? 0.15 + index * 0.14 : 0.05 + index * 0.07,
+                        ease: "easeInOut"
+                    },
+                    opacity: {
+                        duration: 0.45,
+                        delay: visible ? 0.15 + index * 0.14 : 0.15 + index * 0.07
+                    }
                 }}
             >
                 <span
                     className={cn(
                         "flex size-6 shrink-0 items-center justify-center rounded-md",
-                        DATA.bg,
-                        DATA.text
+                        node.accent.bg,
+                        node.accent.text
                     )}
                 >
                     <Icon className="size-3.5" />
@@ -290,7 +316,6 @@ export function CrateLifecycle({ phase }: { phase: number }) {
 
     const crateSize = Math.min(112, Math.max(84, (size?.w ?? 300) * 0.17))
     const crateStart = { x: (size?.w ?? 0) / 2, y: (size?.h ?? 0) / 2 }
-    const crateEnd = { x: (size?.w ?? 0) * 0.66, y: (size?.h ?? 0) / 2 }
 
     const showNodes = reducedMotion || phase === 0
     const showCrate = reducedMotion || phase >= 1
@@ -300,6 +325,11 @@ export function CrateLifecycle({ phase }: { phase: number }) {
         const spec = LIFECYCLE_NODES.find((n) => n.id === id)!
         return { x: spec.anchor.x * (size?.w ?? 0), y: spec.anchor.y * (size?.h ?? 0) }
     }
+
+    const flyOffset = (node: LifecycleNode) => ({
+        x: (0.5 - node.anchor.x) * (size?.w ?? 0),
+        y: (0.5 - node.anchor.y) * (size?.h ?? 0)
+    })
 
     const staticCaption = reducedMotion ? "Describe → Package → Exchange" : null
 
@@ -318,69 +348,39 @@ export function CrateLifecycle({ phase }: { phase: number }) {
                                     y1={pa.y}
                                     x2={pb.x}
                                     y2={pb.y}
-                                    stroke="var(--data)"
+                                    stroke="var(--foreground)"
                                     strokeWidth={1.25}
                                     strokeLinecap="round"
                                     initial={{ pathLength: 0, opacity: 0 }}
                                     animate={
                                         showNodes
                                             ? { pathLength: 1, opacity: 0.4 }
-                                            : { pathLength: 1, opacity: 0 }
+                                            : { pathLength: 0, opacity: 0 }
                                     }
                                     transition={{
-                                        pathLength: {
-                                            duration: 0.6,
-                                            delay: showNodes ? 0.8 + i * 0.16 : 0,
-                                            ease: "easeOut"
-                                        },
+                                        pathLength: showNodes
+                                            ? { duration: 0.6, delay: 0.8 + i * 0.16, ease: "easeOut" }
+                                            : { duration: 0, delay: 0.4 },
                                         opacity: { duration: 0.4 }
                                     }}
                                 />
                             )
                         })}
-                        {showDestinations &&
-                            DESTINATIONS.map((d, i) => {
-                                const from = {
-                                    x: crateEnd.x,
-                                    y: crateEnd.y
-                                }
-                                const to = {
-                                    x: d.anchor.x * size.w,
-                                    y: d.anchor.y * size.h
-                                }
-                                return (
-                                    <motion.line
-                                        key={`dest-${i}`}
-                                        x1={from.x}
-                                        y1={from.y}
-                                        x2={to.x}
-                                        y2={to.y}
-                                        stroke="var(--contextual)"
-                                        strokeWidth={1.25}
-                                        strokeDasharray="3 5"
-                                        strokeLinecap="round"
-                                        initial={{ pathLength: 0, opacity: 0 }}
-                                        animate={{ pathLength: 1, opacity: 0.45 }}
-                                        transition={{
-                                            pathLength: {
-                                                duration: 0.5,
-                                                delay: 0.5 + i * 0.12,
-                                                ease: "easeOut"
-                                            },
-                                            opacity: { duration: 0.3 }
-                                        }}
-                                    />
-                                )
-                            })}
                     </svg>
                 )}
 
                 {LIFECYCLE_NODES.map((node, i) => (
-                    <LifecycleChip key={node.id} node={node} index={i} visible={showNodes} />
+                    <LifecycleChip
+                        key={node.id}
+                        node={node}
+                        index={i}
+                        visible={showNodes}
+                        flyOffset={flyOffset(node)}
+                    />
                 ))}
 
                 <motion.div
-                    className="absolute left-0 top-0"
+                    className="absolute left-0 top-0 z-10"
                     style={{ width: crateSize, height: crateSize }}
                     initial={{
                         x: crateStart.x - crateSize / 2,
@@ -391,7 +391,7 @@ export function CrateLifecycle({ phase }: { phase: number }) {
                     animate={
                         showCrate
                             ? {
-                                  x: (showDestinations ? crateEnd.x : crateStart.x) - crateSize / 2,
+                                  x: crateStart.x - crateSize / 2,
                                   y: crateStart.y - crateSize / 2,
                                   opacity: 1,
                                   scale: 1
@@ -405,8 +405,12 @@ export function CrateLifecycle({ phase }: { phase: number }) {
                     }
                     transition={{
                         x: { duration: 0.9, ease: "easeInOut" },
-                        scale: { type: "spring", stiffness: 260, damping: 20 },
-                        opacity: { duration: 0.3 }
+                        scale: showCrate
+                            ? { type: "spring", stiffness: 260, damping: 20, delay: 0.45 }
+                            : { duration: 0.3 },
+                        opacity: showCrate
+                            ? { duration: 0.3, delay: 0.45 }
+                            : { duration: 0.3 }
                     }}
                 >
                     <div className="relative flex h-full w-full flex-col items-center justify-center rounded-2xl border bg-gradient-to-br from-card via-secondary to-muted shadow-xl">
@@ -429,7 +433,6 @@ export function CrateLifecycle({ phase }: { phase: number }) {
                             }}
                         >
                             <motion.div
-                                className="flex flex-col items-center gap-1 rounded-lg border bg-card/90 p-2 shadow-sm backdrop-blur-sm"
                                 initial={{ opacity: 0, scale: 0.6 }}
                                 animate={
                                     showDestinations
@@ -438,19 +441,96 @@ export function CrateLifecycle({ phase }: { phase: number }) {
                                 }
                                 transition={{
                                     duration: 0.35,
-                                    delay: showDestinations ? 0.3 + i * 0.14 : 0,
+                                    delay: showDestinations ? 0.15 + i * 0.2 : 0,
                                     ease: "easeOut"
                                 }}
                             >
-                                <Icon
-                                    className={cn("size-4", CONTEXTUAL.text)}
-                                    strokeWidth={1.75}
-                                />
-                                <span className="whitespace-nowrap text-[10px] font-medium text-muted-foreground">
-                                    {d.label}
-                                </span>
+                                <motion.div
+                                    animate={
+                                        showDestinations ? { scale: [1, 1.18, 1] } : { scale: 1 }
+                                    }
+                                    transition={{
+                                        duration: 0.35,
+                                        delay: showDestinations ? 1.2 + i * 0.35 : 0
+                                    }}
+                                    className="flex flex-col items-center gap-1 rounded-lg border bg-card/90 p-2 shadow-sm backdrop-blur-sm"
+                                >
+                                    <Icon
+                                        className="size-4 text-foreground"
+                                        strokeWidth={1.75}
+                                    />
+                                    <span className="whitespace-nowrap text-[10px] font-medium text-muted-foreground">
+                                        {d.label}
+                                    </span>
+                                </motion.div>
                             </motion.div>
                         </div>
+                    )
+                })}
+
+                {DESTINATIONS.map((d, i) => {
+                    const dx = (d.anchor.x - 0.5) * (size?.w ?? 0)
+                    const dy = (d.anchor.y - 0.5) * (size?.h ?? 0)
+                    return (
+                        <motion.div
+                            key={`copy-${d.label}`}
+                            aria-hidden
+                            className="absolute left-1/2 top-1/2"
+                            style={{ width: 34, height: 34, marginLeft: -17, marginTop: -17 }}
+                            animate={
+                                showDestinations
+                                    ? { x: dx, y: dy, scale: 1 }
+                                    : { x: 0, y: 0, scale: 0.5 }
+                            }
+                            transition={
+                                showDestinations
+                                    ? {
+                                          duration: 0.4,
+                                          delay: 0.8 + i * 0.35,
+                                          ease: "easeInOut"
+                                      }
+                                    : {
+                                          x: { duration: 0 },
+                                          y: { duration: 0 },
+                                          scale: { duration: 0 }
+                                      }
+                            }
+                        >
+                            <motion.div
+                                className="h-full w-full"
+                                animate={
+                                    showDestinations
+                                        ? { opacity: 0, scale: 0.7 }
+                                        : { opacity: 1, scale: 1 }
+                                }
+                                transition={
+                                    showDestinations
+                                        ? {
+                                              duration: 0.25,
+                                              delay: 1.2 + i * 0.35,
+                                              ease: "easeInOut"
+                                          }
+                                        : { duration: 0 }
+                                }
+                            >
+                                <motion.div
+                                    className="flex h-full w-full items-center justify-center rounded-lg border bg-card shadow-md"
+                                    animate={
+                                        showDestinations ? { opacity: 1 } : { opacity: 0 }
+                                    }
+                                    transition={
+                                        showDestinations
+                                            ? { duration: 0.12, delay: 0.8 + i * 0.35 }
+                                            : { duration: 0.15 }
+                                    }
+                                >
+                                    <Archive
+                                        className="size-4.5 text-root"
+                                        strokeWidth={1.75}
+                                    />
+                                </motion.div>
+                            </motion.div>
+                        </motion.div>
                     )
                 })}
             </div>
@@ -463,7 +543,7 @@ export function CrateLifecycle({ phase }: { phase: number }) {
                             className={cn(
                                 "size-1.5 rounded-full transition-colors duration-300",
                                 staticCaption
-                                    ? "first:bg-data bg-muted-foreground/25"
+                                    ? "first:bg-foreground bg-muted-foreground/25"
                                     : i === phase
                                       ? step.dot
                                       : "bg-muted-foreground/25"
@@ -646,7 +726,9 @@ export function PrinciplesSection() {
                                 aria-hidden
                                 className={cn(
                                     "absolute right-6 top-4 hidden select-none text-6xl font-black leading-none transition-colors duration-500 sm:block",
-                                    phase === 0 ? DATA.text : "text-muted-foreground/10"
+                                    phase === 0
+                                        ? "text-foreground"
+                                        : "text-muted-foreground/10"
                                 )}
                             >
                                 01
@@ -712,7 +794,9 @@ export function PrinciplesSection() {
                                 aria-hidden
                                 className={cn(
                                     "absolute right-6 top-4 hidden select-none text-6xl font-black leading-none transition-colors duration-500 sm:block",
-                                    phase === 1 ? ROOT.text : "text-muted-foreground/10"
+                                    phase === 1
+                                        ? "text-foreground"
+                                        : "text-muted-foreground/10"
                                 )}
                             >
                                 02
@@ -733,7 +817,9 @@ export function PrinciplesSection() {
                                 aria-hidden
                                 className={cn(
                                     "absolute right-6 top-4 hidden select-none text-6xl font-black leading-none transition-colors duration-500 sm:block",
-                                    phase === 2 ? CONTEXTUAL.text : "text-muted-foreground/10"
+                                    phase === 2
+                                        ? "text-foreground"
+                                        : "text-muted-foreground/10"
                                 )}
                             >
                                 03
