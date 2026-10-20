@@ -48,6 +48,12 @@ export class BrowserPersistenceService implements IPersistenceService {
         this.crateId = crateId
         this._events.emit("crate-id-changed", crateId)
 
+        const previousCrateService = this.crateService
+
+        if (previousCrateService) {
+            previousCrateService.dispose()
+        }
+
         if (crateId !== null) {
             this.crateService = new BrowserCrateService(crateId, this.worker)
         } else {
@@ -77,6 +83,12 @@ export class BrowserPersistenceService implements IPersistenceService {
         const healthy = await this.worker.healthTest()
         if (!healthy) {
             throw new Error("OPFS worker not healthy")
+        }
+    }
+
+    dispose(): void {
+        if (this.crateService) {
+            this.crateService.dispose()
         }
     }
 }

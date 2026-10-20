@@ -6,7 +6,7 @@ const iframeTargetOrigin = process.env.IFRAME_TARGET_ORIGIN ?? undefined
 const aiAssistantEnabled = process.env.AI_ASSISTANT_ENABLED ?? undefined
 const nextConfig = {
     basePath: basePath,
-    output: process.env.OUTPUT ?? undefined,
+    output: "standalone",
     env: {
         NEXT_PUBLIC_BASE_PATH: basePath,
         NEXT_PUBLIC_IFRAME_TARGET_ORIGIN: iframeTargetOrigin,

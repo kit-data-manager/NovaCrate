@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react"
 import { SlimClass } from "@/lib/schema-worker/helpers"
-import { usePropertyCanBe } from "@/components/editor/property-hooks"
+import { usePropertyCanBe } from "@/lib/hooks/property-can-be"
 import { DateField } from "@/components/editor/text-fields/date-field"
 import { TextField } from "@/components/editor/text-fields/text-field"
 import { BooleanField } from "@/components/editor/text-fields/boolean-field"

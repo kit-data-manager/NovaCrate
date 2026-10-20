@@ -1,0 +1,18 @@
+{
+    "mcp": {
+        "servers": {
+            "firefox-devtools": {
+                "type": "local",
+                "command": ["npx", "@mozilla/firefox-devtools-mcp-moz"]
+            },
+            "next-devtools": {
+                "type": "local",
+                "command": ["npx", "next-devtools-mcp@latest"]
+            },
+            "playwright": {
+                "type": "local",
+                "command": ["npx", "@playwright/mcp@latest"]
+            }
+        }
+    }
+}

@@ -1,4 +1,4 @@
-import { ContextServiceImpl } from "@/lib/core/impl/ContextServiceImpl"
+import { SynchronizedContextService } from "@/lib/core/impl/SynchronizedContextService"
 import { Observable } from "@/lib/core/impl/Observable"
 import { IPersistenceAdapter, IPersistenceAdapterEvents } from "@/lib/core/IPersistenceAdapter"
 import { RO_CRATE_VERSION } from "@/lib/constants"
@@ -23,11 +23,11 @@ function createMockPersistenceAdapter(
 describe("ContextServiceImpl", () => {
     describe("newInstance with v1.1 string context", () => {
         let mockAdapter: ReturnType<typeof createMockPersistenceAdapter>
-        let service: ContextServiceImpl
+        let service: SynchronizedContextService
 
         beforeEach(async () => {
             mockAdapter = createMockPersistenceAdapter("https://w3id.org/ro/crate/1.1/context")
-            service = await ContextServiceImpl.newInstance(mockAdapter)
+            service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
         })
 
         it("should load the v1.1 specification", () => {
@@ -64,13 +64,13 @@ describe("ContextServiceImpl", () => {
     })
 
     describe("newInstance with v1.2 string context", () => {
-        let service: ContextServiceImpl
+        let service: SynchronizedContextService
 
         beforeEach(async () => {
             const mockAdapter = createMockPersistenceAdapter(
                 "https://w3id.org/ro/crate/1.2/context"
             )
-            service = await ContextServiceImpl.newInstance(mockAdapter)
+            service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
         })
 
         it("should load the v1.2 specification", () => {
@@ -98,13 +98,13 @@ describe("ContextServiceImpl", () => {
         })
     })
     describe("newInstance with v1.3 string context", () => {
-        let service: ContextServiceImpl
+        let service: SynchronizedContextService
 
         beforeEach(async () => {
             const mockAdapter = createMockPersistenceAdapter(
                 "https://w3id.org/ro/crate/1.3/context"
             )
-            service = await ContextServiceImpl.newInstance(mockAdapter)
+            service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
         })
 
         it("should load the v1.3 specification", () => {
@@ -144,7 +144,7 @@ describe("ContextServiceImpl", () => {
             const mockAdapter = createMockPersistenceAdapter({
                 "@vocab": "https://w3id.org/ro/crate/1.2/context"
             })
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
 
             expect(service.specification).toBe(RO_CRATE_VERSION.V1_2_0)
             expect(service.usingFallback).toBe(false)
@@ -161,7 +161,7 @@ describe("ContextServiceImpl", () => {
                 "@vocab": "https://w3id.org/ro/crate/1.2/context",
                 custom: "https://example.org/schema/v1/"
             })
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
 
             expect(service.specification).toBe(RO_CRATE_VERSION.V1_2_0)
 
@@ -191,7 +191,7 @@ describe("ContextServiceImpl", () => {
                 "https://w3id.org/ro/crate/1.1/context",
                 { myPrefix: "https://example.org/myschema/" }
             ])
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
 
             expect(service.specification).toBe(RO_CRATE_VERSION.V1_1_3)
 
@@ -210,7 +210,7 @@ describe("ContextServiceImpl", () => {
         it("should fall back to v1.1.3 when context is unknown", async () => {
             const mock = spyOn(global.console, "error").mockImplementation(() => {})
             const mockAdapter = createMockPersistenceAdapter("https://example.org/unknown-context")
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
 
             expect(service.usingFallback).toBe(true)
             expect(service.specification).toBe(RO_CRATE_VERSION.V1_1_3)
@@ -221,7 +221,7 @@ describe("ContextServiceImpl", () => {
         it("should still resolve types using fallback context", async () => {
             const mock = spyOn(global.console, "error").mockImplementation(() => {})
             const mockAdapter = createMockPersistenceAdapter("https://example.org/unknown-context")
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
 
             expect(service.resolve("Organization")).toBe("https://schema.org/Organization")
             mock.mockRestore()
@@ -234,7 +234,7 @@ describe("ContextServiceImpl", () => {
             const mockAdapter = createMockPersistenceAdapter({
                 "@vocab": "https://example.org/unknown"
             })
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
 
             expect(service.usingFallback).toBe(true)
             expect(service.specification).toBe(RO_CRATE_VERSION.V1_1_3)
@@ -247,7 +247,7 @@ describe("ContextServiceImpl", () => {
             const mockAdapter = createMockPersistenceAdapter(
                 "https://w3id.org/ro/crate/1.1/context"
             )
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
             expect(service.resolve("Person")).toBe("https://schema.org/Person")
         })
 
@@ -256,7 +256,7 @@ describe("ContextServiceImpl", () => {
                 "@vocab": "https://w3id.org/ro/crate/1.1/context",
                 bio: "https://bioschemas.org/"
             })
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
             expect(service.resolve("bio:Gene")).toBe("https://bioschemas.org/Gene")
         })
 
@@ -265,7 +265,7 @@ describe("ContextServiceImpl", () => {
             const mockAdapter = createMockPersistenceAdapter(
                 "https://w3id.org/ro/crate/1.1/context"
             )
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
             expect(service.resolve("unknown:Type")).toBeNull()
             expect(mock).toHaveBeenCalled()
             mock.mockRestore()
@@ -275,7 +275,7 @@ describe("ContextServiceImpl", () => {
             const mockAdapter = createMockPersistenceAdapter(
                 "https://w3id.org/ro/crate/1.1/context"
             )
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
             expect(service.resolve("totallyNonExistentThing")).toBeNull()
         })
     })
@@ -285,7 +285,7 @@ describe("ContextServiceImpl", () => {
             const mockAdapter = createMockPersistenceAdapter(
                 "https://w3id.org/ro/crate/1.1/context"
             )
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
             expect(service.reverse("https://schema.org/Person")).toBe("Person")
         })
 
@@ -294,7 +294,7 @@ describe("ContextServiceImpl", () => {
                 "@vocab": "https://w3id.org/ro/crate/1.1/context",
                 bio: "https://bioschemas.org/"
             })
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
             expect(service.reverse("https://bioschemas.org/Gene")).toBe("bio:Gene")
         })
 
@@ -302,18 +302,18 @@ describe("ContextServiceImpl", () => {
             const mockAdapter = createMockPersistenceAdapter(
                 "https://w3id.org/ro/crate/1.1/context"
             )
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
             expect(service.reverse("https://unknown.org/something")).toBeNull()
         })
     })
 
     describe("addCustomContextPair", () => {
         let mockAdapter: ReturnType<typeof createMockPersistenceAdapter>
-        let service: ContextServiceImpl
+        let service: SynchronizedContextService
 
         beforeEach(async () => {
             mockAdapter = createMockPersistenceAdapter("https://w3id.org/ro/crate/1.1/context")
-            service = await ContextServiceImpl.newInstance(mockAdapter)
+            service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
         })
 
         it("should add a custom context pair", async () => {
@@ -357,14 +357,14 @@ describe("ContextServiceImpl", () => {
 
     describe("removeCustomContextPair", () => {
         let mockAdapter: ReturnType<typeof createMockPersistenceAdapter>
-        let service: ContextServiceImpl
+        let service: SynchronizedContextService
 
         beforeEach(async () => {
             mockAdapter = createMockPersistenceAdapter({
                 "@vocab": "https://w3id.org/ro/crate/1.1/context",
                 ex: "https://example.org/"
             })
-            service = await ContextServiceImpl.newInstance(mockAdapter)
+            service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
         })
 
         it("should remove the custom context pair", async () => {
@@ -397,7 +397,7 @@ describe("ContextServiceImpl", () => {
 
     describe("getKnownContext (static)", () => {
         it("should return the v1.1 context entry", () => {
-            const known = ContextServiceImpl.getKnownContext(
+            const known = SynchronizedContextService.getKnownContext(
                 "https://w3id.org/ro/crate/1.1/context"
             )
             expect(known).toBeDefined()
@@ -405,7 +405,7 @@ describe("ContextServiceImpl", () => {
         })
 
         it("should return the v1.2 context entry", () => {
-            const known = ContextServiceImpl.getKnownContext(
+            const known = SynchronizedContextService.getKnownContext(
                 "https://w3id.org/ro/crate/1.2/context"
             )
             expect(known).toBeDefined()
@@ -413,7 +413,7 @@ describe("ContextServiceImpl", () => {
         })
 
         it("should return the v1.3 context entry", () => {
-            const known = ContextServiceImpl.getKnownContext(
+            const known = SynchronizedContextService.getKnownContext(
                 "https://w3id.org/ro/crate/1.3/context"
             )
             expect(known).toBeDefined()
@@ -421,7 +421,7 @@ describe("ContextServiceImpl", () => {
         })
 
         it("should return undefined for an unknown context ID", () => {
-            const known = ContextServiceImpl.getKnownContext("https://example.org/unknown")
+            const known = SynchronizedContextService.getKnownContext("https://example.org/unknown")
             expect(known).toBeUndefined()
         })
     })
@@ -431,7 +431,7 @@ describe("ContextServiceImpl", () => {
             const mockAdapter = createMockPersistenceAdapter(
                 "https://w3id.org/ro/crate/1.1/context"
             )
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
             expect(service.specification).toBe(RO_CRATE_VERSION.V1_1_3)
 
             // Simulate persistence adapter emitting a context change
@@ -447,7 +447,7 @@ describe("ContextServiceImpl", () => {
             const mockAdapter = createMockPersistenceAdapter(
                 "https://w3id.org/ro/crate/1.1/context"
             )
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
 
             const listener = jest.fn()
             service.events.addEventListener("context-changed", listener)
@@ -466,7 +466,7 @@ describe("ContextServiceImpl", () => {
             const mockAdapter = createMockPersistenceAdapter(
                 "https://w3id.org/ro/crate/1.1/context"
             )
-            const service = await ContextServiceImpl.newInstance(mockAdapter)
+            const service = await SynchronizedContextService.newInstanceWithPersistence(mockAdapter)
 
             service.dispose()
 

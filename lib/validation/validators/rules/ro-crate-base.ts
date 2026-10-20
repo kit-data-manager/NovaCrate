@@ -9,6 +9,7 @@ import {
 import { findEntity, isValidUrl, toArray } from "@/lib/utils"
 import { propertyValue, PropertyValueUtils } from "@/lib/property-value-utils"
 import { ValidationResultBuilder } from "@/lib/validation/validation-result-builder"
+import { getActiveEntityRulesForEntity } from "@/lib/core/profiles/impl/util/get-active-entity-rules-for-entity"
 
 const builder = new ValidationResultBuilder("spec-basics")
 const RO_CRATE_SPEC_VERSION_PATTERN = /https:\/\/w3id\.org\/ro\/crate\/(\d+\.\d+)(\/.*)?/
@@ -98,7 +99,11 @@ export const RoCrateBase = {
                         (type, i) => [type, ctx.resolver.resolve(type), i] as const
                     )
                     const results: PropertyValidationResult[] = []
-                    for (const [type, resolvedType, i] of resolved) {
+                    for (const [type, _resolvedType, i] of resolved) {
+                        // If the type is a URL then it will fail to resolve in context but is a valid type nonetheless
+                        const resolvedType =
+                            _resolvedType === null && isValidUrl(type) ? type : _resolvedType
+
                         if (resolvedType === null) {
                             results.push(
                                 builder.rule("unknownType").error({
@@ -118,7 +123,7 @@ export const RoCrateBase = {
                                 results.push(
                                     builder.rule("missingSchemaForType").error({
                                         resultTitle: `Missing schema for type \`${type}\``,
-                                        resultDescription: `The type \`${type}\` is defined in the context of this crate (resolved to \`${resolvedType}\`), but the corresponding schema could not be found. Validation is not available for this type.`,
+                                        resultDescription: `The schema for type \`${resolvedType}\` could not be found. Validation is not available for this type. Add an appropriate schema in the settings.`,
                                         entityId: entity["@id"],
                                         propertyName: "@type",
                                         propertyIndex: i
@@ -154,6 +159,15 @@ export const RoCrateBase = {
                     return results
                 }
 
+                const entityRules = getActiveEntityRulesForEntity(entity["@id"], ctx.profileService)
+                const propertyRules = ctx.profileService.getPropertiesFor(entityRules)
+
+                // Bail out if there are profiles with active property rules for this property.
+                // The profile validator will do the work in this case.
+                let hasActivePropertyRule = false
+                if (propertyRules.find((rule) => rule.label === propertyName))
+                    hasActivePropertyRule = true
+
                 propertyValue(entity[propertyName]).forEach((v, i) => {
                     if (PropertyValueUtils.isRef(v) && !propertyValue(v).isEmpty()) {
                         const target = findEntity(entities, v["@id"])
@@ -170,6 +184,7 @@ export const RoCrateBase = {
                             return
                         }
                         if (!target) return
+                        if (hasActivePropertyRule) return
 
                         const targetTypes = toArray(target["@type"])
                             .map((v) => ctx.resolver.resolve(v))
@@ -191,16 +206,6 @@ export const RoCrateBase = {
                             )
                             return
                         }
-                    } else if (PropertyValueUtils.isRef(v) && propertyValue(v).isEmpty()) {
-                        results.push(
-                            builder.rule("emptyRef").warning({
-                                resultTitle: `Empty reference`,
-                                resultDescription: `The reference is empty. You can remove it, link it to an existing entity or create a new matching entity.`,
-                                entityId: entity["@id"],
-                                propertyName,
-                                propertyIndex: i
-                            })
-                        )
                     }
                 })
             } catch (e) {
@@ -209,6 +214,34 @@ export const RoCrateBase = {
                     e
                 )
             }
+            return results
+        },
+        async (entity, propertyName) => {
+            if (propertyName === "@id" || propertyName === "@type") return []
+            const results: PropertyValidationResult[] = []
+            propertyValue(entity[propertyName]).forEach((v, i) => {
+                if (PropertyValueUtils.isRef(v) && propertyValue(v).isEmpty()) {
+                    results.push(
+                        builder.rule("emptyRef").warning({
+                            resultTitle: `Empty reference`,
+                            resultDescription: `The reference is empty. You can remove it, link it to an existing entity or create a new matching entity.`,
+                            entityId: entity["@id"],
+                            propertyName,
+                            propertyIndex: i
+                        })
+                    )
+                } else if (PropertyValueUtils.isString(v) && propertyValue(v).isEmpty()) {
+                    results.push(
+                        builder.rule("emptyProperty").warning({
+                            resultTitle: `Empty property`,
+                            resultDescription: `The property is empty. You should either remove it or enter a value.`,
+                            entityId: entity["@id"],
+                            propertyName,
+                            propertyIndex: i
+                        })
+                    )
+                }
+            })
             return results
         },
         async (entity, propertyName) => {

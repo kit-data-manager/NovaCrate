@@ -5,17 +5,21 @@ import { IPersistenceAdapter } from "@/lib/core/IPersistenceAdapter"
 import { ICrateService } from "@/lib/core/persistence/ICrateService"
 import { IFileService } from "@/lib/core/persistence/IFileService"
 import { MetadataServiceImpl } from "@/lib/core/impl/MetadataServiceImpl"
-import { ContextServiceImpl } from "@/lib/core/impl/ContextServiceImpl"
+import { SynchronizedContextService } from "@/lib/core/impl/SynchronizedContextService"
 import { isDataEntity } from "@/lib/utils"
 import { DateTime } from "luxon"
+import { IProfileService, ProfileServiceOptions } from "@/lib/core/profiles/IProfileService"
+import { ProfileService } from "@/lib/core/profiles/impl/ProfileService"
 
 /**
  * Orchestrates metadata and context operations, delegating entity mutations
  * to IMetadataService and file operations to IFileService.
+ * Also bundles the ProfileService.
  */
 export class CoreServiceImpl implements ICoreService {
     private readonly metadata: IMetadataService
     private readonly context: IContextService
+    private readonly profiles: IProfileService
 
     private fileService: IFileService | null
     private removeFileServiceChangedListener: (() => void) | null = null
@@ -23,10 +27,12 @@ export class CoreServiceImpl implements ICoreService {
     private constructor(
         metadata: IMetadataService,
         context: IContextService,
+        profiles: IProfileService,
         crateService: ICrateService
     ) {
         this.metadata = metadata
         this.context = context
+        this.profiles = profiles
         this.fileService = crateService.getFileService()
 
         this.onFileServiceChanged = this.onFileServiceChanged.bind(this)
@@ -41,7 +47,7 @@ export class CoreServiceImpl implements ICoreService {
     }
 
     async addFileEntity(
-        name: string,
+        baseEntity: Omit<IEntity, "@id">,
         path: string,
         file: File,
         overwrite?: boolean
@@ -51,9 +57,8 @@ export class CoreServiceImpl implements ICoreService {
         }
 
         const entity: IEntity = {
+            ...(baseEntity as IEntity),
             "@id": path,
-            "@type": "File",
-            name: name,
             contentSize: file.size.toString(),
             encodingFormat: file.type,
             dateModified: file.lastModified
@@ -68,7 +73,11 @@ export class CoreServiceImpl implements ICoreService {
             )
     }
 
-    async addFolderEntity(name: string, path: string, overwrite?: boolean): Promise<void> {
+    async addFolderEntity(
+        baseEntity: Omit<IEntity, "@id">,
+        path: string,
+        overwrite?: boolean
+    ): Promise<void> {
         if (this.fileService) {
             await this.fileService.addFolder(path)
         }
@@ -76,9 +85,8 @@ export class CoreServiceImpl implements ICoreService {
         const normalizedPath = path.endsWith("/") ? path : path + "/"
 
         const entity: IEntity = {
-            "@id": normalizedPath,
-            "@type": "Dataset",
-            name: name
+            ...(baseEntity as IEntity),
+            "@id": normalizedPath
         }
 
         const result = await this.metadata.addEntity(entity, overwrite)
@@ -105,6 +113,8 @@ export class CoreServiceImpl implements ICoreService {
         let deleted = [id]
         if (deleteData && this.fileService) {
             deleted = await this.fileService.delete(id)
+            if (deleted.length === 0)
+                throw new Error(`Failed to delete any data corresponding to path ${id}, aborting`)
         }
 
         for (const deletedItem of deleted) {
@@ -120,19 +130,33 @@ export class CoreServiceImpl implements ICoreService {
         return this.metadata
     }
 
+    getProfileService(): IProfileService {
+        return this.profiles
+    }
+
     dispose() {
         if (this.removeFileServiceChangedListener) {
             this.removeFileServiceChangedListener()
             this.removeFileServiceChangedListener = null
         }
+        this.metadata.dispose()
+        this.context.dispose()
+        this.profiles.dispose()
     }
 
     static async newInstance(
         persistenceAdapter: IPersistenceAdapter,
-        crateService: ICrateService
+        crateService: ICrateService,
+        profileServiceOptions: ProfileServiceOptions = {}
     ): Promise<CoreServiceImpl> {
         const metadata = await MetadataServiceImpl.newInstance(persistenceAdapter)
-        const context = await ContextServiceImpl.newInstance(persistenceAdapter)
-        return new CoreServiceImpl(metadata, context, crateService)
+        const context =
+            await SynchronizedContextService.newInstanceWithPersistence(persistenceAdapter)
+        return new CoreServiceImpl(
+            metadata,
+            context,
+            new ProfileService(metadata, profileServiceOptions),
+            crateService
+        )
     }
 }

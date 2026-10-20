@@ -4,7 +4,7 @@ import { Asterisk } from "lucide-react"
 import { useEditorState } from "@/lib/state/editor-state"
 
 const entityBrowserItemIconBaseCN =
-    "min-w-5 min-h-5 inline-flex justify-center items-center border mr-2 rounded font-bold text-xs shrink-0 relative"
+    "min-w-5 min-h-5 inline-flex justify-center items-center border mr-2 rounded-lg font-bold text-xs shrink-0 relative"
 
 const asteriskCn = "absolute right-[-7px] top-[-7px] text-foreground text-xl rounded-full bg-muted"
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useRef, useState } from "react"
+import { UIEventHandler, useCallback, useMemo, useRef, useState } from "react"
 import { PropertyEditor } from "@/components/editor/property-editor"
 import {
     Diff,
@@ -23,17 +23,15 @@ import { EntityBadge } from "../entity/entity-badge"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useShallow } from "zustand/react/shallow"
 import { TypeSelectModal } from "@/components/modals/type-select-modal"
-import { ValidationOverview } from "@/components/editor/validation/validation-overview"
 import { EntityEditorProperty, mapEntityToProperties, PropertyType } from "@/lib/property"
 import { useFileService } from "@/lib/hooks/use-persistence"
+import { ProfileInsights } from "@/components/editor/profile-insights"
 
-export function EntityEditor({
-    entityId,
-    toggleEntityBrowserPanel
-}: {
+export interface IEntityEditorProps {
     entityId: string
-    toggleEntityBrowserPanel(): void
-}) {
+}
+
+export function EntityEditor({ entityId }: IEntityEditorProps) {
     const isSaving = useOperationState((s) => s.isSaving)
     const saveErrors = useOperationState((s) => s.saveErrors)
     const clearSaveError = useOperationState((s) => s.clearSaveError)
@@ -46,6 +44,7 @@ export function EntityEditor({
     const previewingFilePath = useEntityEditorTabs((store) => store.previewingFilePath)
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
     const fileService = useFileService()
+    const [scrolledToTheTop, setScrolledToTheTop] = useState(true)
 
     // Type selection for @type fields
     const [typeSelectModalOpen, setTypeSelectModalOpen] = useState(false)
@@ -159,6 +158,10 @@ export function EntityEditor({
         clearSaveError(entityId)
     }, [clearSaveError, entityId])
 
+    const scrollHandler: UIEventHandler<HTMLDivElement> = useCallback((e) => {
+        setScrolledToTheTop(e.currentTarget.scrollTop <= 20)
+    }, [])
+
     if (!entity) {
         return (
             <div>
@@ -186,7 +189,7 @@ export function EntityEditor({
     }
 
     return (
-        <div className="w-full h-full flex flex-col">
+        <div className="w-full h-full flex flex-col" data-testid={"entity-editor"}>
             <TypeSelectModal
                 onOpenChange={setTypeSelectModalOpen}
                 open={typeSelectModalOpen}
@@ -194,26 +197,26 @@ export function EntityEditor({
             />
 
             <EntityEditorHeader
+                entityId={entityId}
                 hasUnsavedChanges={hasUnsavedChanges}
                 isSaving={isSaving}
                 canSaveAs={!isDataEntity}
-                toggleEntityBrowserPanel={toggleEntityBrowserPanel}
                 canHavePreview={canHavePreview}
                 togglePreview={togglePreview}
                 isBeingPreviewed={isBeingPreviewed}
                 goToGraph={showInGraph}
                 goToFileExplorer={canHavePreview ? showInFileExplorer : undefined}
+                transparentBackground={scrolledToTheTop}
             />
 
-            <div className="pt-12 p-4 pr-10 overflow-y-auto max-w-full">
-                <div className="flex justify-between items-center">
-                    <h2 className="text-3xl font-bold flex items-center gap-4">
-                        <EntityBadge entity={entity} size="lg" />
-                        <span className="break-all">{displayName}</span>
-                    </h2>
-                    <div className="gap-2 flex entity-validation-overview">
-                        <ValidationOverview entityId={entityId} />
-                    </div>
+            <div className="p-4 pt-6 overflow-y-auto max-w-full" onScroll={scrollHandler}>
+                <h2 className="text-3xl font-bold flex items-center gap-4 break-all">
+                    {displayName}
+                </h2>
+
+                <div className="flex items-center gap-1 pt-1">
+                    <EntityBadge entity={entity} />
+                    <ProfileInsights entity={entity} />
                 </div>
 
                 <WebWorkerWarning />
@@ -225,7 +228,7 @@ export function EntityEditor({
                     onClear={clearOwnSaveError}
                 />
 
-                <div className="my-12 flex flex-col gap-4 mr-2">
+                <div className="my-10 flex flex-col gap-4 mr-2">
                     {properties.map((property) => {
                         return (
                             <div key={property.propertyName}>
@@ -247,13 +250,15 @@ export function EntityEditor({
                             </div>
                         )
                     })}
-                    <ActionButton
-                        actionId={"entity.add-property"}
-                        size="sm"
-                        variant="outline"
-                        className="text-xs"
-                        noShortcut
-                    />
+                    <div className="flex justify-end">
+                        <ActionButton
+                            actionId={"entity.add-property"}
+                            size="sm"
+                            variant="outline"
+                            className="text-xs"
+                            noShortcut
+                        />
+                    </div>
                 </div>
             </div>
         </div>

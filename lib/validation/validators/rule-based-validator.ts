@@ -1,4 +1,4 @@
-import { ValidationResult } from "@/lib/validation/validation-result"
+import { ValidationResultWithoutTrace } from "@/lib/validation/validation-result"
 import { Validator, ValidatorContext } from "@/lib/validation/validator"
 
 export type RuleBuilder<Rule extends CrateRule | PropertyRule | EntityRule> = (
@@ -6,13 +6,19 @@ export type RuleBuilder<Rule extends CrateRule | PropertyRule | EntityRule> = (
 ) => Rule[]
 
 export type CrateValidationResult = Omit<
-    ValidationResult,
+    ValidationResultWithoutTrace,
     "propertyName" | "propertyIndex" | "entityId"
 >
-export type EntityValidationResult = Omit<ValidationResult, "propertyName" | "propertyIndex"> & {
+export type EntityValidationResult = Omit<
+    ValidationResultWithoutTrace,
+    "propertyName" | "propertyIndex"
+> & {
     entityId: string
 }
-export type PropertyValidationResult = ValidationResult & { entityId: string; propertyName: string }
+export type PropertyValidationResult = ValidationResultWithoutTrace & {
+    entityId: string
+    propertyName: string
+}
 
 export type CrateRule = (crate: ICrate) => Promise<CrateValidationResult[]>
 export type EntityRule = (entity: IEntity) => Promise<EntityValidationResult[]>
@@ -35,7 +41,7 @@ export class RuleBasedValidator extends Validator {
         super(context)
     }
 
-    async validateCrate(crate: ICrate): Promise<ValidationResult[]> {
+    async validateCrate(crate: ICrate): Promise<ValidationResultWithoutTrace[]> {
         if (this.preflightHook && !this.preflightHook(super.getContext())) return []
 
         const crateRules = this.crateRuleBuilder(super.getContext())
@@ -52,7 +58,10 @@ export class RuleBasedValidator extends Validator {
             .flat(1)
     }
 
-    async validateProperty(entity: IEntity, propertyName: string): Promise<ValidationResult[]> {
+    async validateProperty(
+        entity: IEntity,
+        propertyName: string
+    ): Promise<ValidationResultWithoutTrace[]> {
         if (this.preflightHook && !this.preflightHook(super.getContext())) return []
 
         const crateRules = this.propertyRuleBuilder(super.getContext())
@@ -71,7 +80,7 @@ export class RuleBasedValidator extends Validator {
             .flat(1)
     }
 
-    async validateEntity(entity: IEntity): Promise<ValidationResult[]> {
+    async validateEntity(entity: IEntity): Promise<ValidationResultWithoutTrace[]> {
         if (this.preflightHook && !this.preflightHook(super.getContext())) return []
 
         const entityRules = this.entityRuleBuilder(super.getContext())

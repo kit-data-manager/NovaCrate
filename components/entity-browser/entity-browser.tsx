@@ -70,129 +70,148 @@ export function EntityBrowser() {
     const entityBrowserPanel = useMemo(() => {
         return (
             <div className="bg-background h-full w-full flex flex-col rounded-lg overflow-hidden border">
-                <div className="pl-4 text-sm h-10 flex items-center shrink-0 bg-accent">
+                <div className="pl-4 pr-2 gap-2 text-sm h-10 flex items-center shrink-0 bg-accent">
                     <PackageSearch className="size-4 shrink-0 mr-2" /> Entities
+                    <div className="grow" />
+                    <div className="flex gap-2 top-0 z-10 bg-accent overflow-x-auto no-scrollbar">
+                        <Tooltip delayDuration={500}>
+                            <TooltipTrigger asChild>
+                                <ActionButton
+                                    actionId="crate.add-entity"
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs"
+                                    noShortcut
+                                    hideName
+                                    ignoreOnClickFromProps
+                                />
+                            </TooltipTrigger>
+                            <TooltipContent>Create Entity</TooltipContent>
+                        </Tooltip>
+                        <Tooltip delayDuration={500}>
+                            <TooltipTrigger asChild>
+                                <ActionButton
+                                    actionId={"editor.global-search"}
+                                    variant={"outline"}
+                                    size={"sm"}
+                                    noShortcut
+                                    iconOnly
+                                    ignoreOnClickFromProps
+                                />
+                            </TooltipTrigger>
+                            <TooltipContent>Global Search</TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip delayDuration={500}>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    aria-label="Toggle Property Overview"
+                                    onClick={() =>
+                                        state.setShowPropertyOverview(!state.showPropertyOverview)
+                                    }
+                                >
+                                    <TableOfContents />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Toggle Property Overview</TooltipContent>
+                        </Tooltip>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm" aria-label="Sort entities">
+                                    <ArrowDownNarrowWide className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                                <DropdownMenuCheckboxItem
+                                    checked={sortBy === "name"}
+                                    onClick={() => setSortBy("name")}
+                                >
+                                    Name
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem
+                                    checked={sortBy === "id"}
+                                    onClick={() => setSortBy("id")}
+                                >
+                                    Identifier
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem
+                                    checked={sortBy === "type"}
+                                    onClick={() => setSortBy("type")}
+                                >
+                                    Type
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel>Structure by</DropdownMenuLabel>
+                                <DropdownMenuCheckboxItem
+                                    checked={structureBy === "none"}
+                                    onClick={() => setStructureBy("none")}
+                                >
+                                    None
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem
+                                    checked={structureBy === "general-type"}
+                                    onClick={() => setStructureBy("general-type")}
+                                >
+                                    Category
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem
+                                    checked={structureBy === "@type"}
+                                    onClick={() => setStructureBy("@type")}
+                                >
+                                    Type
+                                </DropdownMenuCheckboxItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className={`text-xs`}
+                                    aria-label="Entity Explorer Settings"
+                                >
+                                    <EllipsisVertical className={`size-4`} />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuLabel>Entity Explorer Settings</DropdownMenuLabel>
+                                <DropdownMenuCheckboxItem
+                                    checked={state.showEntityType}
+                                    onClick={() => state.setShowEntityType(!state.showEntityType)}
+                                >
+                                    Show Entity Type
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem
+                                    checked={state.showEntityRules}
+                                    onClick={() => state.setShowEntityRules(!state.showEntityRules)}
+                                >
+                                    Show Entity Rule
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem
+                                    checked={state.showIdInsteadOfName}
+                                    onClick={() =>
+                                        state.setShowIdInsteadOfName(!state.showIdInsteadOfName)
+                                    }
+                                >
+                                    Show ID instead of Name
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={collapseAllSections}>
+                                    <ChevronsDownUp className={"size-4 mr-2"} /> Collapse All
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={expandAllSections}>
+                                    <ChevronsUpDown className={"size-4 mr-2"} /> Expand All
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
-                <div className="flex gap-2 top-0 z-10 p-2 border-b border-t border-t-accent shrink-0 bg-accent overflow-x-auto no-scrollbar">
-                    <ActionButton
-                        actionId="crate.add-entity"
-                        size="sm"
-                        variant="outline"
-                        className="text-xs"
-                        noShortcut
-                    />
-                    <div className="grow"></div>
 
-                    <Tooltip delayDuration={500}>
-                        <TooltipTrigger asChild>
-                            <ActionButton
-                                actionId={"editor.global-search"}
-                                variant={"outline"}
-                                size={"sm"}
-                                noShortcut
-                                iconOnly
-                                ignoreOnClickFromProps
-                            />
-                        </TooltipTrigger>
-                        <TooltipContent>Global Search</TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip delayDuration={500}>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                    state.setShowPropertyOverview(!state.showPropertyOverview)
-                                }
-                            >
-                                <TableOfContents />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Toggle Property Overview</TooltipContent>
-                    </Tooltip>
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                                <ArrowDownNarrowWide className="size-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                            <DropdownMenuCheckboxItem
-                                checked={sortBy === "name"}
-                                onClick={() => setSortBy("name")}
-                            >
-                                Name
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem
-                                checked={sortBy === "id"}
-                                onClick={() => setSortBy("id")}
-                            >
-                                Identifier
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem
-                                checked={sortBy === "type"}
-                                onClick={() => setSortBy("type")}
-                            >
-                                Type
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuLabel>Structure by</DropdownMenuLabel>
-                            <DropdownMenuCheckboxItem
-                                checked={structureBy === "none"}
-                                onClick={() => setStructureBy("none")}
-                            >
-                                None
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem
-                                checked={structureBy === "general-type"}
-                                onClick={() => setStructureBy("general-type")}
-                            >
-                                Category
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem
-                                checked={structureBy === "@type"}
-                                onClick={() => setStructureBy("@type")}
-                            >
-                                Type
-                            </DropdownMenuCheckboxItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button size="sm" variant="outline" className={`text-xs`}>
-                                <EllipsisVertical className={`size-4`} />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuLabel>Entity Explorer Settings</DropdownMenuLabel>
-                            <DropdownMenuCheckboxItem
-                                checked={state.showEntityType}
-                                onClick={() => state.setShowEntityType(!state.showEntityType)}
-                            >
-                                Show Entity Type
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem
-                                checked={state.showIdInsteadOfName}
-                                onClick={() =>
-                                    state.setShowIdInsteadOfName(!state.showIdInsteadOfName)
-                                }
-                            >
-                                Show ID instead of Name
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={collapseAllSections}>
-                                <ChevronsDownUp className={"size-4 mr-2"} /> Collapse All
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={expandAllSections}>
-                                <ChevronsUpDown className={"size-4 mr-2"} /> Expand All
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
                 <EntityBrowserContent
                     defaultSectionOpen={defaultSectionOpen}
                     onSectionOpenChange={onSectionOpenChange}

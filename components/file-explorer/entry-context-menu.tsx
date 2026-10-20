@@ -79,29 +79,26 @@ export function EntryContextMenu({
 
     const createEntityForExistingFile = useCallback(() => {
         if (!filePath) return null
-        showCreateEntityModal(
-            [{ "@id": folder ? RO_CRATE_DATASET : RO_CRATE_FILE, comment: "Click here" }],
-            undefined,
-            encodeFilePath(filePath)
-        )
+        showCreateEntityModal({
+            restrictToClasses: [
+                { "@id": folder ? RO_CRATE_DATASET : RO_CRATE_FILE, comment: "Click here" }
+            ],
+            id: encodeFilePath(filePath)
+        })
     }, [filePath, folder, showCreateEntityModal])
 
     const createNewFile = useCallback(() => {
-        showCreateEntityModal(
-            [{ "@id": RO_CRATE_FILE, comment: "Click here" }],
-            undefined,
-            undefined,
-            getFolderPath(filePath || "")
-        )
+        showCreateEntityModal({
+            restrictToClasses: [{ "@id": RO_CRATE_FILE, comment: "Click here" }],
+            basePath: getFolderPath(filePath || "")
+        })
     }, [filePath, showCreateEntityModal])
 
     const createNewFolder = useCallback(() => {
-        showCreateEntityModal(
-            [{ "@id": RO_CRATE_DATASET, comment: "Click here" }],
-            undefined,
-            undefined,
-            getFolderPath(filePath || "")
-        )
+        showCreateEntityModal({
+            restrictToClasses: [{ "@id": RO_CRATE_DATASET, comment: "Click here" }],
+            basePath: getFolderPath(filePath || "")
+        })
     }, [filePath, showCreateEntityModal])
 
     const NewButtons = useMemo(() => {

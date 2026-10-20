@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useMemo } from "react"
 import { Binary, Calendar, CalendarClock, Clock9, Diff, LinkIcon, Type } from "lucide-react"
-import { usePropertyCanBe } from "@/components/editor/property-hooks"
+import { usePropertyCanBe } from "@/lib/hooks/property-can-be"
 import { PropertyType } from "@/lib/property"
 
 export default function TypeSelectDropdown(props: {

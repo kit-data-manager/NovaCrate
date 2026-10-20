@@ -40,6 +40,7 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
             if (!isOpen)
                 setTimeout(() => {
                     setDeleteError(undefined)
+                    setDeleteContent(false)
                 }, 300)
         },
         [isDeleting, onOpenChange]
@@ -51,17 +52,13 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
             .then((success: boolean) => {
                 if (success) {
                     setDeleteError(undefined)
-                    onOpenChange(false)
-                } else setDeleteError("Unknown error while deleting")
-            })
-            .catch((e: unknown) => {
-                console.error(e)
-                setDeleteError(e)
+                    localOnOpenChange(false)
+                } else setDeleteError("An error occurred. Check the error log.")
             })
             .finally(() => {
                 setIsDeleting(false)
             })
-    }, [entity, deleteEntity, onOpenChange, entityId, deleteContent])
+    }, [deleteEntity, entity, entityId, deleteContent, localOnOpenChange])
 
     const couldHaveFile = useMemo(() => {
         return entity ? !isContextualEntity(entity) : true
@@ -116,8 +113,8 @@ export const DeleteEntityModal = memo(function DeleteEntityModal({
     )
 
     const onCloseClick = useCallback(() => {
-        onOpenChange(false)
-    }, [onOpenChange])
+        localOnOpenChange(false)
+    }, [localOnOpenChange])
 
     return (
         <Dialog open={open} onOpenChange={localOnOpenChange}>

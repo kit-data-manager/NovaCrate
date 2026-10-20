@@ -1,7 +1,7 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { CheckIcon, CircleAlert, InfoIcon, PanelBottomOpen, TriangleAlert } from "lucide-react"
-import React, { memo, useEffect, useMemo, useState } from "react"
+import React, { ComponentProps, memo, useEffect, useMemo, useState } from "react"
 import { useStore } from "zustand"
 import { useShallow } from "zustand/react/shallow"
 import { ValidationResultLine } from "@/components/editor/validation/validation-result-line"
@@ -12,13 +12,17 @@ import { validationSettings } from "@/lib/state/validation-settings"
 import { useLayoutState } from "@/lib/state/layout-state"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
-export const ValidationOverview = memo(function ValidationOverview({
-    entityId,
-    validationRunning
-}: {
+export interface IValidationOverviewProps {
     entityId?: string
     validationRunning?: boolean
-}) {
+    size?: ComponentProps<typeof Button>["size"]
+}
+
+export const ValidationOverview = memo(function ValidationOverview({
+    entityId,
+    validationRunning,
+    size
+}: IValidationOverviewProps) {
     const [initiallyHidden, setInitiallyHidden] = useState(true)
 
     const validationStore = useValidationStore()
@@ -122,7 +126,7 @@ export const ValidationOverview = memo(function ValidationOverview({
 
     return (
         <div
-            className={`p-1 ${validationRunning && validationResults.length > 0 ? "opacity-50" : ""} ${initiallyHidden ? "opacity-0" : ""} transition-opacity`}
+            className={`${validationRunning && validationResults.length > 0 ? "opacity-50" : ""} ${initiallyHidden ? "invisible" : ""} transition-opacity`}
         >
             <Popover>
                 <Tooltip delayDuration={500}>
@@ -132,6 +136,7 @@ export const ValidationOverview = memo(function ValidationOverview({
                                 variant={"outline"}
                                 className={"validation-overview"}
                                 aria-label={"Validation Overview"}
+                                size={size}
                             >
                                 {icon}
                             </Button>

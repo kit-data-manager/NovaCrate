@@ -1,10 +1,13 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useCallback, useEffect, useState } from "react"
 import { SelectProperty } from "@/components/modals/add-property/select-property"
-import { usePropertyCanBe } from "@/components/editor/property-hooks"
+import { usePropertyCanBe } from "@/lib/hooks/property-can-be"
 import { SelectType } from "@/components/modals/add-property/select-type"
 import { SchemaNode } from "@/lib/schema-worker/SchemaNode"
 import { getPropertyTypeDefaultValue, PropertyType } from "@/lib/property"
+import { getActiveEntityRulesForEntity } from "@/lib/core/profiles/impl/util/get-active-entity-rules-for-entity"
+import { useProfileService } from "@/lib/hooks/use-profile-service"
+import { toArray } from "@/lib/utils"
 
 export interface PossibleProperty {
     propertyName: string
@@ -17,19 +20,23 @@ export function AddPropertyModal({
     open,
     onPropertyAdd,
     onOpenChange,
-    typeArray,
+    entity,
     onlyReferences = false
 }: {
     open: boolean
     onPropertyAdd: (propertyName: string, values: EntitySinglePropertyTypes) => void
     onOpenChange: (open: boolean) => void
-    typeArray: string[]
+    entity: IEntity
     onlyReferences?: boolean
 }) {
     const [typeSelectOptions, setTypeSelectOptions] = useState<
         ReturnType<typeof usePropertyCanBe> | undefined
     >(undefined)
     const [selectedPropertyName, setSelectedPropertyName] = useState("")
+    const profileService = useProfileService()
+
+    const typeArray = open ? toArray(entity["@type"]) : []
+    const profileClasses = open ? getActiveEntityRulesForEntity(entity["@id"], profileService) : []
 
     const onPropertySelect = useCallback(
         (propertyName: string, canBe: ReturnType<typeof usePropertyCanBe>) => {
@@ -83,6 +90,7 @@ export function AddPropertyModal({
                         open={open}
                         onPropertySelect={onPropertySelect}
                         typeArray={typeArray}
+                        profileClasses={profileClasses}
                         onlyReferences={onlyReferences}
                     />
                 ) : (

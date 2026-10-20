@@ -1,44 +1,24 @@
-import { useMemo } from "react"
 import { isDataEntity, isFileDataEntity } from "@/lib/utils"
 import { InfoIcon, PlusIcon } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useEditorState } from "@/lib/state/editor-state"
+import { Badge } from "@/components/ui/badge"
 
-const entityBrowserItemIconBaseCN = "border px-2 py-1 text-sm"
+export interface IEntityBadgeProps {
+    entity?: IEntity
+}
 
-export function EntityBadge(props: { entity?: IEntity; size?: "md" | "lg" | "sm" }) {
+export function EntityBadge(props: IEntityBadgeProps) {
     const rootEntityId = useEditorState((s) => s.getRootEntityId())
 
-    const sizeMod = useMemo(() => {
-        return props.size == "lg" ? " rounded-lg" : props.size == "sm" ? " " : ""
-    }, [props.size])
-
     if (!props.entity) {
-        return (
-            <div
-                className={
-                    entityBrowserItemIconBaseCN +
-                    " border-muted-foreground text-muted-foreground" +
-                    sizeMod
-                }
-            >
-                <span>Unknown</span>
-            </div>
-        )
+        return null
     } else if (props.entity["@id"] === rootEntityId) {
         return (
             <Tooltip delayDuration={200}>
-                <TooltipTrigger>
-                    <div
-                        className={
-                            entityBrowserItemIconBaseCN +
-                            " text-background bg-root border-transparent dark:border-root dark:text-root dark:bg-transparent" +
-                            sizeMod
-                        }
-                    >
-                        <span>Crate Root</span>
-                    </div>
+                <TooltipTrigger asChild>
+                    <Badge className="bg-root">Crate Root</Badge>
                 </TooltipTrigger>
                 <TooltipContent className="font-normal max-w-96 p-0 border border-input bg-transparent [&_.arrow]:fill-input [&_.arrow]:bg-input">
                     <Alert className="border-none m-0">
@@ -65,16 +45,10 @@ export function EntityBadge(props: { entity?: IEntity; size?: "md" | "lg" | "sm"
     } else if (isDataEntity(props.entity)) {
         return (
             <Tooltip delayDuration={200}>
-                <TooltipTrigger>
-                    <div
-                        className={
-                            entityBrowserItemIconBaseCN +
-                            " text-background bg-data border-transparent dark:border-data dark:text-data dark:bg-transparent" +
-                            sizeMod
-                        }
-                    >
-                        <span>{isFileDataEntity(props.entity) ? "File" : "Dataset"}</span>
-                    </div>
+                <TooltipTrigger asChild>
+                    <Badge className="bg-data">
+                        {isFileDataEntity(props.entity) ? "File" : "Dataset"}
+                    </Badge>
                 </TooltipTrigger>
                 <TooltipContent className="font-normal max-w-96 p-0 border border-input bg-transparent [&_.arrow]:fill-input [&_.arrow]:bg-input">
                     <Alert className="border-none m-0">
@@ -104,16 +78,8 @@ export function EntityBadge(props: { entity?: IEntity; size?: "md" | "lg" | "sm"
     } else {
         return (
             <Tooltip delayDuration={200}>
-                <TooltipTrigger>
-                    <div
-                        className={
-                            entityBrowserItemIconBaseCN +
-                            " text-background bg-contextual border-transparent dark:border-contextual dark:text-contextual dark:bg-transparent" +
-                            sizeMod
-                        }
-                    >
-                        <span>Contextual</span>
-                    </div>
+                <TooltipTrigger asChild>
+                    <Badge className="bg-contextual">Contextual</Badge>
                 </TooltipTrigger>
                 <TooltipContent className="font-normal max-w-96 p-0 border border-input bg-transparent [&_.arrow]:fill-input [&_.arrow]:bg-input">
                     <Alert className="border-none m-0">

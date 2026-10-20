@@ -1,0 +1,68 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+interface ICoreService {}
+
+interface IProfileService {
+    + events
+    - metadataService
+    getAllReady()
+    getAllErrors()
+    setProfileURIs()
+    getProfileURIs()
+    getProfiles()
+    getEntityMapping(): Map<string, ProfileEntityMappings>
+}
+
+interface IProfileHandler {
+    + events
+    + id
+    - entityMappings
+    - metadataService
+    getIsReady(): boolean
+    getErrors(): string[]
+    getDefinition(): ProfileDefinition | null
+    getEntityMapping(): Map<string, string>
+    getEntityRule(id: string): EntityRule | null
+    getPropertyRule(id: string): PropertyRule | null
+    getPropertyValueRule(id: string): PropertyValueRule | null
+    getPropertiesOn(entityRuleId: string)
+}
+
+class ProfileFactory {
+    createProfileFromURI(profileURI: string, metadata: IMetadataService): Promise<IProfileHandler>
+}
+
+note top of ProfileFactory: Takes care of resolving the profileURIs to profile crates
+
+interface IProfileFactoryStrategy {
+    name
+    isApplicable()
+    createProfileFromProfileCrate()
+}
+
+ICoreService *-- "1" IProfileService: profileService
+IProfileService *-- "*" IProfileHandler: profiles
+IProfileHandler *-- "1" ProfileDefinition: definition
+ProfileFactory --> "*" IProfileFactoryStrategy: STRATEGIES
+
+IProfileFactoryStrategy ..> IProfileHandler: <<creates>>
+IProfileService ..> ProfileFactory: <<uses>>
+
+class ProfileDefinition {
+}
+
+class EntityRule {
+}
+
+class PropertyRule {
+}
+
+class PropertyValueRule {
+}
+
+ProfileDefinition "1" *-- "*" EntityRule: entityRules
+ProfileDefinition "1" *-- "*" PropertyRule: propertyRules
+ProfileDefinition "1" *-- "*" PropertyValueRule: propertyValueRules
+
+@enduml

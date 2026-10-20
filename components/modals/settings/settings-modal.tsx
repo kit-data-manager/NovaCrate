@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { BugIcon, FileJson2, HardDrive, HardHat, SparklesIcon } from "lucide-react"
+import { BugIcon, FileJson2, HardDrive, ShieldCheck, SparklesIcon } from "lucide-react"
 import { PropsWithChildren, useEffect, useMemo, useState } from "react"
 import { GeneralSettings } from "@/components/modals/settings/general"
 import { WorkerSettings } from "@/components/modals/settings/workers"
@@ -9,6 +9,7 @@ import { StoragePage } from "@/components/modals/settings/storage"
 import { SchemaSettingsPage } from "@/components/modals/settings/schemas"
 import { ValidationSettings } from "@/components/modals/settings/validation"
 import { AiAssistantSettings } from "@/components/modals/settings/ai-assistant"
+import { ProfilesSettings } from "@/components/modals/settings/profiles"
 
 export enum SettingsPages {
     GENERAL,
@@ -16,7 +17,8 @@ export enum SettingsPages {
     STORAGE,
     SCHEMAS,
     VALIDATION,
-    AI_ASSISTANT
+    AI_ASSISTANT,
+    PROFILES
 }
 
 function SettingsPageButton({
@@ -32,7 +34,7 @@ function SettingsPageButton({
     return (
         <Button
             variant="ghost"
-            className={`justify-start hover:underline underline-offset-4 ${page === currentPage ? "bg-background hover:bg-background" : ""}`}
+            className={`justify-start ${page === currentPage ? "bg-accent" : ""}`}
             onClick={() => setPage(page)}
         >
             {children}
@@ -67,6 +69,8 @@ export function SettingsModal({
                 return <SchemaSettingsPage />
             case SettingsPages.VALIDATION:
                 return <ValidationSettings />
+            case SettingsPages.PROFILES:
+                return <ProfilesSettings />
             case SettingsPages.AI_ASSISTANT:
                 return <AiAssistantSettings />
         }
@@ -74,34 +78,33 @@ export function SettingsModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="min-w-250 min-h-150 max-h-150 flex">
+            <DialogContent className="w-[1000px] h-[600px] min-w-[800px] min-h-[400px] max-w-[90vw]! max-h-[90vh] resize overflow-auto">
                 <VisuallyHidden>
                     <DialogTitle>Settings</DialogTitle>
                 </VisuallyHidden>
 
-                <div className="grid grid-cols-[200px_auto] grow">
-                    <div className="absolute bg-accent top-0 left-0 w-50 h-full rounded-l p-4 flex flex-col gap-2">
-                        <h3 className="font-semibold text-2xl leading-none p-2 mb-2">Settings</h3>
-                        {/*<SettingsPageButton*/}
-                        {/*    page={SettingsPages.GENERAL}*/}
-                        {/*    currentPage={page}*/}
-                        {/*    setPage={setPage}*/}
-                        {/*>*/}
-                        {/*    <Cog className="size-4 mr-2" /> General*/}
-                        {/*</SettingsPageButton>*/}
+                <div className="grid grid-cols-[200px_auto] gap-4 max-h-full min-h-0">
+                    <div className="flex flex-col gap-2">
                         <SettingsPageButton
                             page={SettingsPages.SCHEMAS}
                             currentPage={page}
                             setPage={setPage}
                         >
-                            <FileJson2 className="size-4 mr-2" /> Schemas
+                            <FileJson2 className="size-4 mr-1" /> Schemas
                         </SettingsPageButton>
                         <SettingsPageButton
                             page={SettingsPages.VALIDATION}
                             currentPage={page}
                             setPage={setPage}
                         >
-                            <BugIcon className="size-4 mr-2" /> Validation
+                            <BugIcon className="size-4 mr-1" /> Validation
+                        </SettingsPageButton>
+                        <SettingsPageButton
+                            page={SettingsPages.PROFILES}
+                            currentPage={page}
+                            setPage={setPage}
+                        >
+                            <ShieldCheck className="size-4 mr-1" /> Profiles
                         </SettingsPageButton>
                         {process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED === "true" && (
                             <SettingsPageButton
@@ -109,26 +112,25 @@ export function SettingsModal({
                                 currentPage={page}
                                 setPage={setPage}
                             >
-                                <SparklesIcon className="size-4 mr-2" /> AI Assistant
+                                <SparklesIcon className="size-4 mr-1" /> AI Assistant
                             </SettingsPageButton>
                         )}
-                        <SettingsPageButton
-                            page={SettingsPages.WORKERS}
-                            currentPage={page}
-                            setPage={setPage}
-                        >
-                            <HardHat className="size-4 mr-2" /> Workers
-                        </SettingsPageButton>
                         <SettingsPageButton
                             page={SettingsPages.STORAGE}
                             currentPage={page}
                             setPage={setPage}
                         >
-                            <HardDrive className="size-4 mr-2" /> Storage
+                            <HardDrive className="size-4 mr-1" /> Storage
+                        </SettingsPageButton>
+                        <SettingsPageButton
+                            page={SettingsPages.WORKERS}
+                            currentPage={page}
+                            setPage={setPage}
+                        >
+                            <BugIcon className="size-4 mr-1" /> Diagnostics
                         </SettingsPageButton>
                     </div>
-                    <div />
-                    <div className="min-h-0 min-w-0">{content}</div>
+                    <div className="min-h-0 min-w-0 max-h-full overflow-y-auto">{content}</div>
                 </div>
             </DialogContent>
         </Dialog>

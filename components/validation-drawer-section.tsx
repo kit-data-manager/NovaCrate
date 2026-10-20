@@ -1,9 +1,8 @@
 import { ValidationResult } from "@/lib/validation/validation-result"
 import { ValidationResultLine } from "@/components/editor/validation/validation-result-line"
 import React, { ReactNode, useCallback, useEffect, useState } from "react"
-import { ChevronRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import type { DefaultSectionOpen } from "@/components/entity-browser/entity-browser-section"
+import { SectionTrigger } from "@/components/ui/section-trigger"
 
 export function ValidationDrawerSection({
     header,
@@ -34,28 +33,29 @@ export function ValidationDrawerSection({
     }, [toggleOpen])
 
     return (
-        <div>
-            <div className="flex items-center gap-2 hover:bg-muted rounded">
-                <Button size="icon" variant="ghost" className={`shrink-0`} onClick={toggleOpen}>
-                    <ChevronRight className={`size-4 ${open ? "rotate-90" : ""}`} />
-                </Button>
-                <span className="text-sm">{header}</span>{" "}
-                <span className="text-xs text-muted-foreground">({elements.length})</span>
-            </div>
-            <div className="pl-4">
-                {elements.map((res) => (
-                    <ValidationResultLine
-                        result={res}
-                        key={res.id}
-                        showPropertyName
-                        showEntityId
-                        focusable
-                        render={open}
-                        renderRequest={renderRequest}
-                        truncate={false}
-                    />
-                ))}
-            </div>
-        </div>
+        <SectionTrigger
+            open={open}
+            toggleOpen={toggleOpen}
+            keepMounted
+            triggerText={
+                <>
+                    <span className="text-sm">{header}</span>{" "}
+                    <span className="text-xs text-muted-foreground">({elements.length})</span>
+                </>
+            }
+        >
+            {elements.map((res) => (
+                <ValidationResultLine
+                    result={res}
+                    key={res.id}
+                    showPropertyName
+                    showEntityId
+                    focusable
+                    render={open}
+                    renderRequest={renderRequest}
+                    truncate={false}
+                />
+            ))}
+        </SectionTrigger>
     )
 }

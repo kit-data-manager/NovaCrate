@@ -1,8 +1,10 @@
 "use client"
 
 import {
+    ArrowLeft,
     ChevronDown,
     CircleAlert,
+    CirclePlay,
     Download,
     File,
     FileUp,
@@ -32,8 +34,16 @@ import { RO_CRATE_DATASET, RO_CRATE_FILE } from "@/lib/constants"
 import { useOperationState } from "@/lib/state/operation-state"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { downloadCrateAs } from "@/lib/core/util"
-import { useAction, useCrateName, useCurrentEntity, useIsEmbedded } from "@/lib/hooks/hooks"
+import {
+    useAction,
+    useCrateName,
+    useCurrentEntity,
+    useGoToMainMenu,
+    useGoToPage,
+    useIsEmbedded
+} from "@/lib/hooks/hooks"
 import { editorState, useEditorState } from "@/lib/state/editor-state"
+import { useTourState } from "@/lib/state/tour-state"
 import { useInterval } from "usehooks-ts"
 import { getEntityDisplayName } from "@/lib/utils"
 import { ActionButton, ActionMenubarItem } from "@/components/actions/action-buttons"
@@ -46,6 +56,8 @@ import { ValidationOverview } from "@/components/editor/validation/validation-ov
 import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { useStore } from "zustand"
 import { toast } from "sonner"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import Link from "next/link"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -56,7 +68,10 @@ function EntityMenu() {
 
     return currentEntity !== undefined ? (
         <MenubarMenu>
-            <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
+            <MenubarTrigger
+                data-tour="entity-menu"
+                className="hover:bg-background focus:bg-background data-[state=open]:bg-background"
+            >
                 Entity
                 <ChevronDown className="size-4 ml-1 text-muted-foreground" />
             </MenubarTrigger>
@@ -109,24 +124,35 @@ export function NavHeader() {
     useInterval(updateSchemaWorkerIssues, 2000)
 
     const showUploadFolderModal = useCallback(() => {
-        showCreateEntityModal([
-            {
-                "@id": RO_CRATE_DATASET,
-                comment: ""
-            }
-        ])
+        showCreateEntityModal({
+            restrictToClasses: [
+                {
+                    "@id": RO_CRATE_DATASET,
+                    comment: ""
+                }
+            ]
+        })
     }, [showCreateEntityModal])
 
     const showUploadFileModal = useCallback(() => {
-        showCreateEntityModal([
-            {
-                "@id": RO_CRATE_FILE,
-                comment: ""
-            }
-        ])
+        showCreateEntityModal({
+            restrictToClasses: [
+                {
+                    "@id": RO_CRATE_FILE,
+                    comment: ""
+                }
+            ]
+        })
     }, [showCreateEntityModal])
 
     const crateName = useCrateName()
+    const startTour = useTourState((s) => s.startTour)
+    const goToEntitiesPage = useGoToPage("entities")
+
+    const showTour = useCallback(() => {
+        startTour("editor")
+        goToEntitiesPage()
+    }, [goToEntitiesPage, startTour])
 
     const downloadCrateZip = useCallback(
         async (compressed: boolean) => {
@@ -182,12 +208,18 @@ export function NavHeader() {
         return (
             <Menubar className="bg-transparent">
                 <MenubarMenu>
-                    <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
+                    <MenubarTrigger
+                        data-tour="editor-menu"
+                        className="hover:bg-background focus:bg-background data-[state=open]:bg-background"
+                    >
                         Editor <ChevronDown className="size-4 ml-1 text-muted-foreground" />
                     </MenubarTrigger>
                     <MenubarContent>
                         <ActionMenubarItem actionId="editor.global-search" />
                         <MenubarSeparator />
+                        <MenubarItem onClick={showTour}>
+                            <CirclePlay className="size-4" /> Take a Tour
+                        </MenubarItem>
                         <MenubarSub>
                             <MenubarSubTrigger>
                                 <Palette className="size-4" /> Theme
@@ -226,7 +258,10 @@ export function NavHeader() {
                     </MenubarContent>
                 </MenubarMenu>
                 <MenubarMenu>
-                    <MenubarTrigger className="hover:bg-background focus:bg-background data-[state=open]:bg-background">
+                    <MenubarTrigger
+                        data-tour="crate-menu"
+                        className="hover:bg-background focus:bg-background data-[state=open]:bg-background"
+                    >
                         Crate <ChevronDown className="size-4 ml-1 text-muted-foreground" />
                     </MenubarTrigger>
                     <MenubarContent>
@@ -248,6 +283,7 @@ export function NavHeader() {
                             actionId="crate.revert-all-entities"
                         />
                         <MenubarSeparator />
+                        <ActionMenubarItem actionId="crate.manage-profiles" />
                         <MenubarSub>
                             <MenubarSubTrigger>
                                 <Download className="size-4" /> Export
@@ -285,17 +321,38 @@ export function NavHeader() {
         hasUnsavedChanges,
         isEmbedded,
         isSaving,
+        showTour,
         showUploadFileModal,
         showUploadFolderModal,
         theme
     ])
 
+    const goToMainMenu = useGoToMainMenu()
+
     return (
-        <div className="p-4 py-2 pr-3 w-full grid grid-cols-[1fr_auto_1fr]">
+        <div className="pl-2 py-2 pr-3 w-full grid grid-cols-[1fr_auto_1fr]">
             <div className="flex items-center">
-                <Package className="w-7 h-7 mr-2" />
-                <div className="mr-6 font-bold max-w-75 truncate animate-in">
-                    <div className="text-xs font-normal">NovaCrate</div>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant={"ghost"}
+                            size="icon"
+                            className="relative group/nc-logo w-30 disabled:opacity-100"
+                            onClick={goToMainMenu}
+                            disabled={isEmbedded}
+                        >
+                            <Package className="left-3 size-5 absolute group-hover/nc-logo:opacity-0 transition-opacity" />
+                            <ArrowLeft className="left-3 size-5 absolute opacity-0 group-hover/nc-logo:opacity-100 transition-opacity" />
+                            <div className="absolute right-3">NovaCrate</div>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side={"right"}>Back to Main Menu</TooltipContent>
+                </Tooltip>
+
+                <div
+                    className="mx-2 leading-tight max-w-75 truncate animate-in text-sm font-bold"
+                    data-tour="crate-name"
+                >
                     {crateName}
                 </div>
 
@@ -363,6 +420,7 @@ export function NavHeader() {
                     variant="outline"
                     actionId={"editor.global-search"}
                     name={"search"}
+                    data-tour="search"
                     noShortcut
                     hideName
                     className="text-muted-foreground font-normal hover:bg-background cursor-text"
@@ -384,6 +442,7 @@ export function NavHeader() {
                         <ActionButton
                             variant="outline"
                             name={"ai-assistant"}
+                            data-tour="ai-assistant"
                             actionId={"editor.toggle-ai-assistant"}
                             showTooltip
                             iconOnly

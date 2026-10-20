@@ -15,6 +15,10 @@ export class ValidationResultBuilder {
         return this
     }
 
+    action(name: string, displayName: string, dispatch: () => void) {
+        return { name, displayName, dispatch }
+    }
+
     error<D = EntityValidationResult | PropertyValidationResult | CrateValidationResult>(
         data: Omit<D, "resultSeverity" | "ruleName" | "id" | "validatorName">
     ): D {

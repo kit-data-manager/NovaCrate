@@ -5,13 +5,9 @@ test("Edit Properties", async ({ page }) => {
     await loadTestFolder(page)
     await expect(page.locator("#entity-browser-content")).toMatchAriaSnapshot(`
     - button "R Testing FolderDataset"
-    - button "Contextual Entities (1)":
-      - img
-      - text: "Contextual Entities (1)"
-    - button "C ro-crate-metadata.jsonCreativeWork"
-    - button "Data Entities (4)":
-      - img
-      - text: "Data Entities (4)"
+    - button "Contextual Entities (1)"
+    - button "C ro-crate-metadata.jsonCreative Work"
+    - button "Data Entities (4)"
     - button "F candles-9247498_1280.jpgFile"
     - button "F description.txtFile"
     - button "F empty-fileFile"
@@ -20,7 +16,9 @@ test("Edit Properties", async ({ page }) => {
     await page.getByRole("textbox").first().click()
     await page.getByRole("textbox").first().press("ControlOrMeta+a")
     await page.getByRole("textbox").first().fill("New Name of the Crate")
-    await expect(page.getByRole("heading")).toMatchAriaSnapshot(`- text: New Name of the Crate`)
+    await expect(page.getByRole("heading")).toMatchAriaSnapshot(
+        `- heading \"New Name of the Crate\" [level=2]`
+    )
     await expect(page.locator(".bg-info")).toBeVisible()
     await expect(page.getByText("There are unsaved changes")).toBeVisible()
     await page.getByRole("button", { name: "Save" }).click()
@@ -136,12 +134,7 @@ test("Change field type and change back", async ({ page }) => {
     `)
     await expect(page.locator(".bg-info")).toBeVisible()
     await expect(page.getByText("There are unsaved changes")).toBeVisible()
-    await page
-        .locator("div")
-        .filter({ hasText: /^There are unsaved changesSave$/ })
-        .getByRole("button")
-        .nth(1)
-        .click()
+    await page.getByRole("button", { name: "More Options" }).click()
     await page.getByRole("menuitem", { name: "Revert Changes ⌘U" }).click()
     await expect(page.locator("body")).toMatchAriaSnapshot(`
     - spinbutton: 25
@@ -163,12 +156,7 @@ test("Change field type and revert", async ({ page }) => {
     await page.getByRole("menuitem", { name: "Text" }).click()
     await page.getByRole("textbox").nth(3).click()
     await page.getByRole("textbox").nth(3).fill("25 und mehr")
-    await page
-        .locator("div")
-        .filter({ hasText: /^There are unsaved changesSave$/ })
-        .getByRole("button")
-        .nth(1)
-        .click()
+    await page.getByRole("button", { name: "More Options" }).click()
     await page.getByRole("menuitem", { name: "Revert Changes ⌘U" }).click()
     await expect(page.locator("body")).toMatchAriaSnapshot(`
     - textbox: 25
@@ -248,9 +236,8 @@ test("Add Reference and follow it", async ({ page }) => {
     `)
     await page.getByRole("button", { name: "F JSON Result File" }).nth(1).click()
     await expect(page.locator("body")).toMatchAriaSnapshot(`
-    - heading "File JSON Result File" [level=2]:
-      - button "File"
-    - text: Identifier
+    - heading "JSON Result File" [level=2]
+    - text: File Identifier
     - paragraph: The unique identifier of the entity
     - text: result.json
     - button

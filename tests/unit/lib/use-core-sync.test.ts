@@ -37,7 +37,8 @@ function createMockMetadataService(
         addEntity: jest.fn(),
         updateEntity: jest.fn(),
         changeEntityIdentifier: jest.fn(),
-        deleteEntity: jest.fn()
+        deleteEntity: jest.fn(),
+        dispose: jest.fn()
     }
 }
 
@@ -62,7 +63,8 @@ function createMockContextService(
         getRaw: () => structuredClone(rawContext),
         removeCustomContextPair: jest.fn(),
         addCustomContextPair: jest.fn(),
-        getResolver: jest.fn()
+        getResolver: jest.fn(),
+        dispose: jest.fn()
     }
 }
 
@@ -73,6 +75,7 @@ function createMockCoreService(
     return {
         getMetadataService: () => metadataService,
         getContextService: () => contextService,
+        getProfileService: jest.fn(),
         addFileEntity: jest.fn(),
         addFolderEntity: jest.fn(),
         moveEntity: jest.fn(),

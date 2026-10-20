@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import {
     BookOpenText,
+    Box,
     Braces,
     Bug,
     Folder,
@@ -28,6 +29,15 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import AIAssistantChat from "@/components/ai/chat"
 import { useLayoutState } from "@/lib/state/layout-state"
 import { useDefaultLayout, usePanelRef } from "react-resizable-panels"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/dialog"
+import { FeedbackEmbed } from "@/components/FeedbackEmbed"
 
 function NavSidebarButton({
     children,
@@ -70,7 +80,7 @@ function NavSidebarLink({
     return (
         <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
-                <Link href={href} title={name}>
+                <Link href={href} title={name} data-tour={`nav-${page}`}>
                     <NavSidebarButton isActive={isActive}>{children}</NavSidebarButton>
                 </Link>
             </TooltipTrigger>
@@ -130,7 +140,7 @@ export function NavSidebar({ children }: PropsWithChildren) {
                             <NavSidebarLink page="json-editor" name={"JSON Editor"}>
                                 <Braces className="size-5" />
                             </NavSidebarLink>
-                            <NavSidebarLink page="context" name={"Context"}>
+                            <NavSidebarLink page="context" name={"Profiles & Context"}>
                                 <Library className="size-5" />
                             </NavSidebarLink>
 
@@ -139,6 +149,7 @@ export function NavSidebar({ children }: PropsWithChildren) {
                             <Tooltip delayDuration={0}>
                                 <TooltipTrigger asChild>
                                     <NavSidebarButton
+                                        data-tour="validation-drawer"
                                         isActive={showValidationDrawer}
                                         onClick={toggleShowValidationDrawer}
                                     >
@@ -148,20 +159,28 @@ export function NavSidebar({ children }: PropsWithChildren) {
                                 <TooltipContent side={"right"}>Validation Drawer</TooltipContent>
                             </Tooltip>
 
-                            <Tooltip delayDuration={0}>
-                                <TooltipTrigger asChild>
-                                    <Link
-                                        href={
-                                            "https://github.com/kit-data-manager/NovaCrate/issues"
-                                        }
-                                    >
-                                        <NavSidebarButton isActive={false}>
-                                            <MessageSquare className="size-4" />
-                                        </NavSidebarButton>
-                                    </Link>
-                                </TooltipTrigger>
-                                <TooltipContent side={"right"}>Send Feedback</TooltipContent>
-                            </Tooltip>
+                            <Dialog>
+                                <Tooltip delayDuration={0}>
+                                    <TooltipTrigger asChild>
+                                        <DialogTrigger asChild>
+                                            <NavSidebarButton isActive={false}>
+                                                <MessageSquare />
+                                            </NavSidebarButton>
+                                        </DialogTrigger>
+                                    </TooltipTrigger>
+                                    <TooltipContent side={"right"}>Send Feedback</TooltipContent>
+                                </Tooltip>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Feedback</DialogTitle>
+                                        <DialogDescription>
+                                            Give feedback using the form below. We highly appreciate
+                                            your input!
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <FeedbackEmbed />
+                                </DialogContent>
+                            </Dialog>
 
                             <Tooltip delayDuration={0}>
                                 <TooltipTrigger asChild>

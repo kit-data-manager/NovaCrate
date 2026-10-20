@@ -3,22 +3,17 @@ import { test, expect, Page } from "@playwright/test"
 async function testCrateContent(page: Page) {
     await expect(page.locator("#entity-browser-content")).toMatchAriaSnapshot(`
     - button "R TestCrateDataset"
-    - button "Contextual Entities (4)":
-      - img
-      - text: ""
+    - button "Contextual Entities (4)"
     - button "C Example OrgOrganization"
     - button "C KarlsruhePlace"
-    - button "C ro-crate-metadata.jsonCreativeWork"
+    - button "C ro-crate-metadata.jsonCreative Work"
     - button "C Test PersonPerson"
-    - button "Data Entities (1)":
-      - img
-      - text: ""
+    - button "Data Entities (1)"
     - button "F JSON Result FileFile"
     `)
     await expect(page.locator("body")).toMatchAriaSnapshot(`
-    - heading "Crate Root TestCrate" [level=2]:
-      - button "Crate Root"
-    - text: Name
+    - heading "TestCrate" [level=2]
+    - text: Crate Root Identifier
     - paragraph: The name of the item.
     - textbox: TestCrate
     - button
@@ -68,9 +63,8 @@ async function testCrateContent(page: Page) {
     await page.getByRole("button", { name: "F JSON Result File", exact: true }).click()
     await expect(page.getByRole("heading").getByText("JSON Result File")).toBeVisible()
     await expect(page.locator("body")).toMatchAriaSnapshot(`
-    - heading "File JSON Result File" [level=2]:
-      - button "File"
-    - text: Identifier
+    - heading "JSON Result File" [level=2]
+    - text: File Identifier
     - paragraph: The unique identifier of the entity
     - text: result.json
     - button
@@ -122,6 +116,7 @@ async function testCrateContent(page: Page) {
 
 test("Import Crate .zip", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "Import RO-Crate" }).click()
     await page.getByTestId("create-upload-input").setInputFiles("tests/data/TestCrate.zip")
     await testCrateContent(page)
@@ -129,6 +124,7 @@ test("Import Crate .zip", async ({ page }) => {
 
 test("Import Crate .eln", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "Import RO-Crate" }).click()
     await page.getByTestId("create-upload-input").setInputFiles("tests/data/TestCrate.eln")
     await testCrateContent(page)
@@ -136,6 +132,7 @@ test("Import Crate .eln", async ({ page }) => {
 
 test("Import Folder", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "New RO-Crate" }).click()
     await page.getByRole("button", { name: "Select Folder" }).click()
     await page.getByTestId("create-folder-upload-input").setInputFiles("tests/data/TestFolder")
@@ -146,13 +143,9 @@ test("Import Folder", async ({ page }) => {
     await page.getByRole("button", { name: "Create" }).click()
     await expect(page.locator("#entity-browser-content")).toMatchAriaSnapshot(`
     - button "R Uploaded from FolderDataset"
-    - button "Contextual Entities (1)":
-      - img
-      - text: ""
-    - button "C ro-crate-metadata.jsonCreativeWork"
-    - button "Data Entities (4)":
-      - img
-      - text: ""
+    - button "Contextual Entities (1)"
+    - button "C ro-crate-metadata.jsonCreative Work"
+    - button "Data Entities (4)"
     - button "F candles-9247498_1280.jpgFile"
     - button "F description.txtFile"
     - button "F empty-fileFile"
@@ -210,6 +203,7 @@ test("Import Folder", async ({ page }) => {
 
 test("Import Files", async ({ page }) => {
     await page.goto("http://localhost:3000/editor")
+    await page.getByTestId("button-close").click() // Close the tour
     await page.getByRole("button", { name: "New RO-Crate" }).click()
     await page.getByRole("button", { name: "Select Folder" }).click()
     await page
@@ -222,13 +216,9 @@ test("Import Files", async ({ page }) => {
     await page.getByRole("button", { name: "Create" }).click()
     await expect(page.locator("#entity-browser-content")).toMatchAriaSnapshot(`
     - button "R Uploaded from FolderDataset"
-    - button "Contextual Entities (1)":
-      - img
-      - text: ""
-    - button "C ro-crate-metadata.jsonCreativeWork"
-    - button "Data Entities (2)":
-      - img
-      - text: ""
+    - button "Contextual Entities (1)"
+    - button "C ro-crate-metadata.jsonCreative Work"
+    - button "Data Entities (2)"
     - button "F empty-fileFile"
     - button "F example.jsonFile"
     `)

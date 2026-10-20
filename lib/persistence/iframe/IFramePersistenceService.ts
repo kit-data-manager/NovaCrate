@@ -108,4 +108,6 @@ export class IFramePersistenceService implements IPersistenceService {
         if (!this.crateService) return null
         return await this.crateService.getMetadata()
     }
+
+    dispose(): void {}
 }

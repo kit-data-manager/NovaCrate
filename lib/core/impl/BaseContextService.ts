@@ -3,7 +3,7 @@ import { IContextService, IContextServiceEvents } from "@/lib/core/IContextServi
 import { IContextResolverService } from "@/lib/core/IContextResolverService"
 import { Observable } from "@/lib/core/impl/Observable"
 import { IObservable } from "@/lib/core/IObservable"
-import { IPersistenceAdapter } from "@/lib/core/IPersistenceAdapter"
+import { isValidUrl } from "@/lib/utils"
 
 const KNOWN_CONTEXTS = [
     {
@@ -27,12 +27,10 @@ const KNOWN_CONTEXTS = [
 ]
 
 /**
- * Provides an easy interface into the crate context for id resolution
- * **Note**: When the context changes, for example when a new key-value pair is added, the context
- * should be reconstructed. This class does not update the crate data in any way
+ * Provides an easy interface into the crate context for id resolution and specification detection
  * @example resolve("Organization") -> "https://schema.org/Organization"
  */
-export class ContextServiceImpl implements IContextService, IContextResolverService {
+export class BaseContextService implements IContextService, IContextResolverService {
     private _context: Record<string, string> = {}
     private _contextReversed: Record<string, string> = {}
     private _customPairs: Record<string, string> = {}
@@ -42,9 +40,8 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
     private _errors: unknown[] = []
     private raw?: CrateContextType
 
-    constructor(private persistenceAdapter: IPersistenceAdapter) {
+    constructor() {
         this.update = this.update.bind(this)
-        this.persistenceAdapter.events.addEventListener("context-changed", this.update)
     }
 
     private _events = new Observable<IContextServiceEvents>()
@@ -92,7 +89,6 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
             ...customPairs
         } as Record<string, string>
         await this.update(updatedContext)
-        await this.persistenceAdapter.updateMetadataContext(updatedContext)
     }
 
     async removeCustomContextPair(prefix: string): Promise<void> {
@@ -103,7 +99,6 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
             ...customPairs
         } as Record<string, string>
         await this.update(updatedContext)
-        await this.persistenceAdapter.updateMetadataContext(updatedContext)
     }
 
     private async loadKnownContext(primary: (typeof KNOWN_CONTEXTS)[number]) {
@@ -119,37 +114,52 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
      * @returns Full ID of the specified ID (e.g. "Organization" becomes "https://schema.org/Organization"). Can be used to query the SchemaGraph. Returns null on failure
      */
     resolve(id: string) {
-        if (id in this._context) {
+        if (Object.hasOwn(this._context, id)) {
             return this._context[id]
         } else if (/^.+:.+$/.test(id)) {
             // Type has a prefix that we will try to resolve
             const prefix = id.split(":")[0]
-            const suffix = id.split(":")[1]
+            const suffix = id.split(":").slice(1).join(":")
             const prefixContext = this._customPairs[prefix] ?? this._context[prefix]
             if (prefixContext) {
                 return prefixContext + suffix
             } else {
-                console.warn(
-                    `Found node with id ${id}, but prefix ${prefix} is not defined in the context`
-                )
+                if (prefix.toLowerCase() !== "http" && prefix.toLowerCase() !== "https")
+                    console.warn(
+                        `Found node with id ${id}, but prefix ${prefix} is not defined in the context`
+                    )
+                if (isValidUrl(id)) return id
                 return null
             }
+        } else if (isValidUrl(id)) {
+            return id
         } else return null
     }
 
     /**
      * This method effectively shortens the given URI using the @context of the crate.
-     * It is the reverse operation of {@link ContextServiceImpl.resolve}.
+     * It is the reverse operation of {@link BaseContextService.resolve}.
      * @example
      * reverse("https://schema.org/Organization") -> "Organization"
      * reverse("https://myCustomUrl.org/v1/myProperty") -> "custom:myProperty" // when custom: "https://myCustomUrl.org/v1/" is defined in the context
      * @param URI
      */
-    reverse(URI: string) {
+    reverse(URI: string): string | null {
         if (this._contextReversed[URI]) return this._contextReversed[URI]
+
+        // Find all entries in the context that end in # or /, and then pick the longest matching key
+        const contextReverseCandidates = Object.entries(this._contextReversed)
+            .filter(([key]) => URI.startsWith(key) && (key.endsWith("/") || key.endsWith("#")))
+            .sort(([keyA], [keyB]) => keyA.length - keyB.length)
+        if (contextReverseCandidates.length > 0) {
+            const [key, value] = contextReverseCandidates[0]
+            if (URI.startsWith(key)) return value + ":" + URI.substring(key.length)
+        }
+
         for (const [key, value] of Object.entries(this._customPairs)) {
             if (URI.startsWith(value)) return key + ":" + URI.substring(value.length)
         }
+        if (URI.startsWith("http://")) return this.reverse("https://" + URI.substring(7))
         return null
     }
 
@@ -157,16 +167,14 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         return this
     }
 
-    dispose() {
-        this.persistenceAdapter.events.removeEventListener("context-changed", this.update)
-    }
+    dispose() {}
 
     /**
      * Should be called to set the crate context up. Can be called multiple times without
      * creating a new instance.
      * @param crateContext The @context of the crate
      */
-    private async update(crateContext: CrateContextType) {
+    protected async update(crateContext: CrateContextType) {
         if (JSON.stringify(this.raw) === JSON.stringify(crateContext)) return
 
         let tempContext = {}
@@ -182,12 +190,12 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
 
         for (const entry of content) {
             if (typeof entry === "string") {
-                const known = ContextServiceImpl.getKnownContext(entry)
+                const known = BaseContextService.getKnownContext(entry)
                 if (known) {
                     const { specification, data } = await this.loadKnownContext(known)
                     tempSpecification = specification
                     tempSpecificationUrl = known["@id"]
-                    tempContext = { ...tempContext, ...data }
+                    tempContext = { ...data, ...tempContext }
                 } else {
                     const msg = `Cannot load schema ${entry} without prefix. Please specify the schema as a custom context entry with a prefix.`
                     console.error(msg)
@@ -196,12 +204,12 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
             } else {
                 for (const [key, value] of Object.entries(entry)) {
                     if (key === "@vocab") {
-                        const known = ContextServiceImpl.getKnownContext(value)
+                        const known = BaseContextService.getKnownContext(value)
                         if (known) {
                             const { specification, data } = await this.loadKnownContext(known)
                             tempSpecification = specification
                             tempSpecificationUrl = known["@id"]
-                            tempContext = { ...tempContext, ...data }
+                            tempContext = { ...data, ...tempContext }
                         } else {
                             const msg = `Cannot load schema ${value} as @vocab. Only known specifications are supported. Please specify the schema as a custom context entry with a prefix.`
                             console.error(msg)
@@ -220,7 +228,7 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
             const { specification, data } = await this.loadKnownContext(fallback)
             tempSpecification = specification
             tempSpecificationUrl = fallback["@id"]
-            tempContext = { ...tempContext, ...data }
+            tempContext = { ...data, ...tempContext }
 
             const msg = `Could not determine the RO-Crate specification version. Using fallback context: ${fallback.version}`
             console.error(msg)
@@ -237,9 +245,8 @@ export class ContextServiceImpl implements IContextService, IContextResolverServ
         this._events.emit("context-changed", this.raw!)
     }
 
-    static async newInstance(persistenceAdapter: IPersistenceAdapter) {
-        const instance = new ContextServiceImpl(persistenceAdapter)
-        const context = await persistenceAdapter.getMetadataContext()
+    static async newInstance(context: CrateContextType) {
+        const instance = new BaseContextService()
         await instance.update(context)
         return instance
     }

@@ -181,7 +181,7 @@ The core layer contains all RO-Crate domain logic. It is persistence-agnostic.
 
 - **`ICoreService` / `CoreServiceImpl`** — Orchestrates metadata and context services. Provides high-level operations: `addFileEntity`, `addFolderEntity`, `changeEntityIdentifier`, `deleteEntity`. Coordinates file service operations with metadata updates.
 - **`IMetadataService` / `MetadataServiceImpl`** — Entity CRUD. Stores the `@graph` as a `Map<string, IEntity>`. Manages `hasPart` on the root entity for data entities. Uses `getRootEntityID()` (not hardcoded `"./"`) to find the root entity via the metadata descriptor's `about` reference.
-- **`IContextService` / `ContextServiceImpl`** — Manages the `@context`. Resolves/reverses short names to/from full URIs. Handles custom context pairs. Loads known RO-Crate context definitions (v1.1, v1.2) from bundled JSON files.
+- **`IContextService` / `SynchronizedContextService`** — Manages the `@context`. Resolves/reverses short names to/from full URIs. Handles custom context pairs. Loads known RO-Crate context definitions (v1.1, v1.2) from bundled JSON files.
 - **`IPersistenceAdapter` / `PersistenceAdapterImpl`** — Bridges persistence (`ICrateService`) and core services. Converts between raw JSON metadata strings and typed graph/context objects.
 - **`Observable`** — Generic typed event emitter used throughout both layers. `emit()` spreads arguments to listeners: `listener(...args)`.
 - **`CrateFactory`** — Factory for creating new crates. All RO-Crate metadata structure knowledge lives here (templates, validation), keeping the repository service metadata-agnostic. Methods: `createEmptyCrate`, `createCrateFromFile`, `createCrateFromMetadataFile`, `createCrateFromFiles`, `duplicateCrate`.
@@ -242,3 +242,13 @@ The persistence layer handles storage. The only current implementation is browse
 ## Important Restrictions
 
 - When getting an entity by its ID, use a utility method like findEntity from "@/lib/utils", as an ID can be formatted in multiple ways
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

@@ -3,7 +3,7 @@ import { Plus } from "lucide-react"
 import { memo } from "react"
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import TypeSelectDropdown from "@/components/editor/type-select-dropdown"
-import { usePropertyCanBe } from "@/components/editor/property-hooks"
+import { usePropertyCanBe } from "@/lib/hooks/property-can-be"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { PropertyType } from "@/lib/property"
 

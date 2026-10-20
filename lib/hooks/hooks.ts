@@ -65,7 +65,7 @@ export function useRecentCrates() {
                     JSON.stringify({ lastOpened: new Date(), name })
                 )
             } catch (e) {
-                console.warn("Failed to add recently used crated", e)
+                console.warn("Failed to add recently used crates", e)
             }
         } else {
             window.localStorage.setItem("recent-crates", JSON.stringify([crateId]))
@@ -84,7 +84,7 @@ export function useRecentCrates() {
                 window.localStorage.setItem("recent-crates", JSON.stringify(recentlyUsed))
                 window.localStorage.removeItem(crateDetailsKey(crateId))
             } catch (e) {
-                console.warn("Failed to add recently used crated", e)
+                console.warn("Failed to remove recently used crates", e)
             }
         } else {
             window.localStorage.setItem("recent-crates", JSON.stringify([]))
@@ -92,7 +92,26 @@ export function useRecentCrates() {
         }
     }, [])
 
-    return { recentCrates, addRecentCrate, removeFromRecentCrates }
+    const clearRecentCrates = useCallback(() => {
+        const content = window.localStorage.getItem("recent-crates")
+        if (content) {
+            try {
+                let recentlyUsed = JSON.parse(content) as string[]
+                window.localStorage.removeItem("recent-crates")
+                for (const id of recentlyUsed) {
+                    window.localStorage.removeItem(crateDetailsKey(id))
+                }
+                setRecentCrates([])
+            } catch (e) {
+                console.warn("Failed to clear recently used crates", e)
+            }
+        } else {
+            window.localStorage.setItem("recent-crates", JSON.stringify([]))
+            setRecentCrates([])
+        }
+    }, [])
+
+    return { recentCrates, addRecentCrate, removeFromRecentCrates, clearRecentCrates }
 }
 
 /**

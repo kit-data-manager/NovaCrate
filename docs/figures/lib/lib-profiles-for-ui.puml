@@ -1,0 +1,40 @@
+@startuml
+
+usecase knowEntityClass as (Know what kind of entity this is)
+
+actor "Entity Editor"
+
+"Entity Editor" --> knowEntityClass
+
+usecase selectionOfProfileClasses as "Provide selection of
+profile classes for creation"
+
+"Create Entity Modal" --> selectionOfProfileClasses
+
+usecase createProfileClass as "Allow creating profile
+classes with mandatory properties"
+
+selectionOfProfileClasses --> createProfileClass: <<includes>>
+
+usecase applicableProperties as "Show list of profile properties
+for entities of a profile"
+
+"Entity Editor" --> applicableProperties
+applicableProperties --> knowEntityClass: <<includes>>
+
+usecase knowAssignmentOfEntitiesToClasses as "Know the assignment of entities to classes"
+usecase knowActiveProfiles as "Know active profiles"
+
+"ProfileSystem" --> knowAssignmentOfEntitiesToClasses
+"ProfileSystem" --> knowActiveProfiles
+
+knowEntityClass --> knowAssignmentOfEntitiesToClasses: <<includes>>
+
+knowAssignmentOfEntitiesToClasses --> knowActiveProfiles: <<includes>>
+
+createProfileClass --> knowActiveProfiles: <<extends>>
+
+"Create Entity Modal" --> knowActiveProfiles
+"Entity Editor" --> knowActiveProfiles
+
+@enduml

@@ -4,9 +4,11 @@ import { unstable_ssrSafe as ssrSafe } from "zustand/middleware"
 
 export interface EntityBrowserSettings {
     showEntityType: boolean
+    showEntityRules: boolean
     showIdInsteadOfName: boolean
     showPropertyOverview: boolean
     setShowEntityType(val: boolean): void
+    setShowEntityRules(val: boolean): void
     setShowIdInsteadOfName(val: boolean): void
     setShowPropertyOverview(val: boolean): void
 
@@ -22,10 +24,14 @@ export const useEntityBrowserSettings = create<EntityBrowserSettings>()(
         persist(
             (set) => ({
                 showEntityType: true,
+                showEntityRules: true,
                 showIdInsteadOfName: false,
                 showPropertyOverview: false,
                 setShowEntityType(val: boolean) {
                     set({ showEntityType: val })
+                },
+                setShowEntityRules: (val: boolean) => {
+                    set({ showEntityRules: val })
                 },
                 setShowIdInsteadOfName(val: boolean) {
                     set({ showIdInsteadOfName: val })

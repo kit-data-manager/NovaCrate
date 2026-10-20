@@ -1,0 +1,128 @@
+import { IObservable } from "@/lib/core/IObservable"
+import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
+import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
+import { ProfileEntityMapping } from "@/lib/core/profiles/types/ProfileEntityMapping"
+import { ProfileHandlerError } from "@/lib/core/profiles/impl/ProfileHandlerError"
+
+export type IProfileServiceEvents = {
+    /**
+     * This event is emitted whenever the ready state of the profiles changes or
+     * when a new list of profiles is activated. This event may be called redundantly (e.g. called with "true" twice )
+     */
+    "all-ready-changed": (ready: boolean) => void
+    /**
+     * This event is emitted whenever the list of profiles URIs changes.
+     */
+    "profile-uris-changed": (profileURIs: string[]) => void
+    /**
+     * This event is emitted whenever the list of active profiles handlers ({@link IProfileHandler} instances) changes.
+     */
+    "profiles-changed": (profiles: IProfileHandler[]) => void
+    /**
+     * This event is emitted whenever the entity mappings of one of the profiles changes. Provides a merged view of the entity mappings of each profile
+     */
+    "mappings-updated": (entityMappings: Map<string, ProfileEntityMapping[]>) => void
+    /**
+     * This event is emitted whenever the service or any profiles emit an error.
+     */
+    "error-emitted": () => void
+    /**
+     * This event is emitted whenever the active profile URIs contain profiles
+     * that have not been approved for fetching. Emits the URIs that are awaiting
+     * a user decision. The affected profiles are not fetched until a decision is made.
+     */
+    "profile-approval-required": (profileURIs: string[]) => void
+}
+
+export type ProfileUriTrustVerdict = "allowed" | "blocked"
+export type ProfileUriTrustPolicy = (uri: string) => ProfileUriTrustVerdict
+
+/**
+ * Options for constructing a profile service.
+ */
+export type ProfileServiceOptions = {
+    /**
+     * Decides whether a profile URI is allowed to be fetched. When no policy is
+     * supplied, every profile URI is allowed (legacy behavior).
+     * Known, bundled profile URIs are always allowed regardless of this policy.
+     */
+    determineProfileUriTrust?: ProfileUriTrustPolicy
+}
+
+/**
+ * This service is responsible for creating {@link IProfileHandler} instances from profile URIs and managing their lifecycle.
+ */
+export interface IProfileService {
+    readonly events: IObservable<IProfileServiceEvents>
+
+    /**
+     * Returns true if all profiles are ready to be used. This is true iff
+     * - setProfileURIs has been called and the Promise returned by setProfileURIs has been settled
+     * - all profiles are ready
+     */
+    getAllReady(): boolean
+
+    /**
+     * Get a list of all errors that occurred during **parsing** of all profiles.
+     */
+    getAllErrors(): ProfileHandlerError[]
+
+    /**
+     * Get the profile URIs of the currently active list that are not allowed to be
+     * fetched yet (pending a user decision or blocked by the trust policy).
+     */
+    getPendingApprovalURIs(): string[]
+
+    /**
+     * Get the errors that occurred when constructing profile handlers from profile
+     * URIs (e.g. fetch failures, invalid profile crates). Does not include errors
+     * that individual profile handlers reported during parsing.
+     */
+    getProfileConstructionErrors(): ProfileHandlerError[]
+
+    /**
+     * Set the list of profile URIs that are currently active. This will trigger parsing of all
+     * supplied profiles. Once this method returns, all profiles are constructed and available
+     * through {@link getProfileHandlers}. Profiles may not be in the ready state at this point. Use
+     * {@link getAllReady} and/or {@link events} to check if all profiles are ready.
+     * @param profileURIs Array of profile URIs to activate
+     */
+    setProfileURIs(profileURIs: string[]): Promise<void>
+
+    /**
+     * Get a list of all profile URIs that are currently active. This list is complete immediately after
+     * {@link setProfileURIs} is called.
+     */
+    getProfileURIs(): string[]
+
+    /**
+     * Get the profile handlers that are currently active. This is set by {@link setProfileURIs}. Note that
+     * the returned array may be incomplete as long as the Promise returned by {@link setProfileURIs}
+     * is not yet settled.
+     */
+    getProfileHandlers(): IProfileHandler[]
+
+    /**
+     * Get a currently active profile handler by its id. Returns undefined if no handler with the
+     * supplied id exists
+     * @param id
+     */
+    getProfileHandler(id: string): IProfileHandler | undefined
+
+    /**
+     * Get a combined map of entity ids to applied profile rules
+     */
+    getEntityMappings(): Map<string, ProfileEntityMapping[]>
+
+    /**
+     * Find all property rules defined on the given entity rules
+     * @param entityRules
+     */
+    getPropertiesFor(entityRules: EntityRule[]): PropertyRule[]
+
+    /**
+     * Dispose this profile service and deregister all listeners it holds
+     */
+    dispose(): void
+}

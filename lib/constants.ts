@@ -45,3 +45,5 @@ export const COMMON_PROPERTIES = [
     SCHEMA_ORG_CREATIVE_WORK,
     SCHEMA_ORG_CONTACT_POINT
 ]
+
+export const PROFILE_CRATE_SCHEMA_RESOURCE = "http://www.w3.org/ns/dx/prof/role/schema"

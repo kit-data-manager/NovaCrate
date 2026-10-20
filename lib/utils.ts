@@ -42,6 +42,23 @@ export function toArray<T>(input: T | T[]): T[] {
     }
 }
 
+export function hasAtLeastOneValue<T>(input: T | T[] | undefined): input is T | ([T] & T[]) {
+    return input !== undefined && (Array.isArray(input) ? input.length > 0 : true)
+}
+
+/**
+ * Takes the first element in an array or simply returns the input when it is not an array.
+ * Should only be used when the provided array contains at least one value.
+ * @param input
+ */
+export function pickFirst<T>(input: T | ([T] & T[])): T {
+    if (Array.isArray(input)) {
+        return input[0]
+    } else {
+        return input
+    }
+}
+
 /**
  * Compute the display name for the supplied entity. Will first try the name property, then the givenName and familyName properties. Lastly, it will return the @id if fallback is true. Will return an empty string otherwise.
  * @param entity Entity to retrieve the name for
@@ -69,12 +86,7 @@ export function getEntityDisplayName(entity: IEntity, fallback: boolean = true) 
  * @param string String to check
  */
 export function isValidUrl(string: string) {
-    try {
-        new URL(string)
-        return true
-    } catch {
-        return false
-    }
+    return string.match(/[a-z]:\/\/.*/i) !== null
 }
 
 /**
@@ -207,7 +219,7 @@ export function propertyHasChanged(_value: EntityPropertyTypes, _oldValue: Entit
 }
 
 /**
- * Turns a camel-case string into a human-readable one. Also correctly handles shortened URIs
+ * Turns a camel-case string into a human-readable one. Also correctly handles shortened URIs and unshortened URLs
  * @param str Camel-case string
  * @example
  * someExample
@@ -216,15 +228,18 @@ export function propertyHasChanged(_value: EntityPropertyTypes, _oldValue: Entit
  * -> [purl] Another Example
  * purl:Software/anotherExample
  * -> [purl] Software/Another Example
+ * https://schema.org/Person
+ * -> https://schema.org/Person
  */
 export function camelCaseReadable(str: string) {
     if (str === "@id") return "Identifier"
     if (str === "@type") return "Type"
+    if (isValidUrl(str)) return str
     const [prefix, ...suffix] = str.includes(":") ? str.split(":") : ["", str]
     // If the string contains more than one :, we just use the first one as suffix and join everything else back together
     let split = suffix.join(":").replaceAll(/([a-z:])([A-Z])/g, "$1 $2")
     if (split.startsWith(" ")) split = split.slice(1)
-    return (prefix ? `[${prefix}] ` : "") + split.charAt(0).toUpperCase() + split.slice(1)
+    return (prefix ? `(${prefix}) ` : "") + split.charAt(0).toUpperCase() + split.slice(1)
 }
 
 /**
@@ -296,29 +311,37 @@ export function isNoneOf(value: string, of: string[]) {
 
 /**
  * Check if a given property type range allows for its value to be a reference.
- * A property can have a reference as its value if at least one of its allowed types is not a primitive datatype
+ * A property can have a reference as its value if at least one of its allowed types is not a primitive datatype, or if the property range is empty
  * @param propertyRange
  */
 export function referenceCheck(propertyRange?: string[]) {
     return propertyRange
         ? propertyRange.length === 0 ||
-              propertyRange.filter((s) =>
-                  isNoneOf(
-                      s,
-                      [
-                          SCHEMA_ORG_TIME,
-                          SCHEMA_ORG_BOOLEAN,
-                          SCHEMA_ORG_DATE_TIME,
-                          SCHEMA_ORG_NUMBER,
-                          SCHEMA_ORG_DATE,
-                          SCHEMA_ORG_TEXT,
-                          SCHEMA_ORG_NUMBERLIKE,
-                          SCHEMA_ORG_TEXTLIKE
-                      ].flat()
-                  )
-              ).length > 0
+              propertyRange
+                  .map(normalizeTypeUrl)
+                  .filter((s) =>
+                      isNoneOf(
+                          s,
+                          [
+                              SCHEMA_ORG_TIME,
+                              SCHEMA_ORG_BOOLEAN,
+                              SCHEMA_ORG_DATE_TIME,
+                              SCHEMA_ORG_NUMBER,
+                              SCHEMA_ORG_DATE,
+                              SCHEMA_ORG_TEXT,
+                              SCHEMA_ORG_NUMBERLIKE,
+                              SCHEMA_ORG_TEXTLIKE
+                          ].flat()
+                      )
+                  ).length > 0
         : undefined
 }
+
+/**
+ * For use with propertyCanBe, textCheck and referenceCheck
+ * @param url
+ */
+export const normalizeTypeUrl = (url: string) => httpsifyUrl(url)
 
 /**
  * Check if a given property type range allows for its value to be a text.
@@ -327,8 +350,9 @@ export function referenceCheck(propertyRange?: string[]) {
 export function textCheck(propertyRange?: string[]) {
     return propertyRange
         ? propertyRange.length === 0 ||
-              propertyRange.includes(SCHEMA_ORG_TEXT) ||
-              SCHEMA_ORG_TEXTLIKE.find((s) => propertyRange.includes(s)) !== undefined // ||
+              propertyRange.map(normalizeTypeUrl).includes(SCHEMA_ORG_TEXT) ||
+              SCHEMA_ORG_TEXTLIKE.find((s) => propertyRange.map(normalizeTypeUrl).includes(s)) !==
+                  undefined // ||
         : // canBeTime ||
           // canBeBoolean ||
           // canBeDate ||
@@ -417,6 +441,12 @@ export function formatJSON(json: string) {
     return JSON.stringify(JSON.parse(json), null, 2)
 }
 
+export function undefinedIfEmpty<T>(arr?: T[]) {
+    if (arr?.length === 0) {
+        return undefined
+    } else return arr
+}
+
 export const EntityPropertySchema = z.union([
     z.object({ "@id": z.coerce.string() }),
     z.array(z.union([z.object({ "@id": z.coerce.string() }), z.coerce.string()])),
@@ -439,3 +469,23 @@ export const CrateSchema = z.object({
     ]),
     "@graph": z.array(EntitySchema)
 })
+
+/**
+ * Turns http urls into https urls where necessary
+ * This is only the case for schema.org urls, as they are rewritten to https in numerous
+ * places in novacrate.
+ * Non-valid urls are returned without changes.
+ * @param url
+ */
+export function httpsifyUrl(url: string) {
+    if (isValidUrl(url)) {
+        const parsedUrl = new URL(url)
+        // Only httpsify schema.org terms, because they use the https protocol in NovaCrate
+        if (parsedUrl.protocol === "http:" && parsedUrl.hostname === "schema.org") {
+            parsedUrl.protocol = "https:"
+            return parsedUrl.toString()
+        }
+    }
+
+    return url
+}

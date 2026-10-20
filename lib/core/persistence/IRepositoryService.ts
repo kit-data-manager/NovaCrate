@@ -4,7 +4,11 @@ import { IObservable } from "@/lib/core/IObservable"
 export type IRepositoryServiceEvents = {
     /** Emitted when {@link IRepositoryService.getCratesList} changes. */
     "crates-list-changed": () => void
+    /**
+     * Emitted when a single crate is created.
+     */
     "crate-created": (crateId: string) => void
+    /** Emitted when a single crate is deleted. Not emitted when all crates are deleted, as the editor must be forced to reload anyway. */
     "crate-deleted": (crateId: string) => void
 }
 
@@ -56,6 +60,11 @@ export interface IRepositoryService {
      * @param crateId - The ID of the crate to delete.
      */
     deleteCrate(crateId: string): Promise<void>
+
+    /**
+     * Delete all crates stored in the repository.
+     */
+    deleteAllCrates(): Promise<void>
 
     /**
      * Export a crate as a downloadable archive.

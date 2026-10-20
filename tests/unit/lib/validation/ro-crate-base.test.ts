@@ -18,7 +18,8 @@ function buildContext(): ValidatorContext {
             getRaw() {
                 return "https://w3id.org/ro/crate/1.2/context"
             }
-        } as ValidatorContext["context"]
+        } as ValidatorContext["context"],
+        profileService: {} as ValidatorContext["profileService"]
     }
 }
 
@@ -46,7 +47,7 @@ describe("RoCrateBase", () => {
         it("warns when metadata conformsTo references a different RO-Crate version than @context", async () => {
             const rules = RoCrateBase.propertyRules(buildContext())
 
-            const results = await rules[2](
+            const results = await rules[3](
                 {
                     "@id": "ro-crate-metadata.json",
                     "@type": "CreativeWork",

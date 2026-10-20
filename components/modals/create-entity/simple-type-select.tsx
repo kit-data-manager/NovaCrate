@@ -1,63 +1,72 @@
-import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import React, { useMemo } from "react"
-import { ExternalLinkIcon, Search } from "lucide-react"
+import { useEffect, useMemo } from "react"
+import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { TypeIcon } from "@/components/type-icon"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { SlimClass } from "@/lib/schema-worker/helpers"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { useContextResolver } from "@/lib/hooks/hooks"
+import { isTypeAllowed } from "@/components/modals/create-entity/components/type-allowed"
+import { ProfileTypeSection } from "@/components/modals/create-entity/components/profile-type-section"
+import { SuggestedTypesSection } from "@/components/modals/create-entity/components/suggested-types-section"
+import { useProfileEntityRules } from "@/components/modals/create-entity/hooks/use-profile-entity-rules"
+import {
+    SUGGESTED_CONTEXTUAL_ENTITIES,
+    SUGGESTED_DATA_ENTITIES
+} from "@/components/modals/create-entity/data/suggested-types"
+import { undefinedIfEmpty } from "@/lib/utils"
 
-function TypeBadge({
-    description,
-    type,
-    name,
-    onTypeSelect,
-    restrictToClasses
-}: {
-    type: string
-    name?: string
-    description: string
-    onTypeSelect(value: string): void
-    restrictToClasses?: SlimClass[]
-}) {
-    const resolver = useContextResolver()
-
-    const resolvedType = useMemo(() => {
-        return resolver.resolve(type)
-    }, [resolver, type])
-
-    const disabled = useMemo(() => {
-        return (
-            resolvedType &&
-            restrictToClasses &&
-            !restrictToClasses.find((c) => c["@id"] === resolvedType)
-        )
-    }, [resolvedType, restrictToClasses])
-
-    return (
-        <div
-            className={`p-4 border rounded-lg flex gap-4 hover:bg-secondary cursor-pointer transition ${disabled ? "opacity-30 cursor-not-allowed pointer-events-none" : ""}`}
-            onClick={() => (disabled ? "" : onTypeSelect(type))}
-        >
-            <TypeIcon type={type} className="mt-1 w-5 h-5 shrink-0" />
-            <div>
-                <div className="font-bold">{name || type}</div>
-                <div className="text-sm">{description}</div>
-            </div>
-        </div>
-    )
-}
+const GENERAL_TAB = "general"
 
 export function SimpleTypeSelect({
     onTypeSelect,
     setFullTypeBrowser,
     onOpenChange,
-    restrictToClasses
+    restrictToClasses,
+    restrictToEntityRules,
+    disableSimpleTypeSelect
 }: {
-    onTypeSelect(value: string): void
+    onTypeSelect(value: string | string[], profileClass: EntityRule): void
     setFullTypeBrowser(open: boolean): void
     onOpenChange(open: boolean): void
+    disableSimpleTypeSelect: () => void
     restrictToClasses?: SlimClass[]
+    restrictToEntityRules?: string[]
 }) {
+    const profileEntityRules = useProfileEntityRules()
+    const resolver = useContextResolver()
+
+    // Determine which tabs have at least one suggestion allowed by restrictToClasses.
+    const generalAllowed = useMemo(() => {
+        return [...SUGGESTED_DATA_ENTITIES, ...SUGGESTED_CONTEXTUAL_ENTITIES].some((s) =>
+            isTypeAllowed(resolver, s.type, restrictToClasses)
+        )
+    }, [resolver, restrictToClasses])
+
+    const visibleProfiles = useMemo(() => {
+        const restrictToEntityRulesFilter = undefinedIfEmpty(restrictToEntityRules)
+        return profileEntityRules.map((profile) => ({
+            ...profile,
+            classes: profile.classes.filter((c) =>
+                restrictToEntityRulesFilter
+                    ? restrictToEntityRulesFilter.includes(c["@id"])
+                    : isTypeAllowed(resolver, c.specializationOf || "Thing", restrictToClasses)
+            )
+        }))
+    }, [profileEntityRules, resolver, restrictToClasses, restrictToEntityRules])
+
+    const showGeneral = !restrictToClasses || generalAllowed
+    const visibleProfileTabs = visibleProfiles.filter((p) => p.classes.length > 0)
+
+    // Pick the default open tab: first visible profile, otherwise the general tab.
+    const defaultTab = visibleProfileTabs[0]?.id ?? (showGeneral ? GENERAL_TAB : "")
+
+    const hasAnyTab = showGeneral || visibleProfileTabs.length > 0
+
+    useEffect(() => {
+        if (!hasAnyTab) disableSimpleTypeSelect()
+    }, [disableSimpleTypeSelect, hasAnyTab])
+
     return (
         <>
             <DialogHeader>
@@ -71,77 +80,39 @@ export function SimpleTypeSelect({
                 </DialogDescription>
             </DialogHeader>
 
-            <div className="text-lg font-bold">Data Entities</div>
-            <div className="grid grid-cols-3 gap-4">
-                <TypeBadge
-                    type="File"
-                    name="File"
-                    description="Import a new single file into the Crate and create a data entity for it"
-                    onTypeSelect={onTypeSelect}
-                    restrictToClasses={restrictToClasses}
-                />
-                <TypeBadge
-                    type="Dataset"
-                    name="Folder"
-                    description="Import a folder, including the contained files into the Crate and create data entities for it"
-                    onTypeSelect={onTypeSelect}
-                    restrictToClasses={restrictToClasses}
-                />
-            </div>
-            <div className="text-lg font-bold">Contextual Entities</div>
-            <div className="grid grid-cols-3 gap-4">
-                <TypeBadge
-                    type="Person"
-                    description="Use this contextual entity to describe a person (alive, dead, undead, or fictional). "
-                    onTypeSelect={onTypeSelect}
-                    restrictToClasses={restrictToClasses}
-                />
-                <TypeBadge
-                    type="Organization"
-                    description="An organization such as a school, NGO, corporation, club, etc."
-                    onTypeSelect={onTypeSelect}
-                    restrictToClasses={restrictToClasses}
-                />
-                <TypeBadge
-                    type="Place"
-                    description="Describes a (more or less fixed) physical location."
-                    onTypeSelect={onTypeSelect}
-                    restrictToClasses={restrictToClasses}
-                />
-                <TypeBadge
-                    type="ScholarlyArticle"
-                    name="Scholarly Article"
-                    description="A scholarly article that is referenced/used but not included in the Crate"
-                    onTypeSelect={onTypeSelect}
-                    restrictToClasses={restrictToClasses}
-                />
-                <TypeBadge
-                    type="CreativeWork"
-                    name="Creative Work"
-                    description="The most generic kind of creative work, including books, movies, photographs, software programs, etc."
-                    onTypeSelect={onTypeSelect}
-                    restrictToClasses={restrictToClasses}
-                />
-                <TypeBadge
-                    type="ContactPoint"
-                    name="Contact Information"
-                    description="A contact point — for example, contact information for a person or a Customer Complaints department."
-                    onTypeSelect={onTypeSelect}
-                    restrictToClasses={restrictToClasses}
-                />
-            </div>
+            {hasAnyTab ? (
+                <Tabs defaultValue={defaultTab} className="w-full">
+                    {visibleProfileTabs.length > 0 && (
+                        <TabsList className="flex-wrap h-auto">
+                            {visibleProfileTabs.map((profile) => (
+                                <TabsTrigger key={profile.id} value={profile.id}>
+                                    {profile.profileName}
+                                </TabsTrigger>
+                            ))}
+                            {showGeneral && <TabsTrigger value={GENERAL_TAB}>General</TabsTrigger>}
+                        </TabsList>
+                    )}
 
-            <div className="text-sm text-muted-foreground">
-                Descriptions based on{" "}
-                <a
-                    target="_blank"
-                    href="https://schema.org/"
-                    className="hover:underline inline-flex"
-                >
-                    Schema.org <ExternalLinkIcon className="w-3 h-3" />
-                </a>{" "}
-                Type Descriptions
-            </div>
+                    {visibleProfileTabs.map((profile) => (
+                        <TabsContent key={profile.id} value={profile.id}>
+                            <ProfileTypeSection profile={profile} onTypeSelect={onTypeSelect} />
+                        </TabsContent>
+                    ))}
+
+                    {showGeneral && (
+                        <TabsContent value={GENERAL_TAB}>
+                            <SuggestedTypesSection
+                                onTypeSelect={onTypeSelect}
+                                restrictToClasses={restrictToClasses}
+                            />
+                        </TabsContent>
+                    )}
+                </Tabs>
+            ) : (
+                <div className="text-sm text-muted-foreground">
+                    No matching types for the current property. Use the full type browser below.
+                </div>
+            )}
 
             <div className="flex justify-between">
                 <Button variant="secondary" onClick={() => onOpenChange(false)}>

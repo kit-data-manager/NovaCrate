@@ -6,8 +6,11 @@ import {
     makeBaseValidator,
     makeSpecificationValidators
 } from "@/lib/validation/validators/specification-validator"
-import { usePersistence } from "@/components/providers/persistence-provider"
 import { useCore } from "@/components/providers/core-provider"
+import { useFileService } from "@/lib/hooks/use-persistence"
+import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
+import { ProfileValidator } from "@/lib/validation/validators/profile-validator"
+import { Validator } from "@/lib/validation/validator"
 
 export interface ValidationContext {
     validation: ValidationProvider | undefined
@@ -17,40 +20,35 @@ export const ValidationContext = createContext<ValidationContext>({ validation: 
 
 export function ValidationContextProvider({ children }: PropsWithChildren) {
     const schemaWorker = useContext(SchemaWorker)
-    const persistence = usePersistence()
     const core = useCore()
     const editorState = useEditorState((s) => s)
 
-    const [crateService, setCrateService] = useState(() => persistence.getCrateService())
-    const [fileService, setFileService] = useState(() => crateService?.getFileService())
-
-    useEffect(() => {
-        const remove = persistence.events.addEventListener(
-            "crate-service-changed",
-            (crateService) => {
-                setCrateService(crateService)
-                setFileService(crateService?.getFileService())
-            }
-        )
-        return () => remove()
-    }, [persistence.events])
-
-    useEffect(() => {
-        const remove = crateService?.events.addEventListener("file-service-changed", setFileService)
-        return () => remove?.()
-    }, [crateService?.events])
-
+    const fileService = useFileService()
     const contextService = core.getContextService()
+    const profileService = core.getProfileService()
+
+    const [profiles, setProfiles] = useState<IProfileHandler[]>(profileService.getProfileHandlers())
+
+    useEffect(() => {
+        setProfiles(profileService.getProfileHandlers())
+        const remove1 = profileService.events.addEventListener("profiles-changed", (profiles) =>
+            setProfiles(profiles)
+        )
+        return () => {
+            remove1()
+        }
+    }, [profileService])
 
     const ctx = useMemo(() => {
         return {
             editorState,
             schemaWorker,
+            profileService,
             fileService: fileService ?? undefined,
             resolver: contextService.getResolver(),
             context: contextService
         }
-    }, [contextService, editorState, fileService, schemaWorker])
+    }, [contextService, editorState, fileService, profileService, schemaWorker])
 
     const [validation] = useState(() => {
         const validation = new ValidationProvider(ctx)
@@ -65,6 +63,20 @@ export function ValidationContextProvider({ children }: PropsWithChildren) {
     useEffect(() => {
         validation.updateContext(ctx)
     }, [ctx, validation])
+
+    useEffect(() => {
+        const instances: Validator[] = []
+        for (const profile of profiles) {
+            const inst = validation.addValidator((ctx) => new ProfileValidator(profile, ctx))
+            instances.push(inst)
+        }
+
+        return () => {
+            for (const instance of instances) {
+                validation.removeValidator(instance)
+            }
+        }
+    }, [profiles, validation])
 
     const value = useMemo(() => {
         return { validation: validation }

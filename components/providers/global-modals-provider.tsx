@@ -1,6 +1,12 @@
 "use client"
 
-import { createContext, PropsWithChildren, useCallback, useState } from "react"
+import {
+    createContext,
+    Fragment,
+    PropsWithChildren,
+    useCallback,
+    useState
+} from "react"
 import { CreateEntityModal } from "@/components/modals/create-entity/create-entity-modal"
 import { SlimClass } from "@/lib/schema-worker/helpers"
 import { SaveEntityChangesModal } from "@/components/modals/save-entity-changes-modal"
@@ -16,19 +22,21 @@ import { AboutModal } from "@/components/modals/about-modal"
 import { CrateExportedModal } from "@/components/modals/crate-exported-modal"
 import { MultiRenameModal } from "@/components/modals/multi-rename-modal"
 import { CoreGuard } from "@/components/providers/core-provider"
+import { ManageProfilesModal } from "@/components/modals/manage-profiles-modal"
 
 export interface IGlobalModalContext {
-    showCreateEntityModal(
-        restrictToClasses?: SlimClass[],
-        autoReference?: AutoReference,
-        id?: string,
+    showCreateEntityModal(options?: {
+        restrictToClasses?: SlimClass[]
+        restrictToEntityRules?: string[]
+        autoReference?: AutoReference
+        id?: string
         basePath?: string
-    ): void
+    }): void
     showSaveEntityChangesModal(entityId: string): void
     showDeleteEntityModal(entityId: string): void
     showGlobalSearchModal(): void
     showAddPropertyModal(
-        typeArray: string[],
+        entity: IEntity,
         callback: AddPropertyModalCallback,
         onlyReferences?: boolean
     ): void
@@ -42,6 +50,7 @@ export interface IGlobalModalContext {
         changes: { from: string; to: string }[],
         onCloseCallback?: () => void
     ): void
+    showManageProfilesModal(): void
 }
 
 export type AddPropertyModalCallback = (
@@ -61,7 +70,8 @@ export const GlobalModalContext = createContext<IGlobalModalContext>({
     showDocumentationModal() {},
     showAboutModal() {},
     showCrateExportedModal() {},
-    showMultiRenameModal() {}
+    showMultiRenameModal() {},
+    showManageProfilesModal() {}
 })
 
 export function GlobalModalProvider(props: PropsWithChildren) {
@@ -69,6 +79,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         open: boolean
         autoReference?: AutoReference
         restrictToClasses?: SlimClass[]
+        restrictToEntityRules?: string[]
         id?: string
         basePath?: string
     }>({
@@ -85,17 +96,15 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     const [globalSearchState, setGlobalSearchState] = useState({
         open: false
     })
-    const [addPropertyModalState, setAddPropertyModalState] = useState<{
-        open: boolean
-        onPropertyAdd: AddPropertyModalCallback
-        typeArray: string[]
-        onlyReferences: boolean
-    }>({
-        open: false,
-        onPropertyAdd: () => {},
-        typeArray: [],
-        onlyReferences: false
-    })
+    const [addPropertyModalState, setAddPropertyModalState] = useState<
+        | {
+              open: boolean
+              onPropertyAdd: AddPropertyModalCallback
+              entity: IEntity
+              onlyReferences: boolean
+          }
+        | undefined
+    >()
     const [findReferencesModalState, setFindReferencesModalState] = useState({
         open: false,
         entityId: ""
@@ -116,17 +125,17 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         changes: { from: string; to: string }[]
         onCloseCallback?: () => void
     }>({ open: false, changes: [] })
+    const [manageProfilesModalState, setManageProfilesModalState] = useState<{
+        open: boolean
+    }>({ open: false })
 
-    const showCreateEntityModal = useCallback(
-        (
-            restrictToClasses?: SlimClass[],
-            autoReference?: AutoReference,
-            id?: string,
-            basePath?: string
-        ) => {
+    const showCreateEntityModal: IGlobalModalContext["showCreateEntityModal"] = useCallback(
+        ({ restrictToClasses, restrictToEntityRules, autoReference, id, basePath } = {}) => {
+            console.log(restrictToEntityRules)
             setCreateEntityModalState({
                 open: true,
                 restrictToClasses,
+                restrictToEntityRules,
                 autoReference,
                 id,
                 basePath
@@ -154,14 +163,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     }, [])
 
     const showAddPropertyModal = useCallback(
-        (
-            typeArray: string[],
-            callback: AddPropertyModalCallback,
-            onlyReferences: boolean = false
-        ) => {
+        (entity: IEntity, callback: AddPropertyModalCallback, onlyReferences: boolean = false) => {
             setAddPropertyModalState({
                 open: true,
-                typeArray,
+                entity,
                 onPropertyAdd: callback,
                 onlyReferences
             })
@@ -206,11 +211,16 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         []
     )
 
+    const showManageProfilesModal = useCallback(() => {
+        setManageProfilesModalState({ open: true })
+    }, [])
+
     const onCreateEntityModalOpenChange = useCallback((isOpen: boolean) => {
         setCreateEntityModalState({
             autoReference: undefined,
             id: undefined,
             restrictToClasses: undefined,
+            restrictToEntityRules: undefined,
             open: isOpen
         })
     }, [])
@@ -234,7 +244,9 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     }, [])
 
     const onAddPropertyModalOpenChange = useCallback(() => {
-        setAddPropertyModalState((old) => ({ ...old, open: false, onlyReferences: false }))
+        setAddPropertyModalState((old) =>
+            old === undefined ? old : { ...old, open: false, onlyReferences: false }
+        )
     }, [])
 
     const onFindReferencesModalOpenChange = useCallback(() => {
@@ -273,6 +285,12 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         [multiRenameModal]
     )
 
+    const onManageProfileOpenChange = useCallback((open: boolean) => {
+        setManageProfilesModalState({
+            open
+        })
+    }, [])
+
     return (
         <GlobalModalContext.Provider
             value={{
@@ -287,72 +305,97 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 showDocumentationModal,
                 showAboutModal,
                 showCrateExportedModal,
-                showMultiRenameModal
+                showMultiRenameModal,
+                showManageProfilesModal
             }}
         >
-            <CoreGuard>
+            <CoreGuard key="core-guard">
                 <CreateEntityModal
+                    key="create-entity-modal"
                     open={createEntityModalState.open}
                     onOpenChange={onCreateEntityModalOpenChange}
                     restrictToClasses={createEntityModalState.restrictToClasses}
+                    restrictToEntityRules={createEntityModalState.restrictToEntityRules}
                     autoReference={createEntityModalState.autoReference}
                     forceId={createEntityModalState.id}
                     basePath={createEntityModalState.basePath}
                 />
                 <SaveEntityChangesModal
+                    key="save-entity-changes-modal"
                     open={saveEntityChangesModalState.open}
                     onOpenChange={onSaveEntityChangesModalOpenChange}
                     entityId={saveEntityChangesModalState.entityId}
                 />
                 <DeleteEntityModal
+                    key="delete-entity-modal"
                     open={deleteEntityModalState.open}
                     onOpenChange={onDeleteEntityModalOpenChange}
                     entityId={deleteEntityModalState.entityId}
                 />
                 <SaveAsModal
+                    key="save-as-modal"
                     open={saveAsModalState.open}
                     onOpenChange={onSaveAsModalOpenChange}
                     entityId={saveAsModalState.entityId}
                 />
                 <MultiRenameModal
+                    key="multi-rename-modal"
                     open={multiRenameModal.open}
                     onOpenChange={onRenameEntityOpenChange}
                     changes={multiRenameModal.changes}
                 />
                 <GlobalSearch
+                    key="global-search"
                     open={globalSearchState.open}
                     onOpenChange={onGlobalSearchModalOpenChange}
                 />
-                <AddPropertyModal
-                    open={addPropertyModalState.open}
-                    onPropertyAdd={addPropertyModalState.onPropertyAdd}
-                    onOpenChange={onAddPropertyModalOpenChange}
-                    typeArray={addPropertyModalState.typeArray}
-                    onlyReferences={addPropertyModalState.onlyReferences}
-                />
+                {addPropertyModalState !== undefined && (
+                    <AddPropertyModal
+                        key="add-property-modal"
+                        open={addPropertyModalState.open}
+                        onPropertyAdd={addPropertyModalState.onPropertyAdd}
+                        onOpenChange={onAddPropertyModalOpenChange}
+                        entity={addPropertyModalState.entity}
+                        onlyReferences={addPropertyModalState.onlyReferences}
+                    />
+                )}
                 <FindReferencesModal
+                    key="find-references-modal"
                     open={findReferencesModalState.open}
                     onOpenChange={onFindReferencesModalOpenChange}
                     entityId={findReferencesModalState.entityId}
                 />
+
+                <ManageProfilesModal
+                    key="manage-profiles-modal"
+                    open={manageProfilesModalState.open}
+                    onOpenChange={onManageProfileOpenChange}
+                />
             </CoreGuard>
 
             <SettingsModal
+                key="settings-modal"
                 open={settingsModalState.open}
                 onOpenChange={onSettingsModalOpenChange}
                 defaultPage={settingsModalState.page}
             />
             <DocumentationModal
+                key="documentation-modal"
                 open={documentationModalState.open}
                 onOpenChange={onDocumentationModalOpenChange}
             />
-            <AboutModal open={aboutModalState.open} onOpenChange={onAboutModalOpenChange} />
+            <AboutModal
+                key="about-modal"
+                open={aboutModalState.open}
+                onOpenChange={onAboutModalOpenChange}
+            />
             <CrateExportedModal
+                key="crate-exported-modal"
                 open={crateExportedModalState.open}
                 onOpenChange={onCrateExportedModalOpenChange}
             />
 
-            {props.children}
+            <Fragment key="children">{props.children}</Fragment>
         </GlobalModalContext.Provider>
     )
 }

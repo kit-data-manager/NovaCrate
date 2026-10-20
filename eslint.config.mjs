@@ -1,5 +1,6 @@
 import { defineConfig, globalIgnores } from "eslint/config"
 import nextVitals from "eslint-config-next/core-web-vitals"
+import novacrate from "./eslint-rules/novacrate.mjs"
 
 const eslintConfig = defineConfig([
     ...nextVitals,
@@ -12,6 +13,18 @@ const eslintConfig = defineConfig([
         "next-env.d.ts",
         "public/**.js"
     ]),
+    {
+        // Enforce that the unlisten callback returned by IObservable.addEventListener
+        // is used. Tests are excluded to keep the signal focused on app code; remove
+        // the `ignores` to also lint test files. Bump severity to "error" once the
+        // existing call sites are fixed.
+        files: ["**/*.ts", "**/*.tsx"],
+        ignores: ["tests/**"],
+        plugins: { novacrate },
+        rules: {
+            "novacrate/use-add-event-listener-return": "warn"
+        }
+    },
     [
         {
             rules: {

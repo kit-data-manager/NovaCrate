@@ -3,7 +3,6 @@ import { useCallback, useContext } from "react"
 import { useEditorState } from "@/lib/state/editor-state"
 import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
-import { toArray } from "@/lib/utils"
 import { Copy, Plus, Save, Search, Trash, Undo2 } from "lucide-react"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 
@@ -49,7 +48,7 @@ function Handler({ entity }: { entity: IEntity }) {
     })
 
     const addProperty = useCallback(() => {
-        showAddPropertyModal(toArray(entity["@type"]), (propertyName, value) => {
+        showAddPropertyModal(entity, (propertyName, value) => {
             addPropertyEntry(entity["@id"], propertyName, value)
             focusProperty(entity["@id"], propertyName)
         })

@@ -106,13 +106,17 @@ export function useCrateMutations() {
     )
 
     const createFileEntity = useCallback(
-        async (_entity: IEntity, file: File, overwrite = false): Promise<boolean> => {
+        async (
+            _entity: IEntity & { name: string },
+            file: File,
+            overwrite = false
+        ): Promise<boolean> => {
             const entity = structuredClone(_entity)
 
             const { setIsSaving, addSaveError } = operationState.getState()
             setIsSaving(true)
             try {
-                await core.addFileEntity(entity.name as string, entity["@id"], file, overwrite)
+                await core.addFileEntity(entity, entity["@id"], file, overwrite)
                 return true
             } catch (e) {
                 console.error("Error occurred while trying to create file entity", e)
@@ -127,8 +131,8 @@ export function useCrateMutations() {
 
     const createFolderEntity = useCallback(
         async (
-            _entity: IEntity,
-            files: IEntityWithFile[],
+            _entity: IEntity & { name: string },
+            files: (IEntityWithFile & { entity: { name: string } })[],
             progressCallback?: (current: number, max: number, errors: unknown[]) => void
         ): Promise<boolean> => {
             const entity = structuredClone(_entity)
@@ -136,18 +140,14 @@ export function useCrateMutations() {
             const { setIsSaving, addSaveError } = operationState.getState()
             setIsSaving(true)
             try {
-                await core.addFolderEntity(entity.name as string, entity["@id"])
+                await core.addFolderEntity(entity, entity["@id"])
 
                 const errors: unknown[] = []
                 let progress = 0
 
                 for (const file of files) {
                     try {
-                        await core.addFileEntity(
-                            file.entity.name as string,
-                            file.entity["@id"],
-                            file.file
-                        )
+                        await core.addFileEntity(file.entity, file.entity["@id"], file.file)
                         if (progressCallback) progressCallback(++progress, files.length, errors)
                     } catch (e) {
                         errors.push(e)

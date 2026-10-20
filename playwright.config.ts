@@ -4,12 +4,12 @@ export default defineConfig({
     testDir: "./tests/e2e",
     fullyParallel: true,
     workers: process.env.CI ? 1 : 4,
-    retries: process.env.CI ? 2 : 0,
+    retries: process.env.CI ? 2 : 1,
     forbidOnly: !!process.env.CI,
     reporter: "html",
     use: {
         baseURL: "http://localhost:3000/",
-        trace: "on-first-retry",
+        trace: "retain-on-failure-and-retries",
         launchOptions: {
             slowMo: 100
         }
@@ -24,11 +24,10 @@ export default defineConfig({
             use: { ...devices["Desktop Chrome"] }
         }
     ],
-    webServer: process.env.CI
-        ? {
-              command: `npm run test:serve`,
-              url: "http://localhost:3000/",
-              timeout: 120 * 1000
-          }
-        : undefined
+    webServer: {
+        command: `HOSTNAME=127.0.0.1 npm run serve`,
+        url: "http://127.0.0.1:3000/",
+        reuseExistingServer: !process.env.CI,
+        timeout: 120 * 1000
+    }
 })

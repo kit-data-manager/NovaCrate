@@ -7,7 +7,7 @@ import {
     CommandItem,
     CommandList
 } from "@/components/ui/command"
-import { usePropertyCanBe } from "@/components/editor/property-hooks"
+import { usePropertyCanBe } from "@/lib/hooks/property-can-be"
 import {
     ArrowLeft,
     Binary,

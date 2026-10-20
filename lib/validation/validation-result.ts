@@ -48,7 +48,25 @@ export const ValidationResultSchema = z.object({
     validatorName: z
         .string()
         .check(z.describe("The name of the validator that produced this result")),
-    ruleName: z.string().check(z.describe("The name of the rule that produced this result"))
+    ruleName: z.string().check(z.describe("The name of the rule that produced this result")),
+    trace: z
+        .object({
+            entityId: z.union([z.null(), z.string()]),
+            propertyName: z.union([z.null(), z.string()])
+        })
+        .check(
+            z.describe(
+                "Used internally by the validation provider to trace which results were created by which rule invocation"
+            )
+        )
+})
+
+/**
+ * This is the type that should be used by all validator implementations. The base ValidationResult is only used internally in the Validation Provider
+ */
+export const ValidationResultWithoutTraceSchema = z.omit(ValidationResultSchema, {
+    trace: true
 })
 
 export type ValidationResult = z.infer<typeof ValidationResultSchema>
+export type ValidationResultWithoutTrace = z.infer<typeof ValidationResultWithoutTraceSchema>
