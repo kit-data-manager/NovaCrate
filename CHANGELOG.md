@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## Unreleased
+## [1.14.0] - 2026-10-20
 
 ### Added
 - Added profile handling to NovaCrate
@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added a profiles section to the context page to understand active profiles and their effects
   - The only supported profile at the moment is the Workflow Profile. Work is in progress to allow creating and using custom profiles.
 - Added a guided tour through the main functions of the editor (start it through the Editor menu of in the main menu)
+- Added a new feedback form for easier feedback and bug reporting
 
 ### Changed
 - Adjusted the design around the header of the entity editor for better clarity and space efficiency

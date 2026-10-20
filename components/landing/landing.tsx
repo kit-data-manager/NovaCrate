@@ -35,6 +35,15 @@ import { ChangelogModal } from "@/components/changelog-modal"
 import { PrinciplesSection } from "@/components/landing/design-principles"
 import { GITHUB_REPO } from "@/lib/legals"
 import { Reveal } from "@/components/landing/reveal"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/dialog"
+import { FeedbackEmbed } from "@/components/FeedbackEmbed"
 
 function StickyNav({
     theme,
@@ -522,6 +531,22 @@ export function Landing() {
                                 >
                                     christopher.raquet@kit.edu
                                 </Link>
+                                . You can also reach out using the{" "}
+                                <Dialog>
+                                    <DialogTrigger className="text-primary underline">
+                                        Feedback Form
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Feedback</DialogTitle>
+                                            <DialogDescription>
+                                                Give feedback using the form below. We highly
+                                                appreciate your input!
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <FeedbackEmbed />
+                                    </DialogContent>
+                                </Dialog>
                             </FAQ>
                             <FAQ
                                 question={"Who is developing, maintaining, and hosting NovaCrate?"}

@@ -29,6 +29,15 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import AIAssistantChat from "@/components/ai/chat"
 import { useLayoutState } from "@/lib/state/layout-state"
 import { useDefaultLayout, usePanelRef } from "react-resizable-panels"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/dialog"
+import { FeedbackEmbed } from "@/components/FeedbackEmbed"
 
 function NavSidebarButton({
     children,
@@ -150,20 +159,28 @@ export function NavSidebar({ children }: PropsWithChildren) {
                                 <TooltipContent side={"right"}>Validation Drawer</TooltipContent>
                             </Tooltip>
 
-                            <Tooltip delayDuration={0}>
-                                <TooltipTrigger asChild>
-                                    <Link
-                                        href={
-                                            "https://github.com/kit-data-manager/NovaCrate/issues"
-                                        }
-                                    >
-                                        <NavSidebarButton isActive={false}>
-                                            <MessageSquare className="size-4" />
-                                        </NavSidebarButton>
-                                    </Link>
-                                </TooltipTrigger>
-                                <TooltipContent side={"right"}>Send Feedback</TooltipContent>
-                            </Tooltip>
+                            <Dialog>
+                                <Tooltip delayDuration={0}>
+                                    <TooltipTrigger asChild>
+                                        <DialogTrigger asChild>
+                                            <NavSidebarButton isActive={false}>
+                                                <MessageSquare />
+                                            </NavSidebarButton>
+                                        </DialogTrigger>
+                                    </TooltipTrigger>
+                                    <TooltipContent side={"right"}>Send Feedback</TooltipContent>
+                                </Tooltip>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Feedback</DialogTitle>
+                                        <DialogDescription>
+                                            Give feedback using the form below. We highly appreciate
+                                            your input!
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <FeedbackEmbed />
+                                </DialogContent>
+                            </Dialog>
 
                             <Tooltip delayDuration={0}>
                                 <TooltipTrigger asChild>
