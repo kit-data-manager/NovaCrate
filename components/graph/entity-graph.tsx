@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button"
 import { EllipsisVertical, Fullscreen, GitCompare, Rows2, Rows3, Rows4 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { EntityNodeHandle, NEW_PROP_HANDLE } from "@/components/graph/entity-node"
-import { isReference, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
+import { findEntity, isReference, isRoCrateMetadataEntity, toArray } from "@/lib/utils"
 import { useEditorState } from "@/lib/state/editor-state"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { nodeTypes } from "@/components/graph/nodes"
@@ -80,13 +80,14 @@ function entitiesToGraph(entitiesMap: Map<string, IEntity>): [Node[], Edge[]] {
             const values = toArray(value)
             for (const singleValue of values) {
                 if (isReference(singleValue) && singleValue["@id"]) {
-                    let target = singleValue["@id"]
+                    let targetID = singleValue["@id"]
+                    const target = findEntity(entitiesMap, targetID)
                     const index = values.indexOf(singleValue)
 
-                    if (!entities.find((n) => n["@id"] === singleValue["@id"])) {
-                        target = `${entity["@id"]}#${key}[${index}]-external`
+                    if (!target) {
+                        targetID = `${entity["@id"]}#${key}[${index}]-external`
                         nodes.push({
-                            id: target,
+                            id: targetID,
                             position: DEFAULT_POS,
                             data: { id: singleValue["@id"] },
                             type: "externalNode"
@@ -97,7 +98,9 @@ function entitiesToGraph(entitiesMap: Map<string, IEntity>): [Node[], Edge[]] {
                         id: `${entity["@id"]}#${key}[${index}]`,
                         source: entity["@id"],
                         sourceHandle: `${key}`,
-                        target,
+                        // target may have an id that is formatted differently than targetID (e.g. `%20` instead of ` `)
+                        // so we give precedence to the targets own id if it is defined
+                        target: target?.["@id"] ?? targetID,
                         type: "default"
                     })
                 }

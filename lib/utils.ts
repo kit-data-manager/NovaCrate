@@ -109,7 +109,7 @@ export function normalizeIdentifier(path: string) {
     try {
         return decodeURI(withoutPrefix)
     } catch (e) {
-        console.warn("Failed to normalize identifier", path, e)
+        console.warn("Failed to normalize identifier, it is probably not URI encoded", path, e)
         return withoutPrefix
     }
 }
