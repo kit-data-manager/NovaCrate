@@ -20,7 +20,7 @@
   ],
   "name": "novacrate",
   "description": "A modern editor for RO-Crates. Web-based interactive editor for creating, editing and visualising research object crates.",
-  "version": "1.14.0",
+  "version": "1.14.1",
   "keywords": [
     "ro-crate",
     "ro",
