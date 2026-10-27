@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.14.1] - 2026-10-27
+
+### Fixed
+- Fixed a problem where references between entities were not correctly displayed in the graph and in the find references modal
+- Entities should now be linked to each other more reliably
+- Removed confusing tour progress text in the main menu
+
+### Changed
+- Dependency updates
+
 ## [1.14.0] - 2026-10-20
 
 ### Added
