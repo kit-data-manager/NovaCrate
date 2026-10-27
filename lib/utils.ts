@@ -97,6 +97,8 @@ export function isValidUrl(string: string) {
  * @param id of the target entity
  */
 export function findEntity(entities: Map<string, IEntity>, id: string): IEntity | undefined {
+    const directMatch = entities.get(id)
+    if (directMatch) return directMatch
     const matchingKey = Array.from(entities.keys()).find(
         (entityId) => normalizeIdentifier(entityId) === normalizeIdentifier(id)
     )
