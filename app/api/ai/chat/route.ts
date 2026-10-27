@@ -81,7 +81,7 @@ export async function POST(req: Request) {
             
             ## Problems with mismatching identifiers
             Identifiers of entities in RO-Crates may be URI encoded or not. Further they may contain a leading ./ if they are data entities. NovaCrate normalised identifiers internally
-            to account for these problems. Two identifiers are considered matching when they are equal after removing the leading ./ (if it exists) and decoding all %-encoded characters.
+            to account for these problems. Two identifiers are considered matching when they are equal after removing the leading ./ (if it exists) and running JavaScripts decodeURI.
             
             ## Choosing an identifier
             Identifiers SHOULD be persistent identifiers, such as ORCIDs for a Person, RORs for a research organization, and the crate-relative path for files and folders in the RO-Crate.

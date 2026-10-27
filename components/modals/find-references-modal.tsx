@@ -24,6 +24,7 @@ import { propertyValue } from "@/lib/property-value-utils"
 interface ReferencingEntity extends IEntity {
     "@propertyNameReadable": string
     "@propertyName": string
+    index: string
 }
 
 const FindReferencesModalEntry = memo(function AddPropertyModalEntry({
@@ -112,7 +113,8 @@ export function FindReferencesModalInner({
                             result.add({
                                 ...entity,
                                 "@propertyName": propertyName,
-                                "@propertyNameReadable": `${camelCaseReadable(propertyName)}${Array.isArray(prop) ? " #" + (index + 1) : ""}`
+                                "@propertyNameReadable": `${camelCaseReadable(propertyName)}${Array.isArray(prop) ? " #" + (index + 1) : ""}`,
+                                index: String(index)
                             })
                         }
                     })
@@ -146,7 +148,8 @@ export function FindReferencesModalInner({
                                         <FindReferencesModalEntry
                                             key={
                                                 referencingEntity["@id"] +
-                                                referencingEntity["@propertyName"]
+                                                referencingEntity["@propertyName"] +
+                                                referencingEntity.index
                                             }
                                             entity={referencingEntity}
                                             onSelect={onSelect}
