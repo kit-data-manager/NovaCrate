@@ -27,13 +27,19 @@ const sharedOptions: Partial<Options> = {
     targetWaitTimeout: 100
 }
 
-const centeredStep = (id: string, title: string, content: React.ReactNode): Step => ({
+const centeredStep = (
+    id: string,
+    title: string,
+    content: React.ReactNode,
+    opts?: Partial<Step>
+): Step => ({
     id,
     title,
     content,
     target: "body",
     placement: "center",
-    skipBeacon: true
+    skipBeacon: true,
+    ...opts
 })
 
 function buildMenuSteps(): Step[] {
@@ -41,7 +47,10 @@ function buildMenuSteps(): Step[] {
         centeredStep(
             "menu-welcome",
             "Welcome to NovaCrate!",
-            "New to NovaCrate? Take a look at some examples \u2014 the tour will continue in the editor."
+            "New to NovaCrate? Take a look at some examples \u2014 the tour will continue in the editor.",
+            {
+                showProgress: false
+            }
         ),
         {
             id: "menu-quickstart",
@@ -51,7 +60,8 @@ function buildMenuSteps(): Step[] {
                 "\u201CAir Quality in Karlsruhe\u201D \u2014 the tour will continue in the editor.",
             target: '[data-tour="quickstart-button"]',
             placement: "bottom",
-            buttons: ["close"]
+            buttons: ["close"],
+            showProgress: false
         },
         {
             id: "menu-example",
@@ -61,12 +71,16 @@ function buildMenuSteps(): Step[] {
                 "Click it to open the editor.",
             target: '[data-tour="quickstart-example"]',
             placement: "right",
-            buttons: ["close"]
+            buttons: ["close"],
+            showProgress: false
         },
         centeredStep(
             "menu-outro",
             "Your turn",
-            "Pick an example from the Quickstart menu to continue the tour in the editor \u2014 or just explore on your own."
+            "Pick an example from the Quickstart menu to continue the tour in the editor \u2014 or just explore on your own.",
+            {
+                showProgress: false
+            }
         )
     ]
 }
