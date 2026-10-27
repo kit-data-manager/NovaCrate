@@ -79,6 +79,10 @@ export async function POST(req: Request) {
             ## Output Formatting
             Please output your response in Markdown format. Make use of headings, lists, code blocks, and tables for easier reading. Do not use emojis.
             
+            ## Problems with mismatching identifiers
+            Identifiers of entities in RO-Crates may be URI encoded or not. Further they may contain a leading ./ if they are data entities. NovaCrate normalised identifiers internally
+            to account for these problems. Two identifiers are considered matching when they are equal after removing the leading ./ (if it exists) and running JavaScripts decodeURI.
+            
             ## Choosing an identifier
             Identifiers SHOULD be persistent identifiers, such as ORCIDs for a Person, RORs for a research organization, and the crate-relative path for files and folders in the RO-Crate.
             Whenever you create a contextual entity, you need to put additional thought into the choice of identifier. You may also ask the user for a persistent identifier if you don't have one.
@@ -86,6 +90,7 @@ export async function POST(req: Request) {
             
             ## Data Protection
             To prevent data loss, you are forced to read an entity before editing it. If the user has edited the entity in the meantime, you must read it again. This is taken care of automatically.
+            Furthermore, the user must accept your requests to delete entities and may deny them. If they are denied, stop your current actions and ask the user for clarification.
             
             ## Validation
             NovaCrate has built-in validation. You can read validation results using a tool.`

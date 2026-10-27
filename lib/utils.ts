@@ -97,11 +97,12 @@ export function isValidUrl(string: string) {
  * @param id of the target entity
  */
 export function findEntity(entities: Map<string, IEntity>, id: string): IEntity | undefined {
-    return (
-        entities.get(id) ??
-        entities.get(normalizeIdentifier(id)) ??
-        entities.get("./" + normalizeIdentifier(id))
+    const directMatch = entities.get(id)
+    if (directMatch) return directMatch
+    const matchingKey = Array.from(entities.keys()).find(
+        (entityId) => normalizeIdentifier(entityId) === normalizeIdentifier(id)
     )
+    return matchingKey ? entities.get(matchingKey) : undefined
 }
 
 export function normalizeIdentifier(path: string) {
@@ -109,7 +110,7 @@ export function normalizeIdentifier(path: string) {
     try {
         return decodeURI(withoutPrefix)
     } catch (e) {
-        console.warn("Failed to normalize identifier", path, e)
+        console.warn("Failed to normalize identifier, it is probably not URI encoded", path, e)
         return withoutPrefix
     }
 }

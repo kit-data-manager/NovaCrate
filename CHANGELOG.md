@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- Fixed a problem where references between entities were not correctly displayed in the graph and in the find references modal
+
 ## [1.14.0] - 2026-10-20
 
 ### Added

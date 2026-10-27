@@ -9,15 +9,22 @@ import {
 } from "@/components/ui/command"
 import { Skeleton } from "@/components/ui/skeleton"
 import { memo, useCallback, useEffect, useMemo, useState } from "react"
-import { camelCaseReadable, getEntityDisplayName } from "@/lib/utils"
+import {
+    camelCaseReadable,
+    getEntityDisplayName,
+    isReference,
+    normalizeIdentifier
+} from "@/lib/utils"
 import { useEditorState } from "@/lib/state/editor-state"
-import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
+import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { useGoToEntityEditor } from "@/lib/hooks/hooks"
+import { propertyValue } from "@/lib/property-value-utils"
 
 interface ReferencingEntity extends IEntity {
     "@propertyNameReadable": string
     "@propertyName": string
+    index: string
 }
 
 const FindReferencesModalEntry = memo(function AddPropertyModalEntry({
@@ -82,17 +89,15 @@ export function FindReferencesModalInner({
 }) {
     const entities = useEditorState((store) => store.entities)
     const goToEntityEditor = useGoToEntityEditor()
-    const openTab = useEntityEditorTabs((store) => store.openTab)
     const focusProperty = useEntityEditorTabs((store) => store.focusProperty)
 
     const onSelect = useCallback(
         (entity: IEntity, propertyName: string) => {
             onOpenChange(false)
-            goToEntityEditor()
-            openTab(createEntityEditorTab(entity), true)
+            goToEntityEditor(entity)
             focusProperty(entity["@id"], propertyName)
         },
-        [focusProperty, goToEntityEditor, onOpenChange, openTab]
+        [focusProperty, goToEntityEditor, onOpenChange]
     )
 
     const referencesResolver = useCallback(
@@ -100,21 +105,19 @@ export function FindReferencesModalInner({
             const result = new Set<ReferencingEntity>()
             for (const [, entity] of entities) {
                 for (const [propertyName, prop] of Object.entries(entity)) {
-                    function handleEntry(prop: EntitySinglePropertyTypes, index?: number) {
-                        if (typeof prop === "object" && "@id" in prop && prop["@id"] === entityId) {
+                    propertyValue(prop).forEach((value, index) => {
+                        if (
+                            isReference(value) &&
+                            normalizeIdentifier(value["@id"]) === normalizeIdentifier(entityId)
+                        ) {
                             result.add({
                                 ...entity,
                                 "@propertyName": propertyName,
-                                "@propertyNameReadable": `${camelCaseReadable(propertyName)}${index !== undefined ? " #" + (index + 1) : ""}`
+                                "@propertyNameReadable": `${camelCaseReadable(propertyName)}${Array.isArray(prop) ? " #" + (index + 1) : ""}`,
+                                index: String(index)
                             })
                         }
-                    }
-
-                    if (Array.isArray(prop)) {
-                        prop.forEach(handleEntry)
-                    } else {
-                        handleEntry(prop)
-                    }
+                    })
                 }
             }
             return Array.from(result)
@@ -145,7 +148,8 @@ export function FindReferencesModalInner({
                                         <FindReferencesModalEntry
                                             key={
                                                 referencingEntity["@id"] +
-                                                referencingEntity["@propertyName"]
+                                                referencingEntity["@propertyName"] +
+                                                referencingEntity.index
                                             }
                                             entity={referencingEntity}
                                             onSelect={onSelect}
