@@ -137,7 +137,7 @@ Unit tests can be run without building the app using:
 
     npm run test:unit
 
-End-to-end tests can be run without building the app using:
+End-to-end tests can be run using:
 
     npm run build:test
     npm run test:e2e

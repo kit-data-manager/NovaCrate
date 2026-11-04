@@ -20,6 +20,9 @@
     "serve": "node .next/standalone/server.js",
     "typecheck": "tsc"
   },
+  "engines": {
+    "node": "^24 || ^26"
+  },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.9",
     "@ai-sdk/openai": "^4.0.8",
