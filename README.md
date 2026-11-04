@@ -70,7 +70,7 @@ Deploying NovaCrate is easy. Go to the [Deployment Documentation](./docs/deploym
 
 ### Prerequisites
 
-- Install Node.js >= 22
+- Install Node.js >= 24 (Recommended: 26)
 - Clone the NovaCrate repository
 
 ### Quickstart
@@ -103,16 +103,22 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ### Building
 
-This command builds NovaCrate in the `out` folder.
+This command builds NovaCrate in the `.next` folder:
 
 ```bash
 npm run build
 ```
 
-The website can then be found in the `out` folder. Use any web server for viewing. Local viewing:
+To start NovaCrate after you built it, run:
 
 ```bash
-npx serve@latest out
+npm run serve
+```
+
+To build NovaCrate for testing (specifically for the end-to-end tests) run:
+
+```bash
+npm run build:test
 ```
 
 ### Testing
@@ -120,19 +126,21 @@ npx serve@latest out
 NovaCrate ships with end-to-end frontend tests that can be used to verify that the core functionality is working as expected. At the current time, the test coverage is relatively low
 due to the complexity of UI-based testing.
 
-You can run the tests using:
+> ⚠️ Before you can run the end-to-end tests you need to install playwright using `npx playwright install`
 
-    npm run build && npm run serve
-    # In a different terminal:
-    npm run test:e2e
+
+You can run all tests using:
+
+    npm run test:dev-all
 
 Unit tests can be run without building the app using:
 
     npm run test:unit
 
-On development machines, the entire test suite incorporating E2E tests and unit tests can be run using:
+End-to-end tests can be run using:
 
-    npm run test:dev-all
+    npm run build:test
+    npm run test:e2e
 
 ## ℹ️ Documentation
 
