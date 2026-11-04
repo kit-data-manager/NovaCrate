@@ -348,18 +348,16 @@ export default function EditorLandingPage() {
                         <DropdownMenuContent>
                             <DropdownMenuGroup>
                                 <DropdownMenuLabel>Examples</DropdownMenuLabel>
-                                <DropdownMenuItem
-                                    onClick={() => createCrateFromExample("test-crate")}
-                                >
+                                <DropdownMenuItem onClick={() => createCrateFromExample("empty")}>
                                     <CirclePlay className="size-4 mr-2" />
-                                    Minimal Example
+                                    Empty RO-Crate
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     data-tour="quickstart-example"
-                                    onClick={() => createCrateFromExample("air-quality-karlsruhe")}
+                                    onClick={() => createCrateFromExample("example-lorem-ipsum")}
                                 >
                                     <CirclePlay className="size-4 mr-2" />
-                                    Air Quality in Karlsruhe
+                                    Example: Paper with supplementary material
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={() => createCrateFromExample("ro-crate-spec")}
@@ -373,13 +371,24 @@ export default function EditorLandingPage() {
                                 <DropdownMenuItem
                                     onClick={() =>
                                         window.open(
+                                            "https://www.researchobject.org/ro-crate/examples",
+                                            "_blank"
+                                        )
+                                    }
+                                >
+                                    <LinkIcon className="size-4 mr-2" />
+                                    Example RO-Crates
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        window.open(
                                             "https://www.researchobject.org/ro-crate/eln",
                                             "_blank"
                                         )
                                     }
                                 >
                                     <LinkIcon className="size-4 mr-2" />
-                                    Download ELNs
+                                    Example ELNs
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
                         </DropdownMenuContent>

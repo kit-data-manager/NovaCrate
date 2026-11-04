@@ -57,7 +57,7 @@ function buildMenuSteps(): Step[] {
             title: "Quickstart",
             content:
                 "The Quickstart menu contains example crates you can explore. Click it and pick " +
-                "\u201CAir Quality in Karlsruhe\u201D \u2014 the tour will continue in the editor.",
+                "\u201CExample: Paper with supplementary material\u201D \u2014 the tour will continue in the editor.",
             target: '[data-tour="quickstart-button"]',
             placement: "bottom",
             buttons: ["close"],
@@ -66,9 +66,7 @@ function buildMenuSteps(): Step[] {
         {
             id: "menu-example",
             title: "Example Crate",
-            content:
-                "This example loads an example crate describing imaginary air quality measurements in Karlsruhe. " +
-                "Click it to open the editor.",
+            content: "This example loads an example crate. " + "Click it to open the editor.",
             target: '[data-tour="quickstart-example"]',
             placement: "right",
             buttons: ["close"],

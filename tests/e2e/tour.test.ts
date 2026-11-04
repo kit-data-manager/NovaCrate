@@ -7,7 +7,7 @@ test("guided tour through the editor", async ({ page }) => {
     await expect(page.getByText("The Quickstart menu contains")).toBeVisible()
     await page.getByRole("button", { name: "Quickstart" }).click()
     await expect(page.locator(".react-joyride__spotlight > path").first()).toBeVisible()
-    await page.getByRole("menuitem", { name: "Air Quality in Karlsruhe" }).click()
+    await page.getByRole("menuitem", { name: "Example: Paper with supplementary material" }).click()
     await expect(page.getByText("The name of the crate you are")).toBeVisible()
     await page.getByTestId("button-primary").click()
     await expect(page.getByText("The Editor menu contains")).toBeVisible()
