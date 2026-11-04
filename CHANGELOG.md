@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Changed
+- Replaced two quickstart RO-Crates with better ones
+
 ## [1.14.1] - 2026-10-27
 
 ### Fixed
