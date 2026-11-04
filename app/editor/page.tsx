@@ -45,15 +45,6 @@ import { ChangelogModal } from "@/components/changelog-modal"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { useTourState } from "@/lib/state/tour-state"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from "@/components/ui/dialog"
-import { FeedbackEmbed } from "@/components/FeedbackEmbed"
 
 export default function EditorLandingPage() {
     const router = useRouter()
@@ -66,7 +57,7 @@ export default function EditorLandingPage() {
     const persistence = usePersistence()
     const healthError = useOperationState((s) => s.healthError)
     const createUploadInputRef = useRef<HTMLInputElement>(null)
-    const { showAboutModal } = useContext(GlobalModalContext)
+    const { showAboutModal, showFeedbackModal } = useContext(GlobalModalContext)
     const demoLoader = useDemoCrateLoader()
     const startTour = useTourState((s) => s.startTour)
     const [demoLoaderError, setDemoLoaderError] = useState<unknown>()
@@ -295,23 +286,9 @@ export default function EditorLandingPage() {
                                 <Info /> About
                             </Button>
                             <ChangelogModal />
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button variant="outline">
-                                        <MessageSquare /> Send Feedback
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>Feedback</DialogTitle>
-                                        <DialogDescription>
-                                            Give feedback using the form below. We highly appreciate
-                                            your input!
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <FeedbackEmbed />
-                                </DialogContent>
-                            </Dialog>
+                            <Button variant="outline" onClick={() => showFeedbackModal()}>
+                                <MessageSquare /> Send Feedback
+                            </Button>
                         </div>
                         <Footer />
                     </div>
