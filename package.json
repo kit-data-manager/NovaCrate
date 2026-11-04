@@ -103,7 +103,7 @@
     "@types/react-dom": "19.3.0",
     "baseline-browser-mapping": "2.11.34",
     "cross-env": "10.1.0",
-    "eslint": "9.39.2",
+    "eslint": "10.13.0",
     "eslint-config-next": "^16.4.2",
     "jest": "30.5.2",
     "jest-environment-jsdom": "30.5.2",
@@ -118,7 +118,16 @@
     "webpack-cli": "7.2.3"
   },
   "overrides": {
-    "dompurify": "3.4.17"
+    "dompurify": "3.4.17",
+    "eslint-plugin-react": {
+      "eslint": "^10"
+    },
+    "eslint-plugin-jsx-a11y": {
+      "eslint": "^10"
+    },
+    "eslint-plugin-import": {
+      "eslint": "^10"
+    }
   },
   "description": "A modern editor for RO-Crates. Web-based interactive editor for creating, editing and visualising research object crates.",
   "keywords": [
