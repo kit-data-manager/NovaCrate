@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Replaced two quickstart RO-Crates with better ones
+- Dependency updates, upgraded to Node.js v26
 
 ## [1.14.1] - 2026-10-27
 
