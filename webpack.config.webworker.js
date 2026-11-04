@@ -1,6 +1,5 @@
 const webpack = require("webpack")
 const path = require("path")
-// const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
 
 const config = {
     entry: { schema: "./lib/schema-worker/index.ts", opfs: "./lib/opfs-worker/index.ts" },
@@ -31,7 +30,6 @@ const config = {
         new webpack.DefinePlugin({
             "process.env.BASE_PATH": JSON.stringify(process.env.BASE_PATH || "")
         })
-        // new BundleAnalyzerPlugin({ enabled: process.env.ANALYZE === "true" })
     ]
 }
 
