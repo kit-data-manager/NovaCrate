@@ -11,7 +11,9 @@ const eslintConfig = defineConfig([
         "out/**",
         "build/**",
         "next-env.d.ts",
-        "public/**.js"
+        "public/**.js",
+        "playwright-report/**",
+        "coverage/**"
     ]),
     {
         // Enforce that the unlisten callback returned by IObservable.addEventListener

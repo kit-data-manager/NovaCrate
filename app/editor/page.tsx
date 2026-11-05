@@ -45,15 +45,6 @@ import { ChangelogModal } from "@/components/changelog-modal"
 import { addBasePath } from "next/dist/client/add-base-path"
 import { usePersistence } from "@/components/providers/persistence-provider"
 import { useTourState } from "@/lib/state/tour-state"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from "@/components/ui/dialog"
-import { FeedbackEmbed } from "@/components/FeedbackEmbed"
 
 export default function EditorLandingPage() {
     const router = useRouter()
@@ -66,7 +57,7 @@ export default function EditorLandingPage() {
     const persistence = usePersistence()
     const healthError = useOperationState((s) => s.healthError)
     const createUploadInputRef = useRef<HTMLInputElement>(null)
-    const { showAboutModal } = useContext(GlobalModalContext)
+    const { showAboutModal, showFeedbackModal } = useContext(GlobalModalContext)
     const demoLoader = useDemoCrateLoader()
     const startTour = useTourState((s) => s.startTour)
     const [demoLoaderError, setDemoLoaderError] = useState<unknown>()
@@ -295,23 +286,9 @@ export default function EditorLandingPage() {
                                 <Info /> About
                             </Button>
                             <ChangelogModal />
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button variant="outline">
-                                        <MessageSquare /> Send Feedback
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>Feedback</DialogTitle>
-                                        <DialogDescription>
-                                            Give feedback using the form below. We highly appreciate
-                                            your input!
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <FeedbackEmbed />
-                                </DialogContent>
-                            </Dialog>
+                            <Button variant="outline" onClick={() => showFeedbackModal()}>
+                                <MessageSquare /> Send Feedback
+                            </Button>
                         </div>
                         <Footer />
                     </div>
@@ -348,18 +325,16 @@ export default function EditorLandingPage() {
                         <DropdownMenuContent>
                             <DropdownMenuGroup>
                                 <DropdownMenuLabel>Examples</DropdownMenuLabel>
-                                <DropdownMenuItem
-                                    onClick={() => createCrateFromExample("test-crate")}
-                                >
+                                <DropdownMenuItem onClick={() => createCrateFromExample("empty")}>
                                     <CirclePlay className="size-4 mr-2" />
-                                    Minimal Example
+                                    Empty RO-Crate
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     data-tour="quickstart-example"
-                                    onClick={() => createCrateFromExample("air-quality-karlsruhe")}
+                                    onClick={() => createCrateFromExample("example-lorem-ipsum")}
                                 >
                                     <CirclePlay className="size-4 mr-2" />
-                                    Air Quality in Karlsruhe
+                                    Example: Paper with supplementary material
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={() => createCrateFromExample("ro-crate-spec")}
@@ -373,13 +348,24 @@ export default function EditorLandingPage() {
                                 <DropdownMenuItem
                                     onClick={() =>
                                         window.open(
+                                            "https://www.researchobject.org/ro-crate/examples",
+                                            "_blank"
+                                        )
+                                    }
+                                >
+                                    <LinkIcon className="size-4 mr-2" />
+                                    Example RO-Crates
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        window.open(
                                             "https://www.researchobject.org/ro-crate/eln",
                                             "_blank"
                                         )
                                     }
                                 >
                                     <LinkIcon className="size-4 mr-2" />
-                                    Download ELNs
+                                    Example ELNs
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
                         </DropdownMenuContent>

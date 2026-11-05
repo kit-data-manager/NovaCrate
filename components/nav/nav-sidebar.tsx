@@ -29,15 +29,6 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import AIAssistantChat from "@/components/ai/chat"
 import { useLayoutState } from "@/lib/state/layout-state"
 import { useDefaultLayout, usePanelRef } from "react-resizable-panels"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from "@/components/ui/dialog"
-import { FeedbackEmbed } from "@/components/FeedbackEmbed"
 
 function NavSidebarButton({
     children,
@@ -90,7 +81,7 @@ function NavSidebarLink({
 }
 
 export function NavSidebar({ children }: PropsWithChildren) {
-    const { showDocumentationModal } = useContext(GlobalModalContext)
+    const { showDocumentationModal, showFeedbackModal } = useContext(GlobalModalContext)
     const showValidationDrawer = useLayoutState((s) => s.showValidationDrawer)
     const setShowValidationDrawer = useLayoutState((s) => s.setShowValidationDrawer)
     const fileService = usePersistence().getCrateService()?.getFileService()
@@ -152,6 +143,7 @@ export function NavSidebar({ children }: PropsWithChildren) {
                                         data-tour="validation-drawer"
                                         isActive={showValidationDrawer}
                                         onClick={toggleShowValidationDrawer}
+                                        aria-label="Toggle Validation Drawer"
                                     >
                                         <Bug className="size-4" />
                                     </NavSidebarButton>
@@ -159,34 +151,25 @@ export function NavSidebar({ children }: PropsWithChildren) {
                                 <TooltipContent side={"right"}>Validation Drawer</TooltipContent>
                             </Tooltip>
 
-                            <Dialog>
-                                <Tooltip delayDuration={0}>
-                                    <TooltipTrigger asChild>
-                                        <DialogTrigger asChild>
-                                            <NavSidebarButton isActive={false}>
-                                                <MessageSquare />
-                                            </NavSidebarButton>
-                                        </DialogTrigger>
-                                    </TooltipTrigger>
-                                    <TooltipContent side={"right"}>Send Feedback</TooltipContent>
-                                </Tooltip>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>Feedback</DialogTitle>
-                                        <DialogDescription>
-                                            Give feedback using the form below. We highly appreciate
-                                            your input!
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <FeedbackEmbed />
-                                </DialogContent>
-                            </Dialog>
+                            <Tooltip delayDuration={0}>
+                                <TooltipTrigger asChild>
+                                    <NavSidebarButton
+                                        isActive={false}
+                                        onClick={() => showFeedbackModal()}
+                                        aria-label={"Send Feedback"}
+                                    >
+                                        <MessageSquare />
+                                    </NavSidebarButton>
+                                </TooltipTrigger>
+                                <TooltipContent side={"right"}>Send Feedback</TooltipContent>
+                            </Tooltip>
 
                             <Tooltip delayDuration={0}>
                                 <TooltipTrigger asChild>
                                     <NavSidebarButton
                                         isActive={false}
                                         onClick={showDocumentationModal}
+                                        aria-label={"Show Documentation"}
                                     >
                                         <BookOpenText className="size-4" />
                                     </NavSidebarButton>
