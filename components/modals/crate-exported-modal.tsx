@@ -139,9 +139,14 @@ export function CrateExportedModal({
                             </Button>
                         </>
                     ) : rating.status === "error" ? (
-                        <p className="text-sm text-destructive" role="status">
-                            Could not submit your rating. Please try again.
-                        </p>
+                        <>
+                            <p className="text-sm text-destructive" role="status">
+                                Could not submit your rating. Please try again.
+                            </p>
+                            <Button variant={"outline"} onClick={() => showFeedbackModal()}>
+                                Share your feedback
+                            </Button>
+                        </>
                     ) : (
                         <p className="text-sm text-muted-foreground">
                             {rating.status === "submitting"

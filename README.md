@@ -128,6 +128,8 @@ due to the complexity of UI-based testing.
 
 > ⚠️ Before you can run the end-to-end tests you need to install playwright using `npx playwright install`
 
+> ⚠️ Stop any server already running on port 3000 before running either test sequence below. Playwright reuses an existing local server on that port, so tests may otherwise run against a stale development build.
+
 
 You can run all tests using:
 

@@ -143,6 +143,7 @@ export function NavSidebar({ children }: PropsWithChildren) {
                                         data-tour="validation-drawer"
                                         isActive={showValidationDrawer}
                                         onClick={toggleShowValidationDrawer}
+                                        aria-label="Toggle Validation Drawer"
                                     >
                                         <Bug className="size-4" />
                                     </NavSidebarButton>
@@ -155,6 +156,7 @@ export function NavSidebar({ children }: PropsWithChildren) {
                                     <NavSidebarButton
                                         isActive={false}
                                         onClick={() => showFeedbackModal()}
+                                        aria-label={"Send Feedback"}
                                     >
                                         <MessageSquare />
                                     </NavSidebarButton>
@@ -167,6 +169,7 @@ export function NavSidebar({ children }: PropsWithChildren) {
                                     <NavSidebarButton
                                         isActive={false}
                                         onClick={showDocumentationModal}
+                                        aria-label={"Show Documentation"}
                                     >
                                         <BookOpenText className="size-4" />
                                     </NavSidebarButton>
