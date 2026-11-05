@@ -23,6 +23,7 @@ import { CrateExportedModal } from "@/components/modals/crate-exported-modal"
 import { MultiRenameModal } from "@/components/modals/multi-rename-modal"
 import { CoreGuard } from "@/components/providers/core-provider"
 import { ManageProfilesModal } from "@/components/modals/manage-profiles-modal"
+import { FeedbackModal } from "@/components/modals/feedback-modal"
 
 export interface IGlobalModalContext {
     showCreateEntityModal(options?: {
@@ -46,6 +47,7 @@ export interface IGlobalModalContext {
     showDocumentationModal(): void
     showAboutModal(): void
     showCrateExportedModal(): void
+    showFeedbackModal(): void
     showMultiRenameModal(
         changes: { from: string; to: string }[],
         onCloseCallback?: () => void
@@ -70,6 +72,7 @@ export const GlobalModalContext = createContext<IGlobalModalContext>({
     showDocumentationModal() {},
     showAboutModal() {},
     showCrateExportedModal() {},
+    showFeedbackModal() {},
     showMultiRenameModal() {},
     showManageProfilesModal() {}
 })
@@ -120,6 +123,9 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     const [documentationModalState, setDocumentationModalState] = useState({ open: false })
     const [aboutModalState, setAboutModalState] = useState({ open: false })
     const [crateExportedModalState, setCrateExportedModalState] = useState({ open: false })
+    const [feedbackModalState, setFeedbackModalState] = useState<{
+        open: boolean
+    }>({ open: false })
     const [multiRenameModal, setMultiRenameModal] = useState<{
         open: boolean
         changes: { from: string; to: string }[]
@@ -204,6 +210,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         setAboutModalState({ open: true })
     }, [])
 
+    const showFeedbackModal = useCallback(() => {
+        setFeedbackModalState({ open: true })
+    }, [])
+
     const showMultiRenameModal = useCallback(
         (changes: { from: string; to: string }[], onCloseCallback?: () => void) => {
             setMultiRenameModal({ open: true, changes, onCloseCallback })
@@ -273,6 +283,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         setCrateExportedModalState({ open })
     }, [])
 
+    const onFeedbackModalOpenChange = useCallback((open: boolean) => {
+        setFeedbackModalState({ open })
+    }, [])
+
     const onRenameEntityOpenChange = useCallback(
         (open: boolean) => {
             if (!open) multiRenameModal.onCloseCallback?.()
@@ -305,6 +319,7 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 showDocumentationModal,
                 showAboutModal,
                 showCrateExportedModal,
+                showFeedbackModal,
                 showMultiRenameModal,
                 showManageProfilesModal
             }}
@@ -393,6 +408,11 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 key="crate-exported-modal"
                 open={crateExportedModalState.open}
                 onOpenChange={onCrateExportedModalOpenChange}
+            />
+            <FeedbackModal
+                key="feedback-modal"
+                open={feedbackModalState.open}
+                onOpenChange={onFeedbackModalOpenChange}
             />
 
             <Fragment key="children">{props.children}</Fragment>
