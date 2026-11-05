@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [1.14.2] - 2026-11-05
 
 ### Added
 - Added star rating that is shown after an RO-Crate is exported that sends feedback to the feedback service
