@@ -93,7 +93,12 @@ export async function POST(req: Request) {
             Furthermore, the user must accept your requests to delete entities and may deny them. If they are denied, stop your current actions and ask the user for clarification.
             
             ## Validation
-            NovaCrate has built-in validation. You can read validation results using a tool.`
+            NovaCrate has built-in validation. You can read validation results using a tool.
+            
+            ## Profiles
+            NovaCrate supports RO-Crate profiles (MASP-based). Profiles are active when the root entity lists them in its conformsTo property. Each active profile declares entity rules (class rules that entities can conform to) and property rules (constraints on properties, like which entity rules a property may reference and how often it must occur).
+            Entities are assigned to profile entity rules through references: starting from the root entity, every referenced entity is mapped to a rule matching its types. This means an entity that conforms to a rule but is never referenced from the root is not part of the profile and is not validated by it.
+            Use the getActiveProfiles tool to list the active profiles and their rules, the getProfileMapping tool to find out which entity is assigned to which rule, and the checkEntityConformance tool to check whether a specific entity conforms to a rule. The conformance result also lists the property rules that can reference an entity of that rule, which tells you how the entity should be referenced so it becomes part of the profile.`
         })
     } catch (error) {
         return Response.json(

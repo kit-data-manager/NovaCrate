@@ -11,6 +11,7 @@ import { memo } from "react"
 import { ActionButton, ActionDropdownMenuItem } from "@/components/actions/action-buttons"
 import { useAction } from "@/lib/hooks/hooks"
 import { ValidationOverview } from "@/components/editor/validation/validation-overview"
+import { EntityConformanceChecker } from "@/components/editor/entity-conformance-checker"
 
 export interface IEntityEditorHeaderProps {
     entityId: string
@@ -79,6 +80,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                     {saveAction.name}
                 </Button>
                 <ValidationOverview entityId={entityId} size="sm" />
+                <EntityConformanceChecker entityId={entityId} />
                 {canHavePreview ? (
                     <Button
                         variant={isBeingPreviewed ? "default" : "outline"}

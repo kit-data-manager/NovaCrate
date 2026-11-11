@@ -11,7 +11,7 @@ const asteriskCn = "absolute right-[-7px] top-[-7px] text-foreground text-xl rou
 const sizeCn = {
     md: "",
     lg: "min-w-7 min-h-7 rounded-lg",
-    sm: "min-h-[18px] min-w-[18px] aspect-square ml-[-1px] mr-[7px]"
+    sm: "min-h-[18px] min-w-[18px] aspect-square ml-[-1px] mr-[7px] rounded-md"
 }
 
 export function EntityIcon(props: {

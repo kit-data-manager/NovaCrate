@@ -173,6 +173,90 @@ const getValidationResults = tool({
     outputSchema: z.array(ValidationResultSchema)
 })
 
+const getActiveProfiles = tool({
+    description:
+        "Get the profiles that are active in the current RO-Crate, together with their entity rules (class rules) and property rules. Use this tool to learn which rules exist before checking the conformance or mapping of a specific entity.",
+    inputSchema: z.object({}),
+    outputSchema: z.array(
+        z.object({
+            profileId: z.string(),
+            profileName: z.string(),
+            entityRules: z.array(
+                z.object({
+                    ruleId: z.string(),
+                    name: z.string(),
+                    types: z.array(z.string()).optional()
+                })
+            ),
+            propertyRules: z.array(
+                z.object({
+                    label: z.string(),
+                    appliesToEntityRules: z.array(z.string()),
+                    minCount: z.number().optional(),
+                    maxCount: z.number().optional()
+                })
+            )
+        })
+    )
+})
+
+const getProfileMapping = tool({
+    description:
+        "Get the mapping of entities to profile entity rules. Entities are assigned to rules through references starting from the root entity, so an entity that is not referenced (directly or transitively) is not part of any profile. If you provide an entityId, only the assignments of that entity are returned. Otherwise, the assignments of all entities are returned. An empty result means the entity (or the whole crate) is not assigned to any rule.",
+    inputSchema: z.object({
+        entityId: z
+            .string()
+            .optional()
+            .describe("Optional entity @id to filter the mapping for a single entity")
+    }),
+    outputSchema: z.array(
+        z.object({
+            entityId: z.string(),
+            profileId: z.string(),
+            profileName: z.string(),
+            ruleId: z.string(),
+            ruleName: z.string()
+        })
+    )
+})
+
+const checkEntityConformance = tool({
+    description:
+        "Check whether a specific entity conforms to a profile entity rule. If you omit the ruleId, the rule the entity is currently assigned to in the profile mapping is used. The result contains the conformance issues (reasons why the entity does not conform) and the property rules that can reference an entity of this rule. Entities must be referenced from the root entity to become part of a profile.",
+    inputSchema: z.object({
+        entityId: z.string(),
+        ruleId: z
+            .string()
+            .optional()
+            .describe(
+                "The @id of the entity rule to check against, as returned by the getActiveProfiles tool"
+            )
+    }),
+    outputSchema: z.object({
+        entityId: z.string(),
+        ruleId: z.string(),
+        ruleName: z.string(),
+        profileId: z.string(),
+        profileName: z.string(),
+        conforms: z.boolean(),
+        issues: z.array(
+            z.object({
+                title: z.string(),
+                description: z.string()
+            })
+        ),
+        referencingPropertyRules: z.array(
+            z.object({
+                property: z.string(),
+                onEntityRules: z.array(z.string()),
+                minCount: z.number().optional(),
+                maxCount: z.number().optional(),
+                profile: z.string()
+            })
+        )
+    })
+})
+
 export const tools = {
     readEntity,
     editEntity,
@@ -184,5 +268,8 @@ export const tools = {
     readFilePlainText,
     getValidationResults,
     importPersonFromORCID,
-    importOrganizationFromROR
+    importOrganizationFromROR,
+    getActiveProfiles,
+    getProfileMapping,
+    checkEntityConformance
 }

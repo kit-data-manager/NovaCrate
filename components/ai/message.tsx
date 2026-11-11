@@ -10,7 +10,7 @@ import {
     TableRow
 } from "@/components/ui/table"
 import { ToolCall } from "@/components/ai/tool-call"
-import { BugIcon, ChevronRight, EyeIcon, LoaderCircle, PencilIcon, PlusIcon } from "lucide-react"
+import { BugIcon, ChevronRight, EyeIcon, LibraryIcon, LoaderCircle, PencilIcon, PlusIcon, ShieldCheckIcon } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import type { NC_UIMessage } from "@/lib/ai/types"
 import { UserMessage } from "@/components/ai/user-message"
@@ -181,6 +181,31 @@ export const Message = memo(function Message({
                     return (
                         <ToolCall key={i} part={part} icon={PlusIcon}>
                             Import Organization from ROR: {part.output?.["@id"] ?? "..."}
+                        </ToolCall>
+                    )
+                }
+
+                if (part.type === "tool-getActiveProfiles") {
+                    return (
+                        <ToolCall key={i} part={part} icon={LibraryIcon}>
+                            Reading active profiles
+                        </ToolCall>
+                    )
+                }
+
+                if (part.type === "tool-getProfileMapping") {
+                    return (
+                        <ToolCall key={i} part={part} icon={LibraryIcon}>
+                            Reading profile mapping
+                            {part.input?.entityId ? ` of ${part.input.entityId}` : ""}
+                        </ToolCall>
+                    )
+                }
+
+                if (part.type === "tool-checkEntityConformance") {
+                    return (
+                        <ToolCall key={i} part={part} icon={ShieldCheckIcon}>
+                            Checking profile conformance of {part.input?.entityId ?? "..."}
                         </ToolCall>
                     )
                 }

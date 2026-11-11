@@ -4,10 +4,51 @@ import { deepEqual } from "@/lib/utils"
 import { ProfileEntityMapping } from "@/lib/core/profiles/types/ProfileEntityMapping"
 import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
 import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
+import { IProfileService } from "@/lib/core/profiles/IProfileService"
 
 export function useProfileService() {
     const core = useCore()
     return core.getProfileService()
+}
+
+/**
+ * Returns every entity rule declared by the active profile handlers, together with the handler
+ * that declared it. Unlike {@link useActiveEntityRules}, this also includes rules the current
+ * entity is not (yet) assigned to. Handlers whose definition is not ready are skipped.
+ */
+export function useAllProfileEntityRules() {
+    const profileService = useProfileService()
+
+    const [rules, setRules] = useState(() => collectAllEntityRules(profileService))
+
+    const updateRules = useCallback(() => {
+        setRules(collectAllEntityRules(profileService))
+    }, [profileService])
+
+    useEffect(() => {
+        updateRules()
+        const remove1 = profileService.events.addEventListener("profiles-changed", updateRules)
+        const remove2 = profileService.events.addEventListener("all-ready-changed", updateRules)
+
+        return () => {
+            remove1()
+            remove2()
+        }
+    }, [profileService.events, updateRules])
+
+    return rules
+}
+
+function collectAllEntityRules(profileService: IProfileService) {
+    const rules: { rule: EntityRule; handler: IProfileHandler }[] = []
+    for (const handler of profileService.getProfileHandlers()) {
+        const definition = handler.getDefinition()
+        if (!definition || !handler.getIsReady()) continue
+        for (const rule of definition.entityRules) {
+            rules.push({ rule, handler })
+        }
+    }
+    return rules
 }
 
 export function useProfileEntityMapping(entityId: string) {
