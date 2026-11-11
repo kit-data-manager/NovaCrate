@@ -1,0 +1,6 @@
+{
+    "identifier": "default",
+    "description": "Default capability for the NovaCrate desktop window",
+    "windows": ["main"],
+    "permissions": ["core:default", "dialog:default"]
+}

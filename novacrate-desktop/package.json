@@ -1,0 +1,19 @@
+{
+    "name": "novacrate-desktop",
+    "private": true,
+    "version": "0.1.0",
+    "type": "module",
+    "scripts": {
+        "tauri": "tauri"
+    },
+    "dependencies": {
+        "@tauri-apps/api": "^2",
+        "@tauri-apps/plugin-opener": "^2"
+    },
+    "devDependencies": {
+        "@tauri-apps/cli": "^2",
+        "cross-env": "^10.1.0",
+        "typescript": "~6.0.3",
+        "vite": "^8.0.16"
+    }
+}

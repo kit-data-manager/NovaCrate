@@ -1,0 +1,33 @@
+[package]
+name = "novacrate-desktop"
+version = "1.14.2"
+description = "Native backend and desktop shell for NovaCrate"
+authors = ["Christopher Raquet"]
+license = "Apache-2.0"
+edition = "2021"
+
+[lib]
+name = "novacrate_desktop"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.7", features = [] }
+
+[dependencies]
+tauri = { version = "2.12", features = [] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+zip = { version = "9.5", default-features = false, features = ["deflate"] }
+tempfile = "3"
+trash = "5"
+uuid = { version = "1", features = ["v4"] }
+walkdir = "2"
+fs2 = "0.4"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
