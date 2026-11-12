@@ -11,6 +11,7 @@ import { memo } from "react"
 import { ActionButton, ActionDropdownMenuItem } from "@/components/actions/action-buttons"
 import { useAction } from "@/lib/hooks/hooks"
 import { ValidationOverview } from "@/components/editor/validation/validation-overview"
+import { useHasActiveProfiles } from "@/lib/hooks/use-profile-service"
 
 export interface IEntityEditorHeaderProps {
     entityId: string
@@ -38,6 +39,7 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
     transparentBackground
 }: IEntityEditorHeaderProps) {
     const saveAction = useAction("entity.save")
+    const hasActiveProfiles = useHasActiveProfiles()
 
     return (
         <div
@@ -79,13 +81,15 @@ export const EntityEditorHeader = memo(function EntityEditorHeader({
                     {saveAction.name}
                 </Button>
                 <ValidationOverview entityId={entityId} size="sm" />
-                <ActionButton
-                    actionId="entity.check-conformance"
-                    size="sm"
-                    variant="outline"
-                    className="text-xs"
-                    noShortcut
-                />
+                {hasActiveProfiles && (
+                    <ActionButton
+                        actionId="entity.check-conformance"
+                        size="sm"
+                        variant="outline"
+                        className="text-xs"
+                        noShortcut
+                    />
+                )}
                 {canHavePreview ? (
                     <Button
                         variant={isBeingPreviewed ? "default" : "outline"}

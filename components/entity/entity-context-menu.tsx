@@ -15,6 +15,7 @@ import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
 import { useGoToEntityEditor, useGoToFileExplorer } from "@/lib/hooks/hooks"
 import { useFileService } from "@/lib/hooks/use-persistence"
+import { useHasActiveProfiles } from "@/lib/hooks/use-profile-service"
 
 export function EntityContextMenu({
     entity,
@@ -28,6 +29,7 @@ export function EntityContextMenu({
     const { showDeleteEntityModal, showConformanceCheckModal } = useContext(GlobalModalContext)
     const diff = useEditorState((state) => (entity ? state.getEntityDiff(entity["@id"]) : null))
     const fileService = useFileService()
+    const hasActiveProfiles = useHasActiveProfiles()
 
     const canHavePreview = useMemo(() => {
         return entity ? canHavePreviewUtil(entity) && fileService !== null : false
@@ -74,7 +76,7 @@ export function EntityContextMenu({
                 <ContextMenuItem onClick={openSelf}>
                     <EntityIcon entity={entity} size="sm" /> Open Tab
                 </ContextMenuItem>
-                {entity ? (
+                {entity && hasActiveProfiles ? (
                     <ContextMenuItem onClick={onCheckConformanceClick}>
                         <ShieldCheck className="size-4 mr-2" /> Profile Conformance
                     </ContextMenuItem>

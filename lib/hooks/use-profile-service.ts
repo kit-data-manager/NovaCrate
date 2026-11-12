@@ -11,6 +11,45 @@ export function useProfileService() {
     return core.getProfileService()
 }
 
+function computeHasActiveProfiles(profileService: IProfileService) {
+    return profileService.getProfileHandlers().length > 0
+}
+
+/**
+ * Returns whether at least one profile is active for the open crate. Subscribes to the profile
+ * service so the value stays current when profiles are activated or removed.
+ */
+export function useHasActiveProfiles() {
+    const profileService = useProfileService()
+
+    const [hasActiveProfiles, setHasActiveProfiles] = useState(() =>
+        computeHasActiveProfiles(profileService)
+    )
+
+    const updateHasActiveProfiles = useCallback(() => {
+        setHasActiveProfiles(computeHasActiveProfiles(profileService))
+    }, [profileService])
+
+    useEffect(() => {
+        updateHasActiveProfiles()
+        const remove1 = profileService.events.addEventListener(
+            "profiles-changed",
+            updateHasActiveProfiles
+        )
+        const remove2 = profileService.events.addEventListener(
+            "all-ready-changed",
+            updateHasActiveProfiles
+        )
+
+        return () => {
+            remove1()
+            remove2()
+        }
+    }, [profileService.events, updateHasActiveProfiles])
+
+    return hasActiveProfiles
+}
+
 /**
  * Returns every entity rule declared by the active profile handlers, together with the handler
  * that declared it. Unlike {@link useActiveEntityRules}, this also includes rules the current
