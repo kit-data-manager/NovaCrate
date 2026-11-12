@@ -7,6 +7,7 @@ import { useEditorState } from "@/lib/state/editor-state"
 import { useGraphSettings } from "@/lib/state/graph-settings"
 import { useShallow } from "zustand/react/shallow"
 import { EntityContextMenu } from "@/components/entity/entity-context-menu"
+import { ProfileInsights } from "@/components/editor/profile-insights"
 
 export const NEW_PROP_HANDLE = "__special__newProp"
 
@@ -40,6 +41,7 @@ export default function EntityNode({
 
     const aggregateProperties = useGraphSettings((store) => store.aggregateProperties)
     const showTextProperties = useGraphSettings((store) => store.showTextProperties)
+    const showEntityRules = useGraphSettings((store) => store.showEntityRules)
 
     const handles = useMemo(() => {
         if (showTextProperties) {
@@ -72,6 +74,7 @@ export default function EntityNode({
                                 </span>
                             ) : null}
                         </div>
+                        {entity && showEntityRules && <ProfileInsights entity={entity} />}
                         <span className="text-muted-foreground text-xs truncate">{id}</span>
                     </div>
 

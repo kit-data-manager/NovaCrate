@@ -24,6 +24,7 @@ import { MultiRenameModal } from "@/components/modals/multi-rename-modal"
 import { CoreGuard } from "@/components/providers/core-provider"
 import { ManageProfilesModal } from "@/components/modals/manage-profiles-modal"
 import { FeedbackModal } from "@/components/modals/feedback-modal"
+import { EntityConformanceModal } from "@/components/modals/entity-conformance-modal"
 
 export interface IGlobalModalContext {
     showCreateEntityModal(options?: {
@@ -53,6 +54,7 @@ export interface IGlobalModalContext {
         onCloseCallback?: () => void
     ): void
     showManageProfilesModal(): void
+    showConformanceCheckModal(entityId: string): void
 }
 
 export type AddPropertyModalCallback = (
@@ -74,7 +76,8 @@ export const GlobalModalContext = createContext<IGlobalModalContext>({
     showCrateExportedModal() {},
     showFeedbackModal() {},
     showMultiRenameModal() {},
-    showManageProfilesModal() {}
+    showManageProfilesModal() {},
+    showConformanceCheckModal() {}
 })
 
 export function GlobalModalProvider(props: PropsWithChildren) {
@@ -134,6 +137,10 @@ export function GlobalModalProvider(props: PropsWithChildren) {
     const [manageProfilesModalState, setManageProfilesModalState] = useState<{
         open: boolean
     }>({ open: false })
+    const [conformanceCheckModalState, setConformanceCheckModalState] = useState<{
+        open: boolean
+        entityId: string
+    }>({ open: false, entityId: "" })
 
     const showCreateEntityModal: IGlobalModalContext["showCreateEntityModal"] = useCallback(
         ({ restrictToClasses, restrictToEntityRules, autoReference, id, basePath } = {}) => {
@@ -225,6 +232,13 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         setManageProfilesModalState({ open: true })
     }, [])
 
+    const showConformanceCheckModal = useCallback((entityId: string) => {
+        setConformanceCheckModalState({
+            open: true,
+            entityId
+        })
+    }, [])
+
     const onCreateEntityModalOpenChange = useCallback((isOpen: boolean) => {
         setCreateEntityModalState({
             autoReference: undefined,
@@ -305,6 +319,11 @@ export function GlobalModalProvider(props: PropsWithChildren) {
         })
     }, [])
 
+    const onConformanceCheckModalOpenChange = useCallback((open: boolean) => {
+        // Keep the entityId so the modal content stays rendered during the closing animation
+        setConformanceCheckModalState((prev) => ({ ...prev, open }))
+    }, [])
+
     return (
         <GlobalModalContext.Provider
             value={{
@@ -321,7 +340,8 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                 showCrateExportedModal,
                 showFeedbackModal,
                 showMultiRenameModal,
-                showManageProfilesModal
+                showManageProfilesModal,
+                showConformanceCheckModal
             }}
         >
             <CoreGuard key="core-guard">
@@ -385,6 +405,12 @@ export function GlobalModalProvider(props: PropsWithChildren) {
                     key="manage-profiles-modal"
                     open={manageProfilesModalState.open}
                     onOpenChange={onManageProfileOpenChange}
+                />
+                <EntityConformanceModal
+                    key="entity-conformance-modal"
+                    open={conformanceCheckModalState.open}
+                    onOpenChange={onConformanceCheckModalOpenChange}
+                    entityId={conformanceCheckModalState.entityId}
                 />
             </CoreGuard>
 

@@ -3,7 +3,7 @@ import { useCallback, useContext } from "react"
 import { useEditorState } from "@/lib/state/editor-state"
 import { useCrateMutations } from "@/lib/hooks/use-crate-mutations"
 import { GlobalModalContext } from "@/components/providers/global-modals-provider"
-import { Copy, Plus, Save, Search, Trash, Undo2 } from "lucide-react"
+import { Copy, Plus, Save, Search, ShieldCheck, Trash, Undo2 } from "lucide-react"
 import { useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 
 export default function EntityActions() {
@@ -20,7 +20,8 @@ function Handler({ entity }: { entity: IEntity }) {
         showAddPropertyModal,
         showFindReferencesModal,
         showDeleteEntityModal,
-        showSaveAsModal
+        showSaveAsModal,
+        showConformanceCheckModal
     } = useContext(GlobalModalContext)
     const focusProperty = useEntityEditorTabs((store) => store.focusProperty)
 
@@ -64,6 +65,13 @@ function Handler({ entity }: { entity: IEntity }) {
     useRegisterAction("entity.find-references", "Find References", findReferences, {
         keyboardShortcut: ["command", "q"],
         icon: Search
+    })
+
+    const checkConformance = useCallback(() => {
+        showConformanceCheckModal(entity["@id"])
+    }, [entity, showConformanceCheckModal])
+    useRegisterAction("entity.check-conformance", "Profile Conformance", checkConformance, {
+        icon: ShieldCheck
     })
 
     const deleteEntity = useCallback(() => {

@@ -57,10 +57,11 @@ import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { useStore } from "zustand"
 import { toast } from "sonner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import Link from "next/link"
+import { useHasActiveProfiles } from "@/lib/hooks/use-profile-service"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
+    const hasActiveProfiles = useHasActiveProfiles()
 
     const currentEntityName = useMemo(() => {
         return currentEntity ? getEntityDisplayName(currentEntity) : "No Active Entity"
@@ -85,6 +86,7 @@ function EntityMenu() {
                 <MenubarSeparator />
                 <ActionMenubarItem actionId="entity.add-property" />
                 <ActionMenubarItem actionId="entity.find-references" />
+                {hasActiveProfiles && <ActionMenubarItem actionId="entity.check-conformance" />}
                 <MenubarSeparator />
                 <ActionMenubarItem actionId="entity.delete" variant={"destructive"} />
             </MenubarContent>

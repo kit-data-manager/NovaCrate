@@ -8,6 +8,14 @@ import { useCore } from "@/components/providers/core-provider"
 import { importOrganizationFromRor, importPersonFromOrcid } from "@/lib/entity-import"
 import type { NC_UIMessage } from "@/lib/ai/types"
 import { usePersistence } from "@/components/providers/persistence-provider"
+import { checkEntityConformance } from "@/lib/core/profiles/impl/util/entity-rule-conformance"
+import {
+    describeConformanceIssue,
+    getRuleName
+} from "@/lib/core/profiles/impl/util/describe-conformance-issue"
+import { findReferencingPropertyRules } from "@/lib/core/profiles/impl/util/find-referencing-property-rules"
+import { EntityRule } from "@/lib/core/profiles/types/EntityRule"
+import { IProfileHandler } from "@/lib/core/profiles/IProfileHandler"
 
 type Callback = ChatOnToolCallCallback<NC_UIMessage>
 type CallbackParameters = Parameters<Callback>
@@ -304,6 +312,163 @@ export function useFrontendToolHandler() {
                         output: validation.resultStore.getState().results
                     })
 
+                    return
+                }
+                case "getActiveProfiles": {
+                    const profileService = core.getProfileService()
+                    const profiles = profileService
+                        .getProfileHandlers()
+                        .filter((handler) => handler.getIsReady() && handler.getDefinition())
+                        .map((handler) => {
+                            const definition = handler.getDefinition()!
+                            return {
+                                profileId: definition["@id"],
+                                profileName: definition.name,
+                                entityRules: definition.entityRules.map((rule) => ({
+                                    ruleId: rule["@id"],
+                                    name: getRuleName(rule),
+                                    types: rule.specializationOf
+                                })),
+                                propertyRules: definition.propertyRules.map((propertyRule) => ({
+                                    label: propertyRule.label,
+                                    appliesToEntityRules: propertyRule.appliesToEntityRules,
+                                    minCount: propertyRule.minCount,
+                                    maxCount: propertyRule.maxCount
+                                }))
+                            }
+                        })
+
+                    addToolOutput({
+                        tool: "getActiveProfiles",
+                        toolCallId: toolCall.toolCallId,
+                        output: profiles
+                    })
+                    return
+                }
+                case "getProfileMapping": {
+                    const profileService = core.getProfileService()
+                    const entityId = toolCall.input.entityId
+                    const assignments = []
+
+                    for (const handler of profileService.getProfileHandlers()) {
+                        const definition = handler.getDefinition()
+                        if (!definition) continue
+                        const mapping = handler.getEntityMapping()
+                        for (const [mappedEntityId, ruleId] of mapping) {
+                            if (entityId && mappedEntityId !== entityId) continue
+                            const rule = handler.getEntityRule(ruleId)
+                            if (!rule) continue
+                            assignments.push({
+                                entityId: mappedEntityId,
+                                profileId: definition["@id"],
+                                profileName: definition.name,
+                                ruleId,
+                                ruleName: getRuleName(rule)
+                            })
+                        }
+                    }
+
+                    addToolOutput({
+                        tool: "getProfileMapping",
+                        toolCallId: toolCall.toolCallId,
+                        output: assignments
+                    })
+                    return
+                }
+                case "checkEntityConformance": {
+                    const profileService = core.getProfileService()
+                    const entity = findEntity(
+                        editorState.getState().getEntities(),
+                        toolCall.input.entityId
+                    )
+
+                    if (!entity) {
+                        addToolOutput({
+                            tool: "checkEntityConformance",
+                            toolCallId: toolCall.toolCallId,
+                            state: "output-error",
+                            errorText: `Could not find an entity with id ${toolCall.input.entityId}`
+                        })
+                        return
+                    }
+
+                    const handlers = profileService.getProfileHandlers()
+
+                    // When no rule is specified, fall back to the rule the entity is currently
+                    // assigned to in the profile mapping.
+                    let rule: EntityRule | undefined = undefined
+                    let handler: IProfileHandler | undefined = undefined
+                    if (toolCall.input.ruleId) {
+                        for (const candidate of handlers) {
+                            const found = candidate.getEntityRule(toolCall.input.ruleId)
+                            if (found) {
+                                rule = found
+                                handler = candidate
+                                break
+                            }
+                        }
+                    } else {
+                        for (const candidate of handlers) {
+                            const ruleId = candidate.getEntityMapping().get(entity["@id"])
+                            if (!ruleId) continue
+                            const found = candidate.getEntityRule(ruleId)
+                            if (found) {
+                                rule = found
+                                handler = candidate
+                                break
+                            }
+                        }
+                    }
+
+                    if (!rule || !handler) {
+                        addToolOutput({
+                            tool: "checkEntityConformance",
+                            toolCallId: toolCall.toolCallId,
+                            state: "output-error",
+                            errorText: toolCall.input.ruleId
+                                ? `Could not find an entity rule with id ${toolCall.input.ruleId} in the active profiles. Use the getActiveProfiles tool to list the available rules.`
+                                : `The entity ${entity["@id"]} is not assigned to any profile entity rule. Pass a ruleId to check the conformance against a specific rule.`
+                        })
+                        return
+                    }
+
+                    const definition = handler.getDefinition()
+                    const issues = checkEntityConformance(entity, rule, handler, {
+                        resolver: core.getContextService().getResolver(),
+                        getEntity: (id) => findEntity(editorState.getState().getEntities(), id),
+                        isEntityAssignedTo: (entityId, entityRuleId) =>
+                            handler!.getEntityMapping().get(entityId) === entityRuleId
+                    })
+
+                    const output = {
+                        entityId: entity["@id"],
+                        ruleId: rule["@id"],
+                        ruleName: getRuleName(rule),
+                        profileId: definition?.["@id"] ?? handler.id,
+                        profileName: definition?.name ?? handler.name,
+                        conforms: issues.length === 0,
+                        issues: issues.map(describeConformanceIssue),
+                        referencingPropertyRules: findReferencingPropertyRules(
+                            rule,
+                            handlers
+                        ).map((referencingRule) => ({
+                            property: referencingRule.propertyRule.label,
+                            onEntityRules: referencingRule.appliesToEntityRules.map((r) =>
+                                getRuleName(r)
+                            ),
+                            minCount: referencingRule.propertyRule.minCount,
+                            maxCount: referencingRule.propertyRule.maxCount,
+                            profile:
+                                referencingRule.handler.getDefinition()?.name ??
+                                referencingRule.handler.name
+                        }))
+                    }
+
+                    addToolOutput({
+                        tool: "checkEntityConformance",
+                        toolCallId: toolCall.toolCallId,
+                        output
+                    })
                     return
                 }
                 case "moveEntity": {
