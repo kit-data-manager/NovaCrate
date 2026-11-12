@@ -1,15 +1,16 @@
 import { useCallback, useMemo, useState } from "react"
-import { Button } from "@/components/ui/button"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { CircleAlert, CircleCheck, Link2, ShieldCheck } from "lucide-react"
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList
+} from "@/components/ui/command"
+import { Button } from "@/components/ui/button"
+import { CircleAlert, CircleCheck, ArrowLeftRight, Link2, ShieldCheck } from "lucide-react"
+import { memo, useEffect } from "react"
 import {
     checkEntityConformance,
     EntityConformanceIssue
@@ -28,7 +29,8 @@ import { PropertyRule } from "@/lib/core/profiles/types/PropertyRule"
 import { useAllProfileEntityRules, useProfileService } from "@/lib/hooks/use-profile-service"
 import { useContextResolver } from "@/lib/hooks/hooks"
 import { editorState } from "@/lib/state/editor-state"
-import { findEntity } from "@/lib/utils"
+import { findEntity, getEntityDisplayName } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
 
 type ConformanceCheckResult = {
     rule: EntityRule
@@ -38,11 +40,39 @@ type ConformanceCheckResult = {
 }
 
 /**
- * Top bar button that lets the user pick an entity rule from the active profiles and run
- * `checkEntityConformance` for the open entity against that rule. The result is shown in a
- * dialog so it is directly visible why an entity does (not) conform.
+ * Modal to check an entity against an entity rule of the active profiles. The rule is selected
+ * inside the modal (searchable, grouped by profile); the result shows why the entity does (not)
+ * conform and how it can be referenced.
  */
-export function EntityConformanceChecker({ entityId }: { entityId: string }) {
+export const EntityConformanceModal = memo(function EntityConformanceModal(props: {
+    open: boolean
+    onOpenChange: (open: boolean) => void
+    entityId: string
+}) {
+    const [render, setRender] = useState(props.open)
+
+    useEffect(() => {
+        if (props.open) {
+            setRender(true)
+        } else {
+            setTimeout(() => {
+                setRender(false)
+            }, 100)
+        }
+    }, [props.open])
+
+    return render ? <EntityConformanceModalInner {...props} /> : null
+})
+
+function EntityConformanceModalInner({
+    open,
+    onOpenChange,
+    entityId
+}: {
+    open: boolean
+    onOpenChange: (open: boolean) => void
+    entityId: string
+}) {
     const profileRules = useAllProfileEntityRules()
     const profileService = useProfileService()
     const resolver = useContextResolver()
@@ -86,63 +116,107 @@ export function EntityConformanceChecker({ entityId }: { entityId: string }) {
         [entityId, resolver, profileService]
     )
 
-    if (groups.length === 0) return null
+    const handleOpenChange = useCallback(
+        (isOpen: boolean) => {
+            if (!isOpen) setResult(undefined)
+            onOpenChange(isOpen)
+        },
+        [onOpenChange]
+    )
+
+    const entityName = useMemo(() => {
+        const entity = findEntity(editorState.getState().getEntities(), entityId)
+        return entity ? getEntityDisplayName(entity, false) : entityId
+    }, [entityId])
 
     return (
-        <>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="text-xs">
-                        <ShieldCheck className="size-4" /> Profile Conformance
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="max-h-96 overflow-y-auto">
-                    {groups.length === 0 ? (
-                        <DropdownMenuItem disabled>No active profiles</DropdownMenuItem>
-                    ) : (
-                        groups.map((group, groupIndex) => (
-                            <div key={group.handler.id}>
-                                {groupIndex > 0 ? <DropdownMenuSeparator /> : null}
-                                <DropdownMenuLabel>{group.profileName}</DropdownMenuLabel>
-                                {group.rules.map((rule) => (
-                                    <DropdownMenuItem
-                                        key={rule["@id"]}
-                                        onClick={() => runCheck(rule, group.handler)}
-                                    >
-                                        <span className="truncate">{getRuleName(rule)}</span>
-                                    </DropdownMenuItem>
-                                ))}
-                            </div>
-                        ))
-                    )}
-                </DropdownMenuContent>
-            </DropdownMenu>
-            <ConformanceResultDialog result={result} onClose={() => setResult(undefined)} />
-        </>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+            <DialogContent className="max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                        Profile Conformance <Badge>Experimental</Badge>
+                    </DialogTitle>
+                    <div className="text-sm text-muted-foreground">
+                        Check how the entity <span className="text-foreground">{entityName}</span>{" "}
+                        conforms to the rules of the active profiles.
+                    </div>
+                </DialogHeader>
+                {result ? (
+                    <ConformanceResult result={result} onClose={() => setResult(undefined)} />
+                ) : (
+                    <ConformanceRuleSelection groups={groups} onSelect={runCheck} />
+                )}
+            </DialogContent>
+        </Dialog>
     )
 }
 
-function ConformanceResultDialog({
+function ConformanceRuleSelection({
+    groups,
+    onSelect
+}: {
+    groups: { handler: IProfileHandler; profileName: string; rules: EntityRule[] }[]
+    onSelect: (rule: EntityRule, handler: IProfileHandler) => void
+}) {
+    if (groups.length === 0) {
+        return (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <ShieldCheck className="size-4 shrink-0" />
+                No active profiles. Add a profile first to check conformance.
+            </div>
+        )
+    }
+
+    return (
+        <Command className="border rounded-md">
+            <CommandInput placeholder="Search rules..." />
+            <CommandList className="max-h-72 overflow-y-auto">
+                <CommandEmpty>No rule found.</CommandEmpty>
+                {groups.map((group) => (
+                    <CommandGroup key={group.handler.id} heading={group.profileName}>
+                        {group.rules.map((rule) => (
+                            <CommandItem
+                                key={rule["@id"]}
+                                value={`${group.profileName} ${getRuleName(rule)}`}
+                                onSelect={() => onSelect(rule, group.handler)}
+                            >
+                                <ShieldCheck className="size-4 shrink-0 text-muted-foreground" />
+                                <span className="truncate">{getRuleName(rule)}</span>
+                            </CommandItem>
+                        ))}
+                    </CommandGroup>
+                ))}
+            </CommandList>
+        </Command>
+    )
+}
+
+function ConformanceResult({
     result,
     onClose
 }: {
-    result: ConformanceCheckResult | undefined
+    result: ConformanceCheckResult
     onClose: () => void
 }) {
     return (
-        <Dialog open={result !== undefined} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle>Conformance: {result ? getRuleName(result.rule) : ""}</DialogTitle>
-                    {result ? (
-                        <div className="text-sm text-muted-foreground">
-                            Profile: {result.handler.getDefinition()?.name ?? result.handler.name}
-                        </div>
-                    ) : null}
-                </DialogHeader>
-                {result ? <ConformanceResultBody result={result} /> : null}
-            </DialogContent>
-        </Dialog>
+        <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2 text-sm max-w-full overflow-hidden">
+                <Button
+                    variant="secondary"
+                    className="min-w-0 max-w-full grow"
+                    aria-label="Choose a different rule"
+                    onClick={onClose}
+                >
+                    <span className="font-medium shrink-0 whitespace-nowrap">Rule:</span>
+                    <span className="truncate w-0 flex-1 min-w-0 text-left">
+                        {getRuleName(result.rule)} (
+                        {result.handler.getDefinition()?.name ?? result.handler.name})
+                    </span>
+                    <ArrowLeftRight className="size-4 shrink-0" />
+                </Button>
+            </div>
+            <ConformanceResultBody result={result} />
+        </div>
     )
 }
 

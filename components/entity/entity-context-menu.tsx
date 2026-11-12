@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/context-menu"
 import { EntityIcon } from "@/components/entity/entity-icon"
 import { Diff, canHavePreview as canHavePreviewUtil } from "@/lib/utils"
-import { Eye, Folder, Save, Trash, Undo2 } from "lucide-react"
+import { Eye, Folder, Save, ShieldCheck, Trash, Undo2 } from "lucide-react"
 import { PropsWithChildren, useCallback, useContext, useMemo } from "react"
 import { createEntityEditorTab, useEntityEditorTabs } from "@/lib/state/entity-editor-tabs-state"
 import { useEditorState } from "@/lib/state/editor-state"
@@ -25,7 +25,7 @@ export function EntityContextMenu({
     const setPreviewingFilePath = useEntityEditorTabs((store) => store.setPreviewingFilePath)
     const { saveEntity } = useCrateMutations()
     const revertEntity = useEditorState((store) => store.revertEntity)
-    const { showDeleteEntityModal } = useContext(GlobalModalContext)
+    const { showDeleteEntityModal, showConformanceCheckModal } = useContext(GlobalModalContext)
     const diff = useEditorState((state) => (entity ? state.getEntityDiff(entity["@id"]) : null))
     const fileService = useFileService()
 
@@ -61,6 +61,10 @@ export function EntityContextMenu({
         if (entity) setPreviewingFilePath(entity["@id"])
     }, [entity, setPreviewingFilePath])
 
+    const onCheckConformanceClick = useCallback(() => {
+        if (entity) showConformanceCheckModal(entity["@id"])
+    }, [entity, showConformanceCheckModal])
+
     const showInFileExplorer = useGoToFileExplorer(entity)
 
     return (
@@ -70,6 +74,11 @@ export function EntityContextMenu({
                 <ContextMenuItem onClick={openSelf}>
                     <EntityIcon entity={entity} size="sm" /> Open Tab
                 </ContextMenuItem>
+                {entity ? (
+                    <ContextMenuItem onClick={onCheckConformanceClick}>
+                        <ShieldCheck className="size-4 mr-2" /> Profile Conformance
+                    </ContextMenuItem>
+                ) : null}
                 {canHavePreview ? (
                     <>
                         <ContextMenuSeparator />

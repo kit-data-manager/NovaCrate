@@ -57,7 +57,6 @@ import { SchemaWorker } from "@/components/providers/schema-worker-provider"
 import { useStore } from "zustand"
 import { toast } from "sonner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import Link from "next/link"
 
 function EntityMenu() {
     const currentEntity = useCurrentEntity()
@@ -85,6 +84,7 @@ function EntityMenu() {
                 <MenubarSeparator />
                 <ActionMenubarItem actionId="entity.add-property" />
                 <ActionMenubarItem actionId="entity.find-references" />
+                <ActionMenubarItem actionId="entity.check-conformance" />
                 <MenubarSeparator />
                 <ActionMenubarItem actionId="entity.delete" variant={"destructive"} />
             </MenubarContent>
