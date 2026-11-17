@@ -65,23 +65,22 @@ NovaCrate into RO-Crate repositories.
 # State of the field
 
 There are currently three distinct editors available for working with RO-Crates.
-There are NovaCrate, Crate-O [cite], and Describo [cite]. While the Describo editor has been
-discontinued, parts of it have been integrated into other applications to edit
-the metadata of an RO-Crate. [cite Describo discontinued, cite RO-Crate Playground]
-NovaCrate is the newest addition in the field and has been developed after it was found
-that current editors (which were Describo and Crate-O at the time) are lacking [alt?] in
-terms of usability and portability. Both Describo and Crate-O are only able to run in
-Chromium-based browsers.
+There are NovaCrate, Crate-O [@peter_sefton_and_contributors_crate-o_2025], and Describo [@marco_la_rosa_and_contributors_describo_2023], although Describo was discontinued
+in 2025.
+NovaCrate is the newest addition to the field and was developed from the ground up
+with improved portability, usability, and maintainability in mind. The efforts that were
+made to achieve all three points are outlined in \autoref{software-design}.
 
-Numerous software packages exist to manipulate RO-Crates programmatically, but serve
-a different purpose than the graphical editors. While they would directly be used in
-automation scripts and research data pipelines, graphical editors cannot serve as 
-tools for automation and are rather used for the creation of individual RO-Crates, or
-by developers of RO-Crate automations to check their results.
+Numerous software packages exist to manipulate RO-Crates programmatically, such as
+ro-crate-java [@tzochev_ro-crate-java_2026], ro-crate-js [@sebastian_ro-crate-js_2026], ro-crate-py [@bauer_ro-crate-py_2026], and ro-crate-rs [@burridge_ro-crate-rs_2026]. While ro-crate-js could
+have been chosen to power NovaCrate, it was decided to not be mature enough at the time.
 
-RO-Crates itself are not yet the standard for packaging and exchanging research data,
-but graphical editors like NovaCrate enable adopters of the format to get familiar with
-it in a directly tangible way.
+RO-Crates were originally published in 2017. The specification has reached version 1.3.0 at the time of
+writing. A rich ecosystem of services and tools has already emerged to support researchers, data
+stewards and software developers. NovaCrate plays an important role in this ecosystem, as it allows
+to directly visualize and interact with the metadata of an RO-Crate. It can not only be used to
+create RO-Crates from research data, but also e.g. for verifying the results of automated RO-Crate pipelines
+by developers. NovaCrate can further be directly embedded in RO-Crate repositories or workflow engines for seamless integration.
 
 # Software design
 
@@ -95,7 +94,7 @@ functionalities, and the backend is responsible for handling the actual RO-Crate
 The backend and the frontend are cleanly separated, and the frontend does not need
 to know where the backend is executed and how data is exchanged between backend
 and frontend. In its current implementation, the backend of NovaCrate runs directly
-in the browser in a separate process (a WebWorker [cite]). In its early development,
+in the browser in a separate process. In its early development,
 the backend was provided by a Java Spring server, but this was abolished early on
 due to performance implications. This architecture allows NovaCrate to be adapted to
 different execution environments, like (1) as a desktop application with direct manipulation
@@ -114,11 +113,13 @@ based on global state, and can then be called from anywhere.
 
 Care was taken to make sure the frontend of NovaCrate is usable without much of an introduction
 and that it is responsive. The design of the editor is based on best practices established in [cite]
-and was tested in a small internal user study as outlined in [BA].
+and was tested in a small internal user study as outlined in the bachelor thesis in which NovaCrate
+was initially developed @raquet_design_2024.
+
 
 # Research impact statement
 
-Measuring research impact of a visual tool like NovaCrate comes with some implications. For one, we
+Measuring research impact of a GUI tool like NovaCrate comes with some implications. For one, we
 do not expect to receive citations from individuals that use NovaCrate only infrequently or as part of
 a one-off inspection of their RO-Crates. Even researchers that use NovaCrate as part of their daily work
 may not cite it in their works, as it most likely does not contribute to the work itself, and only to
