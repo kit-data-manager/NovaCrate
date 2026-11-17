@@ -3,19 +3,10 @@
 title: 'NovaCrate: a web-editor for Research Object Crates'
 tags:
   - ro-crate
-  - ro
-  - research
-  - object
-  - crate
   - editor
   - graph
-  - visualize
-  - nova
-  - novacrate
-  - web
-  - browser
-  - interactive
-  - edit
+  - fair
+  - rdm
 authors:
   - name: Christopher Raquet
     orcid:  0009-0003-2196-9187
@@ -36,7 +27,11 @@ Research Object Crate (RO-Crate) is a packaging format that captures both the re
 itself and its corresponding structured metadata in one single file, supporting the
 exchange, reuse, and machine-actionability of scientific data. For wide community adoption,
 RO-Crates must be tangible for researchers, data stewards, and curators. For this purpose we present
-NovaCrate, a web-based tool for creating, editing, and visualizing RO-Crates.
+NovaCrate, a web-based tool for creating, editing, and visualizing RO-Crates. NovaCrate is an open-source
+project licensed under the Apache 2.0 license. The source code is available on [GitHub](https://github.com/kit-data-manager/NovaCrate) 
+and archived on Zenodo with the
+DOI [10.5281/zenodo.15183573](https://doi.org/10.5281/zenodo.15183573). An official instance is
+hosted at [novacrate.datamanager.kit.edu](https://novacrate.datamanager.kit.edu/editor/).
 
 
 # Statement of need
@@ -46,41 +41,40 @@ with its metadata in one self-contained FAIR Digital Object (FDO). For wide comm
 the format must be tangible for its users, allowing researchers, data stewards, and curators to
 interactively create, edit, explore, and validate RO-Crates.
 
-For this purpose we present NovaCrate, a web-based editor for viewing, editing, and 
-validating RO-Crates.
-The Entity Editor is the core piece of NovaCrate. It allows editing all metadata 
-entities through a tabbed interface, including property validation, dynamic property type 
-fetching, description fetching, and file previews.
-Other features of NovaCrate include a File Explorer, a Graph of the metadata relationships, 
-and an agentic AI Assistant.
-NovaCrate emphasises an intuitive user interface as well as good usability. This is vital 
-to ensure the accessibility of the editor for a wide range of people with varying knowledge
-of the RO-Crate specification.
-
-By allowing researchers to directly interact with the metadata of their RO-Crates, NovaCrate 
-makes the RO-Crate concept tangible. NovaCrate is equipped with the groundwork to further 
-extend it for distributed and collaborative workflows, e.g., through the integration of 
-NovaCrate into RO-Crate repositories.
+NovaCrate allows researchers to directly interact with the metadata of their RO-Crate, which 
+makes the RO-Crate concept tangible. It is further equipped with the groundwork to be 
+extended for distributed or collaborative workflows, e.g., through the integration of 
+NovaCrate into RO-Crate repositories or workflow engines. NovaCrate emphasizes an intuitive 
+user interface as well as good usability. This is vital
+to ensure the accessibility of the editor for a wide range of people, with little to no
+knowledge of the RO-Crate specification required.
 
 # State of the field
 
-There are currently three distinct editors available for working with RO-Crates.
-There are NovaCrate, Crate-O [@peter_sefton_and_contributors_crate-o_2025], and Describo [@marco_la_rosa_and_contributors_describo_2023], although Describo was discontinued
+There are currently three distinct editors available for working with RO-Crates: 
+NovaCrate, Crate-O [@peter_sefton_and_contributors_crate-o_2025], and Describo [@marco_la_rosa_and_contributors_describo_2023], although Describo was discontinued
 in 2025.
 NovaCrate is the newest addition to the field and was developed from the ground up
 with improved portability, usability, and maintainability in mind. The efforts that were
 made to achieve all three points are outlined in \autoref{software-design}.
 
 Numerous software packages exist to manipulate RO-Crates programmatically, such as
-ro-crate-java [@tzochev_ro-crate-java_2026], ro-crate-js [@sebastian_ro-crate-js_2026], ro-crate-py [@bauer_ro-crate-py_2026], and ro-crate-rs [@burridge_ro-crate-rs_2026]. While ro-crate-js could
-have been chosen to power NovaCrate, it was decided to not be mature enough at the time.
+ro-crate-java [@tzochev_ro-crate-java_2026], ro-crate-js [@sebastian_ro-crate-js_2026], ro-crate-py [@bauer_ro-crate-py_2026], and ro-crate-rs [@burridge_ro-crate-rs_2026].
 
 The RO-Crate specification was originally published in 2019. The specification has reached version 1.3.0 at the time of
 writing [@sefton_ro-crate_2026]. A rich ecosystem of services and tools has already emerged to support researchers, data
-stewards and software developers [@noauthor_tools_nodate]. NovaCrate plays an important role in this ecosystem, as it allows
+stewards and software developers, as outlined in the tools list [@noauthor_tools_2026] on the RO-Crate website. NovaCrate contributes to this ecosystem by allowing users
 to directly visualize and interact with the metadata of an RO-Crate. It can not only be used to
 create RO-Crates from research data, but also e.g. for verifying the results of automated RO-Crate pipelines
 by developers. NovaCrate can further be directly embedded in RO-Crate repositories or workflow engines for seamless integration.
+
+# Features
+
+The Entity Editor is the core piece of NovaCrate. It allows editing all metadata
+entities through a tabbed interface, including property validation, dynamic property type
+fetching, description fetching, and file previews.
+Other features of NovaCrate include a File Explorer, a Graph of the metadata relationships,
+and an agentic AI Assistant.
 
 # Software design
 
@@ -92,13 +86,13 @@ The core principles of NovaCrate that were set from the very beginning are:
 
 The software architecture of NovaCrate is designed
 around these principles. NovaCrate can be separated into a backend and frontend, 
-where the frontend is responsible for providing the editors UI user-directed
+where the frontend is responsible for providing the editor's UI
 functionalities, and the backend is responsible for handling the RO-Crate data and metadata.
 The backend and the frontend are cleanly separated, and the frontend does not need
 to know where the backend is executed and how data is exchanged between backend
 and frontend. In its current implementation, the backend of NovaCrate runs directly
 in the browser in a separate process. In its early development,
-the backend was provided by a Java Spring server, but this was abolished early on
+the backend was provided by a Java Spring server, but this was abandoned
 due to performance and portability implications. This architecture allows NovaCrate to be adapted to
 different environments, such as:
 
@@ -117,7 +111,7 @@ similar to those seen in popular code IDEs, where actions can be centrally defin
 based on global state, and can then be called from anywhere.
 
 With the recent addition of an agentic AI Assistant within NovaCrate, it was shown that all of the
-editors capabilities can easily be called by an AI agent. This indicated a properly working separation
+editor's capabilities can easily be called by an AI agent. This indicated a properly working separation
 between UI and functionality and a healthy and maintainable architecture.
 
 Care was taken to make sure the frontend of NovaCrate is usable without much of an introduction
@@ -129,26 +123,28 @@ was initially developed [@raquet_design_2024].
 
 # Research impact statement
 
-Measuring research impact of a GUI tool like NovaCrate comes with some implications. For one, we
-do not expect to receive citations from individuals that use NovaCrate only infrequently or as part of
-a one-off inspection of their RO-Crates. Even researchers that use NovaCrate as part of their daily work
-may not cite it in their works, as it most likely does not contribute to the work itself, and only to
-associated research data management. But we believe that research data management and especially open
-research exchange is absolutely necessary to increase reproducibility and reusability in science, as 
+We believe that research data management and especially open
+research exchange is absolutely necessary to increase reproducibility and reusability in open science, as 
 envisioned by the FAIR principles.
 
-We record anonymous usage numbers of the official NovaCrate instance, although they are not publicly
-visible. The results are cleaned of bots, scrapers, and uptime monitors automatically on a best-effort basis.
+To understand the usage of our tools, we record anonymous usage numbers of the official NovaCrate instance.
+The results are not publicly accessible for privacy reasons. Bots, scrapers, and uptime monitors are automatically 
+removed from the statistics on a best-effort basis.
+
 See an excerpt of the results in the table below:
 
 | Time Frame | Metric                                             | Value | Notes |
 |------------|----------------------------------------------------|-------|-------|
-| 1 Month    | Unique Users visiting the landing page             | 970   |       |
-| 1 Month    | Unique Users visiting the main menu                | 161   |       |
-| 1 Month    | Unique Users actively using the editor             | 52    |       |
-| 1 Month    | Total number of sessions actively using the editor | 1831  |       |
+| 1 Month    | Unique Users visiting the landing page             | 1070   |       |
+| 1 Month    | Unique Users visiting the main menu                | 195   |       |
+| 1 Month    | Unique Users actively using the editor             | 71    |       |
+| 1 Month    | Total number of sessions in the editor | 179  |       |
+| 1 Month    | Chat Messages sent to the AI Assistant | 103  |       |
 
-Time Frame is one month, from 3.11.2026 to 4.10.2026.
+- Unique users are estimated by counting unique IP-Addresses
+- Sessions are counted through the number of times the worker script for the editor was loaded. We assume that it stays in cache for the duration of one working session, e.g. one day of work within NovaCrate
+
+Time Frame is one month, from 18th of October to the 17th of November 2026.
 
 # AI usage disclosure
 
@@ -159,12 +155,16 @@ cautiously reviewed and tested through the included extensive test suite.
 While it is not possible to fully reconstruct which AI models were used throughout the development
 of NovaCrate, the following models were in use at some point:
 
-- DeepSeek v4.1 Fash
+- DeepSeek v4.1 Flash
 - DeepSeek v4 Flash
 - GLM v5.3 Flash
 - GLM v5.2
 - Claude Opus 4.8
 - GitHub Copilot
+
+The following models were used for proofreading the contents of this paper:
+
+- DeepSeek v4.1 Flash
 
 # Acknowledgements
 
