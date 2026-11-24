@@ -23,8 +23,8 @@ bibliography: paper.bib
 # Summary
 
 Enabling a FAIR exchange of research data is a key concern of open science.
-Research Object Crate (RO-Crate) is a packaging format that captures both the research data
-and its structured metadata in one single file, supporting the
+Research Object Crate (RO-Crate) is a packaging format that captures both data
+and structured metadata in one single file, supporting the
 exchange, reuse, and machine-actionability of scientific data [@soiland-reyes_packaging_2022]. For wide community adoption,
 RO-Crates must be tangible for its users, namely researchers, data stewards, and curators. For this purpose we present
 NovaCrate, a web-based tool for creating, editing, and visualizing RO-Crates. NovaCrate is an open-source
@@ -44,16 +44,12 @@ We believe that it is crucial for users of the RO-Crate format to be able to und
 the contents and relationships in their RO-Crate's through a purpose-built tool.
 
 NovaCrate allows researchers to directly interact with the metadata of their RO-Crate.
-They can see how each metadata entity relates to the files and folder in the archive.
+They can see how each metadata entity relates to the files and folders in the archive.
 The terms used in the metadata is further enriched with helpful comments, and the integrated
-validator makes it easy to make valid RO-Crates and follow best practices.
-
-NovaCrate is further equipped with the groundwork to be 
-extended for distributed or collaborative workflows, e.g., through the integration of 
-NovaCrate into RO-Crate repositories or workflow engines. NovaCrate emphasizes an intuitive 
-user interface as well as good usability. This is vital
-to ensure the accessibility of the editor for a wide range of people, with little to no
-knowledge of the RO-Crate specification required.
+validator makes it easy to make valid RO-Crates and follow best practices. NovaCrate may also
+be useful to developers of RO-Crate workflows and automations, who can use NovaCrate to inspect
+and validate the inputs and outputs of their software. Data curators can use NovaCrate to
+quickly view and understand RO-Crates that have been published in a repository.
 
 # State of the field
 
@@ -70,13 +66,16 @@ stewards and software developers, as outlined in the tools list [@noauthor_tools
 Numerous software packages exist to manipulate RO-Crates programmatically, such as
 ro-crate-java [@tzochev_ro-crate-java_2026], ro-crate-js [@sebastian_ro-crate-js_2026], ro-crate-py [@bauer_ro-crate-py_2026], and ro-crate-rs [@burridge_ro-crate-rs_2026].
 NovaCrate contributes to this ecosystem by allowing users
-to directly visualize and interact with the metadata of an RO-Crate through a GUI. It can not only be used to
-create RO-Crates from research data, but also e.g. for verifying the results of automated RO-Crate pipelines
-by developers.
+to directly visualize and interact with the metadata of an RO-Crate through a GUI.
 
 # Software design
 
-The core principles of NovaCrate that were set from the very beginning are:
+NovaCrate emphasizes an intuitive
+user interface as well as good usability. This is vital
+to ensure the accessibility of the editor for a wide range of people, with little to no
+knowledge of the RO-Crate specification required.
+
+The core principles of NovaCrate are:
 
 - The editor must be usable in all common browser environments 
 - The editor should not depend on a specific RO-Crate package 
@@ -93,7 +92,7 @@ functionalities, and the backend is responsible for handling the RO-Crate data a
 The Crate Service receives commands to update the metadata of the RO-Crate or to create, move or delete files
 in the RO-Crate archive. The Repository Service is responsible for listing stored RO-Crates and creating new ones.
 The frontend does not need
-to know how the backend is implemented or where it is executed and how data is exchanged between backend
+to know how the backend is implemented, neither where it is executed and how data is exchanged between backend
 and frontend. In its current implementation, the backend of NovaCrate runs directly
 in the browser in a separate process. Data is stored on the device in the origin private file system [@mdn_contributors_origin_2025] of the browser.
 This architecture allows NovaCrate to be adapted to different environments in the future, such as:
@@ -102,7 +101,7 @@ This architecture allows NovaCrate to be adapted to different environments in th
 - An embedded tool in RO-Crate repositories to inspect and possibly manipulate RO-Crates in the repository
 - A standalone web application with a browser-based file system
 
-The frontend of NovaCrate is further divided into a typical Model-View-Controller architecture.
+The frontend of NovaCrate is further divided into a typical Model-View-Controller (MVC) architecture.
 The global state is stored in several distinct state stores that do not
 depend on each other. The view is built using the component-based frontend library React [@meta_open_source_react_nodate], which
 allows declaring reusable components that can be placed anywhere throughout the application.
@@ -118,10 +117,10 @@ between UI and functionality and a healthy and maintainable architecture.
 
 ![Screenshot of the entity editor with an example RO-Crate opened](./screenshot.jpg)
 
-Care was taken to make sure the frontend of NovaCrate is usable without much of an introduction
-and that it is responsive. The design of the editor is based on best practices established in the books
-of Krug [@krug_dont_2014], Valencia [@valencia_designing_2019], and Shneiderman et al. [@shneiderman_designing_2017]
-and was tested in a small internal user study as outlined in the bachelor thesis in which NovaCrate
+Care was taken to make sure the frontend of NovaCrate is responsive and usable without much of an introduction . 
+The design of the editor is based on best practices established in the books
+of Krug [@krug_dont_2014], Valencia [@valencia_designing_2019], and Shneiderman et al. [@shneiderman_designing_2017].
+NovaCrate was tested in a small internal user study as outlined in the bachelor thesis in which NovaCrate
 was initially developed [@raquet_design_2024].
 
 
@@ -133,7 +132,7 @@ envisioned by the FAIR principles.
 
 To understand the usage of our tools, we record anonymous usage numbers of the official NovaCrate instance.
 The results are not publicly accessible for privacy reasons. Bots, scrapers, and uptime monitors are automatically 
-removed from the statistics on a best-effort basis.
+removed from these statistics on a best-effort basis.
 
 See an excerpt of the results in the table below:
 
@@ -172,6 +171,6 @@ The following models were used for proofreading the contents of this paper:
 # Acknowledgements
 
 We acknowledge the contributions and bug reports
-received from the RO-Crate community. NovaCrate is part of the Helmholtz Cloud and is funded by the [FAIR Data Commons](https://helmholtz-metadaten.de/fair-data-commons/overview) project of the [Helmholtz Metadata Collaboration](https://helmholtz-metadaten.de/). Numerous people from the department of Data Exploitation Methods at the Scientific Computing Center of Karlsruhe Institute of Technology have played a significant role in the development and dissemination of NovaCrate, including but not limited to Thomas Jejkal, Maximilian Inckmann, Rossella Aversa, Andreas Pfeil, Sabrine Chelbi, and Gabin Thibaut Oumbe Tekam.
+received from the RO-Crate community. NovaCrate is part of the [Helmholtz Cloud](https://helmholtz.cloud/services/?filterSearchInput=novacrate&serviceID=a6d8acdd-a37f-4adf-b0de-edefe8cd5653) and is funded by the [FAIR Data Commons](https://helmholtz-metadaten.de/fair-data-commons/overview) project of the [Helmholtz Metadata Collaboration](https://helmholtz-metadaten.de/). Numerous people from the department of [Data Exploitation Methods](https://www.scc.kit.edu/en/aboutus/dem.php) at the [Scientific Computing Center](https://www.scc.kit.edu/en/index.php) of [Karlsruhe Institute of Technology](https://www.kit.edu/english/index.php) have played a significant role in the development and dissemination of NovaCrate, including but not limited to Thomas Jejkal, Maximilian Inckmann, Rossella Aversa, Andreas Pfeil, Sabrine Chelbi, and Gabin Thibaut Oumbe Tekam.
 
 # References
