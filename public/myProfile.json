@@ -1,0 +1,188 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.3/context",
+  "@graph": [
+    {
+      "@id": "./",
+      "@type": [
+        "Dataset",
+        "Profile"
+      ],
+      "name": "MASP Testing",
+      "description": "",
+      "author": {
+        "@id": "#test"
+      },
+      "hasPart": [
+        {
+          "@id": "./ro-crate-preview.html"
+        },
+        {
+          "@id": "README.md"
+        }
+      ],
+      "hasResource": {
+        "@id": "#schema-descriptor"
+      },
+      "isProfileOf": {
+        "@id": "https://w3id.org/ro/crate/1.3"
+      },
+      "license": "MIT 2.0",
+      "conformsTo": {
+        "@id": "http://localhost:3000/masp.json"
+      }
+    },
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.3"
+      }
+    },
+    {
+      "@id": "#test",
+      "@type": [
+        "Person"
+      ],
+      "name": "test"
+    },
+    {
+      "@id": "./ro-crate-preview.html",
+      "@type": "File",
+      "name": "RO-Crate HTML Preview",
+      "description": "A HTML Preview for this RO-Crate generated with ro-crate-html",
+      "contentSize": "5554",
+      "encodingFormat": "text/html",
+      "dateModified": "2026-11-11T16:01:32.649+01:00"
+    },
+    {
+      "@id": "README.md",
+      "@type": [
+        "File"
+      ],
+      "name": "10.1515_itit-2019-0040.pdf",
+      "contentSize": "308183",
+      "encodingFormat": "application/pdf",
+      "dateModified": "2026-11-11T14:04:16.616+01:00"
+    },
+    {
+      "@id": "#schema-descriptor",
+      "@type": [
+        "ResourceDescriptor"
+      ],
+      "hasRole": {
+        "@id": "http://www.w3.org/ns/dx/prof/role/schema"
+      },
+      "name": "Schema Descriptor",
+      "hasPart": [
+        {
+          "@id": "#better-person"
+        },
+        {
+          "@id": "#metadata-descriptor"
+        },
+        {
+          "@id": "#metadata-descriptor-id"
+        },
+        {
+          "@id": "#metadata-descriptor-id-property-value"
+        },
+        {
+          "@id": "#metadata-descriptor-about"
+        },
+        {
+          "@id": "#root-entity"
+        },
+        {
+          "@id": "#betterowner"
+        }
+      ]
+    },
+    {
+      "@id": "#better-person",
+      "@type": [
+        "rdfs:Class"
+      ],
+      "name": "Better Person",
+      "sh:minCount": "1",
+      "sh:maxCount": "2",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/Person"
+      }
+    },
+    {
+      "@id": "#metadata-descriptor",
+      "@type": [
+        "rdfs:Class"
+      ],
+      "name": "Metadata Descriptor"
+    },
+    {
+      "@id": "#metadata-descriptor-id",
+      "@type": [
+        "rdf:Property"
+      ],
+      "rdfs:label": "@id",
+      "domainIncludes": {
+        "@id": "#metadata-descriptor"
+      },
+      "name": "Metadata Descriptor id",
+      "rangeIncludes": {
+        "@id": "#metadata-descriptor-id-property-value"
+      }
+    },
+    {
+      "@id": "#metadata-descriptor-id-property-value",
+      "@type": [
+        "PropertyValue"
+      ],
+      "value": "ro-crate-metadata.json",
+      "name": "Metadata Descriptor id Property Value",
+      "sh:minCount": "1",
+      "sh:maxCount": "1"
+    },
+    {
+      "@id": "#metadata-descriptor-about",
+      "@type": [
+        "rdf:Property"
+      ],
+      "rdfs:label": "about",
+      "domainIncludes": {
+        "@id": "#metadata-descriptor"
+      },
+      "name": "Metadata Descriptor about",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/about"
+      },
+      "rangeIncludes": {
+        "@id": "#root-entity"
+      }
+    },
+    {
+      "@id": "#root-entity",
+      "@type": [
+        "rdfs:Class"
+      ],
+      "name": "Root Entity",
+      "prov:specializationOf": {
+        "@id": "http://schema.org/Dataset"
+      }
+    },
+    {
+      "@id": "#betterowner",
+      "@type": [
+        "rdf:Property"
+      ],
+      "rdfs:label": "betterOwner",
+      "domainIncludes": {
+        "@id": "#root-entity"
+      },
+      "name": "betterOwner",
+      "rangeIncludes": {
+        "@id": "#better-person"
+      }
+    }
+  ]
+}

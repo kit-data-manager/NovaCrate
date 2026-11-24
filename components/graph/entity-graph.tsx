@@ -166,7 +166,9 @@ export function EntityGraph() {
         showTextProperties,
         setAggregateProperties,
         setShowTextProperties,
-        aggregateProperties
+        aggregateProperties,
+        showEntityRules,
+        setShowEntityRules
     } = useGraphSettings()
 
     const { fitView, getViewport } = useReactFlow()
@@ -186,20 +188,27 @@ export function EntityGraph() {
         setShowTextProperties(!showTextProperties)
     }, [setShowTextProperties, showTextProperties])
 
+    const toggleShowEntityRules = useCallback(() => {
+        setShowEntityRules(!showEntityRules)
+    }, [setShowEntityRules, showEntityRules])
+
     const fullView = useCallback(() => {
         setShowTextProperties(true)
         setAggregateProperties(false)
-    }, [setAggregateProperties, setShowTextProperties])
+        setShowEntityRules(true)
+    }, [setAggregateProperties, setShowEntityRules, setShowTextProperties])
 
     const normalView = useCallback(() => {
         setShowTextProperties(false)
         setAggregateProperties(false)
-    }, [setAggregateProperties, setShowTextProperties])
+        setShowEntityRules(true)
+    }, [setAggregateProperties, setShowEntityRules, setShowTextProperties])
 
     const compactView = useCallback(() => {
         setShowTextProperties(false)
         setAggregateProperties(true)
-    }, [setAggregateProperties, setShowTextProperties])
+        setShowEntityRules(false)
+    }, [setAggregateProperties, setShowEntityRules, setShowTextProperties])
 
     const handleAddPropertySelect = useCallback(
         (source: IEntity, target: IEntity) => {
@@ -408,6 +417,12 @@ export function EntityGraph() {
                                     disabled={aggregateProperties}
                                 >
                                     Show Text Properties
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem
+                                    checked={showEntityRules}
+                                    onClick={toggleShowEntityRules}
+                                >
+                                    Show Profile Conformance
                                 </DropdownMenuCheckboxItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

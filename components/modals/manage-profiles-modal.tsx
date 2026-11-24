@@ -351,6 +351,8 @@ export function ProfileRow({
 }) {
     const trusted = useStore(profileTrustSettings, (s) => s.trusted)
     const blocked = useStore(profileTrustSettings, (s) => s.blocked)
+    const setTrusted = useStore(profileTrustSettings, (s) => s.setTrusted)
+    const setBlocked = useStore(profileTrustSettings, (s) => s.setBlocked)
     const hasHandler = useMemo(() => {
         return profileHandlers.find((handler) => handler.profileUri === uri)
     }, [profileHandlers, uri])
@@ -378,18 +380,18 @@ export function ProfileRow({
                     <XIcon className="size-4 stroke-error" />
                 )}
             </TableCell>
-            <TableCell>
-                {hasHandler ? hasHandler.getDefinition()!.name : `${uri}`}{" "}
+            <TableCell className="">
                 {!hasHandler && trustStatus === "blocked" && (
-                    <Badge variant="destructive" className="ml-1">
+                    <Badge variant="destructive" className="mr-1">
                         Blocked
                     </Badge>
                 )}
                 {!hasHandler && trustStatus === "pending" && (
-                    <Badge className="ml-1 bg-warn/20 text-warn-foreground border-warn/40">
+                    <Badge className="mr-1 bg-warn/20 text-warn-foreground border-warn/40">
                         Not trusted
                     </Badge>
                 )}
+                {hasHandler ? hasHandler.getDefinition()!.name : `${uri}`}
                 {errors.length > 0 && (
                     <Popover>
                         <PopoverTrigger asChild>
@@ -403,6 +405,16 @@ export function ProfileRow({
                             ))}
                         </PopoverContent>
                     </Popover>
+                )}
+                {trustStatus === "pending" && (
+                    <div className="space-x-2 mt-1">
+                        <Button size="sm" variant="secondary" onClick={() => setTrusted(uri)}>
+                            Trust
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => setBlocked(uri)}>
+                            Block
+                        </Button>
+                    </div>
                 )}
             </TableCell>
             <TableCell>{hasHandler && hasHandler.name}</TableCell>

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+- Added the feature "Profile Conformance" to check the conformance of a metadata entity to a profile
+  - This feature is only available if at least one profile is active
+  - The feature can be used through the UI and by the AI Assistant
+
+### Fixed
+- The AI Assistant chat box should now properly stick to the bottom while streaming the LLMs output
+
 ## [1.14.2] - 2026-11-05
 
 ### Added

@@ -36,6 +36,11 @@ function withoutModels(
     return copy
 }
 
+// Keys that scroll a container. Upward keys (handled in the scroll logic) disable
+// stick-to-bottom; downward keys let the scroll handler re-enable it, but only once
+// the view actually reaches the bottom.
+const SCROLL_KEYS = new Set(["PageUp", "PageDown", "ArrowUp", "ArrowDown", "Home", "End", " "])
+
 export default function AIAssistantChat() {
     const showAIAssistant = useLayoutState((s) => s.showAIAssistant)
     const setShowAIAssistant = useLayoutState((s) => s.setShowAIAssistant)
@@ -141,6 +146,8 @@ export default function AIAssistantChat() {
                 return false
             }
 
+            // Sending a message is an explicit request to follow the newest content.
+            stickToBottom.current = true
             scrollChatToBottom()
             _sendMessage({
                 text: msg
@@ -182,23 +189,71 @@ export default function AIAssistantChat() {
         const cc = chatContainer.current
         const content = chatContent.current
 
-        const onScroll = () => {
-            if (cc.scrollHeight < cc.clientHeight) {
-                stickToBottom.current = true
-            } else {
-                stickToBottom.current = cc.scrollTop + cc.clientHeight >= cc.scrollHeight
+        const distanceFromBottom = () =>
+            content
+                ? content.getBoundingClientRect().bottom - cc.getBoundingClientRect().bottom
+                : 0
+
+        // Stick is controlled by user scroll intent only; it must never be decided from
+        // bare scroll-event geometry alone. Programmatic scrolls and layout-driven clamping
+        // also emit scroll events, and while streaming content grows between the scroll and
+        // the event's delivery, the measured position is stale (see below).
+        const disableStick = () => {
+            stickToBottom.current = false
+        }
+        const onWheel = (e: WheelEvent) => {
+            // Wheeling up means "stop following". A downward wheel is only partial
+            // navigation, so it must not re-enable stick: doing so would yank the view
+            // to the bottom on the next streamed resize. Re-enabling is left to the
+            // scroll handler, which measures the actual distance to the bottom.
+            if (e.deltaY < 0) disableStick()
+        }
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (!SCROLL_KEYS.has(e.key)) return
+            // Upward keys stop following. Downward keys (ArrowDown, PageDown, End,
+            // Space) navigate only; stick is re-enabled by the scroll handler once the
+            // view actually reaches the bottom, or by an explicit action (sendMessage).
+            const upward = e.key === "ArrowUp" || e.key === "PageUp" || e.key === "Home"
+            if (upward) disableStick()
+        }
+        const onPointerDown = (e: PointerEvent) => {
+            // A pointer down on the container itself at the right edge is a scrollbar drag.
+            // (Clicks on the chat content target the content, not the container.)
+            if (e.target === cc && e.clientX > cc.getBoundingClientRect().right - 16) {
+                disableStick()
             }
         }
+        const onScroll = () => {
+            // (Re-)enable stick whenever the view settles at the bottom, no matter what
+            // caused the scroll. Measure in a rAF: scroll events can be delivered with
+            // stale layout while streamed content grows, which would wrongly report a
+            // non-zero distance and keep stick disabled.
+            requestAnimationFrame(() => {
+                if (distanceFromBottom() <= 1) stickToBottom.current = true
+            })
+        }
 
-        const observer = new MutationObserver(() => {
-            if (stickToBottom.current) {
+        // Watch the size of the chat content instead of DOM mutations: streaming text updates
+        // mutate existing text nodes (characterData), which a childList-only MutationObserver
+        // would miss. A ResizeObserver fires on every kind of content growth (text, images,
+        // fonts, new messages), which is what actually changes the scroll position.
+        const observer = new ResizeObserver(() => {
+            if (stickToBottom.current || distanceFromBottom() <= 1) {
                 scrollChatToBottom()
             }
         })
 
-        if (content) observer.observe(content, { childList: true, subtree: true })
+        if (content) observer.observe(content)
+        cc.addEventListener("wheel", onWheel, { passive: true })
+        cc.addEventListener("touchmove", disableStick, { passive: true })
+        cc.addEventListener("keydown", onKeyDown)
+        cc.addEventListener("pointerdown", onPointerDown)
         cc.addEventListener("scroll", onScroll)
         return () => {
+            cc.removeEventListener("wheel", onWheel)
+            cc.removeEventListener("touchmove", disableStick)
+            cc.removeEventListener("keydown", onKeyDown)
+            cc.removeEventListener("pointerdown", onPointerDown)
             cc.removeEventListener("scroll", onScroll)
             observer.disconnect()
         }
