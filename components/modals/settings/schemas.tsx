@@ -1,4 +1,4 @@
-import { useStore } from "zustand/esm"
+import { useStore } from "zustand"
 import { RegisteredSchema, schemaResolverStore } from "@/lib/state/schema-resolver"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
