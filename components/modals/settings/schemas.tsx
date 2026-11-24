@@ -1,4 +1,4 @@
-import { useStore } from "zustand/index"
+import { useStore } from "zustand/esm"
 import { RegisteredSchema, schemaResolverStore } from "@/lib/state/schema-resolver"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -41,6 +41,26 @@ type SpecFilter = RO_CRATE_VERSION | "all"
 type SchemaView = "cards" | "list"
 type SchemaDownloadStatus = "loaded" | "not loaded" | "error"
 
+interface SchemaDraft {
+    matchesPrefixes: string[]
+    downloadURL: string
+    activeOnROCrateV1_3_0: boolean
+    activeOnROCrateV1_2_0: boolean
+    activeOnROCrateV1_1_3: boolean
+    newName: string
+}
+
+function createDraft(schema: RegisteredSchema): SchemaDraft {
+    return {
+        matchesPrefixes: schema.matchesUrls,
+        downloadURL: schema.schemaUrl,
+        activeOnROCrateV1_3_0: schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_3_0),
+        activeOnROCrateV1_2_0: schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_2_0),
+        activeOnROCrateV1_1_3: schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_1_3),
+        newName: schema.displayName
+    }
+}
+
 export function SchemaSettingsPage() {
     const registeredSchemas = useStore(schemaResolverStore, (s) => s.registeredSchemas)
     const addSchema = useStore(schemaResolverStore, (s) => s.addSchema)
@@ -53,6 +73,20 @@ export function SchemaSettingsPage() {
     const [specFilter, setSpecFilter] = useState<SpecFilter>("all")
     const [view, setView] = useState<SchemaView>("cards")
     const [expandedSchemaID, setExpandedSchemaID] = useState<string | null>(null)
+    const [drafts, setDrafts] = useState<Record<string, SchemaDraft>>({})
+
+    const setDraft = useCallback((id: string, draft: SchemaDraft) => {
+        setDrafts((current) => ({ ...current, [id]: draft }))
+    }, [])
+
+    const clearDraft = useCallback((id: string) => {
+        setDrafts((current) => {
+            if (!(id in current)) return current
+            const next = { ...current }
+            delete next[id]
+            return next
+        })
+    }, [])
 
     const listRef = useRef<HTMLDivElement>(null)
     const pendingScrollSchemaID = useRef<string | null>(null)
@@ -172,10 +206,7 @@ export function SchemaSettingsPage() {
                     value={specFilter}
                     onValueChange={(value) => setSpecFilter(value as SpecFilter)}
                 >
-                    <SelectTrigger
-                        className="w-[180px]"
-                        aria-label="Filter by RO-Crate specification"
-                    >
+                    <SelectTrigger className="w-45" aria-label="Filter by RO-Crate specification">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -272,7 +303,12 @@ export function SchemaSettingsPage() {
                 ) : view === "cards" ? (
                     filteredSchemas.map((schema) => (
                         <div key={schema.id} data-schema-id={schema.id}>
-                            <RegisteredSchemaDisplay schema={schema} />
+                            <RegisteredSchemaDisplay
+                                schema={schema}
+                                draft={drafts[schema.id] ?? createDraft(schema)}
+                                onDraftChange={(next) => setDraft(schema.id, next)}
+                                onClearDraft={() => clearDraft(schema.id)}
+                            />
                         </div>
                     ))
                 ) : (
@@ -289,6 +325,9 @@ export function SchemaSettingsPage() {
                                         current === schema.id ? null : schema.id
                                     )
                                 }
+                                draft={drafts[schema.id] ?? createDraft(schema)}
+                                onDraftChange={(next) => setDraft(schema.id, next)}
+                                onClearDraft={() => clearDraft(schema.id)}
                             />
                         ))}
                     </div>
@@ -300,27 +339,19 @@ export function SchemaSettingsPage() {
 
 function RegisteredSchemaDisplay({
     schema,
+    draft,
+    onDraftChange,
+    onClearDraft,
     onStatusChange
 }: {
     schema: RegisteredSchema
+    draft: SchemaDraft
+    onDraftChange: (draft: SchemaDraft) => void
+    onClearDraft: () => void
     onStatusChange?: () => void
 }) {
     const deleteSchema = useStore(schemaResolverStore, (s) => s.deleteSchema)
     const updateSchema = useStore(schemaResolverStore, (s) => s.updateSchema)
-
-    const [matchesPrefixes, setMatchesPrefixes] = useState(schema.matchesUrls)
-    const [downloadURL, setDownloadURL] = useState(schema.schemaUrl)
-    const [activeOnROCrateV1_3_0, setActiveOnROCrateV1_3_0] = useState(
-        schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_3_0)
-    )
-    const [activeOnROCrateV1_2_0, setActiveOnROCrateV1_2_0] = useState(
-        schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_2_0)
-    )
-    const [activeOnROCrateV1_1_3, setActiveOnROCrateV1_1_3] = useState(
-        schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_1_3)
-    )
-
-    const [newName, setNewName] = useState(schema.displayName)
 
     const schemaWorker = useContext(SchemaWorker)
     const [schemaLoading, setSchemaLoading] = useState(false)
@@ -357,73 +388,82 @@ function RegisteredSchemaDisplay({
 
     const onMatchesPrefixesChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>, i: number) => {
-            const copy = [...matchesPrefixes]
+            const copy = [...draft.matchesPrefixes]
             copy[i] = e.target.value
-            setMatchesPrefixes(copy)
+            onDraftChange({ ...draft, matchesPrefixes: copy })
         },
-        [matchesPrefixes]
+        [draft, onDraftChange]
     )
 
     const addMatchesPrefix = useCallback(() => {
-        setMatchesPrefixes([...matchesPrefixes, ""])
-    }, [matchesPrefixes])
+        onDraftChange({ ...draft, matchesPrefixes: [...draft.matchesPrefixes, ""] })
+    }, [draft, onDraftChange])
 
     const removeMatchesPrefix = useCallback(() => {
-        setMatchesPrefixes(matchesPrefixes.slice(0, matchesPrefixes.length - 1))
-    }, [matchesPrefixes])
+        onDraftChange({
+            ...draft,
+            matchesPrefixes: draft.matchesPrefixes.slice(0, draft.matchesPrefixes.length - 1)
+        })
+    }, [draft, onDraftChange])
 
     const canRemoveMatchesPrefix = useMemo(() => {
-        return matchesPrefixes.length > 0
-    }, [matchesPrefixes.length])
+        return draft.matchesPrefixes.length > 0
+    }, [draft.matchesPrefixes.length])
 
     const deleteSelf = useCallback(() => {
         deleteSchema(schema.id)
-    }, [deleteSchema, schema.id])
+        onClearDraft()
+    }, [deleteSchema, onClearDraft, schema.id])
 
     const changedActiveOn = useMemo(() => {
         const activeOn: RO_CRATE_VERSION[] = []
-        if (activeOnROCrateV1_3_0) activeOn.push(RO_CRATE_VERSION.V1_3_0)
-        if (activeOnROCrateV1_2_0) activeOn.push(RO_CRATE_VERSION.V1_2_0)
-        if (activeOnROCrateV1_1_3) activeOn.push(RO_CRATE_VERSION.V1_1_3)
+        if (draft.activeOnROCrateV1_3_0) activeOn.push(RO_CRATE_VERSION.V1_3_0)
+        if (draft.activeOnROCrateV1_2_0) activeOn.push(RO_CRATE_VERSION.V1_2_0)
+        if (draft.activeOnROCrateV1_1_3) activeOn.push(RO_CRATE_VERSION.V1_1_3)
         return activeOn
-    }, [activeOnROCrateV1_1_3, activeOnROCrateV1_2_0, activeOnROCrateV1_3_0])
+    }, [draft.activeOnROCrateV1_1_3, draft.activeOnROCrateV1_2_0, draft.activeOnROCrateV1_3_0])
 
     const saveSelf = useCallback(() => {
         updateSchema(schema.id, {
             ...schema,
-            schemaUrl: downloadURL.trim(),
-            matchesUrls: matchesPrefixes.map((s) => s.trim()),
+            schemaUrl: draft.downloadURL.trim(),
+            matchesUrls: draft.matchesPrefixes.map((s) => s.trim()),
             activeOnSpec: changedActiveOn
         })
         forceSchemaLoad().then()
-    }, [changedActiveOn, downloadURL, forceSchemaLoad, matchesPrefixes, schema, updateSchema])
+        onClearDraft()
+    }, [
+        changedActiveOn,
+        draft.downloadURL,
+        draft.matchesPrefixes,
+        forceSchemaLoad,
+        onClearDraft,
+        schema,
+        updateSchema
+    ])
 
     const revertSelf = useCallback(() => {
-        setDownloadURL(schema.schemaUrl)
-        setMatchesPrefixes(schema.matchesUrls)
-        setActiveOnROCrateV1_1_3(schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_1_3))
-        setActiveOnROCrateV1_2_0(schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_2_0))
-        setActiveOnROCrateV1_3_0(schema.activeOnSpec.includes(RO_CRATE_VERSION.V1_3_0))
-    }, [schema.activeOnSpec, schema.matchesUrls, schema.schemaUrl])
+        onDraftChange(createDraft(schema))
+    }, [onDraftChange, schema])
 
     const changeName = useCallback(() => {
         updateSchema(schema.id, {
             ...schema,
-            displayName: newName.trim()
+            displayName: draft.newName.trim()
         })
-    }, [newName, schema, updateSchema])
+    }, [draft.newName, schema, updateSchema])
 
     const hasChanges = useMemo(() => {
         return (
-            downloadURL !== schema.schemaUrl ||
-            matchesPrefixes.join(",") !== schema.matchesUrls.join(",") ||
+            draft.downloadURL !== schema.schemaUrl ||
+            draft.matchesPrefixes.join(",") !== schema.matchesUrls.join(",") ||
             changedActiveOn.slice().sort().join(",") !==
                 schema.activeOnSpec.slice().sort().join(",")
         )
     }, [
         changedActiveOn,
-        downloadURL,
-        matchesPrefixes,
+        draft.downloadURL,
+        draft.matchesPrefixes,
         schema.activeOnSpec,
         schema.matchesUrls,
         schema.schemaUrl
@@ -444,7 +484,12 @@ function RegisteredSchemaDisplay({
 
                         <div>
                             <div className="text-sm">Display Name</div>
-                            <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
+                            <Input
+                                value={draft.newName}
+                                onChange={(e) =>
+                                    onDraftChange({ ...draft, newName: e.target.value })
+                                }
+                            />
                         </div>
 
                         <div className="flex justify-end">
@@ -481,7 +526,7 @@ function RegisteredSchemaDisplay({
                             always load this schema.
                         </HelpTooltip>
                     </div>
-                    {matchesPrefixes.map((url, i) => (
+                    {draft.matchesPrefixes.map((url, i) => (
                         <Input
                             value={url}
                             key={i}
@@ -512,7 +557,10 @@ function RegisteredSchemaDisplay({
                             application/ld+json&#34;
                         </HelpTooltip>
                     </div>
-                    <Input value={downloadURL} onChange={(e) => setDownloadURL(e.target.value)} />
+                    <Input
+                        value={draft.downloadURL}
+                        onChange={(e) => onDraftChange({ ...draft, downloadURL: e.target.value })}
+                    />
                 </div>
             </div>
 
@@ -527,9 +575,12 @@ function RegisteredSchemaDisplay({
                 <div className="grid grid-cols-4 gap-4">
                     <div className="flex items-center gap-2">
                         <Checkbox
-                            checked={activeOnROCrateV1_3_0}
+                            checked={draft.activeOnROCrateV1_3_0}
                             onCheckedChange={(s) =>
-                                setActiveOnROCrateV1_3_0(s === "indeterminate" ? true : s)
+                                onDraftChange({
+                                    ...draft,
+                                    activeOnROCrateV1_3_0: s === "indeterminate" ? true : s
+                                })
                             }
                             id={`ro-crate-v1.3.0-${schema.id}`}
                         />
@@ -539,9 +590,12 @@ function RegisteredSchemaDisplay({
                     </div>
                     <div className="flex items-center gap-2">
                         <Checkbox
-                            checked={activeOnROCrateV1_2_0}
+                            checked={draft.activeOnROCrateV1_2_0}
                             onCheckedChange={(s) =>
-                                setActiveOnROCrateV1_2_0(s === "indeterminate" ? true : s)
+                                onDraftChange({
+                                    ...draft,
+                                    activeOnROCrateV1_2_0: s === "indeterminate" ? true : s
+                                })
                             }
                             id={`ro-crate-v1.2.0-${schema.id}`}
                         />
@@ -551,9 +605,12 @@ function RegisteredSchemaDisplay({
                     </div>
                     <div className="flex items-center gap-2">
                         <Checkbox
-                            checked={activeOnROCrateV1_1_3}
+                            checked={draft.activeOnROCrateV1_1_3}
                             onCheckedChange={(s) =>
-                                setActiveOnROCrateV1_1_3(s === "indeterminate" ? true : s)
+                                onDraftChange({
+                                    ...draft,
+                                    activeOnROCrateV1_1_3: s === "indeterminate" ? true : s
+                                })
                             }
                             id={`ro-crate-v1.1.3-${schema.id}`}
                         />
@@ -615,13 +672,19 @@ function RegisteredSchemaListEntry({
     status,
     expanded,
     onToggle,
-    onStatusChange
+    onStatusChange,
+    draft,
+    onDraftChange,
+    onClearDraft
 }: {
     schema: RegisteredSchema
     status: SchemaDownloadStatus
     expanded: boolean
     onToggle: () => void
     onStatusChange: () => void
+    draft: SchemaDraft
+    onDraftChange: (draft: SchemaDraft) => void
+    onClearDraft: () => void
 }) {
     return (
         <div data-schema-id={schema.id}>
@@ -644,13 +707,19 @@ function RegisteredSchemaListEntry({
                 <span className="shrink-0 text-xs text-muted-foreground">
                     {schema.activeOnSpec.join(" · ")}
                 </span>
-                <span className="flex w-[92px] shrink-0 justify-end">
+                <span className="flex w-23 shrink-0 justify-end">
                     <SchemaDownloadStatusIndicator status={status} />
                 </span>
             </button>
             {expanded && (
                 <div id={`schema-details-${schema.id}`} className="border-t p-2">
-                    <RegisteredSchemaDisplay schema={schema} onStatusChange={onStatusChange} />
+                    <RegisteredSchemaDisplay
+                        schema={schema}
+                        draft={draft}
+                        onDraftChange={onDraftChange}
+                        onClearDraft={onClearDraft}
+                        onStatusChange={onStatusChange}
+                    />
                 </div>
             )}
         </div>
