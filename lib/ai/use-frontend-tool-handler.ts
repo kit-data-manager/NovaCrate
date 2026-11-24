@@ -1,4 +1,4 @@
-import { deepEqual, findEntity, toArray } from "@/lib/utils"
+import { deepEqual, findEntity, normalizeIdentifier, toArray } from "@/lib/utils"
 import { useCallback, useEffect, useRef } from "react"
 import { editorState } from "@/lib/state/editor-state"
 import type { ChatAddToolOutputFunction, ChatOnToolCallCallback } from "ai"
@@ -355,7 +355,12 @@ export function useFrontendToolHandler() {
                         if (!definition) continue
                         const mapping = handler.getEntityMapping()
                         for (const [mappedEntityId, ruleId] of mapping) {
-                            if (entityId && mappedEntityId !== entityId) continue
+                            if (
+                                entityId &&
+                                normalizeIdentifier(mappedEntityId) !==
+                                    normalizeIdentifier(entityId)
+                            )
+                                continue
                             const rule = handler.getEntityRule(ruleId)
                             if (!rule) continue
                             assignments.push({
@@ -448,20 +453,19 @@ export function useFrontendToolHandler() {
                         profileName: definition?.name ?? handler.name,
                         conforms: issues.length === 0,
                         issues: issues.map(describeConformanceIssue),
-                        referencingPropertyRules: findReferencingPropertyRules(
-                            rule,
-                            handlers
-                        ).map((referencingRule) => ({
-                            property: referencingRule.propertyRule.label,
-                            onEntityRules: referencingRule.appliesToEntityRules.map((r) =>
-                                getRuleName(r)
-                            ),
-                            minCount: referencingRule.propertyRule.minCount,
-                            maxCount: referencingRule.propertyRule.maxCount,
-                            profile:
-                                referencingRule.handler.getDefinition()?.name ??
-                                referencingRule.handler.name
-                        }))
+                        referencingPropertyRules: findReferencingPropertyRules(rule, handlers).map(
+                            (referencingRule) => ({
+                                property: referencingRule.propertyRule.label,
+                                onEntityRules: referencingRule.appliesToEntityRules.map((r) =>
+                                    getRuleName(r)
+                                ),
+                                minCount: referencingRule.propertyRule.minCount,
+                                maxCount: referencingRule.propertyRule.maxCount,
+                                profile:
+                                    referencingRule.handler.getDefinition()?.name ??
+                                    referencingRule.handler.name
+                            })
+                        )
                     }
 
                     addToolOutput({

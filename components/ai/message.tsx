@@ -10,7 +10,16 @@ import {
     TableRow
 } from "@/components/ui/table"
 import { ToolCall } from "@/components/ai/tool-call"
-import { BugIcon, ChevronRight, EyeIcon, LibraryIcon, LoaderCircle, PencilIcon, PlusIcon, ShieldCheckIcon } from "lucide-react"
+import {
+    BugIcon,
+    ChevronRight,
+    EyeIcon,
+    LibraryIcon,
+    LoaderCircle,
+    PencilIcon,
+    PlusIcon,
+    ShieldCheckIcon
+} from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import type { NC_UIMessage } from "@/lib/ai/types"
 import { UserMessage } from "@/components/ai/user-message"
@@ -79,7 +88,7 @@ export const Message = memo(function Message({
                                     <h4 className="font-bold mt-1">{props.children}</h4>
                                 ),
                                 pre: (props: PropsWithChildren) => (
-                                    <pre className="border rounded-lg p-2 text-sm">
+                                    <pre className="border rounded-lg p-2 text-sm overflow-x-auto">
                                         {props.children}
                                     </pre>
                                 ),

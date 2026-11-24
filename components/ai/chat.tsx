@@ -37,7 +37,8 @@ function withoutModels(
 }
 
 // Keys that scroll a container. Upward keys (handled in the scroll logic) disable
-// stick-to-bottom; downward keys re-enable it.
+// stick-to-bottom; downward keys let the scroll handler re-enable it, but only once
+// the view actually reaches the bottom.
 const SCROLL_KEYS = new Set(["PageUp", "PageDown", "ArrowUp", "ArrowDown", "Home", "End", " "])
 
 export default function AIAssistantChat() {
@@ -145,6 +146,8 @@ export default function AIAssistantChat() {
                 return false
             }
 
+            // Sending a message is an explicit request to follow the newest content.
+            stickToBottom.current = true
             scrollChatToBottom()
             _sendMessage({
                 text: msg
@@ -199,19 +202,19 @@ export default function AIAssistantChat() {
             stickToBottom.current = false
         }
         const onWheel = (e: WheelEvent) => {
-            // Wheeling up means "stop following". Wheeling down means "I want to go to the
-            // bottom", so it (re-)enables stick right away: relying on the scroll event to
-            // notice the bottom would race content growth, which can measure a stale
-            // distance and leave stick disabled even though the user just scrolled down.
+            // Wheeling up means "stop following". A downward wheel is only partial
+            // navigation, so it must not re-enable stick: doing so would yank the view
+            // to the bottom on the next streamed resize. Re-enabling is left to the
+            // scroll handler, which measures the actual distance to the bottom.
             if (e.deltaY < 0) disableStick()
-            else if (e.deltaY > 0) stickToBottom.current = true
         }
         const onKeyDown = (e: KeyboardEvent) => {
             if (!SCROLL_KEYS.has(e.key)) return
-            // Upward keys stop following; downward keys re-enable it (same reasoning as wheel).
+            // Upward keys stop following. Downward keys (ArrowDown, PageDown, End,
+            // Space) navigate only; stick is re-enabled by the scroll handler once the
+            // view actually reaches the bottom, or by an explicit action (sendMessage).
             const upward = e.key === "ArrowUp" || e.key === "PageUp" || e.key === "Home"
             if (upward) disableStick()
-            else stickToBottom.current = true
         }
         const onPointerDown = (e: PointerEvent) => {
             // A pointer down on the container itself at the right edge is a scrollbar drag.

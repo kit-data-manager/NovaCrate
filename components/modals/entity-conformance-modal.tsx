@@ -55,9 +55,10 @@ export const EntityConformanceModal = memo(function EntityConformanceModal(props
         if (props.open) {
             setRender(true)
         } else {
-            setTimeout(() => {
+            const timeout = window.setTimeout(() => {
                 setRender(false)
             }, 100)
+            return () => clearTimeout(timeout)
         }
     }, [props.open])
 
@@ -126,7 +127,7 @@ function EntityConformanceModalInner({
 
     const entityName = useMemo(() => {
         const entity = findEntity(editorState.getState().getEntities(), entityId)
-        return entity ? getEntityDisplayName(entity, false) : entityId
+        return entity ? getEntityDisplayName(entity, true) : entityId
     }, [entityId])
 
     return (
